@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wisdom on the Go · App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --night: #16202e;
+      --night2: #1e2d40;
+      --grey1: #f0f2f5;
+      --grey2: #b8c0cc;
+      --white: #ffffff;
+      --green: #3ab54a;
+      --green2: #2d9640;
+      --gold: #c9a84c;
+      --border: rgba(255,255,255,0.09);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--night);
+      color: var(--grey1);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 300;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(22,32,46,0.95);
+    }
+    .logo-block { display: flex; flex-direction: column; gap: 0.1rem; }
+    .logo-text { font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: var(--white); }
+    .logo-w { font-weight: 700; }
+    .logo-mid { font-weight: 400; }
+    .logo-go { font-weight: 700; color: var(--green); }
+    .logo-sanskrit {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.62rem;
+      font-weight: 300;
+      letter-spacing: 0.16em;
+      color: var(--white);
+      opacity: 0.75;
+    }
+    nav a {
+      font-size: 0.8rem;
+      color: var(--grey2);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--white); }
+    .app-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .coming-soon {
+      text-align: center;
+      max-width: 520px;
+    }
+    .eyebrow {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 1.5rem;
+    }
+    .coming-soon h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 300;
+      line-height: 1.2;
+      margin-bottom: 1.2rem;
+      color: var(--white);
+    }
+    .coming-soon h1 em {
+      font-style: normal;
+      color: var(--green);
+      font-weight: 500;
+    }
+    .coming-soon p {
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: var(--grey2);
+      margin-bottom: 2rem;
+    }
+    .pulse {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      background: var(--green);
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: var(--green);
+      background: rgba(58,181,74,0.1);
+      border: 1px solid rgba(58,181,74,0.25);
+      padding: 0.5rem 1.2rem;
+      border-radius: 3px;
+    }
+    .back-link {
+      margin-top: 2rem;
+      display: block;
+      font-size: 0.8rem;
+      color: var(--grey2);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--white); }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo-block">
+      <div class="logo-text">
+        <span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span>
+      </div>
+      <div class="logo-sanskrit">Tat Tvam Asi</div>
+    </div>
+    <a href="index.html">← Back to overview</a>
+  </nav>
+  <div class="app-container">
+    <div class="coming-soon">
+      <p class="eyebrow">User Testing · Beta</p>
+      <h1>The <em>experience</em><br/>is loading.</h1>
+      <p>The Wisdom on the Go app is currently in active development. This page will become the live front end for user testing — connecting directly to our AI engine.</p>
+      <div class="status">
+        <span class="pulse"></span>
+        Beta launching soon
+      </div>
+      <a href="index.html" class="back-link">← Return to overview</a>
+    </div>
+  </div>
+</body>
+</html>
