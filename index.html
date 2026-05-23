@@ -22,16 +22,16 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--night);color:var(--grey1);font-family:'Poppins',sans-serif;font-weight:300;overflow-x:hidden;line-height:1.5}
+body{background:linear-gradient(160deg,#0d1825 0%,#16202e 40%,#1a2535 70%,#0f1b2a 100%);background-attachment:fixed;color:var(--grey1);font-family:'Poppins',sans-serif;font-weight:300;overflow-x:hidden;line-height:1.5}
 
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3.5rem;background:rgba(22,32,46,0.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
-.logo-block{display:flex;flex-direction:column;gap:0.1rem}
+.logo-block{display:flex;flex-direction:column;gap:0}
 .logo-text{font-family:'Poppins',sans-serif;font-size:2rem;letter-spacing:0.01em;color:var(--white)}
 .logo-text .logo-w{font-weight:700}
 .logo-text .logo-mid{font-weight:400}
 .logo-text .logo-go{font-weight:700;color:var(--green)}
-.logo-sanskrit{font-family:'Poppins',sans-serif;font-size:0.62rem;font-weight:300;letter-spacing:0.16em;color:var(--white);opacity:0.75}
+.logo-sanskrit{font-family:'Poppins',sans-serif;font-size:0.62rem;font-weight:300;letter-spacing:0.16em;color:var(--white);opacity:0.75;padding-left:0.15rem;margin-top:-0.2rem}
 .nav-links{display:flex;gap:2.2rem;align-items:center}
 .nav-links a{color:var(--grey2);text-decoration:none;font-size:0.78rem;font-weight:400;letter-spacing:0.04em;transition:color 0.2s}
 .nav-links a:hover{color:var(--white)}
@@ -97,7 +97,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .arch-card{border:1px solid var(--border);padding:2.2rem 1.8rem;border-radius:4px;position:relative;transition:border-color 0.25s,transform 0.25s;background:rgba(22,32,46,0.9)}
 .arch-card:hover{border-color:rgba(58,181,74,0.35);transform:translateY(-3px)}
 .arch-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);border-radius:4px 4px 0 0;opacity:0.7}
-.arch-num{font-size:2.8rem;font-weight:300;color:rgba(58,181,74,0.2);line-height:1;margin-bottom:0.9rem}
+.arch-num{font-size:2.8rem;font-weight:700;color:var(--white);line-height:1;margin-bottom:0.9rem}
 .arch-card h3{font-size:0.95rem;font-weight:500;color:var(--white);margin-bottom:0.6rem}
 .arch-card p{font-size:0.83rem;line-height:1.65;color:var(--grey2)}
 .arch-tag{display:inline-block;margin-top:1rem;font-size:0.6rem;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--green);opacity:0.75}
@@ -204,7 +204,7 @@ footer a:hover{color:var(--green)}
 <div class="quote-band">
   <div class="quote-inner reveal">
     <p class="quote-label">Our Conviction</p>
-    <blockquote>"The first rigorous, evidence-based system that goes beneath behaviour — to develop the person who produces it."</blockquote>
+    <blockquote>"The first rigorous, evidence-based system that goes beneath behavior — to develop the person who produces it."</blockquote>
   </div>
 </div>
 
@@ -219,7 +219,7 @@ footer a:hover{color:var(--green)}
         <p>Training someone on "Executive Communication" teaches them the context. It doesn't change what they do when it matters. The label is the outcome — not the thing to train.</p>
       </div>
       <div class="problem-card">
-        <h3>Same behaviour, different root causes</h3>
+        <h3>Same behavior, different root causes</h3>
         <p>Two people who struggle to listen may have completely different reasons. One lacks technique. The other feels threatened. The same training fixes one and leaves the other unchanged.</p>
       </div>
       <div class="problem-card">
@@ -249,13 +249,13 @@ footer a:hover{color:var(--green)}
       <div class="arch-card reveal">
         <div class="arch-num">55</div>
         <h3>Reflectors</h3>
-        <p>The observable behaviours through which human capability shows up in real life — consistent across roles, industries, and cultures, even as the context changes. Defined and validated through 10+ years of real organisational work.</p>
+        <p>The observable behaviors through which human capability shows up in real life — consistent across roles, industries, and cultures, even as the context changes. Defined and validated through 10+ years of real organizational work.</p>
         <span class="arch-tag">What We Develop</span>
       </div>
       <div class="arch-card reveal">
         <div class="arch-num">4</div>
         <h3>Drivers</h3>
-        <p>The internal lens through which a person sees themselves, reads their situation, and decides what's possible. Wisdom on the Go identifies exactly which Driver is in the way — and trains through it.</p>
+        <p>The internal lens through which a person sees themselves, reads their situation, and decides what's possible — they influence whether, how, and to what degree a Reflector is expressed in a given context.</p>
         <span class="arch-tag">Where We Intervene</span>
       </div>
     </div>
@@ -279,14 +279,14 @@ footer a:hover{color:var(--green)}
         <div class="step-num">02</div>
         <div>
           <h3>The system identifies the relevant Reflector</h3>
-          <p>From 55 precisely defined behaviours, the system identifies which one your situation is calling for — and whether you're currently able to demonstrate it.</p>
+          <p>From 55 precisely defined behaviors, the system identifies which one your situation is calling for — and whether you're currently able to demonstrate it.</p>
         </div>
       </div>
       <div class="step reveal">
         <div class="step-num">03</div>
         <div>
           <h3>It diagnoses exactly what's blocking you</h3>
-          <p>Not a guess. Not a generic recommendation. A precise identification of the internal reason this behaviour isn't showing up for you, right now, in this situation.</p>
+          <p>Not a guess. Not a generic recommendation. A precise identification of the internal reason this behavior isn't showing up for you, right now, in this situation.</p>
         </div>
       </div>
       <div class="step reveal">
@@ -303,7 +303,7 @@ footer a:hover{color:var(--green)}
 <!-- BETA -->
 <section class="beta" id="beta">
   <h2 class="reveal">Built for people who want to <em>actually change</em> — not just learn.</h2>
-  <p class="beta-sub reveal">We're opening early access to a small group of individuals and organisations. Be among the first to experience capability development that takes you seriously.</p>
+  <p class="beta-sub reveal">We're opening early access to a small group of individuals and organizations. Be among the first to experience capability development that takes you seriously.</p>
   <div class="beta-form reveal">
     <input type="email" placeholder="Your work email"/>
     <button>Request Access</button>
@@ -313,8 +313,7 @@ footer a:hover{color:var(--green)}
 
 <footer>
   <div class="logo-block">
-    <div class="logo-text" style="font-size:1rem"><span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span></div>
-    <div class="logo-sanskrit" style="font-size:0.58rem">Tat Tvam Asi</div>
+    <img src="KW_Logo.png" alt="Korporate Wisdom" style="height:60px;border-radius:4px;"/>
   </div>
   <p>© 2026 Wisdom on the Go. All rights reserved.</p>
   <div class="footer-links">
@@ -346,4 +345,3 @@ document.querySelector('.beta-form button').addEventListener('click', () => {
 </script>
 </body>
 </html>
-
