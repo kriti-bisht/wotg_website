@@ -137,11 +137,22 @@ footer a:hover{color:var(--green)}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
+/* HAMBURGER */
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:4px;z-index:200}
+.hamburger span{display:block;width:22px;height:2px;background:var(--grey1);border-radius:2px;transition:transform 0.25s,opacity 0.25s}
+.hamburger.active span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
 @media(max-width:900px){
   .hero{grid-template-columns:1fr;padding:7rem 1.4rem 4rem}
   .hero-right{display:none}
-  nav{padding:1rem 1.4rem}
-  .nav-links{display:none}
+  nav{padding:1rem 1.4rem;position:relative}
+  .hamburger{display:flex}
+  .nav-links{display:none;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(22,32,46,0.98);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:1rem 1.4rem 1.5rem;gap:1.2rem}
+  .nav-links.open{display:flex}
+  .nav-links a{font-size:0.88rem}
+  .nav-cta{text-align:center}
   .section{padding:4rem 1.4rem}
   .problem-grid{grid-template-columns:1fr}
   .arch-inner{padding:4rem 1.4rem}
@@ -165,12 +176,15 @@ footer a:hover{color:var(--green)}
     <div class="logo-text"><span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span></div>
     <div class="logo-sanskrit">Tat Tvam Asi</div>
   </div>
-  <div class="nav-links">
+  <div class="nav-links" id="navLinks">
     <a href="#problem">The Problem</a>
     <a href="#approach">Our Approach</a>
     <a href="#how">How It Works</a>
     <a href="app.html" class="nav-cta">Try the App →</a>
   </div>
+  <button class="hamburger" id="menuToggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <!-- HERO -->
@@ -313,7 +327,7 @@ footer a:hover{color:var(--green)}
 
 <footer>
   <div class="logo-block">
-    <img src="KW_Logo.png" alt="Korporate Wisdom" style="height:120px;border-radius:4px;"/>
+    <img src="KW_Logo.png" alt="Korporate Wisdom" style="height:60px;border-radius:4px;"/>
   </div>
   <p>© 2026 Wisdom on the Go. All rights reserved.</p>
   <div class="footer-links">
@@ -343,6 +357,19 @@ document.querySelector('.beta-form button').addEventListener('click', () => {
   }
 });
 </script>
+<script>
+const menuToggle = document.getElementById('menuToggle');
+const navLinks   = document.getElementById('navLinks');
+menuToggle.addEventListener('click', function() {
+  navLinks.classList.toggle('open');
+  menuToggle.classList.toggle('active');
+});
+navLinks.querySelectorAll('a').forEach(function(a) {
+  a.addEventListener('click', function() {
+    navLinks.classList.remove('open');
+    menuToggle.classList.remove('active');
+  });
+});
+</script>
 </body>
 </html>
-
