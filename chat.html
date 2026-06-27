@@ -138,7 +138,7 @@ nav a:hover{color:var(--white)}
 }
 .bubble-user{
   background:var(--user-bubble);border:1px solid rgba(58,181,74,0.2);
-  color:var(--white);text-align:right;
+  color:var(--white);text-align:right;min-width:max-content;
 }
 .msg-meta{font-size:0.62rem;color:var(--grey3);margin-top:0.4rem;letter-spacing:0.04em}
 .msg-user .msg-meta{text-align:right}
@@ -605,8 +605,10 @@ function appendMessage(role, text) {
   avatar.textContent = isUser ? 'YOU' : 'Kriti';
 
   const right = document.createElement('div');
-  right.style.flex = '1';
-  right.style.minWidth = '0';
+  if (!isUser) {
+    right.style.flex = '1';
+    right.style.minWidth = '0';
+  }
 
   const bubble = document.createElement('div');
   bubble.className = 'msg-bubble ' + (isUser ? 'bubble-user' : 'bubble-ai');
@@ -636,6 +638,8 @@ function appendError(text) {
   avatar.textContent = 'Kriti';
 
   const right = document.createElement('div');
+  right.style.flex = '1';
+  right.style.minWidth = '0';
   const bubble = document.createElement('div');
   bubble.className = 'msg-bubble bubble-error';
   bubble.textContent = text;
