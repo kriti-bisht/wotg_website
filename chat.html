@@ -605,6 +605,8 @@ function appendMessage(role, text) {
   avatar.textContent = isUser ? 'YOU' : 'Kriti';
 
   const right = document.createElement('div');
+  right.style.flex = '1';
+  right.style.minWidth = '0';
 
   const bubble = document.createElement('div');
   bubble.className = 'msg-bubble ' + (isUser ? 'bubble-user' : 'bubble-ai');
@@ -792,8 +794,9 @@ document.getElementById('userInput').focus();
   const _orig = window.buildWelcomeScreen;
   if(typeof _orig === 'function'){
     window.buildWelcomeScreen = function(){
-      _orig.apply(this, arguments);
+      const result = _orig.apply(this, arguments);
       setTimeout(positionAvatar, 50);
+      return result;
     };
   }
   window._positionAvatar = positionAvatar;
