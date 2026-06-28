@@ -455,17 +455,12 @@ overlay.addEventListener('click', closeChat);
 document.getElementById('try-app-nav').addEventListener('click', openChat);
 document.getElementById('try-app-footer').addEventListener('click', openChat);
 
-// Keep keyboard open on mobile after send
-if ('ontouchstart' in window) {
-  setTimeout(() => {
-    const form = panel.querySelector('form');
-    if (form) form.addEventListener('submit', () => {
-      setTimeout(() => {
-        const input = form.querySelector('textarea, input[type="text"]');
-        if (input) input.focus();
-      }, 300);
-    });
-  }, 1500);
+// Fix iOS keyboard pushing input out of view
+if (/iPhone|iPad|iPod/i.test(navigator.userAgent) && 'visualViewport' in window) {
+  window.visualViewport.addEventListener('resize', () => {
+    panel.style.height = window.visualViewport.height + 'px';
+    panel.style.top = window.visualViewport.offsetTop + 'px';
+  });
 }
 </script>
 </body>
