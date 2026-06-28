@@ -6,7 +6,6 @@
 <title>Wisdom on the Go</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
 <style>
 :root {
   --night:   #16202e;
@@ -33,9 +32,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .logo-text .logo-mid{font-weight:400}
 .logo-text .logo-go{font-weight:700;color:var(--green)}
 .logo-sanskrit{font-family:'Poppins',sans-serif;font-size:0.62rem;font-weight:300;letter-spacing:0.16em;color:var(--white);opacity:0.75;padding-left:0.15rem;margin-top:-0.2rem}
-.nav-links{display:flex;gap:2.2rem;align-items:center}
-.nav-links a{color:var(--grey2);text-decoration:none;font-size:0.78rem;font-weight:400;letter-spacing:0.04em;transition:color 0.2s}
-.nav-links a:hover{color:var(--white)}
 .nav-cta{background:var(--green)!important;color:var(--white)!important;padding:0.5rem 1.3rem;border-radius:3px;font-size:0.76rem!important;font-weight:500!important;transition:background 0.2s!important}
 .nav-cta:hover{background:var(--green2)!important}
 
@@ -138,56 +134,12 @@ footer a:hover{color:var(--green)}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
-/* Chat overlay + panel */
-#chat-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999;opacity:0;pointer-events:none;transition:opacity 0.3s}
-#chat-overlay.active{opacity:1;pointer-events:auto}
-#chat-panel{position:fixed;top:max(1rem,calc(50vh - 375px));right:2rem;width:390px;height:min(750px,calc(100vh - 2rem));z-index:1000;visibility:hidden;opacity:0;pointer-events:none;transition:opacity 0.3s,visibility 0.3s;border-radius:8px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.7)}
-#chat-panel.active{visibility:visible;opacity:1;pointer-events:auto}
-@media(max-width:500px){
-  #chat-panel{width:100vw;height:100vh;top:0;right:0;border-radius:0}
-}
 
-/* n8n widget colours + title size */
-:root{
-  --chat--color-primary:#3ab54a;
-  --chat--color-primary-shade-50:#2d9640;
-  --chat--color-secondary:#3ab54a;
-  --chat--color-secondary-shade-50:#2d9640;
-  --chat--header--background:#16202e;
-  --chat--header--color:#ffffff;
-  --chat--heading--font-size:2.25em;
-  --chat--message--bot--background:#1e2d40;
-  --chat--message--bot--color:#f0f2f5;
-  --chat--message--user--background:#3ab54a;
-  --chat--message--user--color:#ffffff;
-  --chat--input--background:#ffffff;
-  --chat--input--color:#16202e;
-}
-#chat-panel h1{font-weight:400!important}
-
-/* Markdown rendering inside widget */
-[class*="chat-message"] ul,[class*="chat-message"] ol{padding-left:1.4rem!important;margin-bottom:0.5rem!important}
-[class*="chat-message"] li{margin-bottom:0.3rem!important;display:list-item!important}
-[class*="chat-message"] ul li{list-style:disc!important}
-[class*="chat-message"] ol li{list-style:decimal!important}
-[class*="chat-message"] strong,[class*="chat-message"] b{font-weight:600!important}
-[class*="chat-message"] p{margin-bottom:0.4rem!important}
-
-/* HAMBURGER */
-.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:4px;z-index:200}
-.hamburger span{display:block;width:22px;height:2px;background:var(--grey1);border-radius:2px;transition:transform 0.25s,opacity 0.25s}
-.hamburger.active span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-.hamburger.active span:nth-child(2){opacity:0}
-.hamburger.active span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
 @media(max-width:900px){
   .hero{grid-template-columns:1fr;padding:7rem 1.4rem 4rem}
   .hero-right{display:none}
-  nav{padding:1rem 1.4rem;position:relative}
-  .hamburger{display:flex}
-  .nav-links{display:none;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(22,32,46,0.98);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:1rem 1.4rem 1.5rem;gap:1.2rem}
-  .nav-links.open{display:flex}
-  .nav-links a{font-size:0.88rem}
+  nav{padding:1rem 1.4rem}
   .nav-cta{text-align:center}
   .section{padding:4rem 1.4rem}
   .problem-grid{grid-template-columns:1fr}
@@ -212,15 +164,7 @@ footer a:hover{color:var(--green)}
     <div class="logo-text"><span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span></div>
     <div class="logo-sanskrit">Tat Tvam Asi</div>
   </div>
-  <div class="nav-links" id="navLinks">
-    <a href="#problem">The Problem</a>
-    <a href="#approach">Our Approach</a>
-    <a href="#how">How It Works</a>
-    <a href="#" class="nav-cta" id="try-app-nav">Try the App →</a>
-  </div>
-  <button class="hamburger" id="menuToggle" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
+  <a href="chat.html" class="nav-cta">Try the App →</a>
 </nav>
 
 <!-- HERO -->
@@ -367,7 +311,7 @@ footer a:hover{color:var(--green)}
   </div>
   <p>© 2026 Wisdom on the Go. All rights reserved.</p>
   <div class="footer-links">
-    <a href="#" id="try-app-footer">Try the App</a>
+    <a href="chat.html">Try the App</a>
     <a href="mailto:inquiry@korporatewisdom.com">Contact</a>
   </div>
 </footer>
@@ -392,76 +336,6 @@ document.querySelector('.beta-form button').addEventListener('click', () => {
     document.querySelector('.beta-note').textContent = "We'll be in touch soon.";
   }
 });
-</script>
-<script>
-const menuToggle = document.getElementById('menuToggle');
-const navLinks   = document.getElementById('navLinks');
-menuToggle.addEventListener('click', function() {
-  navLinks.classList.toggle('open');
-  menuToggle.classList.toggle('active');
-});
-navLinks.querySelectorAll('a').forEach(function(a) {
-  a.addEventListener('click', function() {
-    navLinks.classList.remove('open');
-    menuToggle.classList.remove('active');
-  });
-});
-</script>
-<div id="chat-overlay"></div>
-<div id="chat-panel"></div>
-<script type="module">
-import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
-
-// Fresh session every page load
-Object.keys(localStorage).filter(k => k.includes('n8n')).forEach(k => localStorage.removeItem(k));
-
-createChat({
-  webhookUrl: 'https://wotg-n8n.happyglacier-b2985dc5.eastus.azurecontainerapps.io/webhook/944d23fc-6ea9-4ac4-b7e7-e7110864b0e8/chat',
-  target: '#chat-panel',
-  mode: 'fullscreen',
-  initialMessages: ["Here's how it works:\n\n• You bring a real work challenge.\n\n• I ask a few questions to understand what's really going on.\n\n• Together, we'll identify your Hero Skill, what's getting in its way, and work through a short, personalized Learning Atom to help you succeed.\n\nIn Scope: Real work situations—challenges, conversations, leadership, teams, stakeholders, and more.\n\nOut of Scope: Personal situations, generic training requests, and theory without a real work context.\n\nOne small ask: Share as much detail as you can, and trust the process—even if my questions or conclusions surprise you at first.\n\nSay 'Hi Kriti' to crack on!"],
-  i18n: {
-    en: {
-      title: 'Wisdom on the GO!',
-      subtitle: "Welcome! Say 'Hi Kriti' to get started.",
-      inputPlaceholder: '',
-    }
-  }
-});
-
-// Bold W and GO! to match index page logo
-setTimeout(() => {
-  const title = document.querySelector('#chat-panel h1');
-  if (title) {
-    title.innerHTML = '<span style="font-weight:700">W</span>isdom on the <span style="font-weight:700;color:#3ab54a">GO!</span>';
-  }
-}, 500);
-
-// Show/hide panel + overlay
-const overlay = document.getElementById('chat-overlay');
-const panel   = document.getElementById('chat-panel');
-
-function openChat(e) {
-  e?.preventDefault();
-  overlay.classList.add('active');
-  panel.classList.add('active');
-}
-function closeChat() {
-  overlay.classList.remove('active');
-  panel.classList.remove('active');
-}
-
-overlay.addEventListener('click', closeChat);
-document.getElementById('try-app-nav').addEventListener('click', openChat);
-document.getElementById('try-app-footer').addEventListener('click', openChat);
-
-// Fix iOS keyboard pushing input out of view
-if (/iPhone|iPad|iPod/i.test(navigator.userAgent) && 'visualViewport' in window) {
-  window.visualViewport.addEventListener('resize', () => {
-    panel.style.height = window.visualViewport.height + 'px';
-    panel.style.top = window.visualViewport.offsetTop + 'px';
-  });
-}
 </script>
 </body>
 </html>
