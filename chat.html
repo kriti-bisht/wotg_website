@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Wisdom on the GO!</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
@@ -96,6 +98,15 @@ html,body{height:100%;overflow:hidden;background:#0d1825;font-family:"Poppins",s
 [class*="chat-inputs"] input:focus{
   border-color:#3ab54a!important;
 }
+
+#pwa-btn{position:fixed;top:calc(0.75rem + env(safe-area-inset-top,0px));left:calc(0.75rem + env(safe-area-inset-left,0px));z-index:9999;background:#3ab54a;color:#fff;border:none;border-radius:20px;padding:0.38rem 0.85rem;font-family:'Poppins',sans-serif;font-size:0.68rem;font-weight:500;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,0.4);display:none;letter-spacing:0.02em}
+#pwa-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10000;display:none;align-items:flex-end;justify-content:center;padding:1rem;padding-bottom:calc(2rem + env(safe-area-inset-bottom,0px))}
+#pwa-modal{background:#1e2d40;border-radius:12px;padding:1.5rem 1.4rem 1.3rem;width:100%;position:relative;color:#f0f2f5;font-family:'Poppins',sans-serif}
+#pwa-modal h3{font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:0.9rem}
+#pwa-modal ol{padding-left:1.3rem;font-size:0.82rem;line-height:1.9;color:#b8c0cc}
+#pwa-modal li{margin-bottom:0.25rem}
+#pwa-modal strong{color:#fff;font-weight:600}
+#pwa-modal-close{position:absolute;top:0.75rem;right:0.85rem;background:none;border:none;color:#6b7685;font-size:1.3rem;cursor:pointer;line-height:1;padding:0.1rem 0.3rem}
 </style>
 </head>
 <body>
@@ -103,6 +114,20 @@ html,body{height:100%;overflow:hidden;background:#0d1825;font-family:"Poppins",s
 <a href="index.html" id="close-btn" aria-label="Go back">
   <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 </a>
+
+<button id="pwa-btn" aria-label="Save to Home Screen">Save to Home Screen</button>
+
+<div id="pwa-overlay">
+  <div id="pwa-modal">
+    <button id="pwa-modal-close" aria-label="Close">×</button>
+    <h3>Save to your Home Screen</h3>
+    <ol>
+      <li>Tap the <strong>Share icon (□↑)</strong> at the bottom of Safari</li>
+      <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+      <li>Tap <strong>"Add"</strong> — done!</li>
+    </ol>
+  </div>
+</div>
 
 <div id="chat-root"></div>
 
@@ -137,7 +162,22 @@ if (/iPhone|iPad|iPod/i.test(navigator.userAgent) && "visualViewport" in window)
   window.visualViewport.addEventListener("resize", () => {
     root.style.height = window.visualViewport.height + "px";
     root.style.top = window.visualViewport.offsetTop + "px";
+    setTimeout(() => {
+      const msgs = root.querySelector('[class*="messages"]');
+      if (msgs) msgs.scrollTop = msgs.scrollHeight;
+    }, 100);
   });
+}
+
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isSafari = /Safari/i.test(navigator.userAgent) && !/CriOS|FxiOS|OPiOS|EdgiOS/i.test(navigator.userAgent);
+if (isIOS && isSafari && !window.navigator.standalone) {
+  const pwaBtnEl = document.getElementById('pwa-btn');
+  const pwaOverlayEl = document.getElementById('pwa-overlay');
+  pwaBtnEl.style.display = 'block';
+  pwaBtnEl.addEventListener('click', () => { pwaOverlayEl.style.display = 'flex'; });
+  document.getElementById('pwa-modal-close').addEventListener('click', () => { pwaOverlayEl.style.display = 'none'; });
+  pwaOverlayEl.addEventListener('click', (e) => { if (e.target === pwaOverlayEl) pwaOverlayEl.style.display = 'none'; });
 }
 </script>
 </body>
