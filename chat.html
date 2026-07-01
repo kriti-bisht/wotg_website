@@ -57,12 +57,15 @@ html,body{height:100%;overflow:hidden;background:#0d1825;font-family:"Poppins",s
 [class*="chat-message"] strong,[class*="chat-message"] b{font-weight:600!important}
 [class*="chat-message"] p{margin-bottom:0.4rem!important}
 
-[class*="from-bot"] [class*="message-text"]{
+[class*="chat-message-from-bot"],
+[class*="chat-message-from-user"]{overflow:visible!important;}
+
+[class*="chat-message-from-bot"] [class*="chat-message-markdown"]{
   border-radius:4px 10px 10px 10px!important;
   position:relative!important;
   overflow:visible!important;
 }
-[class*="from-bot"] [class*="message-text"]::before{
+[class*="chat-message-from-bot"] [class*="chat-message-markdown"]::before{
   content:'';
   position:absolute;
   top:0;left:-6px;
@@ -70,12 +73,12 @@ html,body{height:100%;overflow:hidden;background:#0d1825;font-family:"Poppins",s
   border-style:solid;
   border-color:transparent #1e2d40 transparent transparent;
 }
-[class*="from-user"] [class*="message-text"]{
+[class*="chat-message-from-user"] [class*="chat-message-markdown"]{
   border-radius:10px 4px 10px 10px!important;
   position:relative!important;
   overflow:visible!important;
 }
-[class*="from-user"] [class*="message-text"]::after{
+[class*="chat-message-from-user"] [class*="chat-message-markdown"]::after{
   content:'';
   position:absolute;
   top:0;right:-6px;
@@ -98,6 +101,8 @@ html,body{height:100%;overflow:hidden;background:#0d1825;font-family:"Poppins",s
 [class*="chat-inputs"] input:focus{
   border-color:#3ab54a!important;
 }
+
+.chat-body{scrollbar-gutter:stable!important;}
 
 #chat-root.input-blocked [class*="chat-input"] textarea,
 #chat-root.input-blocked [class*="chat-input"] input,
@@ -166,13 +171,10 @@ setTimeout(() => {
 
 function scrollToLatest() {
   const r = document.getElementById("chat-root");
-  const container = r.querySelector('[class*="messages"]') || r.querySelector('[class*="chat-body"]') || r.querySelector('[class*="message-list"]');
-  if (container) {
-    container.scrollTop = container.scrollHeight;
-  } else {
-    const all = r.querySelectorAll('[class*="from-bot"],[class*="from-user"]');
-    if (all.length) all[all.length - 1].scrollIntoView({behavior:'instant',block:'end'});
-  }
+  const body = r.querySelector('.chat-body');
+  if (body) { body.scrollTop = body.scrollHeight; return; }
+  const all = r.querySelectorAll('[class*="chat-message-from-bot"],[class*="chat-message-from-user"]');
+  if (all.length) all[all.length - 1].scrollIntoView({behavior:'instant', block:'end'});
 }
 
 if (/iPhone|iPad|iPod/i.test(navigator.userAgent) && "visualViewport" in window) {
