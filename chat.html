@@ -99,6 +99,13 @@ html,body{height:100%;overflow:hidden;background:#0d1825;font-family:"Poppins",s
   border-color:#3ab54a!important;
 }
 
+#chat-root.input-blocked [class*="chat-input"] textarea,
+#chat-root.input-blocked [class*="chat-input"] input,
+#chat-root.input-blocked [class*="chat-inputs"] textarea,
+#chat-root.input-blocked [class*="chat-inputs"] input{opacity:0.5;pointer-events:none;}
+#chat-root.input-blocked [class*="chat-input"] button,
+#chat-root.input-blocked [class*="chat-inputs"] button{opacity:0.5;pointer-events:none;}
+
 #pwa-btn{position:fixed;top:calc(0.75rem + env(safe-area-inset-top,0px));left:calc(0.75rem + env(safe-area-inset-left,0px));z-index:9999;background:#3ab54a;color:#fff;border:none;border-radius:20px;padding:0.38rem 0.85rem;font-family:'Poppins',sans-serif;font-size:0.68rem;font-weight:500;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,0.4);display:none;letter-spacing:0.02em}
 #pwa-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10000;display:none;align-items:flex-end;justify-content:center;padding:1rem;padding-bottom:calc(2rem + env(safe-area-inset-bottom,0px))}
 #pwa-modal{background:#1e2d40;border-radius:12px;padding:1.5rem 1.4rem 1.3rem;width:100%;position:relative;color:#f0f2f5;font-family:'Poppins',sans-serif}
@@ -140,7 +147,7 @@ createChat({
   webhookUrl: "https://wotg-n8n.happyglacier-b2985dc5.eastus.azurecontainerapps.io/webhook/944d23fc-6ea9-4ac4-b7e7-e7110864b0e8/chat",
   target: "#chat-root",
   mode: "fullscreen",
-  initialMessages: ["Here's how it works:\n\n• You bring a real work challenge.\n• I ask a few questions to understand what's really going on.\n• Together, we'll identify your Hero Skill, what's getting in its way, and work through a short, personalized Learning Atom to help you succeed.\n\nOne small ask: Share as much detail as you can, and trust the process—even if my questions or conclusions surprise you at first.\n\nSay 'Hi Kriti' to crack on!"],
+  initialMessages: ["Here's how it works:\n\n- You bring a real work challenge.\n- I ask a few questions to understand what's really going on.\n- Together, we'll identify your Hero Skill, what's getting in its way, and work through a short, personalized Learning Atom to help you succeed.\n\nOne small ask: Share as much detail as you can, and trust the process—even if my questions or conclusions surprise you at first.\n\nSay 'Hi Kriti' to crack on!"],
   i18n: {
     en: {
       title: "Wisdom on the GO!",
@@ -157,17 +164,69 @@ setTimeout(() => {
   }
 }, 500);
 
+function scrollToLatest() {
+  const r = document.getElementById("chat-root");
+  const container = r.querySelector('[class*="messages"]') || r.querySelector('[class*="chat-body"]') || r.querySelector('[class*="message-list"]');
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  } else {
+    const all = r.querySelectorAll('[class*="from-bot"],[class*="from-user"]');
+    if (all.length) all[all.length - 1].scrollIntoView({behavior:'instant',block:'end'});
+  }
+}
+
 if (/iPhone|iPad|iPod/i.test(navigator.userAgent) && "visualViewport" in window) {
   const root = document.getElementById("chat-root");
   window.visualViewport.addEventListener("resize", () => {
     root.style.height = window.visualViewport.height + "px";
     root.style.top = window.visualViewport.offsetTop + "px";
-    setTimeout(() => {
-      const msgs = root.querySelector('[class*="messages"]');
-      if (msgs) msgs.scrollTop = msgs.scrollHeight;
-    }, 100);
+    setTimeout(scrollToLatest, 200);
   });
 }
+
+setTimeout(() => {
+  const root = document.getElementById("chat-root");
+  let botObserver = null;
+  let fallbackTimer = null;
+
+  function getInput() {
+    return root.querySelector('[class*="chat-input"] textarea,[class*="chat-inputs"] textarea');
+  }
+
+  function enableInput() {
+    root.classList.remove('input-blocked');
+    const inp = getInput();
+    if (inp) inp.removeAttribute('disabled');
+    clearTimeout(fallbackTimer);
+    if (botObserver) { botObserver.disconnect(); botObserver = null; }
+  }
+
+  function disableInput() {
+    root.classList.add('input-blocked');
+    const inp = getInput();
+    if (inp) { inp.blur(); inp.setAttribute('disabled', ''); }
+    fallbackTimer = setTimeout(enableInput, 180000);
+    const botsBefore = root.querySelectorAll('[class*="from-bot"]').length;
+    botObserver = new MutationObserver(() => {
+      if (root.querySelectorAll('[class*="from-bot"]').length > botsBefore) enableInput();
+    });
+    botObserver.observe(root, {childList:true, subtree:true});
+  }
+
+  root.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      const inp = getInput();
+      if (inp && inp.value.trim() && !inp.disabled) setTimeout(disableInput, 50);
+    }
+  });
+
+  root.addEventListener('click', (e) => {
+    if (e.target.closest('[class*="chat-input"] button,[class*="chat-inputs"] button')) {
+      const inp = getInput();
+      if (inp && inp.value.trim() && !inp.disabled) setTimeout(disableInput, 50);
+    }
+  });
+}, 1000);
 
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 const isSafari = /Safari/i.test(navigator.userAgent) && !/CriOS|FxiOS|OPiOS|EdgiOS/i.test(navigator.userAgent);
