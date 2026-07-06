@@ -204,7 +204,7 @@ nav a:hover{color:var(--white)}
 }
 textarea{
   width:100%;
-  padding:0.85rem 1.1rem;
+  padding:0.78rem 1.1rem;
   background:rgba(255,255,255,0.05);
   border:1px solid rgba(255,255,255,0.12);
   border-radius:4px;
@@ -215,6 +215,7 @@ textarea{
   line-height:1.55;
   resize:none;
   outline:none;
+  height:48px;
   min-height:48px;
   max-height:160px;
   transition:border-color 0.2s;
@@ -418,7 +419,7 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
       </div>
       <div class="welcome-avatar">
         <div class="avatar-callout">Hi, I’m Kriti</div>
-        <img class="avatar-img" src="chatphoto.png" alt="Kriti">
+        <img class="avatar-img" src="kriti_fullbody.png" alt="Kriti">
       </div>
     </div>
     </div>
@@ -604,7 +605,7 @@ function buildWelcomeScreen() {
       </div>
       <div class="welcome-avatar">
         <div class="avatar-callout">Hi, I’m Kriti</div>
-        <img class="avatar-img" src="chatphoto.png" alt="Kriti">
+        <img class="avatar-img" src="kriti_fullbody.png" alt="Kriti">
       </div>
     </div>`;
   return div;
@@ -707,6 +708,7 @@ function appendError(text) {
 }
 
 const PHASE_WORDS = {
+  RAPPORT:    ['Interpreting…', 'Finding the clues…', 'Making notes…', 'Thinking that through…'],
   DIAGNOSTIC: ['Interpreting…', 'Finding the clues…', 'Making notes…', 'Thinking that through…'],
   ANALYSIS:   ['Reflecting…', 'Identifying patterns…', 'Weighing what matters…', 'Connecting the dots…'],
   CONTENT:    ['Building your Learning Atom…', 'Shaping your training…', 'Personalizing your plan…', 'Almost ready…']
