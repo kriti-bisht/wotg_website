@@ -621,6 +621,8 @@ function useHint(el) {
 function autoResize(el) {
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+  const btn = document.getElementById('sendBtn');
+  if (btn) btn.style.height = el.offsetHeight + 'px';
 }
 
 function handleKey(e) {
@@ -971,6 +973,7 @@ window.addEventListener('pagehide', function() {
 });
 
 initSession();
+autoResize(document.getElementById('userInput'));
 
 // Keep the newest message visible when the on-screen keyboard opens/closes
 if (window.visualViewport) {
