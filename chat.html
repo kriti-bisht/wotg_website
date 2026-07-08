@@ -134,34 +134,33 @@ nav a:hover{color:var(--white)}
 }
 .msg-avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .avatar-ai{background:rgba(58,181,74,0.15);color:var(--green);border:1px solid rgba(58,181,74,0.25)}
-.avatar-user{background:rgba(255,255,255,0.07);color:var(--grey2);border:1px solid var(--border)}
+.avatar-user{background:rgba(228,202,10,0.15);color:rgb(228,202,10);border:1px solid rgba(228,202,10,0.25)}
 
 .msg-bubble{
   position:relative;
   width:fit-content;max-width:100%;padding:0.85rem 1.1rem;border-radius:4px;
-  font-size:0.86rem;line-height:1.65;font-weight:300;
+  font-size:0.92rem;line-height:1.65;font-weight:300;
 }
 .bubble-ai{
   background:var(--ai-bubble);border:1px solid var(--border);color:var(--grey1);
 }
 .bubble-ai::before{
-  content:'';position:absolute;left:-7px;top:14px;
+  content:'';position:absolute;left:-8px;top:14px;
   width:0;height:0;
-  border-top:6px solid transparent;border-bottom:6px solid transparent;
-  border-right:7px solid var(--ai-bubble);
+  border-top:7px solid transparent;border-bottom:7px solid transparent;
+  border-right:9px solid var(--ai-bubble);
 }
 .bubble-user{
   background:var(--user-bubble);border:1px solid rgba(58,181,74,0.2);
-  color:var(--white);text-align:right;
+  color:var(--white);
 }
 .bubble-user::before{
-  content:'';position:absolute;right:-7px;top:14px;
+  content:'';position:absolute;right:-8px;top:14px;
   width:0;height:0;
-  border-top:6px solid transparent;border-bottom:6px solid transparent;
-  border-left:7px solid var(--user-bubble);
+  border-top:7px solid transparent;border-bottom:7px solid transparent;
+  border-left:9px solid var(--user-bubble);
 }
-.msg-meta{font-size:0.62rem;color:var(--grey3);margin-top:0.4rem;letter-spacing:0.04em}
-.msg-user .msg-meta{text-align:right}
+.msg-meta{font-size:0.62rem;color:var(--grey3);margin-top:0.4rem;letter-spacing:0.04em;text-align:right}
 
 /* TYPING INDICATOR */
 .typing-wrap{display:flex;align-items:center;gap:0.5rem}
@@ -197,7 +196,7 @@ nav a:hover{color:var(--white)}
   z-index:-1;
 }
 .input-row{
-  display:flex;gap:0.75rem;align-items:center;
+  display:flex;gap:0.75rem;align-items:flex-end;
 }
 .input-wrap{
   flex:1;position:relative;
@@ -210,7 +209,7 @@ textarea{
   border-radius:4px;
   color:var(--white);
   font-family:'Poppins',sans-serif;
-  font-size:0.85rem;
+  font-size:0.91rem;
   font-weight:300;
   line-height:1.55;
   resize:none;
@@ -226,6 +225,7 @@ textarea:focus{border-color:rgba(58,181,74,0.45)}
 textarea:disabled{opacity:0.5;cursor:not-allowed}
 
 .send-btn{
+  -webkit-appearance:none;appearance:none;
   width:48px;height:48px;flex-shrink:0;
   background:var(--green);border:none;border-radius:4px;
   color:var(--white);cursor:pointer;
@@ -236,8 +236,26 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
 .send-btn:disabled{background:rgba(58,181,74,0.25);cursor:not-allowed;transform:none}
 .send-btn svg{width:18px;height:18px}
 
+.mic-btn{
+  -webkit-appearance:none;appearance:none;
+  width:48px;height:48px;flex-shrink:0;
+  background:var(--green);border:none;border-radius:4px;
+  color:var(--white);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s,color 0.2s,border-color 0.2s;
+  -webkit-user-select:none;user-select:none;touch-action:none;
+}
+.mic-btn:hover:not(:disabled){background:var(--green2)}
+.mic-btn:disabled{opacity:0.35;cursor:not-allowed}
+.mic-btn svg{width:18px;height:18px;pointer-events:none}
+.mic-btn.listening{
+  background:rgba(220,53,69,0.85);color:#fff;
+  animation:micPulse 1.1s ease-in-out infinite;
+}
+@keyframes micPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+
 .input-hint{
-  margin-top:0.55rem;font-size:0.65rem;color:var(--grey3);letter-spacing:0.04em;
+  margin-top:0.55rem;font-size:0.65rem;color:var(--white);letter-spacing:0.04em;
 }
 .input-hint kbd{
   background:rgba(255,255,255,0.07);border:1px solid var(--border);
@@ -341,12 +359,12 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
 .welcome-note h2{font-size:1.6rem;font-weight:300;color:var(--white);line-height:1.2;margin-bottom:0.75rem}
 .welcome-note h2 em{font-style:normal;color:var(--green);font-weight:600}
 .welcome-note h3{font-size:0.95rem;font-weight:600;color:var(--white);margin:0.95rem 0 0.3rem}
-.welcome-note p{font-size:0.85rem;line-height:1.5;color:var(--grey2);margin-bottom:0.45rem}
-.welcome-note ul{margin:0 0 0.5rem 1.15rem;padding:0}
-.welcome-note li{font-size:0.85rem;line-height:1.45;color:var(--grey2);margin-bottom:0.3rem}
+.welcome-note p{font-size:0.91rem;line-height:1.5;color:var(--grey2);margin-bottom:0.9rem}
+.welcome-note ul{margin:0.1rem 0 0.9rem 1.15rem;padding:0}
+.welcome-note li{font-size:0.91rem;line-height:1.5;color:var(--grey2);margin-bottom:0.35rem}
 .welcome-note strong{color:var(--grey1);font-weight:600}
 .welcome-note em{font-style:normal;color:var(--green)}
-.welcome-note .ready-line{margin-top:1rem;padding-top:0.8rem;border-top:1px solid var(--border);font-size:0.96rem;color:var(--white)}
+.welcome-note .ready-line{margin-top:1rem;padding-top:0.8rem;border-top:1px solid var(--border);font-size:1.02rem;color:var(--white)}
 /* avatar column: callout sits ABOVE her head so the figure never covers it */
 .welcome-avatar{display:flex;flex-direction:column;align-items:center;width:120px;flex-shrink:0;align-self:flex-start;position:sticky;top:0.5rem;pointer-events:none}
 .avatar-callout{position:relative;background:var(--green);color:#fff;font-size:0.78rem;font-weight:600;line-height:1.15;padding:0.45rem 0.8rem;border-radius:14px;white-space:nowrap;margin-bottom:10px;box-shadow:0 6px 16px rgba(0,0,0,0.35)}
@@ -379,7 +397,6 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
   <div class="nav-right">
     <div class="session-badge">Session <span id="sessionDisplay">—</span></div>
     <button class="end-chat-btn" id="endChatBtn" onclick="endConversation()">End conversation</button>
-    <button class="new-chat-btn" onclick="newConversation()">New conversation</button>
     <a href="index.html">← Overview</a>
   </div>
 </nav>
@@ -391,30 +408,14 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
       <div class="welcome-note">
         <p class="eyebrow">Finite State Machine · Human Capability Development Architecture</p>
         <h2>Welcome to <em>Wisdom on the GO!</em></h2>
-        <p><strong>Our Big Hairy Audacious Goal:</strong> To get rid of human-skills training that is generic, theoretical, and takes forever to become useful… Instead, we focus on a real work situation that matters to you.</p>
-        <h3>What Happens Here?</h3>
-        <p>You bring a real work situation, I ask questions, we unpack what is really going on. Then I identify:</p>
+        <p><strong>Our Big Hairy Audacious Goal:</strong> To get rid of human-skills training that is generic, theoretical, and takes forever to become useful. Instead, we focus on a real work situation that matters to you.</p>
+        <p><strong>What's in it for You:</strong></p>
         <ul>
-          <li>The <strong>Hero Skill</strong> — many human-skills may be relevant, but this is the one most likely to create the biggest shift in your situation right now.</li>
-          <li>The things quietly getting in the way of your Hero Skill showing up the way it should.</li>
+          <li>Learn to navigate a real work situation that matters to you, in just 15 minutes.</li>
+          <li>Sharpen your human skills with an application-first approach.</li>
+          <li>No lectures. No theory. Just real situations and practical guidance.</li>
         </ul>
-        <p>Finally, we’ll do a short, personalized training session — <strong>a Learning Atom</strong> — to enable your success.</p>
-        <h3>In Scope</h3>
-        <p>Real work situations: current challenges, recent experiences, upcoming conversations, stakeholder headaches, leadership dilemmas, team issues, and… everything in between.</p>
-        <h3>Out of Scope</h3>
-        <ul>
-          <li>Personal life situations.</li>
-          <li>Generic training requests.</li>
-          <li>Theory without a real situation.</li>
-        </ul>
-        <h3>Some Tiny Asks</h3>
-        <ul>
-          <li><strong>Be generous with details</strong> — the more I understand your situation, the better I can help.</li>
-          <li><strong>Give the process a chance</strong> — I may ask unexpected questions or arrive at conclusions you were not expecting. Hear me out before deciding whether I’ve got it right.</li>
-          <li><strong>Share your feedback.</strong> If something was brilliant, tell us. If something was rubbish, definitely tell us. Both are immensely valuable ❤️</li>
-        </ul>
-        <h3>Privacy</h3>
-        <p>Your conversation with WOTG is private and will not be shared with your manager, employer, HR team, or other participants.</p>
+        <p><strong>Privacy:</strong> Your discussion stays between you and Kriti. No other human will see this conversation...ever!</p>
         <p class="ready-line"><strong>Ready?</strong> Say <em>“Hi Kriti”</em> to crack on!</p>
       </div>
       <div class="welcome-avatar">
@@ -436,6 +437,14 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
           oninput="autoResize(this)"
         >Hi Kriti</textarea>
       </div>
+      <button class="mic-btn" id="micBtn" title="Hold to talk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </button>
       <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send message">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="22" y1="2" x2="11" y2="13"/>
@@ -443,7 +452,7 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
         </svg>
       </button>
     </div>
-    <p class="input-hint"><kbd>Enter</kbd> to send &nbsp;·&nbsp; <kbd>Shift + Enter</kbd> for new line</p>
+    <p class="input-hint" id="inputHint">Hold the mic to talk, then hit Send</p>
   </div>
 </div>
 
@@ -465,8 +474,8 @@ const WEBHOOK_URL      = 'https://wotg-n8n.happyglacier-b2985dc5.eastus.azurecon
 const END_SESSION_URL  = 'https://wotg-n8n.happyglacier-b2985dc5.eastus.azurecontainerapps.io/webhook/end-session';
 const CHECK_STATUS_URL = 'https://wotg-n8n.happyglacier-b2985dc5.eastus.azurecontainerapps.io/webhook/check-status';
 const WAITING_PHASE    = 'CONTENT';
-const POLL_INTERVAL_MS = 30000;
-const MAX_POLL_ATTEMPTS = 20;
+const POLL_INTERVAL_MS = 15000;
+const MAX_POLL_ATTEMPTS = 120;
 const TRIGGER_MAX_RETRIES = 3;
 const TRIGGER_RETRY_DELAY_MS = 3000;
 // ─────────────────────────────────────────────────────────────────────────────
@@ -530,6 +539,7 @@ function doEndSession() {
   input.disabled = true;
   input.placeholder = 'Conversation ended.';
   document.getElementById('sendBtn').disabled = true;
+  document.getElementById('micBtn').disabled = true;
   document.getElementById('endChatBtn').disabled = true;
 
   removeWelcome();
@@ -550,67 +560,6 @@ function doEndSession() {
   }, 1500);
 }
 
-function newConversation() {
-  sessionId = generateSessionId();
-  localStorage.setItem('session_id', sessionId);
-  sessionEnded = false;
-  document.getElementById('sessionDisplay').textContent = sessionId.slice(-6).toUpperCase();
-
-  // Re-enable input
-  const input = document.getElementById('userInput');
-  input.disabled = false;
-  input.placeholder = 'Describe your situation...';
-  document.getElementById('sendBtn').disabled = false;
-  document.getElementById('endChatBtn').disabled = false;
-
-  const area = document.getElementById('messagesArea');
-  area.innerHTML = '';
-  area.appendChild(buildWelcomeScreen());
-}
-
-function buildWelcomeScreen() {
-  const div = document.createElement('div');
-  div.className = 'welcome';
-  div.id = 'welcomeScreen';
-  div.innerHTML = `
-    <div class="welcome-inner">
-      <div class="welcome-note">
-        <p class="eyebrow">Finite State Machine · Human Capability Development Architecture</p>
-        <h2>Welcome to <em>Wisdom on the GO!</em></h2>
-        <p><strong>Our Big Hairy Audacious Goal:</strong> To get rid of human-skills training that is generic, theoretical, and takes forever to become useful… Instead, we focus on a real work situation that matters to you.</p>
-        <h3>What Happens Here?</h3>
-        <p>You bring a real work situation, I ask questions, we unpack what is really going on. Then I identify:</p>
-        <ul>
-          <li>The <strong>Hero Skill</strong> — many human-skills may be relevant, but this is the one most likely to create the biggest shift in your situation right now.</li>
-          <li>The things quietly getting in the way of your Hero Skill showing up the way it should.</li>
-        </ul>
-        <p>Finally, we’ll do a short, personalized training session — <strong>a Learning Atom</strong> — to enable your success.</p>
-        <h3>In Scope</h3>
-        <p>Real work situations: current challenges, recent experiences, upcoming conversations, stakeholder headaches, leadership dilemmas, team issues, and… everything in between.</p>
-        <h3>Out of Scope</h3>
-        <ul>
-          <li>Personal life situations.</li>
-          <li>Generic training requests.</li>
-          <li>Theory without a real situation.</li>
-        </ul>
-        <h3>Some Tiny Asks</h3>
-        <ul>
-          <li><strong>Be generous with details</strong> — the more I understand your situation, the better I can help.</li>
-          <li><strong>Give the process a chance</strong> — I may ask unexpected questions or arrive at conclusions you were not expecting. Hear me out before deciding whether I’ve got it right.</li>
-          <li><strong>Share your feedback.</strong> If something was brilliant, tell us. If something was rubbish, definitely tell us. Both are immensely valuable ❤️</li>
-        </ul>
-        <h3>Privacy</h3>
-        <p>Your conversation with WOTG is private and will not be shared with your manager, employer, HR team, or other participants.</p>
-        <p class="ready-line"><strong>Ready?</strong> Say <em>“Hi Kriti”</em> to crack on!</p>
-      </div>
-      <div class="welcome-avatar">
-        <div class="avatar-callout">Hi, I’m Kriti</div>
-        <img class="avatar-img" src="kriti_fullbody.png" alt="Kriti">
-      </div>
-    </div>`;
-  return div;
-}
-
 function useHint(el) {
   const input = document.getElementById('userInput');
   input.value = el.textContent.trim();
@@ -621,8 +570,6 @@ function useHint(el) {
 function autoResize(el) {
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 160) + 'px';
-  const btn = document.getElementById('sendBtn');
-  if (btn) btn.style.height = el.offsetHeight + 'px';
 }
 
 function handleKey(e) {
@@ -770,11 +717,13 @@ function removeTyping() {
 
 function formatResponse(text) {
   if (!text) return '';
-  // Convert **bold** and *italic*
+  // Convert **bold**, *italic*, [text](url) links, and bare https:// links
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/(?<!["'=])(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em style="color:var(--green);font-style:normal">$1</em>')
     .replace(/\n/g, '<br>');
@@ -795,6 +744,36 @@ function extractResponseText(data) {
 
 let currentPhase = '';
 
+async function handlePhaseResponse(data) {
+  if (data && data.phase) currentPhase = data.phase;
+
+  if (data && data.phase === 'END_SESSION') {
+    removeTyping();
+    appendMessage('ai', extractResponseText(data));
+    doEndSession();
+  } else if (data && data.phase === 'ANALYSIS') {
+    removeTyping();
+    appendMessage('ai', extractResponseText(data));
+    showTyping('ANALYSIS');
+    await sendFollowUpTrigger();
+    removeTyping();
+  } else if (data && data.phase === WAITING_PHASE) {
+    removeTyping();
+    appendMessage('ai', extractResponseText(data));
+    showTyping('CONTENT');
+    await pollForContent();
+    removeTyping();
+  } else if (data && data.phase === 'COMPLETE') {
+    removeTyping();
+    appendMessage('ai', extractResponseText(data));
+    await sleep(5000);
+    await sendFollowUpTrigger();
+  } else {
+    removeTyping();
+    appendMessage('ai', extractResponseText(data));
+  }
+}
+
 async function sendMessage() {
   if (isWaiting) return;
 
@@ -807,6 +786,7 @@ async function sendMessage() {
   autoResize(input);
   input.disabled = true;
   document.getElementById('sendBtn').disabled = true;
+  document.getElementById('micBtn').disabled = true;
 
   appendMessage('user', text);
   showTyping(currentPhase);
@@ -825,28 +805,7 @@ async function sendMessage() {
     if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
 
     const data = await res.json();
-    if (data && data.phase) currentPhase = data.phase;
-
-    if (data && data.phase === 'END_SESSION') {
-      removeTyping();
-      appendMessage('ai', extractResponseText(data));
-      doEndSession();
-    } else if (data && data.phase === 'ANALYSIS') {
-      removeTyping();
-      appendMessage('ai', extractResponseText(data));
-      showTyping('ANALYSIS');
-      await sendFollowUpTrigger();
-      removeTyping();
-    } else if (data && data.phase === WAITING_PHASE) {
-      removeTyping();
-      appendMessage('ai', extractResponseText(data));
-      showTyping('CONTENT');
-      await pollForContent();
-      removeTyping();
-    } else {
-      removeTyping();
-      appendMessage('ai', extractResponseText(data));
-    }
+    await handlePhaseResponse(data);
 
   } catch (err) {
     removeTyping();
@@ -855,6 +814,7 @@ async function sendMessage() {
     isWaiting = false;
     input.disabled = false;
     document.getElementById('sendBtn').disabled = false;
+    document.getElementById('micBtn').disabled = false;
     input.focus();
   }
 }
@@ -898,7 +858,7 @@ async function pollForContent() {
 
   pollingActive = false;
   if (!contentTriggered) {
-    appendError('Your content is taking longer than expected. Please try again shortly.');
+    appendError('Your content is taking longer than expected. Send any message to check again.');
   }
 }
 
@@ -941,8 +901,7 @@ async function sendFollowUpTrigger() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const data = await res.json();
-      if (data && data.phase) currentPhase = data.phase;
-      appendMessage('ai', extractResponseText(data));
+      await handlePhaseResponse(data);
       return;
     } catch (err) {
       if (attempt < TRIGGER_MAX_RETRIES - 1) {
@@ -975,6 +934,79 @@ window.addEventListener('pagehide', function() {
 initSession();
 autoResize(document.getElementById('userInput'));
 
+// ─── VOICE INPUT (press-and-hold mic, Web Speech API) ─────────────────────
+(function(){
+  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = document.getElementById('micBtn');
+  if (!micBtn) return;
+
+  if (!SpeechRecognitionAPI) {
+    micBtn.style.display = 'none';
+    return;
+  }
+
+  let recognition = null;
+  let listening = false;
+  let baseText = '';
+
+  function createRecognition() {
+    const r = new SpeechRecognitionAPI();
+    r.continuous = true;
+    r.interimResults = true;
+    r.lang = 'en-US';
+
+    r.onresult = function(event) {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      const input = document.getElementById('userInput');
+      const separator = baseText && !baseText.endsWith(' ') ? ' ' : '';
+      input.value = baseText + separator + transcript;
+      autoResize(input);
+    };
+
+    r.onerror = function() {
+      stopListening();
+    };
+
+    r.onend = function() {
+      if (listening) {
+        // Safari/WebKit can silently die on re-using an instance —
+        // spin up a fresh one each time it ends while still "listening"
+        recognition = createRecognition();
+        try { recognition.start(); } catch(e) {}
+      }
+    };
+
+    return r;
+  }
+
+  function startListening() {
+    if (listening || micBtn.disabled) return;
+    listening = true;
+    baseText = document.getElementById('userInput').value;
+    micBtn.classList.add('listening');
+    recognition = createRecognition();
+    try { recognition.start(); } catch(e) {}
+  }
+
+  function stopListening() {
+    if (!listening) return;
+    listening = false;
+    micBtn.classList.remove('listening');
+    try { recognition && recognition.stop(); } catch(e) {}
+  }
+
+  micBtn.addEventListener('mousedown', function(e){ e.preventDefault(); startListening(); });
+  micBtn.addEventListener('mouseup', stopListening);
+  micBtn.addEventListener('mouseleave', function(){ if (listening) stopListening(); });
+
+  micBtn.addEventListener('touchstart', function(e){ e.preventDefault(); startListening(); }, { passive:false });
+  micBtn.addEventListener('touchend', function(e){ e.preventDefault(); stopListening(); });
+  micBtn.addEventListener('touchcancel', stopListening);
+})();
+
 // Keep the newest message visible when the on-screen keyboard opens/closes
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', function() {
@@ -1005,14 +1037,6 @@ if (window.visualViewport) {
   window.addEventListener('load', positionAvatar);
   document.addEventListener('DOMContentLoaded', positionAvatar);
   setTimeout(positionAvatar, 100);
-  // Re-run if the welcome screen is rebuilt by buildWelcomeScreen()
-  const _orig = window.buildWelcomeScreen;
-  if(typeof _orig === 'function'){
-    window.buildWelcomeScreen = function(){
-      _orig.apply(this, arguments);
-      setTimeout(positionAvatar, 50);
-    };
-  }
   window._positionAvatar = positionAvatar;
 })();
 </script>

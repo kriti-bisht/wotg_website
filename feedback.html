@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Wisdom on the Go · Feedback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:   #16202e;
+  --night2:  #1e2d40;
+  --night3:  #243349;
+  --grey1:   #f0f2f5;
+  --grey2:   #b8c0cc;
+  --grey3:   #6b7685;
+  --white:   #ffffff;
+  --green:   #3ab54a;
+  --green2:  #2d9640;
+  --border:  rgba(255,255,255,0.09);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: linear-gradient(160deg, #0d1825 0%, #16202e 40%, #1a2535 70%, #0f1b2a 100%);
+  background-attachment: fixed;
+  color: var(--grey1);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 300;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2.5rem;
+  background: rgba(22,32,46,0.95);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.logo-block { display: flex; flex-direction: column; gap: 0; }
+.logo-text { font-size: 1.5rem; color: var(--white); }
+.logo-w { font-weight: 700; }
+.logo-mid { font-weight: 400; }
+.logo-go { font-weight: 700; color: var(--green); }
+.logo-sanskrit {
+  font-size: 0.62rem; font-weight: 300; letter-spacing: 0.16em;
+  color: var(--white); opacity: 0.75; padding-left: 0.1rem; margin-top: -0.15rem;
+}
+
+/* PAGE LAYOUT */
+.page-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+}
+
+/* CARD */
+.card {
+  width: 100%;
+  max-width: 600px;
+  background: rgba(30,45,64,0.6);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2.5rem 2.5rem 2.2rem;
+  backdrop-filter: blur(12px);
+}
+.card-eyebrow {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 1rem;
+}
+.card h1 {
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: var(--white);
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+}
+.card h1 em { font-style: normal; font-weight: 600; color: var(--green); }
+.card-sub {
+  font-size: 0.88rem;
+  color: var(--grey2);
+  margin-bottom: 2.2rem;
+  line-height: 1.6;
+}
+
+/* QUESTIONS */
+.question { margin-bottom: 1.7rem; }
+.question-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--white);
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+.q-num { color: var(--green); margin-right: 0.3rem; }
+.options { display: flex; flex-direction: column; gap: 0.55rem; }
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.86rem;
+  color: var(--grey2);
+  cursor: pointer;
+}
+.option input[type="radio"] {
+  accent-color: var(--green);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+textarea.feedback-textarea {
+  width: 100%;
+  min-height: 80px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.7rem 1rem;
+  color: var(--white);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 300;
+  line-height: 1.55;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+textarea.feedback-textarea::placeholder { color: var(--grey3); }
+textarea.feedback-textarea:focus { border-color: rgba(58,181,74,0.5); }
+
+/* BUTTON */
+.btn {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.85rem 1rem;
+  background: var(--green);
+  color: var(--white);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.94rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+.btn:hover { background: var(--green2); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ERROR */
+.error-msg {
+  display: none;
+  font-size: 0.78rem;
+  color: #e05c5c;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* THANK YOU */
+.thank-you { display: none; text-align: left; }
+.thank-you p { font-size: 0.92rem; line-height: 1.75; color: var(--grey2); margin-bottom: 1rem; }
+.thank-you .signoff { color: var(--white); }
+</style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo-block">
+      <div class="logo-text">
+        <span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span>
+      </div>
+      <div class="logo-sanskrit">Tat Tvam Asi</div>
+    </div>
+  </nav>
+
+  <div class="page-center">
+    <div class="card">
+
+      <div id="formView">
+        <p class="card-eyebrow">Wisdom On The GO! · Pilot Feedback</p>
+        <h1>Tell us <em>how it went.</em></h1>
+        <p class="card-sub">Your answers help us make every Learning Atom better.</p>
+
+        <form id="feedbackForm">
+
+          <div class="question">
+            <label class="question-label"><span class="q-num">1.</span>How well did the identified skill fit your situation?</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="skill_fit" value="Perfect fit" required> Perfect fit</label>
+              <label class="option"><input type="radio" name="skill_fit" value="Mostly fit"> Mostly fit</label>
+              <label class="option"><input type="radio" name="skill_fit" value="Somewhat fit"> Somewhat fit</label>
+              <label class="option"><input type="radio" name="skill_fit" value="Didn't fit"> Didn't fit</label>
+            </div>
+          </div>
+
+          <div class="question">
+            <label class="question-label"><span class="q-num">2.</span>How personalized did your Learning Atom feel?</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="personalization" value="It felt like it was written specifically for me." required> It felt like it was written specifically for me.</label>
+              <label class="option"><input type="radio" name="personalization" value="Mostly personalized."> Mostly personalized.</label>
+              <label class="option"><input type="radio" name="personalization" value="Somewhat generic."> Somewhat generic.</label>
+              <label class="option"><input type="radio" name="personalization" value="Very generic."> Very generic.</label>
+            </div>
+          </div>
+
+          <div class="question">
+            <label class="question-label"><span class="q-num">3.</span>Did the session give you a new way of thinking about or handling your situation?</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="new_thinking" value="Yes, definitely" required> Yes, definitely</label>
+              <label class="option"><input type="radio" name="new_thinking" value="A little"> A little</label>
+              <label class="option"><input type="radio" name="new_thinking" value="Not really"> Not really</label>
+              <label class="option"><input type="radio" name="new_thinking" value="No"> No</label>
+            </div>
+          </div>
+
+          <div class="question">
+            <label class="question-label"><span class="q-num">4.</span>At any point during the session, did you feel misunderstood?</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="felt_misunderstood" value="No, not at all" required> No, not at all</label>
+              <label class="option"><input type="radio" name="felt_misunderstood" value="Once or twice"> Once or twice</label>
+              <label class="option"><input type="radio" name="felt_misunderstood" value="Quite a few times"> Quite a few times</label>
+              <label class="option"><input type="radio" name="felt_misunderstood" value="Yes, throughout"> Yes, throughout</label>
+            </div>
+          </div>
+
+          <div class="question">
+            <label class="question-label"><span class="q-num">5.</span>Overall, how would you rate your Learning Atom experience?</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="overall_rating" value="Excellent" required> Excellent</label>
+              <label class="option"><input type="radio" name="overall_rating" value="Good"> Good</label>
+              <label class="option"><input type="radio" name="overall_rating" value="Fair"> Fair</label>
+              <label class="option"><input type="radio" name="overall_rating" value="Poor"> Poor</label>
+            </div>
+          </div>
+
+          <div class="question">
+            <label class="question-label"><span class="q-num">6.</span>How confident are you that you can apply what you learned in your real situation?</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="confidence" value="Very confident" required> Very confident</label>
+              <label class="option"><input type="radio" name="confidence" value="Somewhat confident"> Somewhat confident</label>
+              <label class="option"><input type="radio" name="confidence" value="Slightly confident"> Slightly confident</label>
+              <label class="option"><input type="radio" name="confidence" value="Not confident"> Not confident</label>
+            </div>
+          </div>
+
+          <div class="question">
+            <label class="question-label"><span class="q-num">7.</span>How much did you trust the guidance provided during this Learning Atom?</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="trust" value="Completely" required> Completely</label>
+              <label class="option"><input type="radio" name="trust" value="Mostly"> Mostly</label>
+              <label class="option"><input type="radio" name="trust" value="A little"> A little</label>
+              <label class="option"><input type="radio" name="trust" value="Not at all"> Not at all</label>
+            </div>
+          </div>
+
+          <div class="question">
+            <label class="question-label"><span class="q-num">8.</span>What did you like most about your WOTG experience?</label>
+            <textarea class="feedback-textarea" name="liked_most" placeholder="Your thoughts..."></textarea>
+          </div>
+
+          <div class="question">
+            <label class="question-label"><span class="q-num">9.</span>If you could change one thing about this experience, what would it be?</label>
+            <textarea class="feedback-textarea" name="change_one_thing" placeholder="Your thoughts..."></textarea>
+          </div>
+
+          <div class="question">
+            <label class="question-label"><span class="q-num">10.</span>Would you use Wisdom On The GO! again for another work situation?</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="would_use_again" value="Definitely" required> Definitely</label>
+              <label class="option"><input type="radio" name="would_use_again" value="Probably"> Probably</label>
+              <label class="option"><input type="radio" name="would_use_again" value="Maybe"> Maybe</label>
+              <label class="option"><input type="radio" name="would_use_again" value="Probably not"> Probably not</label>
+              <label class="option"><input type="radio" name="would_use_again" value="No"> No</label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn" id="submitBtn">Submit Feedback</button>
+          <p class="error-msg" id="errorMsg">Something went wrong. Please try again.</p>
+        </form>
+      </div>
+
+      <div class="thank-you" id="thankYouView">
+        <p>Thank you for your feedback! 🙌</p>
+        <p>Work has a funny way of throwing new challenges at us... When it does, you know where to find me.</p>
+        <p>Until then - back straight, head up...go win the world. 😊</p>
+        <p class="signoff">Best,<br>Kriti</p>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const N8N_FEEDBACK_URL = 'https://wotg-n8n.happyglacier-b2985dc5.eastus.azurecontainerapps.io/webhook/submit-feedback';
+
+    document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const btn = document.getElementById('submitBtn');
+      const errorMsg = document.getElementById('errorMsg');
+      const form = e.target;
+
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+      errorMsg.style.display = 'none';
+
+      const data = new FormData(form);
+      const payload = {
+        session_id:  localStorage.getItem('session_id')  || '',
+        user_name:   localStorage.getItem('user_name')   || '',
+        user_email:  localStorage.getItem('user_email')  || '',
+        skill_fit:          data.get('skill_fit'),
+        personalization:    data.get('personalization'),
+        new_thinking:       data.get('new_thinking'),
+        felt_misunderstood: data.get('felt_misunderstood'),
+        overall_rating:     data.get('overall_rating'),
+        confidence:         data.get('confidence'),
+        trust:               data.get('trust'),
+        liked_most:          data.get('liked_most') || '',
+        change_one_thing:    data.get('change_one_thing') || '',
+        would_use_again:     data.get('would_use_again')
+      };
+
+      try {
+        await fetch(N8N_FEEDBACK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('formView').style.display = 'none';
+        document.getElementById('thankYouView').style.display = 'block';
+      } catch (err) {
+        errorMsg.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Submit Feedback';
+      }
+    });
+  </script>
+
+</body>
+</html>
