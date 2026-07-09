@@ -23,8 +23,15 @@
   --ai-bubble:   #1e2d40;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
-@supports (height: 100dvh){ html,body{height:100dvh} }
+html,body{min-height:100%}
+@supports (height: 100dvh){ html,body{min-height:100dvh} }
+html{
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,0.1) transparent;
+}
+html::-webkit-scrollbar{width:4px}
+html::-webkit-scrollbar-track{background:transparent}
+html::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
 body{
   background:linear-gradient(160deg,#0d1825 0%,#16202e 40%,#1a2535 70%,#0f1b2a 100%);
   background-attachment:fixed;
@@ -37,6 +44,7 @@ body{
 
 /* NAV */
 nav{
+  position:sticky;top:0;
   flex-shrink:0;
   display:flex;
   align-items:center;
@@ -47,7 +55,7 @@ nav{
   border-bottom:1px solid var(--border);
   z-index:10;
 }
-.logo-block{display:flex;flex-direction:column;gap:0}
+.logo-block{display:flex;flex-direction:column;gap:0;text-decoration:none;cursor:pointer}
 .logo-text{font-size:1.5rem;color:var(--white)}
 .logo-w{font-weight:700}
 .logo-mid{font-weight:400}
@@ -59,7 +67,8 @@ nav a:hover{color:var(--white)}
 .session-badge{
   font-size:0.6rem;font-weight:400;letter-spacing:0.1em;text-transform:uppercase;
   color:var(--grey3);background:rgba(255,255,255,0.05);border:1px solid var(--border);
-  padding:0.35rem 0.8rem;border-radius:3px;
+  padding:0 1rem;border-radius:3px;height:32px;
+  display:inline-flex;align-items:center;
 }
 .session-badge span{color:var(--green);font-weight:500}
 
@@ -78,17 +87,11 @@ nav a:hover{color:var(--white)}
 /* MESSAGES AREA */
 .messages-area{
   flex:1;
-  overflow-y:auto;
   padding:2rem 0 1rem;
   display:flex;
   flex-direction:column;
   gap:1.2rem;
-  scrollbar-width:thin;
-  scrollbar-color:rgba(255,255,255,0.1) transparent;
 }
-.messages-area::-webkit-scrollbar{width:4px}
-.messages-area::-webkit-scrollbar-track{background:transparent}
-.messages-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
 
 /* WELCOME STATE */
 .welcome{
@@ -141,6 +144,8 @@ nav a:hover{color:var(--white)}
   width:fit-content;max-width:100%;padding:0.85rem 1.1rem;border-radius:4px;
   font-size:0.92rem;line-height:1.65;font-weight:300;
 }
+.msg-bubble ul{margin:0.3rem 0 0.3rem 1.15rem;padding:0}
+.msg-bubble li{margin-bottom:0.2rem}
 .bubble-ai{
   background:var(--ai-bubble);border:1px solid var(--border);color:var(--grey1);
 }
@@ -180,7 +185,7 @@ nav a:hover{color:var(--white)}
   padding:1rem 0 calc(1.5rem + env(safe-area-inset-bottom));
   border-top:1px solid var(--border);
   background:var(--night);
-  position:relative;
+  position:sticky;bottom:0;
   z-index:5;
 }
 /* full-width solid backing so the bottom strip (and avatar feet cover) spans edge-to-edge */
@@ -202,6 +207,7 @@ nav a:hover{color:var(--white)}
   flex:1;position:relative;
 }
 textarea{
+  display:block;
   width:100%;
   padding:0.78rem 1.1rem;
   background:rgba(255,255,255,0.05);
@@ -276,7 +282,8 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
 .end-chat-btn{
   background:transparent;border:1px solid rgba(220,53,69,0.35);border-radius:3px;
   color:rgba(240,128,144,0.8);font-family:'Poppins',sans-serif;font-size:0.73rem;
-  font-weight:400;letter-spacing:0.04em;padding:0.45rem 1rem;
+  font-weight:400;letter-spacing:0.04em;padding:0 1rem;height:32px;
+  display:inline-flex;align-items:center;
   cursor:pointer;transition:border-color 0.2s,color 0.2s,background 0.2s;
 }
 .end-chat-btn:hover{border-color:rgba(220,53,69,0.7);color:#f08090;background:rgba(220,53,69,0.08)}
@@ -356,25 +363,22 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
 .welcome{max-width:760px;text-align:left;padding:1.4rem 0.5rem 2rem;margin:0 auto}
 .welcome-inner{display:flex;gap:1.4rem;align-items:flex-start}
 .welcome-note{flex:1;min-width:0}
-.welcome-note h2{font-size:1.6rem;font-weight:300;color:var(--white);line-height:1.2;margin-bottom:0.75rem}
+.welcome-note h2{font-size:1.6rem;font-weight:300;color:var(--white);line-height:1.2;margin-bottom:2.6rem}
 .welcome-note h2 em{font-style:normal;color:var(--green);font-weight:600}
 .welcome-note h3{font-size:0.95rem;font-weight:600;color:var(--white);margin:0.95rem 0 0.3rem}
 .welcome-note p{font-size:0.91rem;line-height:1.5;color:var(--grey2);margin-bottom:0.9rem}
 .welcome-note ul{margin:0.1rem 0 0.9rem 1.15rem;padding:0}
-.welcome-note li{font-size:0.91rem;line-height:1.5;color:var(--grey2);margin-bottom:0.35rem}
+.welcome-note li{font-size:0.91rem;line-height:1.5;color:var(--grey2);margin-bottom:0}
 .welcome-note strong{color:var(--grey1);font-weight:600}
 .welcome-note em{font-style:normal;color:var(--green)}
-.welcome-note .ready-line{margin-top:1rem;padding-top:0.8rem;border-top:1px solid var(--border);font-size:1.02rem;color:var(--white)}
+.welcome-note .ready-line{margin-top:1rem;padding-top:0.8rem;font-size:1.02rem;color:var(--white)}
 /* avatar column: callout sits ABOVE her head so the figure never covers it */
-.welcome-avatar{display:flex;flex-direction:column;align-items:center;width:120px;flex-shrink:0;align-self:flex-start;position:sticky;top:0.5rem;pointer-events:none}
+.welcome-avatar{display:flex;flex-direction:column;align-items:center;width:120px;flex-shrink:0;align-self:flex-end;pointer-events:none}
 .avatar-callout{position:relative;background:var(--green);color:#fff;font-size:0.78rem;font-weight:600;line-height:1.15;padding:0.45rem 0.8rem;border-radius:14px;white-space:nowrap;margin-bottom:10px;box-shadow:0 6px 16px rgba(0,0,0,0.35)}
 .avatar-callout::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:var(--green);border-bottom:0}
 .avatar-img{width:120px;display:block;filter:drop-shadow(0 12px 22px rgba(0,0,0,0.4))}
 /* wide screens: pin her bottom-anchored, overlapping the right edge of the text column;
    nudged down (top clearance) so head + callout are always fully visible */
-@media(min-width:1240px){
-  .welcome-avatar{position:fixed;right:calc((100vw - 860px)/2 - 56px);width:120px;flex-direction:column;align-items:center;justify-content:flex-end}
-}
 /* phones: stack above the note */
 @media(max-width:600px){
   .welcome-inner{flex-direction:column-reverse;align-items:center}
@@ -388,16 +392,15 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
 <body>
 
 <nav>
-  <div class="logo-block">
+  <a href="index.html" class="logo-block">
     <div class="logo-text">
       <span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span>
     </div>
     <div class="logo-sanskrit">Tat Tvam Asi</div>
-  </div>
+  </a>
   <div class="nav-right">
     <div class="session-badge">Session <span id="sessionDisplay">—</span></div>
     <button class="end-chat-btn" id="endChatBtn" onclick="endConversation()">End conversation</button>
-    <a href="index.html">← Overview</a>
   </div>
 </nav>
 
@@ -408,9 +411,9 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
       <div class="welcome-note">
         <p class="eyebrow">Finite State Machine · Human Capability Development Architecture</p>
         <h2>Welcome to <em>Wisdom on the GO!</em></h2>
-        <p><strong>Our Big Hairy Audacious Goal:</strong> To get rid of human-skills training that is generic, theoretical, and takes forever to become useful. Instead, we focus on a real work situation that matters to you.</p>
-        <p><strong>What's in it for You:</strong></p>
-        <ul>
+        <p style="margin-bottom:1.6rem"><strong>Our Big Hairy Audacious Goal:</strong> To get rid of human-skills training that is generic, theoretical, and takes forever to become useful. Instead, we focus on a real work situation that matters to you.</p>
+        <p style="margin-bottom:0.15rem"><strong>What's in it for You:</strong></p>
+        <ul style="margin-bottom:1.6rem">
           <li>Learn to navigate a real work situation that matters to you, in just 15 minutes.</li>
           <li>Sharpen your human skills with an application-first approach.</li>
           <li>No lectures. No theory. Just real situations and practical guidance.</li>
@@ -548,7 +551,7 @@ function doEndSession() {
   notice.className = 'session-ended-notice';
   notice.textContent = 'Session ended · ' + new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '  —  Redirecting…';
   area.appendChild(notice);
-  area.scrollTop = area.scrollHeight;
+  window.scrollTo(0, document.documentElement.scrollHeight);
 
   localStorage.removeItem('session_id');
   localStorage.removeItem('user_name');
@@ -622,7 +625,7 @@ function appendMessage(role, text) {
   msg.appendChild(avatar);
   msg.appendChild(right);
   area.appendChild(msg);
-  area.scrollTop = area.scrollHeight;
+  window.scrollTo(0, document.documentElement.scrollHeight);
   return bubble;
 }
 
@@ -653,7 +656,7 @@ function appendError(text) {
   msg.appendChild(avatar);
   msg.appendChild(right);
   area.appendChild(msg);
-  area.scrollTop = area.scrollHeight;
+  window.scrollTo(0, document.documentElement.scrollHeight);
 }
 
 const PHASE_WORDS = {
@@ -703,7 +706,7 @@ function showTyping(phase) {
   row.appendChild(avatar);
   row.appendChild(wrap);
   area.appendChild(row);
-  area.scrollTop = area.scrollHeight;
+  window.scrollTo(0, document.documentElement.scrollHeight);
 }
 
 function removeTyping() {
@@ -717,16 +720,46 @@ function removeTyping() {
 
 function formatResponse(text) {
   if (!text) return '';
-  // Convert **bold**, *italic*, [text](url) links, and bare https:// links
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-    .replace(/(?<!["'=])(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em style="color:var(--green);font-style:normal">$1</em>')
-    .replace(/\n/g, '<br>');
+
+  function inlineFormat(s) {
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+      .replace(/(?<!["'=])(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em style="color:var(--green);font-style:normal">$1</em>');
+  }
+
+  // Convert consecutive "- item" lines into a real bullet list; everything else joins with <br> as before.
+  const lines = text.split('\n');
+  let html = '';
+  let listItems = [];
+  let lastWasLine = false;
+
+  function flushList() {
+    if (listItems.length) {
+      html += '<ul>' + listItems.map(li => `<li>${inlineFormat(li)}</li>`).join('') + '</ul>';
+      listItems = [];
+      lastWasLine = false;
+    }
+  }
+
+  for (const line of lines) {
+    const match = line.match(/^-\s+(.*)$/);
+    if (match) {
+      listItems.push(match[1]);
+    } else {
+      flushList();
+      if (lastWasLine) html += '<br>';
+      html += inlineFormat(line);
+      lastWasLine = true;
+    }
+  }
+  flushList();
+
+  return html;
 }
 
 function extractResponseText(data) {
@@ -932,7 +965,6 @@ window.addEventListener('pagehide', function() {
 });
 
 initSession();
-autoResize(document.getElementById('userInput'));
 
 // ─── VOICE INPUT (press-and-hold mic, Web Speech API) ─────────────────────
 (function(){
@@ -1010,8 +1042,7 @@ autoResize(document.getElementById('userInput'));
 // Keep the newest message visible when the on-screen keyboard opens/closes
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', function() {
-    const area = document.getElementById('messagesArea');
-    if (area) area.scrollTop = area.scrollHeight;
+    window.scrollTo(0, document.documentElement.scrollHeight);
   });
 }
 

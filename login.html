@@ -218,7 +218,7 @@
       errorMsg.style.display = 'none';
 
       const sessionId = crypto.randomUUID();
-      const name      = document.getElementById('name').value.trim();
+      const name      = document.getElementById('name').value.trim().replace(/\b\w/g, c => c.toUpperCase());
       const email     = document.getElementById('email').value.trim();
       const company   = document.getElementById('company').value.trim();
       const timestamp = new Date().toISOString();
