@@ -406,16 +406,17 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
     <div class="welcome" id="welcomeScreen">
       <div class="welcome-inner">
       <div class="welcome-note">
-        <p class="eyebrow">Finite State Machine · Human Capability Development Architecture</p>
-        <h2>Welcome to <em>Wisdom on the GO!</em></h2>
-        <p style="margin-bottom:1.6rem"><strong>Our Big Hairy Audacious Goal:</strong> To get rid of human-skills training that is generic, theoretical, and takes forever to become useful. Instead, we focus on a real work situation that matters to you.</p>
-        <p style="margin-bottom:0.15rem"><strong>What's in it for You:</strong></p>
+        <h2>Welcome to <span class="logo-w">W</span>isdom on the <span class="logo-go">GO!</span> 👋</h2>
+        <p style="margin-bottom:1.6rem">No endless lectures, no dry theory, and no searching for one life-changing insight. <strong>Real growth comes from consistently applying the right human skill in the right situation</strong>—and that's exactly what we'll do, one real work situation at a time!</p>
+        <p style="margin-bottom:0.15rem"><strong>🚀 What's in it for You?</strong></p>
         <ul style="margin-bottom:1.6rem">
-          <li>Learn to navigate a real work situation that matters to you, in just 15 minutes.</li>
-          <li>Sharpen your human skills with an application-first approach.</li>
-          <li>No lectures. No theory. Just real situations and practical guidance.</li>
+          <li>Navigate a real work situation that matters to you—in just 15 minutes.</li>
+          <li>Identify the one human skill most likely to help you succeed.</li>
+          <li>Understand what's getting in the way of demonstrating it—and how to overcome those barriers.</li>
+          <li>Build expertise by applying your skills—not by sitting through theory or generic advice.</li>
         </ul>
-        <p><strong>Privacy:</strong> Your discussion stays between you and Kriti. No other human will see this conversation...ever!</p>
+        <p style="margin-bottom:0.15rem"><strong>🔒 Zero Judgment. Total Privacy.</strong></p>
+        <p>Your growth happens in a safe space. Your conversations stay entirely between you and Kriti. No other human will see them...ever!</p>
         <p class="ready-line"><strong>Ready?</strong> Say <em>“Hi Kriti”</em> to crack on!</p>
       </div>
       <div class="welcome-avatar">
@@ -478,12 +479,16 @@ const POLL_INTERVAL_MS = 15000;
 const MAX_POLL_ATTEMPTS = 120;
 const TRIGGER_MAX_RETRIES = 3;
 const TRIGGER_RETRY_DELAY_MS = 3000;
+const RECOVERY_POLL_INTERVAL_MS = 4000;
+const RECOVERY_MAX_POLL_ATTEMPTS = 60; // ~4 min ceiling before giving up
 // ─────────────────────────────────────────────────────────────────────────────
 
 let sessionId  = '';
 let isWaiting  = false;
 let sessionEnded = false;
 let userInitials = 'U';
+let lastSeenResponseAt = null; // last response timestamp actually shown on screen
+let awaitingResponse = false;  // true whenever we've asked n8n something and are still expecting a reply
 
 function computeInitials(name) {
   if (!name) return 'U';
@@ -776,6 +781,8 @@ let currentPhase = '';
 let completionFollowUpSent = false;
 
 async function handlePhaseResponse(data) {
+  lastSeenResponseAt = (data && data.last_response_at) || new Date().toISOString();
+  awaitingResponse = false;
   if (data && data.phase) currentPhase = data.phase;
 
   if (data && data.phase === 'END_SESSION') {
@@ -825,32 +832,63 @@ async function sendMessage() {
   appendMessage('user', text);
   showTyping(currentPhase);
 
-  try {
-    const res = await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chatInput:  text,
-        sessionId:  sessionId,
-        session_id: sessionId
-      })
-    });
+  // Quick attempts first — covers the rare case where the message never
+  // even left the device (offline blip right at send time).
+  const QUICK_SEND_ATTEMPTS = 2;
+  const QUICK_SEND_DELAY_MS = 2000;
+  let delivered = false;
 
-    if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
+  for (let attempt = 0; attempt < QUICK_SEND_ATTEMPTS && !delivered; attempt++) {
+    awaitingResponse = true;
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chatInput:  text,
+          sessionId:  sessionId,
+          session_id: sessionId
+        })
+      });
 
-    const data = await res.json();
-    await handlePhaseResponse(data);
+      if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
 
-  } catch (err) {
-    removeTyping();
-    appendError('Could not reach the workflow. ' + err.message);
-  } finally {
-    isWaiting = false;
-    input.disabled = false;
-    document.getElementById('sendBtn').disabled = false;
-    document.getElementById('micBtn').disabled = false;
-    input.focus();
+      const data = await res.json();
+      await handlePhaseResponse(data);
+      delivered = true;
+
+    } catch (err) {
+      if (attempt < QUICK_SEND_ATTEMPTS - 1) {
+        await sleep(QUICK_SEND_DELAY_MS);
+      }
+    }
   }
+
+  if (!delivered) {
+    // The connection failing doesn't mean n8n didn't do its job — check
+    // Session State before assuming anything was lost, then wait it out
+    // patiently rather than guessing and resending.
+    const recovered = await checkForMissedResponse();
+    if (!recovered) {
+      await recoverPendingResponse();
+    }
+  }
+
+  if (awaitingResponse) {
+    // Genuinely nothing after the full recovery window — only now do we
+    // treat it as a real failure.
+    awaitingResponse = false;
+    removeTyping();
+    input.value = text;
+    autoResize(input);
+    appendError('Connection lost. Your message is back in the box — hit Send to try again.');
+  }
+
+  isWaiting = false;
+  input.disabled = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('micBtn').disabled = false;
+  input.focus();
 }
 
 function sleep(ms) {
@@ -919,8 +957,68 @@ document.addEventListener('visibilitychange', async function() {
   }
 });
 
+// ─── GENERAL RESPONSE RECOVERY (any phase, not just Content) ──────────────
+// n8n saves the last thing it said to Session State the moment it says it.
+// If our own connection died before that reply reached us (tab backgrounded,
+// network blip), this checks Session State for a response newer than the
+// last one we actually displayed, and recovers it — without ever resending
+// the message. Feeds into handlePhaseResponse() exactly like a live reply,
+// so Triggers 1/2/3 behave identically whether a response arrives live or
+// gets recovered this way.
+
+async function checkForMissedResponse() {
+  try {
+    const res = await fetch(CHECK_STATUS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId })
+    });
+    if (!res.ok) return false;
+
+    const status = await res.json(); // expects { last_response_body, last_response_at, ... }
+    if (!status || !status.last_response_body || !status.last_response_at) return false;
+
+    const isNewer = !lastSeenResponseAt || new Date(status.last_response_at) > new Date(lastSeenResponseAt);
+    if (!isNewer) return false;
+
+    let recovered;
+    try {
+      recovered = JSON.parse(status.last_response_body);
+    } catch (e) {
+      return false;
+    }
+    recovered.last_response_at = status.last_response_at;
+
+    removeTyping();
+    await handlePhaseResponse(recovered);
+    return true;
+
+  } catch (err) {
+    return false;
+  }
+}
+
+// Patiently keep checking until a missed response turns up, or we give up.
+async function recoverPendingResponse() {
+  for (let attempt = 0; attempt < RECOVERY_MAX_POLL_ATTEMPTS; attempt++) {
+    if (!awaitingResponse) return; // something else already resolved it
+    const found = await checkForMissedResponse();
+    if (found) return;
+    await sleep(RECOVERY_POLL_INTERVAL_MS);
+  }
+}
+
+// The instant the tab becomes visible again, check right away instead of
+// waiting for the next scheduled poll tick.
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible' && awaitingResponse) {
+    checkForMissedResponse();
+  }
+});
+
 async function sendFollowUpTrigger() {
   for (let attempt = 0; attempt < TRIGGER_MAX_RETRIES; attempt++) {
+    awaitingResponse = true;
     try {
       const res = await fetch(WEBHOOK_URL, {
         method: 'POST',
@@ -944,7 +1042,18 @@ async function sendFollowUpTrigger() {
     }
   }
 
-  appendError('Could not start your training session. Please send a message to try again.');
+  // Quick retries didn't land — n8n may well have already finished this
+  // trigger's turn anyway. Check Session State before giving up, then wait
+  // it out patiently rather than assuming failure.
+  const recovered = await checkForMissedResponse();
+  if (!recovered) {
+    await recoverPendingResponse();
+  }
+
+  if (awaitingResponse) {
+    awaitingResponse = false;
+    appendError('Could not start your training session. Send any message to check again.');
+  }
 }
 
 // Show native "Leave site?" dialog on tab close if session is still active
