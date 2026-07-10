@@ -72,7 +72,7 @@ nav a:hover{color:var(--white)}
   padding:0 1rem;border-radius:3px;height:32px;
   display:inline-flex;align-items:center;
 }
-.session-badge span{color:var(--green);font-weight:500}
+.session-badge span{color:var(--green);font-weight:500;margin-left:0.35em}
 
 /* CHAT LAYOUT */
 .chat-layout{
@@ -498,6 +498,7 @@ let sessionEnded = false;
 let userInitials = 'U';
 let lastSeenResponseAt = null; // last response timestamp actually shown on screen
 let awaitingResponse = false;  // true whenever we've asked n8n something and are still expecting a reply
+let stopMicIfActive = function(){}; // replaced once voice input initializes below
 
 function computeInitials(name) {
   if (!name) return 'U';
@@ -834,6 +835,7 @@ async function handlePhaseResponse(data) {
 
 async function sendMessage() {
   if (isWaiting) return;
+  stopMicIfActive();
 
   const input = document.getElementById('userInput');
   const text = input.value.trim();
@@ -1158,6 +1160,8 @@ initSession();
     micBtn.title = 'Tap to talk';
     try { recognition && recognition.stop(); } catch(e) {}
   }
+
+  stopMicIfActive = stopListening;
 
   micBtn.addEventListener('click', function(e){
     e.preventDefault();
