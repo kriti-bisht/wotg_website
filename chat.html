@@ -35,7 +35,6 @@ html::-webkit-scrollbar-track{background:transparent}
 html::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
 body{
   background:linear-gradient(160deg,#0d1825 0%,#16202e 40%,#1a2535 70%,#0f1b2a 100%);
-  background-attachment:fixed;
   color:var(--grey1);
   font-family:'Poppins',sans-serif;
   font-weight:300;
@@ -121,7 +120,7 @@ nav a:hover{color:var(--white)}
 
 .msg-user{flex-direction:row-reverse}
 
-.msg > div:last-child{display:flex;flex-direction:column;max-width:80%;flex-shrink:0}
+.msg > div:last-child{display:flex;flex-direction:column;max-width:80%;flex-shrink:0;min-width:0}
 .msg-user > div:last-child{align-items:flex-end}
 .msg:not(.msg-user) > div:last-child{align-items:flex-start}
 
@@ -139,7 +138,7 @@ nav a:hover{color:var(--white)}
   position:relative;
   max-width:100%;padding:0.85rem 1.1rem;border-radius:4px;
   font-size:0.92rem;line-height:1.65;font-weight:300;
-  overflow-wrap:break-word;word-break:break-word;
+  overflow-wrap:break-word;
 }
 .msg-bubble ul{margin:0.3rem 0 0.3rem 1.15rem;padding:0}
 .msg-bubble li{margin-bottom:0.2rem}
@@ -785,11 +784,11 @@ function formatResponse(text) {
 function extractResponseText(data) {
   if (typeof data === 'string') return data;
   // Common n8n response shapes
-  if (data.output) return data.output;
-  if (data.text) return data.text;
-  if (data.message) return data.message;
-  if (data.response) return data.response;
-  if (data.chatInput) return data.chatInput;
+  if (typeof data.output === 'string') return data.output;
+  if (typeof data.text === 'string') return data.text;
+  if (typeof data.message === 'string') return data.message;
+  if (typeof data.response === 'string') return data.response;
+  if (typeof data.chatInput === 'string') return data.chatInput;
   if (Array.isArray(data) && data.length > 0) return extractResponseText(data[0]);
   // Fallback: stringify
   return JSON.stringify(data, null, 2);
@@ -799,6 +798,8 @@ let currentPhase = '';
 let completionFollowUpSent = false;
 
 async function handlePhaseResponse(data) {
+  if (!awaitingResponse) return; // already handled via another path (e.g. recovery) — ignore stale duplicate
+
   lastSeenResponseAt = (data && data.last_response_at) || new Date().toISOString();
   awaitingResponse = false;
   if (data && data.phase) currentPhase = data.phase;
@@ -831,6 +832,13 @@ async function handlePhaseResponse(data) {
     removeTyping();
     appendMessage('ai', extractResponseText(data));
   }
+
+  isWaiting = false;
+  const input = document.getElementById('userInput');
+  input.disabled = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('micBtn').disabled = false;
+  input.focus();
 }
 
 async function sendMessage() {
@@ -877,7 +885,14 @@ async function sendMessage() {
       delivered = true;
 
     } catch (err) {
-      if (attempt < QUICK_SEND_ATTEMPTS - 1) {
+      // Before resending, check whether this attempt actually landed and we
+      // just lost the response (e.g. tab backgrounded mid-request) — resending
+      // in that case would trigger a second, genuinely new backend execution
+      // of the same message instead of just recovering the first one.
+      const recovered = await checkForMissedResponse();
+      if (recovered) {
+        delivered = true;
+      } else if (attempt < QUICK_SEND_ATTEMPTS - 1) {
         await sleep(QUICK_SEND_DELAY_MS);
       }
     }
