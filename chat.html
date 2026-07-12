@@ -120,7 +120,7 @@ nav a:hover{color:var(--white)}
 
 .msg-user{flex-direction:row-reverse}
 
-.msg > div:last-child{display:flex;flex-direction:column;max-width:80%;flex-shrink:0;min-width:0}
+.msg > div:last-child{display:flex;flex-direction:column;max-width:80%;flex-shrink:0}
 .msg-user > div:last-child{align-items:flex-end}
 .msg:not(.msg-user) > div:last-child{align-items:flex-start}
 
@@ -863,6 +863,8 @@ async function sendMessage() {
   // even left the device (offline blip right at send time).
   const QUICK_SEND_ATTEMPTS = 2;
   const QUICK_SEND_DELAY_MS = 2000;
+  const RECEIPT_CHECK_ATTEMPTS = 3;
+  const sendAttemptStartedAt = new Date().toISOString();
   let delivered = false;
 
   for (let attempt = 0; attempt < QUICK_SEND_ATTEMPTS && !delivered; attempt++) {
@@ -885,12 +887,26 @@ async function sendMessage() {
       delivered = true;
 
     } catch (err) {
-      // Before resending, check whether this attempt actually landed and we
-      // just lost the response (e.g. tab backgrounded mid-request) — resending
-      // in that case would trigger a second, genuinely new backend execution
-      // of the same message instead of just recovering the first one.
-      const recovered = await checkForMissedResponse();
+      // Maybe the reply already arrived even though this fetch didn't see it.
+      let recovered = await checkForMissedResponse();
       if (recovered) {
+        delivered = true;
+        continue;
+      }
+
+      // No reply yet doesn't mean n8n never got the message — it may still
+      // be processing. Confirm actual receipt (not just absence of a reply)
+      // before ever resending, so we never submit the same message twice.
+      let confirmedReceived = false;
+      for (let i = 0; i < RECEIPT_CHECK_ATTEMPTS && !confirmedReceived; i++) {
+        confirmedReceived = await checkReceiptConfirmed(sendAttemptStartedAt);
+        if (!confirmedReceived) await sleep(QUICK_SEND_DELAY_MS);
+      }
+
+      if (confirmedReceived) {
+        // n8n has it — stop trying to resend, just wait patiently for the reply.
+        recovered = await checkForMissedResponse();
+        if (!recovered) await recoverPendingResponse();
         delivered = true;
       } else if (attempt < QUICK_SEND_ATTEMPTS - 1) {
         await sleep(QUICK_SEND_DELAY_MS);
@@ -1027,6 +1043,33 @@ async function checkForMissedResponse() {
     await handlePhaseResponse(recovered);
     return true;
 
+  } catch (err) {
+    return false;
+  }
+}
+
+// ─── SEND RECEIPT CONFIRMATION ─────────────────────────────────────────────
+// Separate from checkForMissedResponse (which asks "is there a reply I
+// haven't seen") — this asks "did n8n actually receive the message I just
+// tried to send." n8n logs last_received_input/last_received_at the instant
+// its webhook fires, before any phase processing, so this resolves almost
+// immediately regardless of how long the actual reply takes to generate.
+// Comparing against sinceTimestamp (recorded before this send attempt began)
+// avoids mistaking a stale receipt from an earlier turn (e.g. a repeated
+// "yes"/"ok") for confirmation of the current one.
+async function checkReceiptConfirmed(sinceTimestamp) {
+  try {
+    const res = await fetch(CHECK_STATUS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId })
+    });
+    if (!res.ok) return false;
+
+    const status = await res.json(); // expects { last_received_input, last_received_at, ... }
+    if (!status || !status.last_received_at) return false;
+
+    return new Date(status.last_received_at) >= new Date(sinceTimestamp);
   } catch (err) {
     return false;
   }
@@ -1173,6 +1216,11 @@ initSession();
     listening = false;
     micBtn.classList.remove('listening');
     micBtn.title = 'Tap to talk';
+    // Stop the recognizer from writing into the input box the moment we
+    // decide to stop — a final result can still arrive asynchronously after
+    // .stop() is called, and without this it overwrites the box (which may
+    // have already been cleared by a send) with a leftover ghost transcript.
+    if (recognition) recognition.onresult = null;
     try { recognition && recognition.stop(); } catch(e) {}
   }
 
@@ -1192,7 +1240,12 @@ if (window.visualViewport) {
   syncViewportHeight();
   window.visualViewport.addEventListener('resize', function() {
     syncViewportHeight();
-    if (isNearBottom()) window.scrollTo(0, document.documentElement.scrollHeight);
+    // Wait for layout to actually settle at the new (keyboard-adjusted) size
+    // before measuring scrollHeight — scrolling against the stale, pre-resize
+    // height overshoots past real content into iOS's blank rubber-band area.
+    requestAnimationFrame(function() {
+      if (isNearBottom()) window.scrollTo(0, document.documentElement.scrollHeight);
+    });
   });
 }
 
