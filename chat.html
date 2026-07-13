@@ -204,6 +204,11 @@ nav a:hover{color:var(--white)}
   border-top:1px solid var(--border);
   background:var(--night);
 }
+/* Once the on-screen keyboard is open it already covers the home-indicator
+   area, so the safe-area reservation is no longer needed — iOS doesn't
+   always shrink env(safe-area-inset-bottom) back to 0 in that state, which
+   otherwise leaves a stale gap of reserved padding under the input bar. */
+body.keyboard-open .input-area{padding-bottom:1.5rem}
 /* full-width solid backing so the bottom strip (and avatar feet cover) spans edge-to-edge */
 .input-area::before{
   content:'';
@@ -1263,6 +1268,11 @@ initSession();
 if (window.visualViewport) {
   function syncViewportHeight() {
     document.documentElement.style.setProperty('--vvh', window.visualViewport.height + 'px');
+    // A shrink of 150px+ from the layout viewport reliably means the on-screen
+    // keyboard is open (real keyboards are 250-350px tall; toolbar/URL-bar
+    // changes are much smaller) — used to drop the now-stale safe-area padding.
+    const keyboardOpen = (window.innerHeight - window.visualViewport.height) > 150;
+    document.body.classList.toggle('keyboard-open', keyboardOpen);
   }
   syncViewportHeight();
   window.visualViewport.addEventListener('resize', function() {
