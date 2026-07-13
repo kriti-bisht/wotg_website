@@ -236,12 +236,12 @@ textarea.feedback-textarea:focus { border-color: rgba(58,181,74,0.5); }
           </div>
 
           <div class="question">
-            <label class="question-label"><span class="q-num">5.</span>Overall, how would you rate your Learning Atom experience?</label>
+            <label class="question-label"><span class="q-num">5.</span>To begin, WOTG asked you a few questions to identify the right human skill for your situation and build a personalized Learning Atom. These questions felt:</label>
             <div class="options">
-              <label class="option"><input type="radio" name="overall_rating" value="Excellent" required> Excellent</label>
-              <label class="option"><input type="radio" name="overall_rating" value="Good"> Good</label>
-              <label class="option"><input type="radio" name="overall_rating" value="Fair"> Fair</label>
-              <label class="option"><input type="radio" name="overall_rating" value="Poor"> Poor</label>
+              <label class="option"><input type="radio" name="question_volume" value="Worth it—the personalization made them worthwhile" required> Worth it—the personalization made them worthwhile</label>
+              <label class="option"><input type="radio" name="question_volume" value="Slightly too many"> Slightly too many</label>
+              <label class="option"><input type="radio" name="question_volume" value="Far too many"> Far too many</label>
+              <label class="option"><input type="radio" name="question_volume" value="Too few—I wanted WOTG to understand my situation better"> Too few—I wanted WOTG to understand my situation better</label>
             </div>
           </div>
 
@@ -324,7 +324,7 @@ textarea.feedback-textarea:focus { border-color: rgba(58,181,74,0.5); }
         personalization:    data.get('personalization'),
         new_thinking:       data.get('new_thinking'),
         felt_misunderstood: data.get('felt_misunderstood'),
-        overall_rating:     data.get('overall_rating'),
+        question_volume:    data.get('question_volume'),
         confidence:         data.get('confidence'),
         trust:               data.get('trust'),
         liked_most:          data.get('liked_most') || '',
