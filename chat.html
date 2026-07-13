@@ -1265,14 +1265,32 @@ initSession();
 })();
 
 // Keep the newest message visible when the on-screen keyboard opens/closes
-if (window.visualViewport) {
+if (window.visualViewport && navigator.maxTouchPoints > 0) {
+  // window.innerHeight isn't a reliable "keyboard closed" baseline on every
+  // device — measured on-device, it shrinks right along with
+  // visualViewport.height instead of staying fixed. Track the largest height
+  // we've actually observed instead, and compare against that. Scoped to
+  // touch devices only — a desktop window resize shouldn't be mistaken for a
+  // keyboard opening.
+  let maxObservedHeight = window.visualViewport.height;
+
   function syncViewportHeight() {
-    document.documentElement.style.setProperty('--vvh', window.visualViewport.height + 'px');
-    // A shrink of 150px+ from the layout viewport reliably means the on-screen
-    // keyboard is open (real keyboards are 250-350px tall; toolbar/URL-bar
-    // changes are much smaller) — used to drop the now-stale safe-area padding.
-    const keyboardOpen = (window.innerHeight - window.visualViewport.height) > 150;
+    const vv = window.visualViewport;
+    document.documentElement.style.setProperty('--vvh', vv.height + 'px');
+    if (vv.height > maxObservedHeight) maxObservedHeight = vv.height;
+
+    const keyboardOpen = (maxObservedHeight - vv.height) > 150;
     document.body.classList.toggle('keyboard-open', keyboardOpen);
+
+    // Measured on-device: when the keyboard is open, visualViewport.offsetTop
+    // shifts the visible window down into the page (observed: 337px) to keep
+    // the focused input above the keyboard — but our content is still
+    // painted from the top of the page. Without shifting to match, the gap
+    // between where our content ends and where the visible window actually
+    // is shows up as empty space. Shifting body down by that same offset
+    // keeps our content aligned with whatever the browser is actually
+    // showing.
+    document.body.style.transform = vv.offsetTop ? `translateY(${vv.offsetTop}px)` : '';
   }
   syncViewportHeight();
   window.visualViewport.addEventListener('resize', function() {
