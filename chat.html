@@ -1260,11 +1260,13 @@ if (window.visualViewport) {
   }
   syncViewportHeight();
   window.visualViewport.addEventListener('resize', function() {
+    // Capture bottom-ness BEFORE the container shrinks — shrinking is what
+    // pushes scrollTop away from the new bottom, so checking after would
+    // punish the user for a resize they didn't cause, and skip re-snapping
+    // exactly when it's needed most.
+    const wasNearBottom = isNearBottom();
     syncViewportHeight();
-    // .messages-area has a genuine CSS height governed by flex + --vvh, so
-    // its own scrollHeight is never stale the way the whole document's was —
-    // no need to guess how long to wait before it's safe to measure.
-    if (isNearBottom()) scrollMessagesToBottom();
+    if (wasNearBottom) scrollMessagesToBottom();
   });
 }
 
