@@ -54,7 +54,7 @@ a { text-decoration:none; color:inherit; }
   transform:translateX(0); transition:transform 0.25s; box-shadow:4px 0 24px rgba(0,0,0,0.18);
 }
 .admin-sidebar.collapsed { transform:translateX(-100%); }
-.admin-logo { padding:1.1rem 1rem 0.9rem; }
+.admin-logo { padding:1.1rem 1rem 0.9rem; display:block; text-decoration:none; cursor:pointer; }
 .admin-logo .logo { font-size:1.15rem; }
 .admin-logo .w { font-weight:700; color:#fff; }
 .admin-logo .mid { font-weight:400; color:#fff; }
@@ -395,10 +395,10 @@ header.topbar { background:var(--night); }
 
 <div class="admin-shell">
   <nav class="admin-sidebar" id="adminSidebar">
-    <div class="admin-logo">
+    <a class="admin-logo" href="index.html">
       <div class="logo"><span class="w">W</span><span class="mid">isdom on the </span><span class="go">GO!</span></div>
       <div class="sanskrit">Tat Tvam Asi</div>
-    </div>
+    </a>
     <div class="admin-nav">
       <a href="admin_intro.html" class="admin-nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
