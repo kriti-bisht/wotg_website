@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wisdom on the Go — User Management</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:   #041A40;
+  --night2:  #2A3C5D;
+  --night3:  #4F5F79;
+  --grey1:   #f0f2f5;
+  --grey2:   #b8c0cc;
+  --grey3:   #6b7685;
+  --white:   #ffffff;
+  --green:   #3ab54a;
+  --green2:  #2d9640;
+  --gold:    #E4CA0A;
+  --gold2:   #AB9808;
+  --amber:   #e8960a;
+  --amber2:  #c17d00;
+  --red:     #e0303a;
+  --teal:    #14B8A6;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Poppins',sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(4,26,64,0.06), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(228,202,10,0.05), transparent 40%),
+    #fbfbfd;
+  min-height:100vh;
+  color:var(--night);
+}
+a { text-decoration:none; color:inherit; }
+
+/* ---- Layout ---- */
+.admin-shell { min-height:100vh; }
+
+/* ---- Sidebar ---- */
+.admin-sidebar {
+  position:fixed; top:0; left:0; width:216px; height:100vh; z-index:100;
+  background:var(--night); color:#fff; display:flex; flex-direction:column;
+  transform:translateX(0); transition:transform 0.25s; box-shadow:4px 0 24px rgba(0,0,0,0.18);
+}
+.admin-sidebar.collapsed { transform:translateX(-100%); }
+.admin-logo { padding:1.1rem 1rem 0.9rem; }
+.admin-logo .logo { font-size:1.15rem; }
+.admin-logo .w { font-weight:700; color:#fff; }
+.admin-logo .mid { font-weight:400; color:#fff; }
+.admin-logo .go { font-weight:700; color:var(--green); }
+.admin-logo .sanskrit { font-size:0.6rem; font-weight:300; letter-spacing:0.16em; color:#fff; opacity:0.75; margin-top:-0.1rem; }
+.admin-nav { flex:1; padding:0.6rem 0; overflow-y:auto; }
+.admin-nav-item {
+  display:flex; align-items:center; gap:0.65rem; width:100%; padding:0.7rem 1rem;
+  color:var(--grey1); font-size:0.82rem; border-left:3px solid transparent; cursor:pointer;
+  white-space:nowrap; transition:background 0.15s, border-color 0.15s;
+}
+.admin-nav-item svg { width:17px; height:17px; flex-shrink:0; }
+.admin-nav-item:hover { background:rgba(255,255,255,0.06); border-left-color:var(--green); }
+.admin-nav-item.active { background:rgba(255,255,255,0.08); border-left-color:var(--green); color:#fff; font-weight:600; }
+.admin-nav-divider { height:1px; background:rgba(255,255,255,0.1); margin:0.6rem 1rem; }
+.admin-nav-footer { padding:0.6rem 0 1rem; }
+
+/* ---- Header ---- */
+.admin-main { min-width:0; margin-left:216px; transition:margin-left 0.25s; }
+.admin-main.expanded { margin-left:0; }
+header.topbar { background:var(--night); }
+.header-inner { display:flex; align-items:center; padding:0.9rem 2rem; gap:1rem; }
+.burger-btn {
+  width:36px; height:36px; border-radius:8px; background:none; border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff;
+}
+.burger-btn:hover { background:rgba(255,255,255,0.16); }
+.burger-btn svg { width:20px; height:20px; }
+.admin-greeting .hello { font-weight:600; font-size:1.15rem; color:#fff; }
+.admin-greeting .hello .name { color:var(--gold); }
+.admin-greeting .sub { color:var(--grey2); font-size:0.88rem; }
+.header-spacer { flex:1; }
+.admin-profile { display:flex; align-items:center; gap:0.7rem; cursor:default; }
+.admin-profile img { width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.3); }
+.admin-profile-text .name { color:#fff; font-weight:600; font-size:0.92rem; }
+.admin-profile-text .title { color:var(--grey2); font-size:0.76rem; }
+
+/* ---- Content ---- */
+.admin-content { max-width:1500px; margin:0 auto; padding:1.6rem 2rem 3rem; }
+
+/* ---- Page header ---- */
+.um-page-head { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+.um-title { font-size:1.5rem; font-weight:700; color:var(--night); }
+.btn-primary-add {
+  font-family:'Poppins',sans-serif; font-size:0.86rem; font-weight:600; color:#fff; background:var(--green);
+  border:none; border-radius:22px; padding:0.65rem 1.4rem; cursor:pointer; flex-shrink:0;
+  transition:background 0.15s, transform 0.15s; box-shadow:0 6px 16px rgba(58,181,74,0.3);
+}
+.btn-primary-add:hover { background:var(--green2); transform:translateY(-2px); }
+
+/* ---- Summary stat cards ---- */
+.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.1rem; margin-bottom:1.4rem; }
+.stat-card {
+  background:var(--white); border-radius:12px; padding:1.15rem 1.3rem; display:flex; align-items:center; gap:0.9rem;
+  box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05);
+  transition:transform 0.2s ease, box-shadow 0.2s ease; min-width:0;
+}
+.stat-card:hover { transform:translateY(-5px); box-shadow:0 16px 30px rgba(4,26,64,0.16); }
+.stat-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+.stat-icon svg { width:22px; height:22px; }
+.stat-icon.teal { background:var(--teal); }
+.stat-icon.green { background:var(--green); }
+.stat-icon.gold { background:var(--gold); }
+.stat-icon.navy { background:var(--night2); }
+.stat-body { min-width:0; }
+.stat-num { font-size:1.5rem; font-weight:700; color:var(--night); line-height:1.1; white-space:nowrap; }
+.stat-label { font-size:0.78rem; color:var(--grey3); margin-top:0.15rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* ---- Control bar ---- */
+.filter-bar {
+  display:flex; align-items:center; gap:0.8rem; background:var(--white); border-radius:12px;
+  padding:0.9rem 1.2rem; margin-bottom:1.4rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); flex-wrap:wrap;
+}
+.um-search-wrap { position:relative; flex:1 1 260px; min-width:220px; }
+.um-search-icon { position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--grey3); pointer-events:none; }
+.um-search {
+  width:100%; font-family:'Poppins',sans-serif; font-size:0.85rem; color:var(--night);
+  background:var(--grey1); border:1px solid rgba(4,26,64,0.1); border-radius:20px; padding:0.55rem 1rem 0.55rem 2.3rem;
+}
+.um-search:focus { outline:2px solid var(--green); }
+.filter-select-wrap { position:relative; }
+.filter-select {
+  appearance:none; -webkit-appearance:none; font-family:'Poppins',sans-serif;
+  background:var(--grey1); border:1px solid rgba(4,26,64,0.1); border-radius:20px;
+  padding:0.5rem 2.1rem 0.5rem 1rem; font-size:0.85rem; color:var(--night); cursor:pointer;
+  min-width:150px;
+}
+.filter-select:focus { outline:2px solid var(--green); }
+.filter-select-wrap::after {
+  content:''; position:absolute; right:0.9rem; top:50%; width:8px; height:8px;
+  border-right:2px solid var(--grey3); border-bottom:2px solid var(--grey3);
+  transform:translateY(-65%) rotate(45deg); pointer-events:none;
+}
+.filter-go {
+  font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600; color:#fff; background:var(--green);
+  border:none; border-radius:20px; padding:0.5rem 1.3rem; cursor:pointer; transition:background 0.15s; flex-shrink:0;
+}
+.filter-go:hover { background:var(--green2); }
+.um-bar-actions { display:flex; gap:0.6rem; margin-left:auto; flex-shrink:0; }
+.btn-outline {
+  font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600; color:var(--night2); background:var(--white);
+  border:1.5px solid rgba(4,26,64,0.14); border-radius:20px; padding:0.5rem 1.05rem; cursor:pointer;
+  display:flex; align-items:center; gap:0.4rem; white-space:nowrap; transition:border-color 0.15s, color 0.15s;
+}
+.btn-outline svg { width:14px; height:14px; }
+.btn-outline:hover { border-color:var(--night2); color:var(--night); }
+
+/* ---- User table ---- */
+.um-table-card { background:var(--white); border-radius:14px; box-shadow:0 6px 20px rgba(4,26,64,0.08); overflow:hidden; }
+.um-table-scroll { overflow-x:auto; }
+.um-table { width:100%; border-collapse:collapse; min-width:920px; }
+.um-table th {
+  text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--grey3);
+  font-weight:600; padding:0.95rem 1.3rem; border-bottom:1px solid rgba(4,26,64,0.08); white-space:nowrap;
+}
+.um-table td { padding:0.85rem 1.3rem; font-size:0.85rem; color:var(--night2); border-bottom:1px solid rgba(4,26,64,0.06); vertical-align:middle; white-space:nowrap; }
+.um-table tbody tr:hover { background:var(--grey1); }
+.um-table tbody tr:last-child td { border-bottom:none; }
+.um-user-cell { display:flex; align-items:center; gap:0.7rem; }
+.avatar { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.74rem; flex-shrink:0; }
+.um-user-name { font-weight:600; color:var(--night); font-size:0.85rem; }
+.um-user-email { font-size:0.74rem; color:var(--grey3); }
+.badge { display:inline-flex; align-items:center; gap:0.35rem; font-size:0.68rem; font-weight:700; padding:0.24rem 0.68rem; border-radius:12px; white-space:nowrap; }
+.badge-employee { background:var(--grey1); color:var(--night2); }
+.badge-manager { background:rgba(58,181,74,0.12); color:var(--green2); }
+.badge-srmanager { background:rgba(4,26,64,0.10); color:var(--night); }
+.badge-ldadmin { background:rgba(228,202,10,0.18); color:var(--gold2); }
+.badge-active { background:rgba(58,181,74,0.12); color:var(--green2); }
+.badge-inactive { background:rgba(224,48,58,0.1); color:var(--red); }
+.badge-dot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.um-action-btn {
+  width:30px; height:30px; border-radius:8px; border:none; background:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; color:var(--grey3); transition:background 0.15s, color 0.15s;
+}
+.um-action-btn svg { width:16px; height:16px; }
+.um-action-btn:hover { background:var(--grey1); color:var(--night); }
+.um-pagination { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.3rem; flex-wrap:wrap; gap:0.7rem; }
+.um-pag-info { font-size:0.8rem; color:var(--grey3); }
+.um-pag-controls { display:flex; gap:0.5rem; }
+.pag-btn {
+  font-family:'Poppins',sans-serif; font-size:0.8rem; font-weight:600; color:var(--night2); background:var(--grey1);
+  border:none; border-radius:16px; padding:0.4rem 0.95rem; cursor:pointer; transition:background 0.15s, color 0.15s;
+}
+.pag-btn:hover { background:var(--grey2); color:var(--night); }
+.pag-btn:disabled { opacity:0.45; cursor:default; }
+.pag-btn:disabled:hover { background:var(--grey1); color:var(--night2); }
+</style>
+</head>
+<body>
+
+<div class="admin-shell">
+  <nav class="admin-sidebar" id="adminSidebar">
+    <div class="admin-logo">
+      <div class="logo"><span class="w">W</span><span class="mid">isdom on the </span><span class="go">GO!</span></div>
+      <div class="sanskrit">Tat Tvam Asi</div>
+    </div>
+    <div class="admin-nav">
+      <a href="admin_intro.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Adoption Overview
+      </a>
+      <a href="user_management.html" class="admin-nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        User Management
+      </a>
+      <a href="learning_management.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+        Learning Management
+      </a>
+      <a href="reports_insights.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12.5" y="8" width="3" height="10"/><rect x="18" y="5" width="3" height="13"/></svg>
+        Reports &amp; Insights
+      </a>
+      <a href="business_impact_2.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m6 15 4-5 3.5 3L20 6"/><path d="M15 6h5v5"/></svg>
+        Business Impact
+      </a>
+      <div class="admin-nav-divider"></div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg>
+        Help &amp; information
+      </div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        Settings
+      </div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log out
+      </div>
+    </div>
+  </nav>
+
+  <div class="admin-main">
+    <header class="topbar">
+      <div class="header-inner">
+        <button class="burger-btn" onclick="toggleSidePanel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9.5 4v16"/><rect x="4.3" y="5.3" width="4.2" height="13.4" rx="1.1" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <div class="admin-greeting">
+          <div class="hello">Hello <span class="name">Patty</span>!</div>
+          <div class="sub">Manage users, roles and account status across the organization</div>
+        </div>
+        <div class="header-spacer"></div>
+        <div class="admin-profile">
+          <div class="admin-profile-text" style="text-align:right">
+            <div class="name">Patty Merchant</div>
+            <div class="title">Global Head: Learning &amp; Talent Development</div>
+          </div>
+          <img src="assets/patty_headshot.jpg" alt="Patty Merchant">
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <div class="um-page-head">
+        <div>
+          <h1 class="um-title">User Management</h1>
+        </div>
+        <button class="btn-primary-add">+ Add User</button>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="stat-body">
+            <div class="stat-num">158,248</div>
+            <div class="stat-label">Total Users</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <div class="stat-body">
+            <div class="stat-num">113,086</div>
+            <div class="stat-label">Active Users</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M2 21c0-4 3-7 7-7"/><path d="m14 15 2 2 4-4"/></svg>
+          </div>
+          <div class="stat-body">
+            <div class="stat-num">1,942</div>
+            <div class="stat-label">Managers</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon navy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 10-10-5L2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>
+          </div>
+          <div class="stat-body">
+            <div class="stat-num">12</div>
+            <div class="stat-label">L&amp;D Administrators</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="um-search-wrap">
+          <svg class="um-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="um-search" placeholder="Search by name, email or employee ID">
+        </div>
+        <div class="filter-select-wrap">
+          <select class="filter-select">
+            <option>All Departments</option>
+            <option>Sales</option>
+            <option>Engineering</option>
+            <option>Marketing</option>
+            <option>Operations</option>
+            <option>HR</option>
+          </select>
+        </div>
+        <div class="filter-select-wrap">
+          <select class="filter-select">
+            <option>All Roles</option>
+            <option>Associate</option>
+            <option>Sales Rep</option>
+            <option>Manager</option>
+            <option>Sr. Manager</option>
+            <option>L&amp;D Admin</option>
+          </select>
+        </div>
+        <div class="filter-select-wrap">
+          <select class="filter-select">
+            <option>All Status</option>
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+        <button class="filter-go">Go</button>
+        <div class="um-bar-actions">
+          <button class="btn-outline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M4 3h16"/></svg>
+            Import CSV
+          </button>
+          <button class="btn-outline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg>
+            Export
+          </button>
+        </div>
+      </div>
+
+      <div class="um-table-card">
+        <div class="um-table-scroll">
+        <table class="um-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Employee ID</th>
+              <th>Department</th>
+              <th>Grade</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Last Active</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="um-user-cell"><div class="avatar" style="background:rgba(20,184,166,.15);color:#0d8f81;">AK</div><div><div class="um-user-name">Aisha Khan</div><div class="um-user-email">aisha.khan@wisdomonthego.com</div></div></div></td>
+              <td>WOG-10234</td>
+              <td>Engineering</td>
+              <td>L2</td>
+              <td><span class="badge badge-employee">Associate</span></td>
+              <td><span class="badge badge-active"><span class="badge-dot"></span>Active</span></td>
+              <td>2 hours ago</td>
+              <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><div class="um-user-cell"><div class="avatar" style="background:rgba(58,181,74,.15);color:#2d9640;">RP</div><div><div class="um-user-name">Raj Patel</div><div class="um-user-email">raj.patel@wisdomonthego.com</div></div></div></td>
+              <td>WOG-10091</td>
+              <td>Engineering</td>
+              <td>L4</td>
+              <td><span class="badge badge-manager">Manager</span></td>
+              <td><span class="badge badge-active"><span class="badge-dot"></span>Active</span></td>
+              <td>45 minutes ago</td>
+              <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><div class="um-user-cell"><div class="avatar" style="background:rgba(228,202,10,.22);color:#AB9808;">MI</div><div><div class="um-user-name">Meera Iyer</div><div class="um-user-email">meera.iyer@wisdomonthego.com</div></div></div></td>
+              <td>WOG-10456</td>
+              <td>Sales</td>
+              <td>L1</td>
+              <td><span class="badge badge-employee">Sales Rep</span></td>
+              <td><span class="badge badge-active"><span class="badge-dot"></span>Active</span></td>
+              <td>1 day ago</td>
+              <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><div class="um-user-cell"><div class="avatar" style="background:rgba(42,60,93,.14);color:#2A3C5D;">DC</div><div><div class="um-user-name">David Chen</div><div class="um-user-email">david.chen@wisdomonthego.com</div></div></div></td>
+              <td>WOG-10022</td>
+              <td>Sales</td>
+              <td>L5</td>
+              <td><span class="badge badge-srmanager">Sr. Manager</span></td>
+              <td><span class="badge badge-active"><span class="badge-dot"></span>Active</span></td>
+              <td>3 hours ago</td>
+              <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><div class="um-user-cell"><div class="avatar" style="background:rgba(232,150,10,.15);color:#c17d00;">PS</div><div><div class="um-user-name">Priya Sharma</div><div class="um-user-email">priya.sharma@wisdomonthego.com</div></div></div></td>
+              <td>WOG-10789</td>
+              <td>Marketing</td>
+              <td>L2</td>
+              <td><span class="badge badge-employee">Associate</span></td>
+              <td><span class="badge badge-inactive"><span class="badge-dot"></span>Inactive</span></td>
+              <td>2 months ago</td>
+              <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><div class="um-user-cell"><div class="avatar" style="background:rgba(20,184,166,.15);color:#0d8f81;">NF</div><div><div class="um-user-name">Nora Fields</div><div class="um-user-email">nora.fields@wisdomonthego.com</div></div></div></td>
+              <td>WOG-10015</td>
+              <td>Marketing</td>
+              <td>L5</td>
+              <td><span class="badge badge-ldadmin">L&amp;D Admin</span></td>
+              <td><span class="badge badge-active"><span class="badge-dot"></span>Active</span></td>
+              <td>10 minutes ago</td>
+              <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><div class="um-user-cell"><div class="avatar" style="background:rgba(58,181,74,.15);color:#2d9640;">TW</div><div><div class="um-user-name">Tom Walsh</div><div class="um-user-email">tom.walsh@wisdomonthego.com</div></div></div></td>
+              <td>WOG-10612</td>
+              <td>Operations</td>
+              <td>L3</td>
+              <td><span class="badge badge-employee">Associate</span></td>
+              <td><span class="badge badge-active"><span class="badge-dot"></span>Active</span></td>
+              <td>5 hours ago</td>
+              <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><div class="um-user-cell"><div class="avatar" style="background:rgba(228,202,10,.22);color:#AB9808;">SM</div><div><div class="um-user-name">Sara Malik</div><div class="um-user-email">sara.malik@wisdomonthego.com</div></div></div></td>
+              <td>WOG-10058</td>
+              <td>Operations</td>
+              <td>L4</td>
+              <td><span class="badge badge-manager">Manager</span></td>
+              <td><span class="badge badge-active"><span class="badge-dot"></span>Active</span></td>
+              <td>1 day ago</td>
+              <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><div class="um-user-cell"><div class="avatar" style="background:rgba(42,60,93,.14);color:#2A3C5D;">BO</div><div><div class="um-user-name">Ben Okafor</div><div class="um-user-email">ben.okafor@wisdomonthego.com</div></div></div></td>
+              <td>WOG-10933</td>
+              <td>HR</td>
+              <td>L1</td>
+              <td><span class="badge badge-employee">Associate</span></td>
+              <td><span class="badge badge-inactive"><span class="badge-dot"></span>Inactive</span></td>
+              <td>3 weeks ago</td>
+              <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><div class="um-user-cell"><div class="avatar" style="background:rgba(232,150,10,.15);color:#c17d00;">LF</div><div><div class="um-user-name">Lena Fischer</div><div class="um-user-email">lena.fischer@wisdomonthego.com</div></div></div></td>
+              <td>WOG-10077</td>
+              <td>HR</td>
+              <td>L4</td>
+              <td><span class="badge badge-ldadmin">L&amp;D Admin</span></td>
+              <td><span class="badge badge-active"><span class="badge-dot"></span>Active</span></td>
+              <td>30 minutes ago</td>
+              <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="um-pagination">
+          <span class="um-pag-info">Showing 1&ndash;10 of 113,086 users</span>
+          <div class="um-pag-controls">
+            <button class="pag-btn" disabled>&lsaquo; Prev</button>
+            <button class="pag-btn">Next &rsaquo;</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleSidePanel() {
+  document.getElementById('adminSidebar').classList.toggle('collapsed');
+  document.querySelector('.admin-main').classList.toggle('expanded');
+}
+</script>
+</body>
+</html>

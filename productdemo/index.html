@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wisdom on the GO! — Product Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:  #041A40;
+  --night2: #2A3C5D;
+  --grey2:  #b8c0cc;
+  --grey3:  #6b7685;
+  --green:  #3ab54a;
+  --green2: #2d9640;
+  --gold:   #E4CA0A;
+  --teal:   #14B8A6;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Poppins',sans-serif;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(20,184,166,0.16), transparent 42%),
+    radial-gradient(circle at 85% 20%, rgba(228,202,10,0.12), transparent 40%),
+    radial-gradient(circle at 50% 100%, rgba(58,181,74,0.14), transparent 50%),
+    var(--night);
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:2.5rem 1.5rem;
+  overflow-x:hidden;
+}
+
+.logo-wrap { position:fixed; top:1.3rem; left:1.4rem; text-align:left; z-index:5; }
+.logo { font-size:1.35rem; letter-spacing:0.01em; }
+.logo .w { font-weight:700; color:#fff; }
+.logo .mid { font-weight:400; color:#fff; }
+.logo .go { font-weight:700; color:var(--green); }
+.sanskrit { font-size:0.6rem; font-weight:300; letter-spacing:0.16em; color:var(--grey2); margin-top:-0.1rem; text-transform:uppercase; }
+
+.hero-head { text-align:center; max-width:640px; margin:2.6rem 0 2.4rem; }
+.hero-title { font-size:2.3rem; font-weight:700; line-height:1.2; }
+.hero-title .accent { color:var(--gold); }
+.hero-sub { font-size:1rem; color:var(--grey2); margin-top:0.9rem; line-height:1.6; }
+
+.demo-tabs {
+  display:flex; gap:0.35rem; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+  border-radius:999px; padding:0.35rem; position:relative;
+}
+.demo-tab {
+  position:relative; z-index:1; font-family:'Poppins',sans-serif; font-size:0.92rem; font-weight:600;
+  color:var(--grey2); background:none; border:none; border-radius:999px; padding:0.75rem 2rem; cursor:pointer;
+  transition:color 0.2s;
+}
+.demo-tab.active { color:var(--night); }
+.demo-tab-thumb {
+  position:absolute; top:0.35rem; bottom:0.35rem; left:0.35rem; border-radius:999px;
+  background:linear-gradient(120deg, var(--teal), var(--green)); transition:left 0.3s ease, width 0.3s ease; z-index:0;
+}
+
+.demo-card {
+  margin-top:2.4rem; width:100%; max-width:560px; background:rgba(255,255,255,0.045);
+  border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:2.4rem 2.4rem 2.2rem;
+  backdrop-filter:blur(6px); text-align:center; transition:opacity 0.25s ease;
+}
+.demo-icon {
+  width:58px; height:58px; border-radius:16px; margin:0 auto 1.3rem; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 22px rgba(0,0,0,0.35);
+}
+.demo-icon svg { width:28px; height:28px; }
+.demo-card-title { font-size:1.35rem; font-weight:700; }
+.demo-card-desc { font-size:0.9rem; color:var(--grey2); line-height:1.65; margin-top:0.7rem; max-width:420px; margin-left:auto; margin-right:auto; }
+.demo-features { display:flex; flex-wrap:wrap; justify-content:center; gap:0.5rem; margin-top:1.4rem; }
+.demo-feature { font-size:0.72rem; font-weight:600; color:var(--grey2); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:999px; padding:0.35rem 0.85rem; }
+
+.launch-btn {
+  display:inline-flex; align-items:center; gap:0.55rem; margin-top:1.8rem; text-decoration:none;
+  font-family:'Poppins',sans-serif; font-size:0.94rem; font-weight:700; color:var(--night);
+  background:var(--gold); border-radius:999px; padding:0.85rem 1.9rem; transition:transform 0.15s, box-shadow 0.15s;
+  box-shadow:0 8px 22px rgba(228,202,10,0.25);
+}
+.launch-btn:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(228,202,10,0.35); }
+.launch-btn svg { width:16px; height:16px; transition:transform 0.15s; }
+.launch-btn:hover svg { transform:translateX(3px); }
+
+.footer-note { margin-top:2.6rem; font-size:0.72rem; color:var(--grey3); text-align:center; }
+
+@media (max-width:560px) {
+  .hero-title { font-size:1.7rem; }
+  .demo-tab { padding:0.7rem 1.2rem; font-size:0.84rem; }
+  .demo-card { padding:2rem 1.4rem 1.9rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="logo-wrap">
+  <div class="logo"><span class="w">W</span><span class="mid">isdom on the </span><span class="go">GO!</span></div>
+  <div class="sanskrit">Tat Tvam Asi</div>
+</div>
+
+<div class="hero-head">
+  <div class="hero-title">See Wisdom on the GO! <span class="accent">in action</span></div>
+  <div class="hero-sub">Two ways to experience the product — as the employee living it day to day, or as the admin running it across the organization.</div>
+</div>
+
+<div class="demo-tabs" id="demoTabs">
+  <div class="demo-tab-thumb" id="demoThumb"></div>
+  <button class="demo-tab active" id="tabUser" onclick="setDemoTab('user')">User Demo</button>
+  <button class="demo-tab" id="tabAdmin" onclick="setDemoTab('admin')">Admin Demo</button>
+</div>
+
+<div class="demo-card" id="demoCard"></div>
+
+<div class="footer-note">Wisdom on the GO! — illustrative product demo</div>
+
+<script>
+const DEMOS = {
+  user: {
+    label: 'User Demo',
+    title: 'The Employee Experience',
+    desc: 'Chat with Kriti, get real-time reflector-level guidance in the flow of work, and confirm human-skill applications as they happen.',
+    features: ['Chat with Kriti', 'In-the-moment guidance', 'Confirmed applications'],
+    color: 'var(--teal)',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>',
+    href: 'wisdom_index.html',
+  },
+  admin: {
+    label: 'Admin Demo',
+    title: 'The Admin Console',
+    desc: 'Adoption analytics, learning management, reports & insights, and the measurable business impact WOTG creates across the organization.',
+    features: ['Adoption Overview', 'Learning Management', 'Reports & Insights', 'Business Impact'],
+    color: 'var(--gold)',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+    href: 'admin_intro.html',
+  },
+};
+let demoTab = 'user';
+
+function renderDemoCard() {
+  const d = DEMOS[demoTab];
+  document.getElementById('demoCard').innerHTML = `
+    <div class="demo-icon" style="background:${d.color}">${d.icon}</div>
+    <div class="demo-card-title">${d.title}</div>
+    <div class="demo-card-desc">${d.desc}</div>
+    <div class="demo-features">${d.features.map(f => `<span class="demo-feature">${f}</span>`).join('')}</div>
+    <a class="launch-btn" href="${d.href}">
+      Launch ${d.label}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>`;
+}
+function positionThumb() {
+  const active = document.querySelector('.demo-tab.active');
+  const thumb = document.getElementById('demoThumb');
+  thumb.style.left = active.offsetLeft + 'px';
+  thumb.style.width = active.offsetWidth + 'px';
+}
+function setDemoTab(key) {
+  demoTab = key;
+  document.getElementById('tabUser').classList.toggle('active', key === 'user');
+  document.getElementById('tabAdmin').classList.toggle('active', key === 'admin');
+  positionThumb();
+  const card = document.getElementById('demoCard');
+  card.style.opacity = '0';
+  setTimeout(() => { renderDemoCard(); card.style.opacity = '1'; }, 150);
+}
+
+renderDemoCard();
+positionThumb();
+window.addEventListener('resize', positionThumb);
+</script>
+</body>
+</html>

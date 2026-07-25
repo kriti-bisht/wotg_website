@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wisdom on the Go — Learning Management</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:   #041A40;
+  --night2:  #2A3C5D;
+  --night3:  #4F5F79;
+  --grey1:   #f0f2f5;
+  --grey2:   #b8c0cc;
+  --grey3:   #6b7685;
+  --white:   #ffffff;
+  --green:   #3ab54a;
+  --green2:  #2d9640;
+  --gold:    #E4CA0A;
+  --gold2:   #AB9808;
+  --amber:   #e8960a;
+  --amber2:  #c17d00;
+  --red:     #e0303a;
+  --teal:    #14B8A6;
+  --sky:     #2E8DE0;
+  --blue2:   #3352c1;
+  --blue3:   #5675e4;
+  --blue4:   #899fec;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Poppins',sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(4,26,64,0.06), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(228,202,10,0.05), transparent 40%),
+    #fbfbfd;
+  min-height:100vh;
+  color:var(--night);
+}
+a { text-decoration:none; color:inherit; }
+
+/* ---- Layout ---- */
+.admin-shell { min-height:100vh; }
+
+/* ---- Sidebar ---- */
+.admin-sidebar {
+  position:fixed; top:0; left:0; width:216px; height:100vh; z-index:100;
+  background:var(--night); color:#fff; display:flex; flex-direction:column;
+  transform:translateX(0); transition:transform 0.25s; box-shadow:4px 0 24px rgba(0,0,0,0.18);
+}
+.admin-sidebar.collapsed { transform:translateX(-100%); }
+.admin-logo { padding:1.1rem 1rem 0.9rem; }
+.admin-logo .logo { font-size:1.15rem; }
+.admin-logo .w { font-weight:700; color:#fff; }
+.admin-logo .mid { font-weight:400; color:#fff; }
+.admin-logo .go { font-weight:700; color:var(--green); }
+.admin-logo .sanskrit { font-size:0.6rem; font-weight:300; letter-spacing:0.16em; color:#fff; opacity:0.75; margin-top:-0.1rem; }
+.admin-nav { flex:1; padding:0.6rem 0; overflow-y:auto; }
+.admin-nav-item {
+  display:flex; align-items:center; gap:0.65rem; width:100%; padding:0.7rem 1rem;
+  color:var(--grey1); font-size:0.82rem; border-left:3px solid transparent; cursor:pointer;
+  white-space:nowrap; transition:background 0.15s, border-color 0.15s;
+}
+.admin-nav-item svg { width:17px; height:17px; flex-shrink:0; }
+.admin-nav-item:hover { background:rgba(255,255,255,0.06); border-left-color:var(--green); }
+.admin-nav-item.active { background:rgba(255,255,255,0.08); border-left-color:var(--green); color:#fff; font-weight:600; }
+.admin-nav-divider { height:1px; background:rgba(255,255,255,0.1); margin:0.6rem 1rem; }
+.admin-nav-footer { padding:0.6rem 0 1rem; }
+
+/* ---- Header ---- */
+.admin-main { min-width:0; margin-left:216px; transition:margin-left 0.25s; }
+.admin-main.expanded { margin-left:0; }
+header.topbar { background:var(--night); }
+.header-inner { display:flex; align-items:center; padding:0.9rem 2rem; gap:1rem; }
+.burger-btn {
+  width:36px; height:36px; border-radius:8px; background:none; border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff;
+}
+.burger-btn:hover { background:rgba(255,255,255,0.16); }
+.burger-btn svg { width:20px; height:20px; }
+.admin-greeting .hello { font-weight:600; font-size:1.15rem; color:#fff; }
+.admin-greeting .hello .name { color:var(--gold); }
+.admin-greeting .sub { color:var(--grey2); font-size:0.88rem; }
+.header-spacer { flex:1; }
+.admin-profile { display:flex; align-items:center; gap:0.7rem; cursor:default; }
+.admin-profile img { width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.3); }
+.admin-profile-text .name { color:#fff; font-weight:600; font-size:0.92rem; }
+.admin-profile-text .title { color:var(--grey2); font-size:0.76rem; }
+
+/* ---- Content ---- */
+.admin-content { max-width:1500px; margin:0 auto; padding:1.6rem 2rem 3rem; }
+
+/* ---- Page header ---- */
+.um-page-head { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin-bottom:1.1rem; flex-wrap:wrap; }
+.um-title { font-size:1.5rem; font-weight:700; color:var(--night); }
+
+/* ---- Tabs: file-page style with accents ---- */
+.lm-tabs { display:flex; gap:0.3rem; border-bottom:2px solid rgba(4,26,64,0.09); margin-bottom:1.8rem; overflow-x:auto; }
+.lm-tab {
+  font-family:'Poppins',sans-serif; font-size:0.87rem; font-weight:600; color:var(--grey3); background:none; border:none;
+  padding:0.9rem 1.3rem 0.8rem; cursor:pointer; white-space:nowrap; position:relative; top:2px;
+  border-radius:10px 10px 0 0; border-bottom:5px solid transparent; transition:color 0.15s, border-color 0.15s, background 0.15s;
+}
+.lm-tab:hover { color:var(--night2); background:rgba(4,26,64,0.04); }
+.lm-tab.active[data-accent="teal"]   { color:#0d8f81; background:rgba(20,184,166,0.12);  border-bottom-color:var(--teal); }
+.lm-tab.active[data-accent="gold"]   { color:var(--gold2); background:rgba(228,202,10,0.16); border-bottom-color:var(--gold2); }
+.lm-tab.active[data-accent="green"]  { color:var(--green2); background:rgba(58,181,74,0.12); border-bottom-color:var(--green); }
+.lm-tab.active[data-accent="navy"]   { color:var(--night2); background:rgba(42,60,93,0.10); border-bottom-color:var(--night2); }
+.lm-tab.active[data-accent="amber"]  { color:var(--amber2); background:rgba(232,150,10,0.14); border-bottom-color:var(--amber); }
+.lm-tab.active { font-weight:700; }
+
+.lm-panel { display:none; }
+.lm-panel.active { display:block; }
+
+.lm-panel-head { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1.4rem; flex-wrap:wrap; }
+.lm-panel-title { font-size:1.15rem; font-weight:700; color:var(--night); margin-bottom:0.25rem; }
+.lm-panel-sub { font-size:0.85rem; color:var(--grey3); max-width:560px; }
+.lm-panel-actions { display:flex; gap:0.6rem; flex-shrink:0; }
+
+.btn-primary-add {
+  font-family:'Poppins',sans-serif; font-size:0.84rem; font-weight:600; color:#fff; background:var(--green);
+  border:none; border-radius:22px; padding:0.62rem 1.3rem; cursor:pointer; flex-shrink:0; white-space:nowrap;
+  transition:background 0.15s, transform 0.15s; box-shadow:0 6px 16px rgba(58,181,74,0.3);
+}
+.btn-primary-add:hover { background:var(--green2); transform:translateY(-2px); }
+
+.btn-ai {
+  font-family:'Poppins',sans-serif; font-size:0.84rem; font-weight:600; color:#5b21b6; background:rgba(124,58,237,0.1);
+  border:1.5px solid rgba(124,58,237,0.28); border-radius:22px; padding:0.58rem 1.2rem; cursor:pointer; flex-shrink:0;
+  display:flex; align-items:center; gap:0.45rem; white-space:nowrap; transition:background 0.15s, transform 0.15s;
+}
+.btn-ai:hover { background:rgba(124,58,237,0.18); transform:translateY(-2px); }
+.btn-ai svg { width:15px; height:15px; }
+
+/* ---- Table (shared) ---- */
+.um-table-card { background:var(--white); border-radius:14px; box-shadow:0 6px 20px rgba(4,26,64,0.08); overflow:hidden; margin-bottom:1.6rem; }
+.um-table-scroll { overflow-x:auto; }
+.um-table { width:100%; border-collapse:collapse; min-width:860px; }
+.um-table th {
+  text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--grey3);
+  font-weight:600; padding:0.95rem 1.3rem; border-bottom:1px solid rgba(4,26,64,0.08); white-space:nowrap;
+}
+.um-table td { padding:0.85rem 1.3rem; font-size:0.85rem; color:var(--night2); border-bottom:1px solid rgba(4,26,64,0.06); vertical-align:middle; }
+.um-table tbody tr:hover { background:var(--grey1); }
+.um-table tbody tr:last-child td { border-bottom:none; }
+.lm-item-cell { display:flex; align-items:center; gap:0.7rem; }
+.lm-icon-chip { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+.lm-icon-chip svg { width:17px; height:17px; }
+.c-teal   { background:var(--teal); }
+.c-gold   { background:var(--gold); }
+.c-amber  { background:var(--amber); }
+.c-green  { background:var(--green); }
+.c-navy   { background:var(--night2); }
+.c-sky    { background:var(--sky); }
+.c-blue2  { background:var(--blue2); }
+.c-blue3  { background:var(--blue3); }
+.c-blue4  { background:var(--blue4); }
+.lm-item-name { font-weight:600; color:var(--night); font-size:0.85rem; }
+.lm-item-sub  { font-size:0.72rem; color:var(--grey3); }
+.badge { display:inline-flex; align-items:center; gap:0.35rem; font-size:0.68rem; font-weight:700; padding:0.24rem 0.68rem; border-radius:12px; white-space:nowrap; }
+.badge-neutral { background:var(--grey1); color:var(--night2); }
+.badge-active { background:rgba(58,181,74,0.12); color:var(--green2); }
+.badge-draft { background:rgba(228,202,10,0.18); color:var(--gold2); }
+.badge-scheduled { background:rgba(20,184,166,0.12); color:#0d8f81; }
+.lm-chip-row { display:flex; flex-wrap:wrap; gap:0.3rem; max-width:260px; }
+.lm-chip { font-size:0.68rem; font-weight:600; padding:0.2rem 0.55rem; border-radius:10px; background:var(--grey1); color:var(--night2); white-space:nowrap; }
+.lm-chip-more { font-size:0.68rem; font-weight:600; color:var(--grey3); }
+.um-action-btn {
+  width:30px; height:30px; border-radius:8px; border:none; background:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; color:var(--grey3); transition:background 0.15s, color 0.15s;
+}
+.um-action-btn svg { width:16px; height:16px; }
+.um-action-btn:hover { background:var(--grey1); color:var(--night); }
+
+/* ---- Form card (Initiative Builder / Assignment Center) ---- */
+.lm-form-card { background:var(--white); border-radius:14px; box-shadow:0 6px 20px rgba(4,26,64,0.08); padding:1.6rem 1.7rem; margin-bottom:1.6rem; }
+.lm-form-section-title { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--grey3); margin:1.5rem 0 0.8rem; }
+.lm-form-section-title:first-child { margin-top:0; }
+.lm-field { margin-bottom:1.1rem; }
+.lm-field-label { display:block; font-size:0.8rem; font-weight:600; color:var(--night2); margin-bottom:0.45rem; }
+.lm-input, .lm-textarea {
+  width:100%; font-family:'Poppins',sans-serif; font-size:0.85rem; color:var(--night);
+  background:var(--grey1); border:1px solid rgba(4,26,64,0.1); border-radius:10px; padding:0.65rem 0.9rem;
+}
+.lm-input:focus, .lm-textarea:focus { outline:2px solid var(--green); }
+.lm-textarea { resize:vertical; min-height:70px; }
+.lm-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.lm-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; }
+.lm-radio-row { display:flex; gap:1.4rem; }
+.lm-radio-row label { display:flex; align-items:center; gap:0.5rem; font-size:0.84rem; color:var(--night2); cursor:pointer; }
+.lm-radio-row input { accent-color:var(--teal); width:15px; height:15px; }
+.lm-accordion-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:0.9rem 1.2rem; }
+@media (max-width:900px) { .lm-accordion-grid, .lm-row-2, .lm-row-3 { grid-template-columns:1fr; } }
+
+.ri-dd-item { margin-bottom:0; }
+.ri-dd-toggle {
+  width:100%; text-align:left; background:var(--grey1); border:none; border-radius:10px; padding:0.7rem 0.9rem;
+  font-family:'Poppins',sans-serif; font-size:0.84rem; font-weight:600; color:var(--night2); cursor:pointer; transition:background 0.15s, color 0.15s;
+}
+.ri-dd-toggle:hover { background:var(--grey2); }
+.ri-dd-item.open .ri-dd-toggle { background:rgba(20,184,166,0.14); color:#0d8f81; }
+.ri-dd-panel { max-height:0; overflow:hidden; transition:max-height 0.25s ease; display:flex; flex-direction:column; gap:0.5rem; padding:0 0.4rem; }
+.ri-dd-item.open .ri-dd-panel { max-height:230px; padding:0.7rem 0.4rem 0.2rem; overflow-y:auto; }
+.ri-dd-panel label { display:flex; align-items:center; gap:0.55rem; font-size:0.8rem; color:var(--night2); cursor:pointer; }
+.ri-dd-panel input { accent-color:var(--teal); width:14px; height:14px; }
+.ri-dd-panel .lm-group-label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--grey3); margin:0.5rem 0 0.1rem; }
+.ri-dd-panel .lm-group-label:first-child { margin-top:0; }
+
+.lm-scheduled-date { margin-top:0.7rem; max-width:240px; display:none; }
+.lm-scheduled-date.show { display:block; }
+
+.lm-form-foot { display:flex; align-items:center; gap:0.9rem; margin-top:1.6rem; padding-top:1.4rem; border-top:1px solid rgba(4,26,64,0.08); }
+.lm-toast { font-size:0.83rem; font-weight:600; color:var(--green2); opacity:0; transition:opacity 0.2s; display:flex; align-items:center; gap:0.4rem; }
+.lm-toast.show { opacity:1; }
+
+.rh-subnote { font-size:0.78rem; color:var(--grey3); margin:-0.6rem 0 1.2rem; }
+</style>
+</head>
+<body>
+
+<div class="admin-shell">
+  <nav class="admin-sidebar" id="adminSidebar">
+    <div class="admin-logo">
+      <div class="logo"><span class="w">W</span><span class="mid">isdom on the </span><span class="go">GO!</span></div>
+      <div class="sanskrit">Tat Tvam Asi</div>
+    </div>
+    <div class="admin-nav">
+      <a href="admin_intro.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Adoption Overview
+      </a>
+      <a href="user_management.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        User Management
+      </a>
+      <a href="learning_management.html" class="admin-nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+        Learning Management
+      </a>
+      <a href="reports_insights.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12.5" y="8" width="3" height="10"/><rect x="18" y="5" width="3" height="13"/></svg>
+        Reports &amp; Insights
+      </a>
+      <a href="business_impact_2.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m6 15 4-5 3.5 3L20 6"/><path d="M15 6h5v5"/></svg>
+        Business Impact
+      </a>
+      <div class="admin-nav-divider"></div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg>
+        Help &amp; information
+      </div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        Settings
+      </div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log out
+      </div>
+    </div>
+  </nav>
+
+  <div class="admin-main">
+    <header class="topbar">
+      <div class="header-inner">
+        <button class="burger-btn" onclick="toggleSidePanel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9.5 4v16"/><rect x="4.3" y="5.3" width="4.2" height="13.4" rx="1.1" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <div class="admin-greeting">
+          <div class="hello">Hello <span class="name">Patty</span>!</div>
+          <div class="sub">Define, organize and assign learning across the organization</div>
+        </div>
+        <div class="header-spacer"></div>
+        <div class="admin-profile">
+          <div class="admin-profile-text" style="text-align:right">
+            <div class="name">Patty Merchant</div>
+            <div class="title">Global Head: Learning &amp; Talent Development</div>
+          </div>
+          <img src="assets/patty_headshot.jpg" alt="Patty Merchant">
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <div class="um-page-head">
+        <div>
+          <h1 class="um-title">Learning Management</h1>
+        </div>
+      </div>
+
+      <div class="lm-tabs" id="lmTabs">
+        <button class="lm-tab active" data-accent="teal" data-tab="competency" onclick="switchLmTab('competency')">Competency Builder</button>
+        <button class="lm-tab" data-accent="gold" data-tab="goals" onclick="switchLmTab('goals')">Strategic Learning Goal Builder</button>
+        <button class="lm-tab" data-accent="green" data-tab="initiative" onclick="switchLmTab('initiative')">Learning Initiative Builder</button>
+        <button class="lm-tab" data-accent="navy" data-tab="assignment" onclick="switchLmTab('assignment')">Learning Assignment Center</button>
+        <button class="lm-tab" data-accent="amber" data-tab="assessment" onclick="switchLmTab('assessment')">Assessment Builder</button>
+      </div>
+
+      <!-- ============ TAB 1: Competency Builder ============ -->
+      <div class="lm-panel active" id="panel-competency">
+        <div class="lm-panel-head">
+          <div>
+            <div class="lm-panel-title">Competency Builder</div>
+            <div class="lm-panel-sub">Create and manage organizational competencies by mapping them to WOTG Reflectors and Capabilities.</div>
+          </div>
+          <div class="lm-panel-actions">
+            <button class="btn-ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>Chat with Kriti</button>
+            <button class="btn-primary-add">+ New Competency</button>
+          </div>
+        </div>
+        <div class="um-table-card">
+          <div class="um-table-scroll">
+            <table class="um-table">
+              <thead><tr><th>Competency</th><th>Mapped Capabilities</th><th>Mapped Reflectors</th><th>Status</th><th></th></tr></thead>
+              <tbody id="competencyTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TAB 2: Strategic Learning Goal Builder ============ -->
+      <div class="lm-panel" id="panel-goals">
+        <div class="lm-panel-head">
+          <div>
+            <div class="lm-panel-title">Strategic Learning Goal Builder</div>
+            <div class="lm-panel-sub">Translate business priorities into measurable human skills.</div>
+          </div>
+          <div class="lm-panel-actions">
+            <button class="btn-ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>Chat with Kriti</button>
+            <button class="btn-primary-add">+ New Goal</button>
+          </div>
+        </div>
+        <div class="um-table-card">
+          <div class="um-table-scroll">
+            <table class="um-table">
+              <thead><tr><th>Strategic Learning Goal</th><th>Linked Capabilities</th><th>Linked Competencies</th><th>Owner</th><th>Status</th><th></th></tr></thead>
+              <tbody id="goalsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TAB 3: Learning Initiative Builder ============ -->
+      <div class="lm-panel" id="panel-initiative">
+        <div class="lm-panel-head">
+          <div>
+            <div class="lm-panel-title">Learning Initiative Builder</div>
+            <div class="lm-panel-sub">Create structured learning initiatives for targeted groups of employees.</div>
+          </div>
+        </div>
+        <div class="lm-form-card">
+          <div class="lm-form-section-title">Configure</div>
+          <div class="lm-field">
+            <label class="lm-field-label">Targetted Learning Initiative Name</label>
+            <input class="lm-input" type="text" placeholder="e.g. Q3 Psychological Safety Sprint">
+          </div>
+          <div class="lm-field">
+            <label class="lm-field-label">Description</label>
+            <textarea class="lm-textarea" placeholder="What is this initiative meant to achieve?"></textarea>
+          </div>
+          <div class="lm-row-2">
+            <div class="lm-field">
+              <label class="lm-field-label">Start Date</label>
+              <input class="lm-input" type="date">
+            </div>
+            <div class="lm-field">
+              <label class="lm-field-label">End Date</label>
+              <input class="lm-input" type="date">
+            </div>
+          </div>
+
+          <div class="lm-form-section-title">Target Content</div>
+          <div class="lm-accordion-grid" id="initContentAccordion"></div>
+
+          <div class="lm-form-section-title">Mandatory or Recommended</div>
+          <div class="lm-radio-row">
+            <label><input type="radio" name="initMandatory" checked> Mandatory</label>
+            <label><input type="radio" name="initMandatory"> Recommended</label>
+          </div>
+
+          <div class="lm-form-section-title">Assign To</div>
+          <div class="lm-accordion-grid" id="initAssignAccordion"></div>
+
+          <div class="lm-form-foot">
+            <button class="btn-primary-add" onclick="fakePublish(this, 'initToast')">Publish Initiative</button>
+            <span class="lm-toast" id="initToast">✓ Initiative created</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TAB 4: Learning Assignment Center ============ -->
+      <div class="lm-panel" id="panel-assignment">
+        <div class="lm-panel-head">
+          <div>
+            <div class="lm-panel-title">Learning Assignment Center</div>
+            <div class="lm-panel-sub">Assign learning directly to employees without creating a Learning Initiative.</div>
+          </div>
+        </div>
+        <div class="lm-form-card">
+          <div class="lm-form-section-title">Assign</div>
+          <div class="lm-accordion-grid" id="assignContentAccordion"></div>
+
+          <div class="lm-form-section-title">Target</div>
+          <div class="lm-accordion-grid" id="assignTargetAccordion"></div>
+
+          <div class="lm-form-section-title">Options</div>
+          <div class="lm-row-2">
+            <div>
+              <label class="lm-field-label">Mandatory or Recommended</label>
+              <div class="lm-radio-row">
+                <label><input type="radio" name="assignMandatory" checked> Mandatory</label>
+                <label><input type="radio" name="assignMandatory"> Recommended</label>
+              </div>
+            </div>
+            <div>
+              <label class="lm-field-label">Assignment Timing</label>
+              <div class="lm-radio-row">
+                <label><input type="radio" name="assignTiming" checked onclick="toggleScheduledDate(false)"> Immediate</label>
+                <label><input type="radio" name="assignTiming" onclick="toggleScheduledDate(true)"> Scheduled</label>
+              </div>
+              <input class="lm-input lm-scheduled-date" id="scheduledDateInput" type="date">
+            </div>
+          </div>
+
+          <div class="lm-form-foot">
+            <button class="btn-primary-add" onclick="fakePublish(this, 'assignToast')">Assign</button>
+            <span class="lm-toast" id="assignToast">✓ Assignment sent</span>
+          </div>
+        </div>
+
+        <div class="lm-panel-title" style="font-size:1rem; margin-bottom:0.8rem;">Recent Assignments</div>
+        <div class="um-table-card">
+          <div class="um-table-scroll">
+            <table class="um-table">
+              <thead><tr><th>Assigned Content</th><th>Target</th><th>Type</th><th>Assigned On</th><th>Status</th><th></th></tr></thead>
+              <tbody id="assignmentsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TAB 5: Assessment Builder ============ -->
+      <div class="lm-panel" id="panel-assessment">
+        <div class="lm-panel-head">
+          <div>
+            <div class="lm-panel-title">Assessment Builder</div>
+            <div class="lm-panel-sub">Create and manage organizational assessments.</div>
+          </div>
+          <div class="lm-panel-actions">
+            <button class="btn-primary-add">+ New Assessment</button>
+          </div>
+        </div>
+        <div class="rh-subnote">Build Reflector, Capability or Competency assessments, create custom assessment journeys, and schedule them before, during or after any Learning Initiative.</div>
+        <div class="um-table-card">
+          <div class="um-table-scroll">
+            <table class="um-table">
+              <thead><tr><th>Assessment</th><th>Type</th><th>Questions</th><th>Scheduled Trigger</th><th>Status</th><th></th></tr></thead>
+              <tbody id="assessmentTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleSidePanel() {
+  document.getElementById('adminSidebar').classList.toggle('collapsed');
+  document.querySelector('.admin-main').classList.toggle('expanded');
+}
+
+/* ---- Taxonomy (kept consistent with reports_insights.html) ---- */
+const CAPABILITIES = [
+  { key:'embodied-selfcare', label:'Embodied Self-care', cls:'c-teal',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 8-4-16-3 8H2"/></svg>' },
+  { key:'social-presence', label:'Social Presence', cls:'c-gold',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>' },
+  { key:'interpersonal-resp', label:'Interpersonal Responsiveness', cls:'c-amber',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>' },
+  { key:'cultivating-rel', label:'Cultivating Relationships', cls:'c-sky',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { key:'social-influence', label:'Social Influence', cls:'c-navy',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v4a1 1 0 0 0 1 1h3l5 4V6l-5 4H4a1 1 0 0 0-1 1Z"/><path d="M17 8a5 5 0 0 1 0 8"/></svg>' },
+  { key:'emotional-grounding', label:'Emotional Grounding', cls:'c-blue4',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v13"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>' },
+  { key:'result-orientation', label:'Result Orientation', cls:'c-amber',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="#fff" stroke="none"/></svg>' },
+  { key:'upholding-dignity', label:'Upholding Dignity', cls:'c-teal',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>' },
+  { key:'self-cultivation', label:'Self-Cultivation', cls:'c-gold',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 7 8 4 3 4c0 5 3 8 9 8Z"/><path d="M12 12c0-4 4-6 9-6 0 4-3 7-9 7Z"/></svg>' },
+];
+
+const COMPETENCIES = [
+  { key:'change-mgmt', label:'Change Management', cls:'c-teal',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>' },
+  { key:'conflict-mgmt', label:'Conflict Management', cls:'c-blue2',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>' },
+  { key:'cultural-comp', label:'Cultural Competence', cls:'c-amber',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.7 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.7-3.8-9s1.3-6.5 3.8-9Z"/></svg>' },
+  { key:'driving-perf', label:'Driving High Performance', cls:'c-green',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 9 11 13 15 21 6"/><path d="M15 6h6v6"/></svg>' },
+  { key:'effective-comm', label:'Effective Communication', cls:'c-navy',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l4 4V6l-4 4H4a1 1 0 0 0-1 1Z"/><path d="M15 8a3 3 0 0 1 0 8"/><path d="M18 5a7 7 0 0 1 0 14"/></svg>' },
+  { key:'emotional-intel', label:'Emotional Intelligence', cls:'c-gold',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>' },
+  { key:'ethics-integrity', label:'Ethics &amp; Integrity', cls:'c-teal',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>' },
+  { key:'goal-setting', label:'Goal Setting', cls:'c-blue3',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="#fff" stroke="none"/></svg>' },
+  { key:'intrapreneurship', label:'Intrapreneurship', cls:'c-amber',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10.5c.6.6 1 1.3 1 2.5h6c0-1.2.4-1.9 1-2.5A6 6 0 0 0 12 2Z"/></svg>' },
+];
+
+const REFLECTORS = [
+  { key:'practicing-selfcare', label:'Practicing self-care', capability:'embodied-selfcare', competencies:['emotional-intel'] },
+  { key:'building-healthy-habits', label:'Building Healthy Habits', capability:'embodied-selfcare', competencies:['driving-perf'] },
+  { key:'being-considerate', label:'Being Considerate', capability:'social-presence', competencies:['cultural-comp'] },
+  { key:'demonstrating-reliability', label:'Demonstrating Reliability', capability:'social-presence', competencies:['driving-perf'] },
+  { key:'structuring-messages-clearly', label:'Structuring Messages Clearly', capability:'social-presence', competencies:['effective-comm'] },
+  { key:'being-amiable', label:'Being Amiable', capability:'social-presence', competencies:['cultural-comp'] },
+  { key:'demonstrating-credibility', label:'Demonstrating Credibility', capability:'social-presence', competencies:['effective-comm'] },
+  { key:'being-assertive', label:'Being Assertive', capability:'social-presence', competencies:['conflict-mgmt'] },
+  { key:'handling-emotional-responses', label:'Handling Emotional Responses', capability:'interpersonal-resp', competencies:['emotional-intel'] },
+  { key:'respecting-boundaries', label:'Respecting Boundaries', capability:'interpersonal-resp', competencies:['conflict-mgmt'] },
+  { key:'attuned-listening', label:'Attuned Listening', capability:'interpersonal-resp', competencies:['effective-comm'] },
+  { key:'guiding-others', label:'Guiding Others', capability:'interpersonal-resp', competencies:['driving-perf'] },
+  { key:'handling-objections-disagreements', label:'Handling Objections', capability:'interpersonal-resp', competencies:['conflict-mgmt'] },
+  { key:'setting-boundaries', label:'Setting Boundaries', capability:'cultivating-rel', competencies:['conflict-mgmt'] },
+  { key:'resolving-conflicts', label:'Resolving Conflicts', capability:'cultivating-rel', competencies:['conflict-mgmt','effective-comm'] },
+  { key:'practicing-tolerance', label:'Practicing Tolerance', capability:'cultivating-rel', competencies:['cultural-comp'] },
+  { key:'delivering-difficult-messages', label:'Delivering Difficult Messages', capability:'cultivating-rel', competencies:['effective-comm'] },
+  { key:'conveying-empathy', label:'Conveying Empathy', capability:'cultivating-rel', competencies:['emotional-intel'] },
+  { key:'purposeful-questioning', label:'Purposeful Questioning', capability:'cultivating-rel', competencies:['effective-comm'] },
+  { key:'building-rapport', label:'Building Rapport', capability:'cultivating-rel', competencies:['cultural-comp'] },
+  { key:'expressing-disagreement-objection', label:'Expressing Disagreement', capability:'social-influence', competencies:['conflict-mgmt'] },
+  { key:'tailoring-customizing-message', label:'Tailoring/Customizing your Message', capability:'social-influence', competencies:['effective-comm'] },
+  { key:'networking', label:'Networking', capability:'social-influence', competencies:['intrapreneurship'] },
+  { key:'influencing-others', label:'Influencing others', capability:'social-influence', competencies:['effective-comm'] },
+  { key:'navigating-relational-dynamics', label:'Navigating Relational Dynamics', capability:'social-influence', competencies:['cultural-comp'] },
+  { key:'inviting-promoting-participation', label:'Inviting/Promoting Participation', capability:'social-influence', competencies:['effective-comm'] },
+  { key:'negotiating-effectively', label:'Negotiating Effectively', capability:'social-influence', competencies:['conflict-mgmt'] },
+  { key:'stress-management', label:'Stress Management', capability:'emotional-grounding', competencies:['emotional-intel'] },
+  { key:'building-self-awareness', label:'Building Self-Awareness', capability:'emotional-grounding', competencies:['emotional-intel'] },
+  { key:'regulating-emotions', label:'Regulating Emotions', capability:'emotional-grounding', competencies:['emotional-intel'] },
+  { key:'practicing-reflection', label:'Practicing Reflection', capability:'emotional-grounding', competencies:['emotional-intel','goal-setting'] },
+  { key:'giving-feedback', label:'Giving Feedback', capability:'result-orientation', competencies:['driving-perf'] },
+  { key:'receiving-feedback', label:'Receiving Feedback', capability:'result-orientation', competencies:['driving-perf'] },
+  { key:'taking-ownership-accountability', label:'Taking Ownership/Accountability', capability:'result-orientation', competencies:['ethics-integrity'] },
+  { key:'being-proactive', label:'Being Proactive', capability:'result-orientation', competencies:['intrapreneurship'] },
+  { key:'goal-setting-refl', label:'Goal Setting', capability:'result-orientation', competencies:['goal-setting'] },
+  { key:'analyzing-progress', label:'Analyzing Progress', capability:'result-orientation', competencies:['goal-setting'] },
+  { key:'prioritizing-effectively', label:'Prioritizing Effectively', capability:'result-orientation', competencies:['goal-setting'] },
+  { key:'being-resourceful', label:'Being Resourceful', capability:'result-orientation', competencies:['intrapreneurship'] },
+  { key:'taking-action', label:'Taking Action', capability:'result-orientation', competencies:['intrapreneurship'] },
+  { key:'being-timely', label:'Being Timely', capability:'result-orientation', competencies:['driving-perf'] },
+  { key:'being-resilient', label:'Being Resilient', capability:'result-orientation', competencies:['emotional-intel'] },
+  { key:'taking-initiative', label:'Taking Initiative', capability:'result-orientation', competencies:['intrapreneurship'] },
+  { key:'navigating-ambiguity', label:'Navigating Ambiguity', capability:'result-orientation', competencies:['intrapreneurship'] },
+  { key:'pitching-effectively', label:'Pitching Effectively', capability:'result-orientation', competencies:['effective-comm'] },
+  { key:'demonstrating-ethical-integrity', label:'Demonstrating Ethical Integrity', capability:'upholding-dignity', competencies:['ethics-integrity'] },
+  { key:'challenging-bias', label:'Challenging Bias', capability:'upholding-dignity', competencies:['ethics-integrity'] },
+  { key:'speaking-up-against-wrongdoing', label:'Speaking Up Against Wrongdoing', capability:'upholding-dignity', competencies:['ethics-integrity'] },
+  { key:'being-inclusive', label:'Being Inclusive', capability:'upholding-dignity', competencies:['cultural-comp'] },
+  { key:'being-fair', label:'Being Fair', capability:'upholding-dignity', competencies:['ethics-integrity'] },
+  { key:'being-appreciative', label:'Being Appreciative', capability:'self-cultivation', competencies:['emotional-intel'] },
+  { key:'seeking-feedback', label:'Seeking Feedback', capability:'self-cultivation', competencies:['driving-perf'] },
+  { key:'continuously-learning', label:'Continuously Learning', capability:'self-cultivation', competencies:['intrapreneurship'] },
+  { key:'applying-feedback', label:'Applying Feedback', capability:'self-cultivation', competencies:['driving-perf'] },
+  { key:'coping-with-change', label:'Coping with Change', capability:'self-cultivation', competencies:['change-mgmt'] },
+  { key:'accepting-vulnerability', label:'Accepting Vulnerability', capability:'self-cultivation', competencies:['emotional-intel'] },
+];
+
+const LEARNING_GOALS = [
+  { label:'Strengthen Psychological Safety Across Teams', capabilities:['interpersonal-resp','cultivating-rel'], competencies:['conflict-mgmt','emotional-intel'], owner:'Patty Merchant', status:'Active' },
+  { label:'Build a Culture of Accountable Execution', capabilities:['result-orientation'], competencies:['driving-perf','goal-setting'], owner:'Patty Merchant', status:'Active' },
+  { label:'Elevate Cross-Cultural Collaboration in Global Teams', capabilities:['social-presence','social-influence'], competencies:['cultural-comp'], owner:'David Chen', status:'Active' },
+  { label:'Develop Resilient, Change-Ready Leaders', capabilities:['self-cultivation','emotional-grounding'], competencies:['change-mgmt'], owner:'Priya Sharma', status:'Draft' },
+  { label:'Improve Difficult Conversations for People Managers', capabilities:['cultivating-rel'], competencies:['conflict-mgmt','effective-comm'], owner:'Patty Merchant', status:'Active' },
+];
+
+const ASSESSMENTS = [
+  { name:'Attuned Listening — Reflector Check', type:'Reflector', questions:8, trigger:'Before Initiative', status:'Active' },
+  { name:'Cultivating Relationships — Capability Assessment', type:'Capability', questions:14, trigger:'After Initiative', status:'Active' },
+  { name:'Conflict Management — Competency Assessment', type:'Competency', questions:16, trigger:'During Initiative', status:'Active' },
+  { name:'Emotional Grounding — Capability Assessment', type:'Capability', questions:12, trigger:'Before Initiative', status:'Active' },
+  { name:'Goal Setting — Reflector Check', type:'Reflector', questions:6, trigger:'After Initiative', status:'Draft' },
+  { name:'Effective Communication — Competency Assessment', type:'Competency', questions:15, trigger:'Before Initiative', status:'Active' },
+  { name:'Self-Cultivation — Capability Assessment', type:'Capability', questions:10, trigger:'After Initiative', status:'Scheduled' },
+];
+
+const DEPARTMENTS = ['Sales','Engineering','Marketing','Operations','HR'];
+const GRADES = ['L1','L2','L3','L4','L5'];
+const LOCATIONS = ['Mumbai','Bangalore','Delhi NCR','Remote / Global'];
+const TEAMS = ['Enterprise Sales','Platform Engineering','Brand Marketing','Customer Success','People Ops'];
+const BUSINESS_UNITS = ['APAC','EMEA','Americas'];
+const DYNAMIC_GROUPS = ['New Hires (last 90 days)','Underperforming vs. Goal','High Attrition Risk','Recently Promoted'];
+const TLI = ['New Hires','High Potential','Leadership Track','At Risk'];
+
+/* ---- Tabs ---- */
+function switchLmTab(key) {
+  document.querySelectorAll('.lm-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === key));
+  document.querySelectorAll('.lm-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + key));
+}
+
+/* ---- Accordion helper ---- */
+function toggleDD(btn) {
+  const item = btn.parentElement;
+  const open = item.classList.toggle('open');
+  btn.textContent = (open ? '− ' : '+ ') + btn.dataset.label;
+}
+function accordionItem(label, innerHtml) {
+  return `<div class="ri-dd-item">
+    <button class="ri-dd-toggle" data-label="${label}" onclick="toggleDD(this)">+ ${label}</button>
+    <div class="ri-dd-panel">${innerHtml}</div>
+  </div>`;
+}
+function checkboxList(items) {
+  return items.map(i => `<label><input type="checkbox">${i}</label>`).join('');
+}
+function reflectorsByCapabilityHtml() {
+  return CAPABILITIES.map(cap => {
+    const items = REFLECTORS.filter(r => r.capability === cap.key);
+    return `<div class="lm-group-label">${cap.label}</div>` + checkboxList(items.map(r => r.label));
+  }).join('');
+}
+
+/* ---- Render: Competency Builder ---- */
+function renderCompetencyTable() {
+  const rows = COMPETENCIES.map(c => {
+    const mappedReflectors = REFLECTORS.filter(r => r.competencies.includes(c.key));
+    const mappedCapKeys = [...new Set(mappedReflectors.map(r => r.capability))];
+    const capLabels = mappedCapKeys.map(k => CAPABILITIES.find(cap => cap.key === k).label);
+    const shown = capLabels.slice(0, 2);
+    const more = capLabels.length - shown.length;
+    return `<tr>
+      <td><div class="lm-item-cell">
+        <div class="lm-icon-chip ${c.cls}">${c.icon}</div>
+        <div class="lm-item-name">${c.label}</div>
+      </div></td>
+      <td><div class="lm-chip-row">${shown.map(l => `<span class="lm-chip">${l}</span>`).join('')}${more > 0 ? `<span class="lm-chip-more">+${more} more</span>` : ''}</div></td>
+      <td>${mappedReflectors.length} reflectors</td>
+      <td><span class="badge badge-active">Active</span></td>
+      <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('competencyTableBody').innerHTML = rows;
+}
+
+/* ---- Render: Strategic Learning Goal Builder ---- */
+function renderGoalsTable() {
+  const badgeCls = { Active:'badge-active', Draft:'badge-draft', Scheduled:'badge-scheduled' };
+  const rows = LEARNING_GOALS.map(g => {
+    const capLabels = g.capabilities.map(k => CAPABILITIES.find(c => c.key === k).label);
+    const compLabels = g.competencies.map(k => COMPETENCIES.find(c => c.key === k).label);
+    return `<tr>
+      <td><div class="lm-item-name">${g.label}</div></td>
+      <td><div class="lm-chip-row">${capLabels.map(l => `<span class="lm-chip">${l}</span>`).join('')}</div></td>
+      <td><div class="lm-chip-row">${compLabels.map(l => `<span class="lm-chip">${l}</span>`).join('')}</div></td>
+      <td>${g.owner}</td>
+      <td><span class="badge ${badgeCls[g.status]}">${g.status}</span></td>
+      <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('goalsTableBody').innerHTML = rows;
+}
+
+/* ---- Render: Assessment Builder ---- */
+function renderAssessmentTable() {
+  const badgeCls = { Active:'badge-active', Draft:'badge-draft', Scheduled:'badge-scheduled' };
+  const rows = ASSESSMENTS.map(a => `<tr>
+    <td><div class="lm-item-name">${a.name}</div></td>
+    <td><span class="badge badge-neutral">${a.type}</span></td>
+    <td>${a.questions} questions</td>
+    <td>${a.trigger}</td>
+    <td><span class="badge ${badgeCls[a.status]}">${a.status}</span></td>
+    <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+  </tr>`).join('');
+  document.getElementById('assessmentTableBody').innerHTML = rows;
+}
+
+/* ---- Render: Recent Assignments ---- */
+const RECENT_ASSIGNMENTS = [
+  { content:'Attuned Listening — Reflector', target:'Enterprise Sales (Team)', type:'Reflector', date:'2026-07-18', status:'Active' },
+  { content:'Cultivating Relationships — Capability', target:'New Hires (last 90 days)', type:'Capability', date:'2026-07-15', status:'Active' },
+  { content:'Conflict Management — Competency', target:'Grade L3', type:'Competency', date:'2026-07-10', status:'Scheduled' },
+  { content:'Build Resilient, Change-Ready Leaders', target:'HR (Department)', type:'Strategic Goal', date:'2026-07-02', status:'Active' },
+  { content:'Self-Cultivation — Capability Assessment', target:'Priya Sharma (Individual)', type:'Assessment', date:'2026-06-28', status:'Active' },
+];
+function renderAssignmentsTable() {
+  const badgeCls = { Active:'badge-active', Draft:'badge-draft', Scheduled:'badge-scheduled' };
+  const rows = RECENT_ASSIGNMENTS.map(a => `<tr>
+    <td><div class="lm-item-name">${a.content}</div></td>
+    <td>${a.target}</td>
+    <td><span class="badge badge-neutral">${a.type}</span></td>
+    <td>${a.date}</td>
+    <td><span class="badge ${badgeCls[a.status]}">${a.status}</span></td>
+    <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
+  </tr>`).join('');
+  document.getElementById('assignmentsTableBody').innerHTML = rows;
+}
+
+/* ---- Render: Initiative Builder accordions ---- */
+function renderInitiativeAccordions() {
+  document.getElementById('initContentAccordion').innerHTML =
+    accordionItem('Reflectors', reflectorsByCapabilityHtml()) +
+    accordionItem('Capabilities', checkboxList(CAPABILITIES.map(c => c.label))) +
+    accordionItem('Competencies', checkboxList(COMPETENCIES.map(c => c.label))) +
+    accordionItem('Strategic Learning Goals', checkboxList(LEARNING_GOALS.map(g => g.label)));
+
+  document.getElementById('initAssignAccordion').innerHTML =
+    accordionItem('Departments', checkboxList(DEPARTMENTS)) +
+    accordionItem('Grades', checkboxList(GRADES)) +
+    accordionItem('Locations', checkboxList(LOCATIONS)) +
+    accordionItem('Teams', checkboxList(TEAMS)) +
+    accordionItem('Targetted Learning Initiatives', checkboxList(TLI)) +
+    accordionItem('Dynamic User Groups', checkboxList(DYNAMIC_GROUPS));
+}
+
+/* ---- Render: Assignment Center accordions ---- */
+function renderAssignmentAccordions() {
+  document.getElementById('assignContentAccordion').innerHTML =
+    accordionItem('Reflectors', reflectorsByCapabilityHtml()) +
+    accordionItem('Capabilities', checkboxList(CAPABILITIES.map(c => c.label))) +
+    accordionItem('Competencies', checkboxList(COMPETENCIES.map(c => c.label))) +
+    accordionItem('Strategic Learning Goals', checkboxList(LEARNING_GOALS.map(g => g.label))) +
+    accordionItem('Assessments', checkboxList(ASSESSMENTS.map(a => a.name)));
+
+  document.getElementById('assignTargetAccordion').innerHTML =
+    accordionItem('Individuals', `<label style="display:block;"><input type="text" class="lm-input" placeholder="Search employees…" style="width:100%;"></label>`) +
+    accordionItem('Teams', checkboxList(TEAMS)) +
+    accordionItem('Departments', checkboxList(DEPARTMENTS)) +
+    accordionItem('Grades', checkboxList(GRADES)) +
+    accordionItem('Business Units', checkboxList(BUSINESS_UNITS));
+}
+
+function toggleScheduledDate(show) {
+  document.getElementById('scheduledDateInput').classList.toggle('show', show);
+}
+
+function fakePublish(btn, toastId) {
+  const toast = document.getElementById(toastId);
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+renderCompetencyTable();
+renderGoalsTable();
+renderAssessmentTable();
+renderAssignmentsTable();
+renderInitiativeAccordions();
+renderAssignmentAccordions();
+</script>
+</body>
+</html>

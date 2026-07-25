@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wisdom on the Go — Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:   #041A40;
+  --night2:  #2A3C5D;
+  --night3:  #4F5F79;
+  --grey1:   #f0f2f5;
+  --grey2:   #b8c0cc;
+  --grey3:   #6b7685;
+  --white:   #ffffff;
+  --green:   #3ab54a;
+  --green2:  #2d9640;
+  --gold:    #E4CA0A;
+  --gold2:   #AB9808;
+  --amber:   #e8960a;
+  --amber2:  #c17d00;
+  --red:     #e0303a;
+  --teal:    #14B8A6;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Poppins',sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(4,26,64,0.06), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(228,202,10,0.05), transparent 40%),
+    #fbfbfd;
+  min-height:100vh;
+  color:var(--night);
+}
+a { text-decoration:none; color:inherit; }
+
+/* ---- Layout ---- */
+.admin-shell { min-height:100vh; }
+
+/* ---- Sidebar (burger-triggered slide-out drawer, matches user page) ---- */
+.admin-sidebar {
+  position:fixed; top:0; left:0; width:216px; height:100vh; z-index:100;
+  background:var(--night); color:#fff; display:flex; flex-direction:column;
+  transform:translateX(0); transition:transform 0.25s; box-shadow:4px 0 24px rgba(0,0,0,0.18);
+}
+.admin-sidebar.collapsed { transform:translateX(-100%); }
+.admin-logo { padding:1.1rem 1rem 0.9rem; }
+.admin-logo .logo { font-size:1.15rem; }
+.admin-logo .w { font-weight:700; color:#fff; }
+.admin-logo .mid { font-weight:400; color:#fff; }
+.admin-logo .go { font-weight:700; color:var(--green); }
+.admin-logo .sanskrit { font-size:0.6rem; font-weight:300; letter-spacing:0.16em; color:#fff; opacity:0.75; margin-top:-0.1rem; }
+.admin-nav { flex:1; padding:0.6rem 0; overflow-y:auto; }
+.admin-nav-item {
+  display:flex; align-items:center; gap:0.65rem; width:100%; padding:0.7rem 1rem;
+  color:var(--grey1); font-size:0.82rem; border-left:3px solid transparent; cursor:pointer;
+  white-space:nowrap; transition:background 0.15s, border-color 0.15s;
+}
+.admin-nav-item svg { width:17px; height:17px; flex-shrink:0; }
+.admin-nav-item:hover { background:rgba(255,255,255,0.06); border-left-color:var(--green); }
+.admin-nav-item.active { background:rgba(255,255,255,0.08); border-left-color:var(--green); color:#fff; font-weight:600; }
+.admin-nav-divider { height:1px; background:rgba(255,255,255,0.1); margin:0.6rem 1rem; }
+.admin-nav-footer { padding:0.6rem 0 1rem; }
+
+/* ---- Header ---- */
+.admin-main { min-width:0; margin-left:216px; transition:margin-left 0.25s; }
+.admin-main.expanded { margin-left:0; }
+header.topbar { background:var(--night); }
+.header-inner { display:flex; align-items:center; padding:0.9rem 2rem; gap:1rem; }
+.burger-btn {
+  width:36px; height:36px; border-radius:8px; background:none; border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff;
+}
+.burger-btn:hover { background:rgba(255,255,255,0.16); }
+.burger-btn svg { width:20px; height:20px; }
+.admin-greeting .hello { font-weight:600; font-size:1.15rem; color:#fff; }
+.admin-greeting .hello .name { color:var(--gold); }
+.admin-greeting .sub { color:var(--grey2); font-size:0.88rem; }
+.header-spacer { flex:1; }
+.admin-profile { display:flex; align-items:center; gap:0.7rem; cursor:default; }
+.admin-profile img { width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.3); }
+.admin-profile-text .name { color:#fff; font-weight:600; font-size:0.92rem; }
+.admin-profile-text .title { color:var(--grey2); font-size:0.76rem; }
+
+/* ---- Content ---- */
+.admin-content { max-width:1500px; margin:0 auto; padding:1.6rem 2rem 3rem; }
+
+/* ---- Filter bar ---- */
+.filter-reset {
+  font-size:0.82rem; color:var(--green2); font-weight:600; cursor:pointer; background:none; border:none; font-family:'Poppins',sans-serif; text-align:center; padding:0.4rem;
+}
+.filter-reset:hover { text-decoration:underline; }
+
+/* ---- Filter trigger + drawer (matches Reports & Insights Drill Down) ---- */
+.filter-trigger-row { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin-bottom:1.4rem; flex-wrap:wrap; }
+.um-title { font-size:1.5rem; font-weight:700; color:var(--night); }
+.ri-dd-trigger {
+  display:flex; align-items:center; gap:0.45rem; font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600;
+  color:var(--night2); background:var(--white); border:1.5px solid rgba(4,26,64,0.14); border-radius:20px;
+  padding:0.5rem 1.05rem; cursor:pointer; transition:border-color 0.15s, color 0.15s;
+}
+.ri-dd-trigger svg { width:15px; height:15px; }
+.ri-dd-trigger:hover { border-color:var(--night2); color:var(--night); }
+.dd-overlay { position:fixed; inset:0; background:rgba(4,26,64,0.45); z-index:199; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.dd-overlay.open { opacity:1; pointer-events:auto; }
+.dd-drawer {
+  position:fixed; top:0; right:0; width:320px; height:100vh; z-index:200;
+  background:var(--white); display:flex; flex-direction:column;
+  transform:translateX(100%); transition:transform 0.25s; box-shadow:-4px 0 24px rgba(0,0,0,0.18);
+}
+.dd-drawer.open { transform:translateX(0); }
+.dd-drawer-head { display:flex; align-items:center; justify-content:space-between; padding:1.4rem 1.4rem 1rem; border-bottom:1px solid rgba(4,26,64,0.08); flex-shrink:0; }
+.dd-drawer-head h3 { font-size:1.05rem; font-weight:700; color:var(--night); }
+.dd-close-btn { width:32px; height:32px; border-radius:8px; border:none; background:var(--grey1); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--grey3); transition:background 0.15s, color 0.15s; flex-shrink:0; }
+.dd-close-btn:hover { background:var(--grey2); color:var(--night); }
+.dd-close-btn svg { width:16px; height:16px; }
+.dd-drawer-body { flex:1; overflow-y:auto; padding:1.2rem 1.4rem; }
+.dd-drawer-foot { padding:1rem 1.4rem 1.4rem; border-top:1px solid rgba(4,26,64,0.08); flex-shrink:0; display:flex; flex-direction:column; gap:0.5rem; }
+.dd-go-btn { width:100%; font-family:'Poppins',sans-serif; font-size:0.86rem; font-weight:600; color:#fff; background:var(--green); border:none; border-radius:20px; padding:0.65rem; cursor:pointer; transition:background 0.15s; }
+.dd-go-btn:hover { background:var(--green2); }
+.ri-dd-item { margin-bottom:0.6rem; }
+.ri-dd-toggle {
+  width:100%; text-align:left; background:var(--grey1); border:none; border-radius:10px; padding:0.7rem 0.9rem;
+  font-family:'Poppins',sans-serif; font-size:0.84rem; font-weight:600; color:var(--night2); cursor:pointer; transition:background 0.15s, color 0.15s;
+}
+.ri-dd-toggle:hover { background:var(--grey2); }
+.ri-dd-item.open .ri-dd-toggle { background:rgba(20,184,166,0.14); color:#0d8f81; }
+.ri-dd-panel { max-height:0; overflow:hidden; transition:max-height 0.25s ease; display:flex; flex-direction:column; gap:0.5rem; padding:0 0.4rem; }
+.ri-dd-item.open .ri-dd-panel { max-height:360px; padding:0.7rem 0.4rem 0.2rem; overflow-y:auto; }
+.ri-dd-panel label { display:flex; align-items:center; gap:0.55rem; font-size:0.8rem; color:var(--night2); cursor:pointer; }
+.ri-dd-panel input { accent-color:var(--teal); width:14px; height:14px; }
+
+/* ---- KPI cards ---- */
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.1rem; margin-bottom:1.6rem; }
+.kpi-card {
+  background:var(--white); border-radius:12px; padding:1.2rem 1.3rem; border-left:6px solid transparent;
+  box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05);
+  transition:transform 0.2s ease, box-shadow 0.2s ease; min-width:0;
+}
+.kpi-card:hover { transform:translateY(-5px); box-shadow:0 16px 30px rgba(4,26,64,0.16); }
+.kpi-card-head { display:flex; align-items:center; justify-content:space-between; gap:0.6rem; margin-bottom:0.9rem; }
+.kpi-card-head-left { display:flex; align-items:center; gap:0.55rem; min-width:0; }
+.kpi-card-icon {
+  width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; background:rgba(42,60,93,0.10);
+  box-shadow:0 2px 5px rgba(4,26,64,0.16), inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -1px 1px rgba(4,26,64,0.08);
+}
+.kpi-card-icon svg { width:18px; height:18px; }
+.kpi-card.c-green h3 { color:var(--green2); }
+.kpi-card.c-green .kpi-card-icon { background:var(--green); color:#fff; }
+.kpi-card.c-gold h3 { color:var(--gold2); }
+.kpi-card.c-gold .kpi-card-icon { background:var(--gold); color:#fff; }
+.kpi-card.c-amber h3 { color:var(--amber2); }
+.kpi-card.c-amber .kpi-card-icon { background:var(--amber); color:#fff; }
+.kpi-card.c-navy h3 { color:var(--night); }
+.kpi-card.c-navy .kpi-card-icon { background:var(--night2); color:#fff; }
+.kpi-card h3 { font-size:0.76rem; font-weight:500; line-height:1.22; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.kpi-avg-pill { font-size:0.58rem; font-weight:500; padding:0.22rem 0.5rem; border-radius:12px; white-space:nowrap; flex-shrink:0; }
+.kpi-card.c-green .kpi-avg-pill { background:rgba(58,181,74,0.12); color:var(--green2); }
+.kpi-card.c-gold .kpi-avg-pill { background:rgba(228,202,10,0.18); color:var(--gold2); }
+.kpi-card.c-amber .kpi-avg-pill { background:rgba(232,150,10,0.14); color:var(--amber2); }
+.kpi-card.c-navy .kpi-avg-pill { background:rgba(4,26,64,0.08); color:var(--night); }
+.kpi-chart { position:relative; }
+.kpi-chart-bars { display:flex; align-items:flex-end; gap:4px; height:92px; border-bottom:1.5px solid rgba(4,26,64,0.16); position:relative; }
+.kpi-bar-wrap { flex:1; height:100%; display:flex; align-items:flex-end; justify-content:center; }
+.kpi-bar { width:60%; border-radius:3px 3px 0 0; min-height:2px; cursor:default; transition:opacity 0.15s; position:relative; }
+.kpi-bar-wrap:hover .kpi-bar { opacity:0.7; }
+.kpi-bar-wrap:hover .bar-num { opacity:1; }
+.kpi-chart-line { position:absolute; top:0; left:0; width:100%; height:92px; pointer-events:none; }
+.kpi-chart-axis-labels { display:flex; gap:4px; margin-top:0.35rem; }
+.kpi-axis-label { flex:1; text-align:center; font-size:0.56rem; color:var(--grey3); }
+
+/* ---- Tabs section ---- */
+.tabs-panel { background:var(--white); border-radius:14px; padding:1.4rem 1.5rem 1.6rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:2px solid transparent; margin-bottom:1.6rem; transition:border-color 0.2s, box-shadow 0.2s; }
+.tabs-panel.drop-target { border-color:var(--teal); box-shadow:0 0 0 4px rgba(20,184,166,0.15), 0 6px 20px rgba(4,26,64,0.08); }
+.panel-identity { display:flex; align-items:center; gap:0.6rem; margin-bottom:1.1rem; }
+.panel-identity-icon {
+  width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  background:rgba(42,60,93,0.10); box-shadow:0 2px 5px rgba(4,26,64,0.16), inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -1px 1px rgba(4,26,64,0.08);
+}
+.panel-identity-icon svg { width:18px; height:18px; }
+.panel-identity-title { font-size:0.95rem; font-weight:500; }
+.panel-identity-back { font-size:0.72rem; font-weight:600; color:var(--grey3); background:var(--grey1); border:none; border-radius:12px; padding:0.28rem 0.7rem; cursor:pointer; margin-left:0.3rem; }
+.panel-identity-back:hover { color:var(--night); background:var(--grey2); }
+.kpi-card[draggable="true"] { cursor:grab; }
+.kpi-card.dragging { opacity:0.35; }
+.kpi-card.overall-slot { cursor:pointer; }
+.kpi-card.c-teal h3 { color:var(--night); }
+.kpi-card.c-teal .kpi-avg-pill { background:var(--grey1); color:var(--night2); }
+.kpi-card.c-teal { border-left-color:var(--night2); }
+.kpi-card.c-usage1 h3, .kpi-card.c-usage2 h3, .kpi-card.c-usage3 h3, .kpi-card.c-usage4 h3 { color:var(--night); }
+.kpi-card.c-usage1 .kpi-avg-pill, .kpi-card.c-usage2 .kpi-avg-pill, .kpi-card.c-usage3 .kpi-avg-pill, .kpi-card.c-usage4 .kpi-avg-pill { background:var(--grey1); color:var(--night2); }
+.kpi-card.c-usage1, .kpi-card.c-usage2, .kpi-card.c-usage3, .kpi-card.c-usage4 { border-left-color:var(--night2); }
+.tabs-panel.sliced-ld .tab-btn.active { color:#0d8f81; }
+.tabs-panel.sliced-ld .tab-btn.active::before { background:linear-gradient(180deg, #12a292 0%, #0d8f81 100%); box-shadow:0 2px 5px rgba(18,162,146,0.45); }
+.tabs-panel.sliced-ld .tab-btn:hover::before { background:linear-gradient(180deg, rgba(18,162,146,0.7) 0%, rgba(18,162,146,0.4) 100%); }
+.tabs-panel.sliced-ld .period-toggle-thumb { background:#12a292; }
+.avg-duration-delta.slicedteal { color:#0d8f81; background:rgba(18,162,146,0.16); }
+.duration-insight.slicedteal { background:rgba(18,162,146,0.1); border-left-color:#12a292; }
+.trend-fill.slicedteal {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 50%),
+    linear-gradient(90deg, #12a292 0%, #0d8f81 100%);
+}
+.tabs-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; margin-bottom:1.3rem; }
+.tabs-row { display:flex; gap:0.3rem; flex-wrap:wrap; }
+.tab-btn {
+  position:relative; background:none; border:none; font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600;
+  letter-spacing:0.03em; text-transform:uppercase; color:var(--night2); cursor:pointer;
+  padding:0.55rem 1rem 0.55rem 0.85rem;
+}
+.tab-btn::before {
+  content:''; position:absolute; left:0; top:22%; bottom:22%; width:3px; border-radius:2px;
+  background:var(--night2);
+  transition:background 0.15s, width 0.15s, box-shadow 0.15s;
+}
+.tab-btn:hover { color:var(--night); }
+.tab-btn:hover::before { background:linear-gradient(180deg, rgba(20,184,166,0.7) 0%, rgba(20,184,166,0.4) 100%); }
+.tab-btn.active { color:#0d8f81; }
+.tab-btn.active::before {
+  background:linear-gradient(180deg, var(--teal) 0%, #0d8f81 100%); width:4px;
+  box-shadow:0 2px 5px rgba(20,184,166,0.45);
+}
+.period-toggle { position:relative; display:flex; background:var(--grey1); border-radius:20px; padding:0.2rem; }
+.period-toggle-thumb { position:absolute; top:0.2rem; bottom:0.2rem; left:0.2rem; background:var(--teal); border-radius:16px; transition:left 0.25s ease, width 0.25s ease; z-index:0; }
+.period-toggle span { position:relative; z-index:1; padding:0.32rem 0.75rem; font-size:0.72rem; color:var(--grey3); border-radius:16px; cursor:pointer; transition:color 0.15s; }
+.period-toggle span.active { color:#fff; font-weight:600; }
+
+.chart-legend { display:flex; gap:1.2rem; margin-top:0.9rem; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:0.4rem; font-size:0.76rem; color:var(--grey3); }
+.legend-dot { display:inline-block; width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.donut-legend .legend-dot { margin-right:0.5rem; }
+
+/* Shared hover-number treatment for every bar chart */
+.bar-num {
+  position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:3px;
+  color:var(--night); font-size:0.72rem; font-weight:700;
+  white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.15s; z-index:20;
+}
+
+/* Usage Hours chart */
+.usage-axis-title { font-size:0.66rem; color:var(--grey3); font-weight:600; margin-bottom:0.4rem; }
+.usage-chart-row { display:flex; gap:0.7rem; }
+.usage-y-axis { flex:none; width:32px; height:200px; display:flex; flex-direction:column; justify-content:space-between; text-align:right; padding-right:0.5rem; box-sizing:content-box; }
+.usage-y-tick { font-size:0.6rem; color:var(--grey3); line-height:1; }
+.usage-chart-main { position:relative; flex:1; min-width:0; }
+.usage-gridlines { position:absolute; top:0; left:0; right:0; height:200px; display:flex; flex-direction:column; justify-content:space-between; pointer-events:none; }
+.usage-gridline { width:100%; height:1px; background:rgba(4,26,64,0.08); }
+.usage-chart-cols { position:relative; display:flex; align-items:flex-end; justify-content:space-between; height:200px; }
+.usage-col { flex:none; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; }
+.usage-stack { width:100%; position:relative; }
+.usage-stack:hover .bar-num-pair { opacity:1; }
+.usage-stack.pill { border-radius:999px; overflow:hidden; }
+.usage-seg-new { width:100%; border-radius:3px 3px 0 0; }
+.usage-seg-repeat { width:100%; background:var(--night); }
+.usage-trend-svg { position:absolute; top:0; left:0; width:100%; height:200px; pointer-events:none; }
+.bar-num-pair {
+  position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:3px;
+  font-size:0.68rem; font-weight:700; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.15s; z-index:20;
+}
+.usage-labels { display:flex; justify-content:space-between; margin-top:0.5rem; }
+.usage-day-label { flex:none; text-align:center; font-size:0.6rem; color:var(--grey3); white-space:nowrap; overflow:visible; }
+
+/* Shared vertical-axis chrome, reused by Atoms + Applied */
+.axis-title-v { writing-mode:vertical-rl; transform:rotate(180deg); font-size:0.64rem; color:var(--grey3); font-weight:600; flex:none; display:flex; align-items:center; justify-content:center; padding:0 0.15rem; white-space:nowrap; }
+.axis-title-v.right { transform:none; }
+.chart-row-axis { display:flex; gap:0.5rem; align-items:stretch; }
+.chart-y-axis { flex:none; width:28px; display:flex; flex-direction:column; justify-content:space-between; text-align:right; padding-right:0.4rem; }
+.chart-y-axis.right { text-align:left; padding-right:0; padding-left:0.4rem; }
+.chart-y-tick { font-size:0.58rem; color:var(--grey3); line-height:1; }
+.chart-main { position:relative; flex:1; min-width:0; }
+.chart-gridlines { position:absolute; top:0; left:0; right:0; display:flex; flex-direction:column; justify-content:space-between; pointer-events:none; }
+.chart-gridline { width:100%; height:1px; background:rgba(4,26,64,0.08); }
+
+/* Learning Atoms chart */
+.atoms-chart { display:flex; align-items:flex-end; justify-content:space-between; height:150px; }
+.atoms-group { display:flex; flex-direction:column; align-items:center; flex:none; height:100%; justify-content:flex-end; }
+.atoms-bars { display:flex; align-items:flex-end; gap:6px; }
+.atoms-bar { width:15px; border-radius:3px 3px 0 0; position:relative; }
+.atoms-bar:hover .bar-num { opacity:1; }
+.atoms-bar.completed { background:var(--night2); }
+.atoms-bar.incomplete { background:var(--red) repeating-linear-gradient(135deg, rgba(255,255,255,0.42) 0 3px, transparent 3px 6px); }
+.atoms-month-label { font-size:0.68rem; color:var(--grey3); margin-top:0.5rem; white-space:nowrap; }
+
+/* Learning Applied chart */
+.applied-chart-wrap { position:relative; height:150px; }
+.applied-bars { display:flex; align-items:flex-end; justify-content:space-between; height:150px; }
+.applied-group { display:flex; flex-direction:column; align-items:center; flex:none; height:100%; justify-content:flex-end; }
+.applied-bar { width:20px; border-radius:3px 3px 0 0; background:var(--night2); position:relative; }
+.applied-bar:hover .bar-num { opacity:1; }
+.applied-line-svg { position:absolute; top:0; left:0; width:100%; height:150px; pointer-events:none; }
+.line-point-hit { position:absolute; width:14px; height:14px; margin-left:-7px; margin-top:-7px; border-radius:50%; z-index:15; }
+.line-point-hit:hover .bar-num { opacity:1; }
+.applied-labels { display:flex; justify-content:space-between; margin-top:0.5rem; }
+.applied-month-label { flex:none; text-align:center; font-size:0.68rem; color:var(--grey3); white-space:nowrap; }
+
+/* Average Duration */
+.avg-duration-hero { display:flex; align-items:baseline; gap:0.8rem; margin-bottom:1.2rem; }
+.avg-duration-value { font-size:2.4rem; font-weight:700; color:var(--night); }
+.avg-duration-unit { font-size:1rem; color:var(--grey3); }
+.avg-duration-delta { font-size:0.82rem; font-weight:600; color:#0d8f81; background:rgba(20,184,166,0.14); padding:0.25rem 0.6rem; border-radius:10px; }
+.avg-duration-delta.gold { color:var(--gold2); background:rgba(228,202,10,0.16); }
+.duration-insight { background:rgba(20,184,166,0.08); border-left:3px solid var(--teal); padding:0.65rem 0.9rem; border-radius:6px; font-size:0.82rem; color:var(--night2); margin-bottom:1.1rem; }
+.duration-insight.gold { background:rgba(228,202,10,0.1); border-left-color:var(--gold); }
+.trend-row { margin-bottom:0.7rem; }
+.trend-row-top { display:flex; justify-content:space-between; font-size:0.8rem; color:var(--night2); margin-bottom:0.3rem; }
+.trend-track { height:5px; background:var(--grey1); border-radius:3px; overflow:hidden; }
+.trend-fill {
+  height:100%; border-radius:3px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 50%),
+    linear-gradient(90deg, var(--night2) 0%, var(--night) 100%);
+}
+.trend-fill.gold { background:linear-gradient(90deg, var(--gold) 0%, var(--gold2) 100%); }
+
+/* ---- Lower widgets ---- */
+.widgets-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1.1rem; }
+.widget-card { background:var(--white); border-radius:14px; padding:1.3rem 1.4rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05); transition:transform 0.2s ease, box-shadow 0.2s ease; }
+.widget-card:hover { transform:translateY(-4px); box-shadow:0 14px 26px rgba(4,26,64,0.14); }
+.widget-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; }
+.widget-title { font-size:0.78rem; font-weight:700; letter-spacing:0.01em; color:var(--night2); text-transform:uppercase; }
+.widget-period-select { font-size:0.74rem; color:var(--grey3); background:var(--grey1); border:none; border-radius:14px; padding:0.3rem 0.7rem; font-family:'Poppins',sans-serif; }
+
+.nudge-row { margin-bottom:1rem; }
+.nudge-row:last-child { margin-bottom:0; }
+.nudge-label { font-size:0.8rem; color:var(--night2); margin-bottom:0.35rem; }
+.nudge-bar { display:flex; height:26px; border-radius:6px; overflow:hidden; }
+.nudge-seg { display:flex; align-items:center; padding:0 0.6rem; font-size:0.62rem; font-weight:700; color:#fff; white-space:nowrap; }
+.nudge-seg.a { background:var(--teal) repeating-linear-gradient(135deg, rgba(255,255,255,0.42) 0 3px, transparent 3px 6px); color:var(--night); }
+.nudge-seg.b { background:var(--night2); }
+
+.donut-wrap { display:flex; flex-direction:column; align-items:center; gap:0.9rem; }
+.donut { width:150px; height:150px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; }
+.donut-inner { width:104px; height:104px; border-radius:50%; background:var(--white); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.donut-inner .val { font-size:1.3rem; font-weight:700; color:var(--night); }
+.donut-inner .lbl { font-size:0.62rem; color:var(--grey3); }
+.donut-legend { width:100%; display:flex; flex-direction:column; gap:0.35rem; }
+.donut-legend .legend-item { justify-content:space-between; width:100%; }
+.query-card .legend-item { color:#fff; }
+
+.query-card { background:var(--night); color:#fff; }
+.query-card .widget-title { color:var(--grey2); }
+.query-card .donut-inner { background:var(--night); }
+.query-card .donut-inner .val { color:#fff; }
+.query-card .donut-inner .lbl { color:var(--grey2); }
+.query-donut-row { display:flex; align-items:center; gap:1.2rem; }
+.query-stat { margin-bottom:0.8rem; }
+.query-stat:last-child { margin-bottom:0; }
+.query-stat .qval { font-size:1.15rem; font-weight:700; color:var(--night); }
+.query-stat .qlbl { font-size:0.74rem; color:var(--grey3); display:flex; align-items:center; gap:0.4rem; }
+.query-card .query-stat .qval { color:#fff; }
+.query-card .query-stat .qlbl { color:var(--grey2); }
+
+.nps-hero { text-align:center; margin-bottom:1.1rem; padding-bottom:1rem; border-bottom:1px solid rgba(4,26,64,0.08); }
+.nps-value { font-size:2.6rem; font-weight:700; color:var(--night); line-height:1; }
+.nps-label { font-size:0.78rem; color:var(--grey3); margin-top:0.4rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; }
+.nps-tag { font-size:0.62rem; font-weight:700; color:#fff; background:var(--green); padding:0.18rem 0.55rem; border-radius:10px; text-transform:uppercase; letter-spacing:0.03em; }
+.star-row { display:flex; align-items:center; justify-content:space-between; gap:0.6rem; margin-bottom:0.6rem; }
+.star-row:last-child { margin-bottom:0; }
+.star-cat { font-size:0.8rem; color:var(--night2); flex:1; min-width:0; }
+.stars-wrap { position:relative; font-size:0.95rem; line-height:1; letter-spacing:1px; flex-shrink:0; }
+.stars-empty { color:var(--grey2); white-space:nowrap; }
+.stars-filled { position:absolute; top:0; left:0; overflow:hidden; white-space:nowrap; color:var(--gold); }
+.star-val { font-size:0.76rem; color:var(--grey3); width:28px; text-align:right; flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<div class="admin-shell">
+  <nav class="admin-sidebar" id="adminSidebar">
+    <div class="admin-logo">
+      <div class="logo"><span class="w">W</span><span class="mid">isdom on the </span><span class="go">GO!</span></div>
+      <div class="sanskrit">Tat Tvam Asi</div>
+    </div>
+    <div class="admin-nav">
+      <div class="admin-nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Adoption Overview
+      </div>
+      <a href="user_management.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        User Management
+      </a>
+      <a href="learning_management.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+        Learning Management
+      </a>
+      <a href="reports_insights.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12.5" y="8" width="3" height="10"/><rect x="18" y="5" width="3" height="13"/></svg>
+        Reports &amp; Insights
+      </a>
+      <a href="business_impact_2.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m6 15 4-5 3.5 3L20 6"/><path d="M15 6h5v5"/></svg>
+        Business Impact
+      </a>
+      <div class="admin-nav-divider"></div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg>
+        Help &amp; information
+      </div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        Settings
+      </div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log out
+      </div>
+    </div>
+  </nav>
+
+  <div class="admin-main">
+    <header class="topbar">
+      <div class="header-inner">
+        <button class="burger-btn" onclick="toggleSidePanel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9.5 4v16"/><rect x="4.3" y="5.3" width="4.2" height="13.4" rx="1.1" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <div class="admin-greeting">
+          <div class="hello">Hello <span class="name">Patty</span>!</div>
+          <div class="sub">Adoption Snapshot for Your Organization</div>
+        </div>
+        <div class="header-spacer"></div>
+        <div class="admin-profile">
+          <div class="admin-profile-text" style="text-align:right">
+            <div class="name">Patty Merchant</div>
+            <div class="title">Global Head: Learning &amp; Talent Development</div>
+          </div>
+          <img src="assets/patty_headshot.jpg" alt="Patty Merchant">
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <div class="filter-trigger-row">
+        <h1 class="um-title">Adoption Overview</h1>
+        <button class="ri-dd-trigger" onclick="toggleFilterDrawer()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="4 4 20 4 14 12.5 14 19 10 21 10 12.5 4 4"/></svg>
+          Filter
+        </button>
+      </div>
+
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="tabs-panel" id="tabsPanel" ondragover="onPanelDragOver(event)" ondragleave="onPanelDragLeave(event)" ondrop="onPanelDrop(event)">
+        <div class="panel-identity" id="panelIdentity"></div>
+        <div class="tabs-head">
+          <div class="tabs-row" id="tabsRow"></div>
+          <div id="periodToggleWrap"></div>
+        </div>
+        <div id="tabPanelBody"></div>
+      </div>
+
+      <div class="widgets-row">
+        <div class="widget-card">
+          <div class="widget-head"><span class="widget-title">Learning Nudges</span><select class="widget-period-select"><option>Nov</option><option>Month</option><option>Week</option><option>Year</option><option>Custom</option></select></div>
+          <div class="nudge-row">
+            <div class="nudge-label">Calendar Triggered</div>
+            <div class="nudge-bar">
+              <div class="nudge-seg a" style="width:19%">43,975</div>
+              <div class="nudge-seg b" style="width:81%">182,915</div>
+            </div>
+          </div>
+          <div class="nudge-row">
+            <div class="nudge-label">Completion Reminder</div>
+            <div class="nudge-bar">
+              <div class="nudge-seg a" style="width:33%">8,975</div>
+              <div class="nudge-seg b" style="width:67%">18,265</div>
+            </div>
+          </div>
+          <div class="nudge-row">
+            <div class="nudge-label">Recommendation Alert</div>
+            <div class="nudge-bar">
+              <div class="nudge-seg a" style="width:25%">50,255</div>
+              <div class="nudge-seg b" style="width:75%">152,915</div>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--teal) repeating-linear-gradient(135deg, rgba(255,255,255,0.42) 0 2px, transparent 2px 4px)"></span>Sent</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--night2)"></span>Actioned</div>
+          </div>
+        </div>
+
+        <div class="widget-card query-card">
+          <div class="widget-head"><span class="widget-title">Time Share</span><select class="widget-period-select" style="background:rgba(255,255,255,0.1);color:#fff"><option>Nov</option><option>Month</option><option>Week</option><option>Year</option><option>Custom</option></select></div>
+          <div class="donut-wrap">
+            <div class="donut" style="background:conic-gradient(#F2C94C 0% 20%, #4FD164 20% 65%, #5B9DF9 65% 100%)">
+              <div class="donut-inner"><span class="val">433</span><span class="lbl">Hours</span></div>
+            </div>
+            <div class="donut-legend">
+              <div class="legend-item"><span><span class="legend-dot" style="background:#F2C94C"></span>Diagnostics</span><span>20%</span></div>
+              <div class="legend-item"><span><span class="legend-dot" style="background:#4FD164"></span>Learning Atoms</span><span>45%</span></div>
+              <div class="legend-item"><span><span class="legend-dot" style="background:#5B9DF9"></span>Others</span><span>35%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="widget-card">
+          <div class="widget-head"><span class="widget-title">User Feedback</span><select class="widget-period-select"><option>Nov</option><option>Month</option><option>Week</option><option>Year</option><option>Custom</option></select></div>
+          <div class="nps-hero">
+            <div class="nps-value">72</div>
+            <div class="nps-label">NPS Score <span class="nps-tag">Excellent</span></div>
+          </div>
+          <div class="feedback-stars">
+            <div class="star-row"><span class="star-cat">Diagnostics</span><span class="stars-wrap"><span class="stars-empty">★★★★★</span><span class="stars-filled" style="width:100%">★★★★★</span></span><span class="star-val">5.0</span></div>
+            <div class="star-row"><span class="star-cat">Learning Atoms</span><span class="stars-wrap"><span class="stars-empty">★★★★★</span><span class="stars-filled" style="width:90%">★★★★★</span></span><span class="star-val">4.5</span></div>
+            <div class="star-row"><span class="star-cat">Learning Aids</span><span class="stars-wrap"><span class="stars-empty">★★★★★</span><span class="stars-filled" style="width:95%">★★★★★</span></span><span class="star-val">4.75</span></div>
+            <div class="star-row"><span class="star-cat">Assessments</span><span class="stars-wrap"><span class="stars-empty">★★★★★</span><span class="stars-filled" style="width:85%">★★★★★</span></span><span class="star-val">4.25</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="dd-overlay" id="ddOverlay" onclick="toggleFilterDrawer()"></div>
+<div class="dd-drawer" id="ddDrawer">
+  <div class="dd-drawer-head">
+    <h3>Filter</h3>
+    <button class="dd-close-btn" onclick="toggleFilterDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="dd-drawer-body">
+    <div class="ri-dd-item">
+      <button class="ri-dd-toggle" data-label="Department" onclick="toggleDD(this)">+ Department</button>
+      <div class="ri-dd-panel" id="deptFilterPanel"></div>
+    </div>
+    <div class="ri-dd-item">
+      <button class="ri-dd-toggle" data-label="Grade" onclick="toggleDD(this)">+ Grade</button>
+      <div class="ri-dd-panel" id="gradeFilterPanel"></div>
+    </div>
+    <div class="ri-dd-item">
+      <button class="ri-dd-toggle" data-label="Targetted Learning Initiatives" onclick="toggleDD(this)">+ Targetted Learning Initiatives</button>
+      <div class="ri-dd-panel">
+        <label><input type="checkbox">New Hires</label>
+        <label><input type="checkbox">High Potential</label>
+        <label><input type="checkbox">Leadership Track</label>
+        <label><input type="checkbox">At Risk</label>
+      </div>
+    </div>
+    <div class="ri-dd-item">
+      <button class="ri-dd-toggle" data-label="Competency" onclick="toggleDD(this)">+ Competency</button>
+      <div class="ri-dd-panel">
+        <label><input type="checkbox">Change Management</label>
+        <label><input type="checkbox">Conflict Management</label>
+        <label><input type="checkbox">Cultural Competence</label>
+        <label><input type="checkbox">Driving High Performance</label>
+        <label><input type="checkbox">Effective Communication</label>
+        <label><input type="checkbox">Emotional Intelligence</label>
+        <label><input type="checkbox">Ethics &amp; Integrity</label>
+        <label><input type="checkbox">Goal Setting</label>
+        <label><input type="checkbox">Intrapreneurship</label>
+      </div>
+    </div>
+    <div class="ri-dd-item">
+      <button class="ri-dd-toggle" data-label="Capability" onclick="toggleDD(this)">+ Capability</button>
+      <div class="ri-dd-panel">
+        <label><input type="checkbox">Embodied Self-care</label>
+        <label><input type="checkbox">Social Presence</label>
+        <label><input type="checkbox">Interpersonal Responsiveness</label>
+        <label><input type="checkbox">Cultivating Relationships</label>
+        <label><input type="checkbox">Social Influence</label>
+        <label><input type="checkbox">Emotional Grounding</label>
+        <label><input type="checkbox">Result Orientation</label>
+        <label><input type="checkbox">Upholding Dignity</label>
+        <label><input type="checkbox">Self-Cultivation</label>
+      </div>
+    </div>
+  </div>
+  <div class="dd-drawer-foot">
+    <button class="dd-go-btn" onclick="onFilterChange(); toggleFilterDrawer();">Go</button>
+    <button class="filter-reset" onclick="resetFilters()">Reset filters</button>
+  </div>
+</div>
+
+<script>
+function toggleFilterDrawer() {
+  const drawer = document.getElementById('ddDrawer');
+  const overlay = document.getElementById('ddOverlay');
+  const open = drawer.classList.toggle('open');
+  overlay.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+const MONTHS = ['Jun','Jul','Aug','Sep','Oct','Nov'];
+const DEPARTMENTS = ['All Departments','Sales','Engineering','Marketing','Operations','HR'];
+const GRADES = ['All Grades','L1','L2','L3','L4','L5'];
+const DEPT_MULT = { 'All Departments':1.0, 'Sales':0.90, 'Engineering':0.65, 'Marketing':0.82, 'Operations':0.72, 'HR':0.78 };
+const GRADE_MULT = { 'All Grades':1.0, 'L1':0.55, 'L2':0.70, 'L3':0.85, 'L4':0.92, 'L5':0.60 };
+const MAX_COMBINED_MULT = Math.max(...Object.values(DEPT_MULT)) * Math.max(...Object.values(GRADE_MULT));
+const DEPT_SHAPE = {
+  'All Departments':[1,1,1,1,1,1],
+  'Sales':[1.05,0.92,1.10,0.90,1.08,0.95],
+  'Engineering':[0.92,1.08,0.90,1.10,0.92,1.08],
+  'Marketing':[1.10,0.90,1.05,0.92,1.10,0.88],
+  'Operations':[0.90,1.10,0.92,1.08,0.90,1.10],
+  'HR':[1.0,1.10,0.90,1.0,1.10,0.88],
+};
+const GRADE_SHAPE = {
+  'All Grades':[1,1,1,1,1,1],
+  'L1':[1.12,0.88,1.05,0.92,1.10,0.88],
+  'L2':[0.92,1.08,0.88,1.12,0.92,1.08],
+  'L3':[1.0,1.0,1.05,0.92,1.0,1.03],
+  'L4':[0.88,1.12,0.92,1.08,0.88,1.12],
+  'L5':[1.08,0.90,1.12,0.88,1.05,0.92],
+};
+const DEPT_SUCCESS_DELTA = { 'All Departments':0, 'Sales':4, 'Engineering':-3, 'Marketing':6, 'Operations':-2, 'HR':2 };
+const GRADE_SUCCESS_DELTA = { 'All Grades':0, 'L1':-6, 'L2':-2, 'L3':2, 'L4':5, 'L5':8 };
+
+const KPI_BASE = [
+  { key:'manager', label:'Manager Assigned', cls:'c-usage1', data:[1.05,0.92,1.15,1.30,1.10,1.25],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--night)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M2 21c0-4 3-7 7-7"/><path d="m14 15 2 2 4-4"/></svg>' },
+  { key:'ld', label:'L&amp;D Assigned', cls:'c-usage2', data:[1.35,1.20,1.05,1.15,1.30,1.40],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--night)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 10-10-5L2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>' },
+  { key:'personalized', label:'Recommended', cls:'c-usage3', data:[0.80,0.95,1.15,1.35,1.50,1.65],
+    icon:'<svg viewBox="0 0 24 24" fill="var(--night)"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>' },
+  { key:'self', label:'Self-Initiated', cls:'c-usage4', data:[1.00,1.15,0.85,1.20,0.95,1.05],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--night)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 19 L9 8 L12 13 L16 6 L22 19"/><line x1="16" y1="6" x2="16" y2="2"/><path d="M16 2 L20.5 3.6 L16 5.2 Z" fill="var(--night)" stroke="none"/><circle cx="6.3" cy="9.6" r="0.9" fill="var(--night)" stroke="none"/><line x1="6.3" y1="10.5" x2="6.3" y2="12.3"/><line x1="6.3" y1="10.9" x2="5" y2="10.1"/><line x1="6.3" y1="10.9" x2="7.6" y2="9.9"/></svg>' },
+];
+
+const OVERALL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--night)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.7 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.7-3.8-9s1.3-6.5 3.8-9Z"/></svg>';
+const OVERALL_CARD = {
+  key:'overall', label:'Overall', cls:'c-teal',
+  data: MONTHS.map((_, i) => KPI_BASE.reduce((sum, k) => sum + k.data[i], 0)),
+  icon: OVERALL_ICON,
+};
+let slicedCategory = null;
+
+const USAGE_PERIODS = {
+  ytd:     { label:'YTD',     labels:['Dec ’25','Jan ’26','Feb ’26','Mar ’26','Apr ’26','May ’26','Jun ’26','Jul ’26','Aug ’26','Sep ’26','Oct ’26','Nov ’26'], seed:1, repeatBase:260, newBase:48, axisStep:50, style:'bar', newColor:'var(--teal)', barWidth:44 },
+  year:    { label:'Year',    labels:['Jan ’26','Feb ’26','Mar ’26','Apr ’26','May ’26','Jun ’26','Jul ’26','Aug ’26','Sep ’26','Oct ’26','Nov ’26'], seed:4, repeatBase:260, newBase:48, axisStep:50, style:'bar', newColor:'var(--teal)', barWidth:44 },
+  quarter: { label:'Quarter', labels:['Wk of 1st Oct','Wk of 8th Oct','Wk of 15th Oct','Wk of 22nd Oct','Wk of 29th Oct','Wk of 5th Nov'], seed:3, repeatBase:40, newBase:9, axisStep:10, style:'bar', newColor:'var(--teal)', barWidth:52 },
+  month:   { label:'Month',   labels:['1st Nov','2nd Nov','3rd Nov','4th Nov','5th Nov','6th Nov','7th Nov','8th Nov','9th Nov','10th Nov','11th Nov','12th Nov','13th Nov','14th Nov'], seed:2, repeatBase:22, newBase:5, axisStep:5, style:'pill', newColor:'var(--teal)', barWidth:12 },
+};
+const MONTH_NO_NEW_DAYS = new Set([2, 4, 5, 9, 11, 13]);
+function usageSeriesFor(periodKey) {
+  const cfg = USAGE_PERIODS[periodKey];
+  const n = cfg.labels.length;
+  return cfg.labels.map((label, i) => {
+    const wave = Math.sin((i + cfg.seed) * 0.7) * 0.15 + 1;
+    const growth = 1 + (i / n) * 0.3;
+    const repeat = Math.round(cfg.repeatBase * wave * growth);
+    let nw = Math.round(cfg.newBase * (1.3 - wave * 0.3) * growth);
+    if (periodKey === 'month' && MONTH_NO_NEW_DAYS.has(i)) nw = 0;
+    return { d:label, repeat, new:nw };
+  });
+}
+let activePeriod = 'ytd';
+const ATOMS_PERIOD_BASE = {
+  ytd:{completed:198, incomplete:54, growth:0.35}, year:{completed:198, incomplete:54, growth:0.35},
+  quarter:{completed:63, incomplete:18, growth:0.25}, month:{completed:14.4, incomplete:4.5, growth:0.2},
+};
+function atomsSeriesFor(periodKey) {
+  const cfg = USAGE_PERIODS[periodKey];
+  const base = ATOMS_PERIOD_BASE[periodKey];
+  const n = cfg.labels.length;
+  return cfg.labels.map((label, i) => {
+    const wave = Math.sin((i + cfg.seed + 2) * 0.65) * 0.18 + 1;
+    const growth = 1 + (i / n) * base.growth;
+    return {
+      label,
+      completed: Math.max(1, Math.round(base.completed * wave * growth)),
+      incomplete: Math.max(0, Math.round(base.incomplete * (1.3 - wave * 0.3) * growth)),
+    };
+  });
+}
+function appliedSeriesFor(periodKey) {
+  const cfg = USAGE_PERIODS[periodKey];
+  const atoms = atomsSeriesFor(periodKey);
+  const n = atoms.length;
+  return atoms.map((d, i) => {
+    const wave01 = (Math.sin((i + cfg.seed + 5) * 0.55) + 1) / 2;
+    const reduction = 0.20 + wave01 * 0.20;
+    return {
+      label: d.label,
+      applied: Math.max(1, Math.round(d.completed * (1 - reduction))),
+      success: 55 + Math.sin((i + cfg.seed) * 0.5) * 10 + (i / n) * 15,
+    };
+  });
+}
+const DURATION_PERIOD_BASE = { base:14.5, growth:0.3 };
+function durationSeriesFor(periodKey) {
+  const cfg = USAGE_PERIODS[periodKey];
+  const n = cfg.labels.length;
+  return cfg.labels.map((label, i) => {
+    const wave = Math.sin((i + cfg.seed + 6) * 0.6) * 0.12 + 1;
+    const growth = 1 + (i / n) * DURATION_PERIOD_BASE.growth;
+    return { label, value: DURATION_PERIOD_BASE.base * wave * growth };
+  });
+}
+
+let activeTab = 'usage';
+
+function onLDDragStart(e) {
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', 'ld');
+  e.currentTarget.classList.add('dragging');
+}
+function onLDDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+}
+function onPanelDragOver(e) {
+  if (slicedCategory) return;
+  e.preventDefault();
+  document.getElementById('tabsPanel').classList.add('drop-target');
+}
+function onPanelDragLeave(e) {
+  document.getElementById('tabsPanel').classList.remove('drop-target');
+}
+function onPanelDrop(e) {
+  e.preventDefault();
+  document.getElementById('tabsPanel').classList.remove('drop-target');
+  if (slicedCategory) return;
+  triggerSlice('ld');
+}
+
+function triggerSlice(newKey) {
+  const slotIcon = document.querySelector('#kpiGrid .kpi-card[data-key="ld"] .kpi-card-icon, #kpiGrid .kpi-card[data-key="overall"] .kpi-card-icon');
+  const panelIcon = document.getElementById('panelIdentityIcon');
+  const r1 = slotIcon ? slotIcon.getBoundingClientRect() : null;
+  const r2 = panelIcon ? panelIcon.getBoundingClientRect() : null;
+  let ghostA, ghostB;
+  if (r1 && r2) {
+    ghostA = slotIcon.cloneNode(true);
+    ghostB = panelIcon.cloneNode(true);
+    [[ghostA, r1], [ghostB, r2]].forEach(([g, r]) => {
+      g.style.position = 'fixed'; g.style.margin = '0'; g.style.zIndex = 9999;
+      g.style.left = r.left + 'px'; g.style.top = r.top + 'px';
+      g.style.width = r.width + 'px'; g.style.height = r.height + 'px';
+      g.style.transition = 'transform 0.55s cubic-bezier(.4,0,.2,1)';
+      g.style.pointerEvents = 'none';
+      document.body.appendChild(g);
+    });
+  }
+
+  slicedCategory = newKey;
+  activeTab = 'usage';
+  activePeriod = 'ytd';
+  document.getElementById('tabsPanel').classList.toggle('sliced-ld', slicedCategory === 'ld');
+  renderKpis();
+  renderPanelIdentity();
+  renderTabsRow();
+  renderPeriodToggle();
+  renderTabPanel();
+
+  if (ghostA && ghostB) {
+    requestAnimationFrame(() => {
+      ghostA.style.transform = `translate(${r2.left - r1.left}px, ${r2.top - r1.top}px)`;
+      ghostB.style.transform = `translate(${r1.left - r2.left}px, ${r1.top - r2.top}px)`;
+    });
+    setTimeout(() => { ghostA.remove(); ghostB.remove(); }, 600);
+  }
+}
+
+function toggleSidePanel() {
+  document.getElementById('adminSidebar').classList.toggle('collapsed');
+  document.querySelector('.admin-main').classList.toggle('expanded');
+}
+
+function getSelectedDept() {
+  const checked = document.querySelector('input[name="deptRadio"]:checked');
+  return checked ? checked.value : 'All Departments';
+}
+function getSelectedGrade() {
+  const checked = document.querySelector('input[name="gradeRadio"]:checked');
+  return checked ? checked.value : 'All Grades';
+}
+function toggleDD(btn) {
+  const item = btn.parentElement;
+  const open = item.classList.toggle('open');
+  btn.textContent = (open ? '− ' : '+ ') + btn.dataset.label;
+}
+function combinedMultiplier() {
+  const dept = getSelectedDept();
+  const grade = getSelectedGrade();
+  return DEPT_MULT[dept] * GRADE_MULT[grade];
+}
+function successDelta() {
+  const dept = getSelectedDept();
+  const grade = getSelectedGrade();
+  return DEPT_SUCCESS_DELTA[dept] + GRADE_SUCCESS_DELTA[grade];
+}
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function populateFilters() {
+  document.getElementById('deptFilterPanel').innerHTML = DEPARTMENTS.map((d, i) =>
+    `<label><input type="radio" name="deptRadio" value="${d}" ${i === 0 ? 'checked' : ''}>${d}</label>`).join('');
+  document.getElementById('gradeFilterPanel').innerHTML = GRADES.map((g, i) =>
+    `<label><input type="radio" name="gradeRadio" value="${g}" ${i === 0 ? 'checked' : ''}>${g}</label>`).join('');
+}
+function resetFilters() {
+  document.querySelector('input[name="deptRadio"][value="All Departments"]').checked = true;
+  document.querySelector('input[name="gradeRadio"][value="All Grades"]').checked = true;
+  onFilterChange();
+}
+function onFilterChange() {
+  renderKpis();
+  renderTabPanel();
+}
+
+const KPI_COLORS = { 'c-green':'#3ab54a', 'c-gold':'#E4CA0A', 'c-amber':'#e8960a', 'c-navy':'#2A3C5D', 'c-teal':'#14B8A6', 'c-usage1':'#0c6e64', 'c-usage2':'#12a292', 'c-usage3':'#43c6b8', 'c-usage4':'#8eddd4' };
+
+function renderKpis() {
+  const mult = combinedMultiplier();
+  const dept = getSelectedDept();
+  const grade = getSelectedGrade();
+  const chartH = 92;
+  const cards = KPI_BASE.map(k => (slicedCategory === 'ld' && k.key === 'ld') ? OVERALL_CARD : k);
+  document.getElementById('kpiGrid').innerHTML = cards.map(k => {
+    const scaled = k.data.map((v, i) => v * mult * DEPT_SHAPE[dept][i] * GRADE_SHAPE[grade][i]);
+    const avg = scaled.reduce((a, b) => a + b, 0) / scaled.length;
+    const ceiling = Math.max(...k.data) * MAX_COMBINED_MULT * 1.18;
+    const heightPx = v => (v / ceiling) * chartH;
+    const linePoints = scaled.map((v, i) => `${(i / (scaled.length - 1) * 100).toFixed(1)},${(chartH - heightPx(v)).toFixed(1)}`).join(' ');
+    const isOverall = k.key === 'overall';
+    const dragAttrs = k.key === 'ld' ? `draggable="true" ondragstart="onLDDragStart(event)" ondragend="onLDDragEnd(event)"` : '';
+    const clickAttr = isOverall ? `onclick="triggerSlice(null)"` : '';
+    return `
+      <div class="kpi-card ${k.cls} ${isOverall ? 'overall-slot' : ''}" data-key="${k.key}" ${dragAttrs} ${clickAttr}>
+        <div class="kpi-card-head">
+          <div class="kpi-card-head-left">
+            <div class="kpi-card-icon">${k.icon}</div>
+            <h3>${k.label}</h3>
+          </div>
+          <div class="kpi-avg-pill">Avg ${avg.toFixed(2)}hr</div>
+        </div>
+        <div class="kpi-chart">
+          <div class="kpi-chart-bars">
+            ${scaled.map((v, i) => `
+              <div class="kpi-bar-wrap">
+                <div class="kpi-bar" style="height:${heightPx(v).toFixed(1)}px; background:${KPI_COLORS[k.cls]}">
+                  <span class="bar-num">${v.toFixed(2)}</span>
+                </div>
+              </div>`).join('')}
+          </div>
+          <svg class="kpi-chart-line" viewBox="0 0 100 ${chartH}" preserveAspectRatio="none">
+            <polyline points="${linePoints}" fill="none" stroke="var(--night)" stroke-width="1.4" stroke-dasharray="3,3" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <div class="kpi-chart-axis-labels">${MONTHS.map(m => `<div class="kpi-axis-label">${m}</div>`).join('')}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderPanelIdentity() {
+  const sliced = slicedCategory === 'ld';
+  const def = sliced ? KPI_BASE.find(k => k.key === 'ld') : OVERALL_CARD;
+  document.getElementById('panelIdentity').innerHTML = `
+    <div class="panel-identity-icon" id="panelIdentityIcon">${def.icon}</div>
+    <div class="panel-identity-title" style="color:#0d8f81">${def.label}</div>
+    ${sliced ? `<button class="panel-identity-back" onclick="triggerSlice(null)">✕ Back to Overall</button>` : ''}
+  `;
+}
+
+function renderTabsRow() {
+  const tabs = [
+    { key:'usage', label:'Usage Hours' },
+    { key:'atoms', label:'Learning Atoms' },
+    { key:'applied', label:'Learning Applied' },
+    { key:'duration', label:'Average Duration' },
+  ];
+  document.getElementById('tabsRow').innerHTML = tabs.map(t =>
+    `<button class="tab-btn ${t.key===activeTab?'active':''}" onclick="switchTab('${t.key}')">${t.label}</button>`
+  ).join('');
+}
+function switchTab(key) {
+  activeTab = key;
+  renderTabsRow();
+  renderPeriodToggle();
+  renderTabPanel();
+}
+
+function renderPeriodToggle() {
+  const wrap = document.getElementById('periodToggleWrap');
+  const keys = ['ytd', 'month', 'quarter', 'year'];
+  wrap.innerHTML = `
+    <div class="period-toggle" id="periodToggle">
+      <div class="period-toggle-thumb" id="periodThumb"></div>
+      ${keys.map(k => `<span class="${k===activePeriod?'active':''}" onclick="setUsagePeriod('${k}')">${USAGE_PERIODS[k].label}</span>`).join('')}
+    </div>`;
+  requestAnimationFrame(positionPeriodThumb);
+}
+function positionPeriodThumb() {
+  const active = document.querySelector('#periodToggle span.active');
+  const thumb = document.getElementById('periodThumb');
+  if (!active || !thumb) return;
+  thumb.style.left = active.offsetLeft + 'px';
+  thumb.style.width = active.offsetWidth + 'px';
+}
+function setUsagePeriod(key) {
+  activePeriod = key;
+  renderPeriodToggle();
+  renderTabPanel();
+}
+
+function renderTabPanel() {
+  const mult = combinedMultiplier();
+  const body = document.getElementById('tabPanelBody');
+  if (activeTab === 'usage') {
+    const cfg = USAGE_PERIODS[activePeriod];
+    const series = usageSeriesFor(activePeriod);
+    const maxPx = 200;
+    const baseMaxTotal = Math.max(...series.map(d => d.repeat + d.new));
+    const niceMax = Math.ceil((baseMaxTotal * MAX_COMBINED_MULT * 1.1) / cfg.axisStep) * cfg.axisStep;
+    const ticks = [];
+    for (let t = niceMax; t >= 0; t -= cfg.axisStep) ticks.push(t);
+    const isPill = cfg.style === 'pill';
+    const sliced = slicedCategory === 'ld';
+    const repeatColor = sliced ? '#0d8f81' : 'var(--night)';
+    const newColorFinal = sliced ? '#12a292' : cfg.newColor;
+    const newTexture = `${newColorFinal} repeating-linear-gradient(135deg, rgba(255,255,255,0.42) 0 3px, transparent 3px 6px)`;
+
+    const bars = series.map(d => {
+      const repeat = d.repeat * mult, nw = d.new * mult;
+      const totalPx = ((repeat + nw) / niceMax) * maxPx;
+      const repeatPx = (repeat / (repeat + nw || 1)) * totalPx;
+      const newPx = totalPx - repeatPx;
+      const floatPx = isPill ? repeatPx * 0.5 : 0;
+      const pillHeightPx = isPill ? totalPx * 0.55 : totalPx;
+      const pillRepeatPx = isPill ? pillHeightPx * (repeatPx / totalPx) : repeatPx;
+      const pillNewPx = pillHeightPx - pillRepeatPx;
+      return { ...d, repeat, nw, totalPx, repeatPx, newPx, floatPx, pillHeightPx, pillRepeatPx, pillNewPx };
+    });
+
+    const trendSvg = isPill ? `
+      <svg class="usage-trend-svg" viewBox="0 0 100 ${maxPx}" preserveAspectRatio="none">
+        <polyline points="${bars.map((b, i) => `${(i/(bars.length-1)*100).toFixed(1)},${(maxPx - b.floatPx - b.pillHeightPx).toFixed(1)}`).join(' ')}" fill="none" stroke="rgba(4,26,64,0.28)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+      </svg>` : '';
+
+    let usageHiIdx = 0, usageLoIdx = 0;
+    bars.forEach((b, i) => {
+      const t = b.repeat + b.nw;
+      if (t > (bars[usageHiIdx].repeat + bars[usageHiIdx].nw)) usageHiIdx = i;
+      if (t < (bars[usageLoIdx].repeat + bars[usageLoIdx].nw)) usageLoIdx = i;
+    });
+    const usageHiTotal = Math.round(bars[usageHiIdx].repeat + bars[usageHiIdx].nw);
+    const usageLoTotal = Math.round(bars[usageLoIdx].repeat + bars[usageLoIdx].nw);
+    const usageFirstTotal = bars[0].repeat + bars[0].nw;
+    const usageLatestTotal = bars[bars.length - 1].repeat + bars[bars.length - 1].nw;
+    const usageDeltaPct = (((usageLatestTotal - usageFirstTotal) / usageFirstTotal) * 100).toFixed(0);
+
+    body.innerHTML = `
+      <div class="avg-duration-hero">
+        <span class="avg-duration-value">${Math.round(usageLatestTotal)}</span>
+        <span class="avg-duration-unit">hours of active learning</span>
+        <span class="avg-duration-delta">${usageDeltaPct >= 0 ? '+' : ''}${usageDeltaPct}% vs ${bars[0].d}</span>
+      </div>
+      <div class="duration-insight">Highest usage: <strong>${bars[usageHiIdx].d} at ${usageHiTotal} hrs</strong> · Lowest: <strong>${bars[usageLoIdx].d} at ${usageLoTotal} hrs</strong></div>
+      <div class="usage-axis-title">Hours</div>
+      <div class="usage-chart-row">
+        <div class="usage-y-axis">${ticks.map(t => `<div class="usage-y-tick">${t}</div>`).join('')}</div>
+        <div class="usage-chart-main">
+          <div class="usage-gridlines">${ticks.map(() => `<div class="usage-gridline"></div>`).join('')}</div>
+          <div class="usage-chart-cols">
+            ${bars.map(b => `
+              <div class="usage-col" style="width:${cfg.barWidth}px">
+                <div class="usage-stack ${isPill ? 'pill' : ''}" style="height:${(isPill ? b.pillHeightPx : b.totalPx).toFixed(1)}px; margin-bottom:${b.floatPx.toFixed(1)}px">
+                  <span class="bar-num-pair"><span style="color:${repeatColor}">${Math.round(b.repeat)}</span> · <span style="color:${newColorFinal}">${Math.round(b.nw)}</span></span>
+                  <div class="usage-seg-new" style="height:${(isPill ? b.pillNewPx : b.newPx).toFixed(1)}px; background:${newTexture}"></div>
+                  <div class="usage-seg-repeat" style="height:${(isPill ? b.pillRepeatPx : b.repeatPx).toFixed(1)}px; background:${repeatColor}"></div>
+                </div>
+              </div>`).join('')}
+          </div>
+          ${trendSvg}
+          <div class="usage-labels">${bars.map(b => `<div class="usage-day-label" style="width:${cfg.barWidth}px">${b.d}</div>`).join('')}</div>
+        </div>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><span class="legend-dot" style="background:${repeatColor}"></span>Repeat users</div>
+        <div class="legend-item"><span class="legend-dot" style="background:${newTexture}"></span>New users</div>
+      </div>`;
+
+    if (isPill) {
+      requestAnimationFrame(() => {
+        const cols = body.querySelectorAll('.usage-col');
+        const container = body.querySelector('.usage-chart-main');
+        const polyline = body.querySelector('.usage-trend-svg polyline');
+        if (!cols.length || !container || !polyline) return;
+        const cRect = container.getBoundingClientRect();
+        const pts = Array.from(cols).map((col, i) => {
+          const r = col.getBoundingClientRect();
+          const xPct = ((r.left + r.width / 2) - cRect.left) / cRect.width * 100;
+          const y = maxPx - bars[i].floatPx - bars[i].pillHeightPx;
+          return `${xPct.toFixed(1)},${y.toFixed(1)}`;
+        }).join(' ');
+        polyline.setAttribute('points', pts);
+      });
+    }
+  } else if (activeTab === 'atoms') {
+    const cfg = USAGE_PERIODS[activePeriod];
+    const series = atomsSeriesFor(activePeriod);
+    const completed = series.map(d => Math.round(d.completed * mult));
+    const incomplete = series.map(d => Math.max(1, Math.round(d.incomplete * (2 - mult))));
+    const ceiling = Math.max(...series.map(d => d.completed), ...series.map(d => d.incomplete * 1.6)) * MAX_COMBINED_MULT * 1.1;
+    const niceMax = Math.ceil(ceiling / cfg.axisStep) * cfg.axisStep;
+    const ticks = [];
+    for (let t = niceMax; t >= 0; t -= cfg.axisStep) ticks.push(t);
+    const completedColor = slicedCategory === 'ld' ? '#12a292' : 'var(--night2)';
+    let atomsHiIdx = 0, atomsLoIdx = 0;
+    completed.forEach((v, i) => { if (v > completed[atomsHiIdx]) atomsHiIdx = i; if (v < completed[atomsLoIdx]) atomsLoIdx = i; });
+    const atomsDeltaPct = (((completed[completed.length - 1] - completed[0]) / completed[0]) * 100).toFixed(0);
+    body.innerHTML = `
+      <div class="avg-duration-hero">
+        <span class="avg-duration-value">${completed[completed.length - 1]}</span>
+        <span class="avg-duration-unit">atoms completed</span>
+        <span class="avg-duration-delta">${atomsDeltaPct >= 0 ? '+' : ''}${atomsDeltaPct}% vs ${series[0].label}</span>
+      </div>
+      <div class="duration-insight">Most atoms completed: <strong>${series[atomsHiIdx].label} at ${completed[atomsHiIdx]} atoms</strong> · Fewest: <strong>${series[atomsLoIdx].label} at ${completed[atomsLoIdx]} atoms</strong></div>
+      <div class="chart-row-axis">
+        <div class="axis-title-v">Number of Learning Atoms</div>
+        <div class="chart-y-axis" style="height:150px">${ticks.map(t => `<div class="chart-y-tick">${t}</div>`).join('')}</div>
+        <div class="chart-main">
+          <div class="chart-gridlines" style="height:150px">${ticks.map(() => `<div class="chart-gridline"></div>`).join('')}</div>
+          <div class="atoms-chart">
+            ${series.map((d, i) => `
+              <div class="atoms-group" style="width:${cfg.barWidth * 1.6}px">
+                <div class="atoms-bars">
+                  <div class="atoms-bar completed" style="height:${(completed[i]/niceMax*150).toFixed(1)}px; background:${completedColor}"><span class="bar-num">${completed[i]}</span></div>
+                  <div class="atoms-bar incomplete" style="height:${(incomplete[i]/niceMax*150).toFixed(1)}px"><span class="bar-num">${incomplete[i]}</span></div>
+                </div>
+                <div class="atoms-month-label">${d.label}</div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><span class="legend-dot" style="background:${completedColor}"></span>Completed</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--red) repeating-linear-gradient(135deg, rgba(255,255,255,0.42) 0 2px, transparent 2px 4px)"></span>Incomplete</div>
+      </div>`;
+  } else if (activeTab === 'applied') {
+    const cfg = USAGE_PERIODS[activePeriod];
+    const series = appliedSeriesFor(activePeriod);
+    const applied = series.map(d => Math.round(d.applied * mult));
+    const delta = successDelta();
+    const success = series.map(d => clamp(d.success + delta, 0, 100));
+    const ceiling = Math.max(...series.map(d => d.applied)) * MAX_COMBINED_MULT * 1.1;
+    const niceMax = Math.ceil(ceiling / cfg.axisStep) * cfg.axisStep;
+    const leftTicks = [];
+    for (let t = niceMax; t >= 0; t -= cfg.axisStep) leftTicks.push(t);
+    const rightTicks = [100, 80, 60, 40, 20, 0];
+    const n = series.length;
+    const linePoints = success.map((v, i) => `${(i/(n-1)*100).toFixed(1)},${(100-v).toFixed(1)}`).join(' ');
+    let appliedHiIdx = 0, appliedLoIdx = 0;
+    success.forEach((v, i) => { if (v > success[appliedHiIdx]) appliedHiIdx = i; if (v < success[appliedLoIdx]) appliedLoIdx = i; });
+    const appliedDeltaPct = (((applied[applied.length - 1] - applied[0]) / applied[0]) * 100).toFixed(0);
+    body.innerHTML = `
+      <div class="avg-duration-hero">
+        <span class="avg-duration-value">${applied[applied.length - 1]}</span>
+        <span class="avg-duration-unit">atoms applied</span>
+        <span class="avg-duration-delta">${appliedDeltaPct >= 0 ? '+' : ''}${appliedDeltaPct}% vs ${series[0].label}</span>
+      </div>
+      <div class="duration-insight">Highest success rate: <strong>${series[appliedHiIdx].label} at ${success[appliedHiIdx].toFixed(0)}%</strong> · Lowest: <strong>${series[appliedLoIdx].label} at ${success[appliedLoIdx].toFixed(0)}%</strong></div>
+      <div class="chart-row-axis">
+        <div class="axis-title-v">Number of Atoms Applied</div>
+        <div class="chart-y-axis" style="height:150px">${leftTicks.map(t => `<div class="chart-y-tick">${t}</div>`).join('')}</div>
+        <div class="chart-main">
+          <div class="chart-gridlines" style="height:150px">${leftTicks.map(() => `<div class="chart-gridline"></div>`).join('')}</div>
+          <div class="applied-chart-wrap">
+            <div class="applied-bars">
+              ${series.map((d, i) => `
+                <div class="applied-group" style="width:${cfg.barWidth * 1.4}px">
+                  <div class="applied-bar" style="height:${(applied[i]/niceMax*150).toFixed(1)}px"><span class="bar-num">${applied[i]}</span></div>
+                </div>`).join('')}
+            </div>
+            <svg class="applied-line-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <polyline points="${linePoints}" fill="none" stroke="var(--teal)" stroke-width="1.6" vector-effect="non-scaling-stroke"/>
+              ${success.map((v,i) => `<circle cx="${(i/(n-1))*100}" cy="${100-v}" r="1.6" fill="var(--teal)"/>`).join('')}
+            </svg>
+          </div>
+          <div class="applied-labels">${series.map(d => `<div class="applied-month-label" style="width:${cfg.barWidth * 1.4}px">${d.label}</div>`).join('')}</div>
+        </div>
+        <div class="chart-y-axis right" style="height:150px">${rightTicks.map(t => `<div class="chart-y-tick">${t}%</div>`).join('')}</div>
+        <div class="axis-title-v right">Success Rate (%)</div>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--night2)"></span>Atoms Applied</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>Success Rate</div>
+      </div>`;
+
+    requestAnimationFrame(() => {
+      const groups = body.querySelectorAll('.applied-group');
+      const wrap = body.querySelector('.applied-chart-wrap');
+      const polyline = body.querySelector('.applied-line-svg polyline');
+      const circles = body.querySelectorAll('.applied-line-svg circle');
+      if (!groups.length || !wrap || !polyline) return;
+      const cRect = wrap.getBoundingClientRect();
+      const xPcts = Array.from(groups).map(g => {
+        const r = g.getBoundingClientRect();
+        return ((r.left + r.width / 2) - cRect.left) / cRect.width * 100;
+      });
+      const pts = xPcts.map((x, i) => `${x.toFixed(1)},${(100 - success[i]).toFixed(1)}`).join(' ');
+      polyline.setAttribute('points', pts);
+      xPcts.forEach((x, i) => { if (circles[i]) circles[i].setAttribute('cx', x.toFixed(1)); });
+      wrap.querySelectorAll('.line-point-hit').forEach(el => el.remove());
+      xPcts.forEach((x, i) => {
+        const yPct = 100 - success[i];
+        const topPx = (yPct / 100) * 150;
+        wrap.insertAdjacentHTML('beforeend', `<div class="line-point-hit" style="left:${x.toFixed(1)}%; top:${topPx.toFixed(1)}px"><span class="bar-num">${success[i].toFixed(0)}%</span></div>`);
+      });
+    });
+  } else if (activeTab === 'duration') {
+    const series = durationSeriesFor(activePeriod);
+    const scaled = series.map(d => d.value * mult);
+    const latest = scaled[scaled.length - 1];
+    const first = scaled[0];
+    const deltaPct = (((latest - first) / first) * 100).toFixed(0);
+    const max = Math.max(...scaled);
+    let hiIdx = 0, loIdx = 0;
+    scaled.forEach((v, i) => { if (v > scaled[hiIdx]) hiIdx = i; if (v < scaled[loIdx]) loIdx = i; });
+    const sliced = slicedCategory === 'ld';
+    body.innerHTML = `
+      <div class="avg-duration-hero">
+        <span class="avg-duration-value">${latest.toFixed(1)}</span>
+        <span class="avg-duration-unit">min / session</span>
+        <span class="avg-duration-delta ${sliced ? 'slicedteal' : ''}">${deltaPct >= 0 ? '+' : ''}${deltaPct}% vs ${series[0].label}</span>
+      </div>
+      <div class="duration-insight ${sliced ? 'slicedteal' : ''}">Longest average session: <strong>${series[hiIdx].label} at ${scaled[hiIdx].toFixed(1)} min</strong> · Shortest: <strong>${series[loIdx].label} at ${scaled[loIdx].toFixed(1)} min</strong></div>
+      ${series.map((d, i) => `
+        <div class="trend-row">
+          <div class="trend-row-top"><span>${d.label}</span><span>${scaled[i].toFixed(1)} min</span></div>
+          <div class="trend-track"><div class="trend-fill ${sliced ? 'slicedteal' : ''}" style="width:${(scaled[i]/max*100).toFixed(1)}%"></div></div>
+        </div>`).join('')}`;
+  }
+}
+
+populateFilters();
+renderKpis();
+renderPanelIdentity();
+renderTabsRow();
+renderPeriodToggle();
+renderTabPanel();
+</script>
+</body>
+</html>

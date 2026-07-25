@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wisdom on the Go — Business Impact</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:   #041A40;
+  --night2:  #2A3C5D;
+  --night3:  #4F5F79;
+  --grey1:   #f0f2f5;
+  --grey2:   #b8c0cc;
+  --grey3:   #6b7685;
+  --white:   #ffffff;
+  --green:   #3ab54a;
+  --green2:  #2d9640;
+  --gold:    #E4CA0A;
+  --gold2:   #AB9808;
+  --amber:   #e8960a;
+  --amber2:  #c17d00;
+  --red:     #e0303a;
+  --teal:    #14B8A6;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Poppins',sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(4,26,64,0.06), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(228,202,10,0.05), transparent 40%),
+    #fbfbfd;
+  min-height:100vh;
+  color:var(--night);
+}
+a { text-decoration:none; color:inherit; }
+
+/* ---- Layout ---- */
+.admin-shell { min-height:100vh; }
+
+/* ---- Sidebar ---- */
+.admin-sidebar {
+  position:fixed; top:0; left:0; width:216px; height:100vh; z-index:100;
+  background:var(--night); color:#fff; display:flex; flex-direction:column;
+  transform:translateX(0); transition:transform 0.25s; box-shadow:4px 0 24px rgba(0,0,0,0.18);
+}
+.admin-sidebar.collapsed { transform:translateX(-100%); }
+.admin-logo { padding:1.1rem 1rem 0.9rem; }
+.admin-logo .logo { font-size:1.15rem; }
+.admin-logo .w { font-weight:700; color:#fff; }
+.admin-logo .mid { font-weight:400; color:#fff; }
+.admin-logo .go { font-weight:700; color:var(--green); }
+.admin-logo .sanskrit { font-size:0.6rem; font-weight:300; letter-spacing:0.16em; color:#fff; opacity:0.75; margin-top:-0.1rem; }
+.admin-nav { flex:1; padding:0.6rem 0; overflow-y:auto; }
+.admin-nav-item {
+  display:flex; align-items:center; gap:0.65rem; width:100%; padding:0.7rem 1rem;
+  color:var(--grey1); font-size:0.82rem; border-left:3px solid transparent; cursor:pointer;
+  white-space:nowrap; transition:background 0.15s, border-color 0.15s;
+}
+.admin-nav-item svg { width:17px; height:17px; flex-shrink:0; }
+.admin-nav-item:hover { background:rgba(255,255,255,0.06); border-left-color:var(--green); }
+.admin-nav-item.active { background:rgba(255,255,255,0.08); border-left-color:var(--green); color:#fff; font-weight:600; }
+.admin-nav-divider { height:1px; background:rgba(255,255,255,0.1); margin:0.6rem 1rem; }
+.admin-nav-footer { padding:0.6rem 0 1rem; }
+
+/* ---- Header ---- */
+.admin-main { min-width:0; margin-left:216px; transition:margin-left 0.25s; }
+.admin-main.expanded { margin-left:0; }
+header.topbar { background:var(--night); }
+.header-inner { display:flex; align-items:center; padding:0.9rem 2rem; gap:1rem; }
+.burger-btn {
+  width:36px; height:36px; border-radius:8px; background:none; border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff;
+}
+.burger-btn:hover { background:rgba(255,255,255,0.16); }
+.burger-btn svg { width:20px; height:20px; }
+.admin-greeting .hello { font-weight:600; font-size:1.15rem; color:#fff; }
+.admin-greeting .hello .name { color:var(--gold); }
+.admin-greeting .sub { color:var(--grey2); font-size:0.88rem; }
+.header-spacer { flex:1; }
+.admin-profile { display:flex; align-items:center; gap:0.7rem; cursor:default; }
+.admin-profile img { width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.3); }
+.admin-profile-text .name { color:#fff; font-weight:600; font-size:0.92rem; }
+.admin-profile-text .title { color:var(--grey2); font-size:0.76rem; }
+
+/* ---- Content ---- */
+.admin-content { max-width:1500px; margin:0 auto; padding:1.6rem 2rem 3rem; }
+
+/* ---- Page header ---- */
+.um-page-head { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+.um-title { font-size:1.5rem; font-weight:700; color:var(--night); }
+
+/* ---- Drill Down trigger + drawer (standard, matches every other page) ---- */
+.ri-dd-trigger {
+  display:flex; align-items:center; gap:0.45rem; font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600;
+  color:var(--night2); background:var(--white); border:1.5px solid rgba(4,26,64,0.14); border-radius:20px;
+  padding:0.5rem 1.05rem; cursor:pointer; transition:border-color 0.15s, color 0.15s; margin-left:auto;
+}
+.ri-dd-trigger svg { width:15px; height:15px; }
+.ri-dd-trigger:hover { border-color:var(--night2); color:var(--night); }
+.dd-overlay { position:fixed; inset:0; background:rgba(4,26,64,0.45); z-index:199; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.dd-overlay.open { opacity:1; pointer-events:auto; }
+.dd-drawer {
+  position:fixed; top:0; right:0; width:320px; height:100vh; z-index:200;
+  background:var(--white); display:flex; flex-direction:column;
+  transform:translateX(100%); transition:transform 0.25s; box-shadow:-4px 0 24px rgba(0,0,0,0.18);
+}
+.dd-drawer.open { transform:translateX(0); }
+.dd-drawer-head { display:flex; align-items:center; justify-content:space-between; padding:1.4rem 1.4rem 1rem; border-bottom:1px solid rgba(4,26,64,0.08); flex-shrink:0; }
+.dd-drawer-head h3 { font-size:1.05rem; font-weight:700; color:var(--night); }
+.dd-close-btn { width:32px; height:32px; border-radius:8px; border:none; background:var(--grey1); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--grey3); transition:background 0.15s, color 0.15s; flex-shrink:0; }
+.dd-close-btn:hover { background:var(--grey2); color:var(--night); }
+.dd-close-btn svg { width:16px; height:16px; }
+.dd-drawer-body { flex:1; overflow-y:auto; padding:1.2rem 1.4rem; }
+.dd-drawer-foot { padding:1rem 1.4rem 1.4rem; border-top:1px solid rgba(4,26,64,0.08); flex-shrink:0; }
+.dd-go-btn { width:100%; font-family:'Poppins',sans-serif; font-size:0.86rem; font-weight:600; color:#fff; background:var(--green); border:none; border-radius:20px; padding:0.65rem; cursor:pointer; transition:background 0.15s; }
+.dd-go-btn:hover { background:var(--green2); }
+.ri-dd-item { margin-bottom:0.6rem; }
+.ri-dd-toggle {
+  width:100%; text-align:left; background:var(--grey1); border:none; border-radius:10px; padding:0.7rem 0.9rem;
+  font-family:'Poppins',sans-serif; font-size:0.84rem; font-weight:600; color:var(--night2); cursor:pointer; transition:background 0.15s, color 0.15s;
+}
+.ri-dd-toggle:hover { background:var(--grey2); }
+.ri-dd-item.open .ri-dd-toggle { background:rgba(20,184,166,0.14); color:#0d8f81; }
+.ri-dd-panel { max-height:0; overflow:hidden; transition:max-height 0.25s ease; display:flex; flex-direction:column; gap:0.5rem; padding:0 0.4rem; }
+.ri-dd-item.open .ri-dd-panel { max-height:280px; padding:0.7rem 0.4rem 0.2rem; overflow-y:auto; }
+.ri-dd-panel label { display:flex; align-items:center; gap:0.55rem; font-size:0.8rem; color:var(--night2); cursor:pointer; }
+.ri-dd-panel input { accent-color:var(--teal); width:14px; height:14px; }
+
+/* ---- Business Value Created (hero) ---- */
+.biz-hero { background:var(--night); border-radius:16px; padding:2rem 2.2rem 2.1rem; color:#fff; box-shadow:0 12px 30px rgba(4,26,64,0.28); margin-bottom:1.6rem; }
+.biz-hero-label { font-size:0.95rem; font-weight:700; color:#fff; margin-bottom:0.5rem; }
+.biz-hero-value { font-size:3rem; font-weight:800; color:var(--gold); line-height:1; margin-bottom:0.7rem; }
+.biz-hero-sub { font-size:0.85rem; color:var(--grey2); margin-bottom:1.5rem; max-width:600px; }
+.biz-hero-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
+.biz-hero-item { border:1px solid rgba(255,255,255,0.16); border-radius:12px; padding:1.1rem 1.2rem; transition:border-color 0.2s, background 0.2s; }
+.biz-hero-item.match { border-color:var(--gold); background:rgba(228,202,10,0.1); }
+.biz-hero-item-value { font-size:1.4rem; font-weight:700; color:#fff; }
+.biz-hero-item-label { font-size:0.78rem; color:var(--grey2); margin-top:0.2rem; }
+@media (max-width:800px) { .biz-hero-grid { grid-template-columns:repeat(2,1fr); } }
+
+/* ---- KPI Trend chart card ---- */
+.biz-chart-card { background:var(--white); border-radius:14px; box-shadow:0 6px 20px rgba(4,26,64,0.08); padding:1.7rem 1.8rem 1.9rem; }
+.biz-chart-head { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:0.2rem; }
+.biz-chart-title { font-size:1.08rem; font-weight:700; color:var(--night); }
+
+.period-toggle { position:relative; display:flex; background:var(--grey1); border-radius:20px; padding:0.2rem; flex-shrink:0; }
+.period-toggle-thumb { position:absolute; top:0.2rem; bottom:0.2rem; left:0.2rem; background:var(--teal); border-radius:16px; transition:left 0.25s ease, width 0.25s ease; z-index:0; }
+.period-toggle span { position:relative; z-index:1; padding:0.32rem 0.75rem; font-size:0.72rem; color:var(--grey3); border-radius:16px; cursor:pointer; transition:color 0.15s; white-space:nowrap; }
+.period-toggle span.active { color:#fff; font-weight:600; }
+
+.biz-tabs { display:flex; gap:0.25rem; background:var(--grey1); border-radius:999px; padding:0.3rem; width:fit-content; margin:1.1rem 0 1.6rem; flex-wrap:wrap; }
+.biz-tab { font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600; color:var(--night2); background:none; border:none; border-radius:999px; padding:0.55rem 1.15rem; cursor:pointer; white-space:nowrap; transition:background 0.15s, color 0.15s; }
+.biz-tab:hover { color:var(--night); }
+.biz-tab.active { background:var(--night); color:#fff; }
+
+.biz-chart-row { display:flex; gap:0.6rem; }
+.biz-y-axis { flex:none; width:34px; height:260px; display:flex; flex-direction:column; justify-content:space-between; text-align:right; padding-right:0.5rem; box-sizing:content-box; }
+.biz-y-tick { font-size:0.62rem; color:var(--grey3); line-height:1; }
+.biz-chart-main { position:relative; flex:1; min-width:0; }
+.biz-gridlines { position:absolute; top:0; left:0; right:0; height:260px; display:flex; flex-direction:column; justify-content:space-between; pointer-events:none; }
+.biz-gridline { width:100%; height:1px; background:rgba(4,26,64,0.08); }
+.biz-cols { position:relative; display:flex; align-items:flex-end; justify-content:space-between; height:260px; }
+.biz-col { flex:none; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; position:relative; }
+.biz-bar { width:100%; border-radius:4px 4px 0 0; background:var(--green); position:relative; }
+.biz-bar-num { position:absolute; top:-1.3rem; left:50%; transform:translateX(-50%); font-size:0.66rem; font-weight:700; color:var(--night2); white-space:nowrap; }
+.biz-y-axis-right { flex:none; width:44px; height:260px; display:flex; flex-direction:column; justify-content:space-between; text-align:left; padding-left:0.5rem; box-sizing:content-box; }
+.biz-trend-svg { position:absolute; top:0; left:0; width:100%; height:260px; pointer-events:none; overflow:visible; }
+.biz-x-labels { display:flex; justify-content:space-between; margin-top:0.55rem; }
+.biz-x-label { flex:none; text-align:center; font-size:0.64rem; color:var(--grey3); white-space:nowrap; }
+
+.biz-legend { display:flex; align-items:center; gap:1.4rem; margin-top:1.2rem; flex-wrap:wrap; }
+.biz-legend-item { display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; color:var(--night2); }
+.biz-legend-swatch { width:12px; height:12px; border-radius:3px; background:var(--green); flex-shrink:0; }
+.biz-legend-dot { width:10px; height:10px; border-radius:50%; border:2px solid var(--teal); background:#fff; flex-shrink:0; }
+
+.biz-mapping { display:flex; align-items:center; flex-wrap:wrap; gap:0.7rem; margin-top:1.4rem; padding-top:1.3rem; border-top:1px solid rgba(4,26,64,0.08); }
+.biz-mapping-label { font-size:0.82rem; color:var(--grey3); flex-shrink:0; }
+.biz-mapping-pills { display:flex; flex-wrap:wrap; gap:0.5rem; flex:1; }
+.biz-mapping-pill { font-size:0.8rem; font-weight:600; color:var(--night2); background:var(--grey1); border-radius:999px; padding:0.42rem 0.95rem; white-space:nowrap; }
+.biz-mapping-edit { font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600; color:#fff; background:var(--night); border:none; border-radius:999px; padding:0.55rem 1.2rem; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:background 0.15s; }
+.biz-mapping-edit:hover { background:var(--night2); }
+
+/* ---- Correlation Ladder ---- */
+.biz-chart-sub { font-size:0.83rem; color:var(--grey3); margin-top:0.35rem; max-width:600px; }
+.ladder2-body { padding-top:1.6rem; }
+.ladder2-row { display:flex; align-items:center; gap:1rem; margin-bottom:1.3rem; }
+.ladder2-row:last-child { margin-bottom:0; }
+.ladder2-label { width:220px; flex-shrink:0; text-align:right; font-size:0.85rem; font-weight:500; color:var(--night3); }
+.ladder2-label.strong { font-weight:700; color:#1f7a30; }
+.ladder2-track-wrap { flex:1; position:relative; height:34px; }
+.ladder2-gridlines { position:absolute; inset:0; background-image:repeating-linear-gradient(to right, rgba(4,26,64,0.07) 0, rgba(4,26,64,0.07) 1px, transparent 1px, transparent 25%); pointer-events:none; }
+.ladder2-track { height:34px; border-radius:6px; position:relative; }
+.ladder2-value { position:absolute; top:50%; left:100%; transform:translateY(-50%); margin-left:0.7rem; font-size:0.85rem; font-weight:700; color:var(--night2); white-space:nowrap; }
+
+/* ---- ROI proof graphs ---- */
+.roi-proof-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.2rem; margin-top:1.6rem; }
+@media (max-width:900px) { .roi-proof-grid { grid-template-columns:1fr; } }
+.roi-mini-card { background:var(--grey1); border-radius:12px; padding:1.2rem 1.3rem 1.3rem; }
+.roi-mini-title { font-size:0.86rem; font-weight:700; color:var(--night); }
+.roi-mini-value { font-size:1.3rem; font-weight:800; color:var(--night); margin-top:0.15rem; }
+.roi-mini-chart { display:flex; align-items:flex-end; justify-content:space-between; height:110px; margin-top:0.9rem; gap:0.35rem; }
+.roi-mini-col { flex:1; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:0; }
+.roi-mini-bar { width:70%; border-radius:3px 3px 0 0; transition:opacity 0.15s; }
+.roi-mini-col:hover .roi-mini-bar { opacity:0.8; }
+.roi-mini-tooltip { position:absolute; bottom:100%; left:50%; transform:translateX(-50%) translateY(-6px); background:var(--night); color:#fff; font-size:0.64rem; font-weight:700; padding:0.25rem 0.55rem; border-radius:6px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.15s; z-index:2; }
+.roi-mini-col:hover .roi-mini-tooltip { opacity:1; }
+.roi-mini-x { font-size:0.56rem; color:var(--grey3); margin-top:0.4rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+.roi-mini-formula { font-size:0.7rem; color:var(--grey3); margin-top:0.9rem; padding-top:0.7rem; border-top:1px solid rgba(4,26,64,0.08); line-height:1.5; }
+
+/* ---- Workplace Intelligence (no-$ hero) ---- */
+.biz-hero.no-value .biz-hero-sub { margin-bottom:0; }
+
+/* ---- Skill Utilization by Department ---- */
+.util-rows { display:flex; flex-direction:column; gap:1rem; margin-top:1.5rem; }
+.util-row { display:flex; align-items:center; gap:1rem; }
+.util-row-label { width:130px; flex-shrink:0; font-size:0.84rem; font-weight:600; color:var(--night2); text-align:right; }
+.util-bar-track { flex:1; height:26px; border-radius:6px; overflow:hidden; display:flex; background:var(--grey1); }
+.util-bar-utilized { background:#1f7a30; display:flex; align-items:center; justify-content:center; font-size:0.68rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; }
+.util-bar-idle {
+  background-color:#cfe8d3;
+  background-image:repeating-linear-gradient(135deg, rgba(31,122,48,0.28) 0 6px, transparent 6px 12px);
+  display:flex; align-items:center; justify-content:center; font-size:0.66rem; font-weight:700; color:#1f7a30; white-space:nowrap; overflow:hidden;
+}
+.util-legend { display:flex; align-items:center; gap:1.4rem; margin-top:1.3rem; }
+.util-legend-item { display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; color:var(--night2); }
+.util-legend-swatch { width:14px; height:14px; border-radius:3px; flex-shrink:0; }
+.util-legend-swatch.utilized { background:#1f7a30; }
+.util-legend-swatch.idle { background-color:#cfe8d3; background-image:repeating-linear-gradient(135deg, rgba(31,122,48,0.28) 0 4px, transparent 4px 8px); }
+
+/* ---- Friction Heatmap ---- */
+.heatmap-scroll { overflow-x:auto; }
+.heatmap-table { border-collapse:separate; border-spacing:6px; margin-top:1.2rem; width:100%; min-width:520px; }
+.heatmap-table th { font-size:0.66rem; font-weight:700; color:var(--grey3); text-align:center; padding-bottom:0.3rem; cursor:default; }
+.heatmap-row-label { font-size:0.8rem; font-weight:600; color:var(--night2); text-align:right; padding-right:0.8rem; white-space:nowrap; }
+.heatmap-cell { border-radius:8px; padding:0.7rem 0.4rem; text-align:center; font-size:0.78rem; font-weight:700; transition:transform 0.15s; }
+.heatmap-cell.hot-click { cursor:pointer; }
+.heatmap-cell.hot-click:hover { transform:scale(1.05); }
+.heatmap-cell.tile-dim { opacity:0.35; cursor:default; }
+.heatmap-cell.tile-selected { outline:2.5px solid var(--night); outline-offset:1px; }
+
+/* ---- Workplace Situation Archetypes ---- */
+.arch-row { margin-bottom:0.9rem; }
+.arch-row:last-child { margin-bottom:0; }
+.arch-label { font-size:0.84rem; color:var(--night2); font-style:italic; margin-bottom:0.4rem; }
+.arch-bar-track { height:20px; border-radius:5px; background:var(--grey1); position:relative; overflow:hidden; }
+.arch-bar-fill { height:100%; border-radius:5px; background:var(--night2); display:flex; align-items:center; justify-content:flex-end; padding-right:0.5rem; }
+.arch-bar-pct { font-size:0.68rem; font-weight:700; color:#fff; white-space:nowrap; }
+.arch-insight { font-size:0.83rem; color:var(--night2); background:var(--grey1); border-radius:10px; padding:0.9rem 1.1rem; margin-bottom:1.2rem; line-height:1.55; }
+.arch-empty { font-size:0.83rem; color:var(--grey3); padding:1rem 0; }
+</style>
+</head>
+<body>
+
+<div class="admin-shell">
+  <nav class="admin-sidebar" id="adminSidebar">
+    <div class="admin-logo">
+      <div class="logo"><span class="w">W</span><span class="mid">isdom on the </span><span class="go">GO!</span></div>
+      <div class="sanskrit">Tat Tvam Asi</div>
+    </div>
+    <div class="admin-nav">
+      <a href="admin_intro.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Adoption Overview
+      </a>
+      <a href="user_management.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        User Management
+      </a>
+      <a href="learning_management.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+        Learning Management
+      </a>
+      <a href="reports_insights.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12.5" y="8" width="3" height="10"/><rect x="18" y="5" width="3" height="13"/></svg>
+        Reports &amp; Insights
+      </a>
+      <a href="business_impact_2.html" class="admin-nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m6 15 4-5 3.5 3L20 6"/><path d="M15 6h5v5"/></svg>
+        Business Impact
+      </a>
+      <div class="admin-nav-divider"></div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg>
+        Help &amp; information
+      </div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        Settings
+      </div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log out
+      </div>
+    </div>
+  </nav>
+
+  <div class="admin-main">
+    <header class="topbar">
+      <div class="header-inner">
+        <button class="burger-btn" onclick="toggleSidePanel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9.5 4v16"/><rect x="4.3" y="5.3" width="4.2" height="13.4" rx="1.1" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <div class="admin-greeting">
+          <div class="hello">Hello <span class="name">Patty</span>!</div>
+          <div class="sub">See the business value created by confirmed human skill application</div>
+        </div>
+        <div class="header-spacer"></div>
+        <div class="admin-profile">
+          <div class="admin-profile-text" style="text-align:right">
+            <div class="name">Patty Merchant</div>
+            <div class="title">Global Head: Learning &amp; Talent Development</div>
+          </div>
+          <img src="assets/patty_headshot.jpg" alt="Patty Merchant">
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <div class="um-page-head">
+        <div>
+          <h1 class="um-title">Business Impact</h1>
+        </div>
+        <button class="ri-dd-trigger" onclick="toggleDrillDown()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="4 4 20 4 14 12.5 14 19 10 21 10 12.5 4 4"/></svg>
+          Drill Down
+        </button>
+      </div>
+
+      <!-- ============ Business Value Created ============ -->
+      <div class="biz-hero">
+        <div class="biz-hero-label">Business Value Created</div>
+        <div class="biz-hero-value">$3.0M</div>
+        <div class="biz-hero-sub">Estimated business value associated with human skill improvements.</div>
+        <div class="biz-hero-grid" id="bizHeroGrid"></div>
+      </div>
+
+      <!-- ============ KPI Trends vs. Confirmed Human Skill Application ============ -->
+      <div class="biz-chart-card">
+        <div class="biz-chart-head">
+          <div class="biz-chart-title">KPI Trends vs. Confirmed Human Skill Application</div>
+          <div class="period-toggle" id="bizPeriodToggle">
+            <div class="period-toggle-thumb" id="bizPeriodThumb"></div>
+          </div>
+        </div>
+        <div class="biz-tabs" id="bizTabs"></div>
+        <div id="bizChartBody"></div>
+        <div class="biz-legend" id="bizLegend"></div>
+      </div>
+
+      <!-- ============ Correlation Ladder ============ -->
+      <div class="biz-chart-card" style="margin-top:1.6rem;">
+        <div class="biz-chart-head">
+          <div>
+            <div class="biz-chart-title">Correlation Ladder</div>
+            <div class="biz-chart-sub">Compare business outcomes across three stages of capability development: learning, expertise and confirmed human skill application.</div>
+          </div>
+        </div>
+        <div id="bizLadderBody"></div>
+        <div class="biz-mapping" id="bizMapping"></div>
+      </div>
+
+      <!-- ============ ROI: Human Capability Development ============ -->
+      <div class="biz-hero" style="margin-top:1.6rem; margin-bottom:0;">
+        <div class="biz-hero-label">Return on Human Capability Development Investment</div>
+        <div class="biz-hero-value">$2.43M</div>
+        <div class="biz-hero-sub">Estimated cost savings and avoided spend created by the shift to confirmed human skill application.</div>
+        <div class="biz-hero-grid">
+          <div class="biz-hero-item">
+            <div class="biz-hero-item-value">$1.00M</div>
+            <div class="biz-hero-item-label">Employee Learning Hours Saved</div>
+          </div>
+          <div class="biz-hero-item">
+            <div class="biz-hero-item-value">$0.57M</div>
+            <div class="biz-hero-item-label">Trainer Hours Eliminated</div>
+          </div>
+          <div class="biz-hero-item">
+            <div class="biz-hero-item-value">$0.72M</div>
+            <div class="biz-hero-item-label">Manager Coaching Hours Saved</div>
+          </div>
+          <div class="biz-hero-item">
+            <div class="biz-hero-item-value">$0.14M</div>
+            <div class="biz-hero-item-label">Training Delivery Costs Avoided</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ ROI proof graphs ============ -->
+      <div class="biz-chart-card" style="margin-top:1.6rem;">
+        <div class="biz-chart-head">
+          <div>
+            <div class="biz-chart-title">Where the $2.43M Comes From</div>
+            <div class="biz-chart-sub">Underlying hours and sessions behind each savings line item above.</div>
+          </div>
+          <div class="period-toggle" id="roiPeriodToggle">
+            <div class="period-toggle-thumb" id="roiPeriodThumb"></div>
+          </div>
+        </div>
+        <div class="roi-proof-grid" id="roiProofGrid"></div>
+      </div>
+
+      <!-- ============ Workplace Intelligence ============ -->
+      <div class="biz-hero no-value" style="margin-top:1.6rem;">
+        <div class="biz-hero-label">Workplace Intelligence</div>
+        <div class="biz-hero-sub">Real-world intelligence on capability, friction, and workplace challenges.</div>
+      </div>
+
+      <!-- ============ Skill Utilization by Department ============ -->
+      <div class="biz-chart-card" style="margin-top:1.6rem;">
+        <div class="biz-chart-head">
+          <div>
+            <div class="biz-chart-title">Skill Utilization by Department</div>
+            <div class="biz-chart-sub">How much capability was built vs. how much was confirmed in practice.</div>
+          </div>
+        </div>
+        <div class="util-rows" id="utilRows"></div>
+        <div class="util-legend">
+          <div class="util-legend-item"><span class="util-legend-swatch utilized"></span>Utilized capability</div>
+          <div class="util-legend-item"><span class="util-legend-swatch idle"></span>Idle capability</div>
+        </div>
+      </div>
+
+      <!-- ============ Friction Heatmap ============ -->
+      <div class="biz-chart-card heatmap-scroll" style="margin-top:1.6rem;">
+        <div class="biz-chart-head">
+          <div>
+            <div class="biz-chart-title">Friction Heatmap</div>
+            <div class="biz-chart-sub">Department × friction type. Darker cells carry a larger share of diagnosed friction.</div>
+          </div>
+        </div>
+        <div id="heatmapContainer"></div>
+      </div>
+
+      <!-- ============ Workplace Situation Archetypes ============ -->
+      <div class="biz-chart-card" style="margin-top:1.6rem;">
+        <div class="biz-chart-head">
+          <div>
+            <div class="biz-chart-title" id="archTitle">Workplace Situation Archetypes</div>
+            <div class="biz-chart-sub">The real workplace situations driving the majority of employee conversations, organized by department and friction type.</div>
+          </div>
+        </div>
+        <div id="archBody"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="dd-overlay" id="ddOverlay" onclick="toggleDrillDown()"></div>
+  <div class="dd-drawer" id="ddDrawer">
+    <div class="dd-drawer-head">
+      <h3>Drill Down</h3>
+      <button class="dd-close-btn" onclick="toggleDrillDown()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="dd-drawer-body">
+      <div class="ri-dd-item">
+        <button class="ri-dd-toggle" data-label="Department" onclick="toggleDD(this)">+ Department</button>
+        <div class="ri-dd-panel">
+          <label><input type="checkbox">All Departments</label>
+          <label><input type="checkbox">Sales</label>
+          <label><input type="checkbox">Engineering</label>
+          <label><input type="checkbox">Marketing</label>
+          <label><input type="checkbox">Operations</label>
+          <label><input type="checkbox">HR</label>
+        </div>
+      </div>
+      <div class="ri-dd-item">
+        <button class="ri-dd-toggle" data-label="Grades" onclick="toggleDD(this)">+ Grades</button>
+        <div class="ri-dd-panel">
+          <label><input type="checkbox">L1</label>
+          <label><input type="checkbox">L2</label>
+          <label><input type="checkbox">L3</label>
+          <label><input type="checkbox">L4</label>
+          <label><input type="checkbox">L5</label>
+        </div>
+      </div>
+      <div class="ri-dd-item">
+        <button class="ri-dd-toggle" data-label="Targetted Learning Initiatives" onclick="toggleDD(this)">+ Targetted Learning Initiatives</button>
+        <div class="ri-dd-panel">
+          <label><input type="checkbox">New Hires</label>
+          <label><input type="checkbox">High Potential</label>
+          <label><input type="checkbox">Leadership Track</label>
+          <label><input type="checkbox">At Risk</label>
+        </div>
+      </div>
+      <div class="ri-dd-item">
+        <button class="ri-dd-toggle" data-label="Competency" onclick="toggleDD(this)">+ Competency</button>
+        <div class="ri-dd-panel">
+          <label><input type="checkbox">Change Management</label>
+          <label><input type="checkbox">Conflict Management</label>
+          <label><input type="checkbox">Cultural Competence</label>
+          <label><input type="checkbox">Driving High Performance</label>
+          <label><input type="checkbox">Effective Communication</label>
+          <label><input type="checkbox">Emotional Intelligence</label>
+          <label><input type="checkbox">Ethics &amp; Integrity</label>
+          <label><input type="checkbox">Goal Setting</label>
+          <label><input type="checkbox">Intrapreneurship</label>
+        </div>
+      </div>
+      <div class="ri-dd-item">
+        <button class="ri-dd-toggle" data-label="Capability" onclick="toggleDD(this)">+ Capability</button>
+        <div class="ri-dd-panel">
+          <label><input type="checkbox">Embodied Self-care</label>
+          <label><input type="checkbox">Social Presence</label>
+          <label><input type="checkbox">Interpersonal Responsiveness</label>
+          <label><input type="checkbox">Cultivating Relationships</label>
+          <label><input type="checkbox">Social Influence</label>
+          <label><input type="checkbox">Emotional Grounding</label>
+          <label><input type="checkbox">Result Orientation</label>
+          <label><input type="checkbox">Upholding Dignity</label>
+          <label><input type="checkbox">Self-Cultivation</label>
+        </div>
+      </div>
+    </div>
+    <div class="dd-drawer-foot">
+      <button class="dd-go-btn" onclick="toggleDrillDown()">Go</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleSidePanel() {
+  document.getElementById('adminSidebar').classList.toggle('collapsed');
+  document.querySelector('.admin-main').classList.toggle('expanded');
+}
+
+/* ---- Metrics & periods ---- */
+const METRICS = [
+  { key:'attrition', tabLabel:'Attrition',              lineLabel:'Attrition rate (%)',                 axisMin:16,  axisMax:19,  direction:'down', decimals:1, suffix:'%', heroLabel:'Attrition',              heroValue:'$1.4M', seed:0.4 },
+  { key:'revenue',   tabLabel:'Revenue',                 lineLabel:'Revenue per sales employee ($K)',    axisMin:180, axisMax:196, direction:'up',   decimals:1, suffix:'',  heroLabel:'Revenue',                heroValue:'$1.0M', seed:1.9 },
+  { key:'csat',      tabLabel:'Customer Satisfaction',   lineLabel:'Customer satisfaction (%)',          axisMin:78,  axisMax:88,  direction:'up',   decimals:0, suffix:'%', heroLabel:'Customer Satisfaction',  heroValue:'$0.4M', seed:3.1 },
+  { key:'esat',      tabLabel:'Employee Satisfaction',   lineLabel:'Employee satisfaction (%)',          axisMin:72,  axisMax:84,  direction:'up',   decimals:0, suffix:'%', heroLabel:'Employee Satisfaction',  heroValue:'$0.2M', seed:4.6 },
+];
+
+const PERIODS_BIZ = {
+  month:   { label:'Month',   labels:['Dec ’25','Jan ’26','Feb ’26','Mar ’26','Apr ’26','May ’26','Jun ’26','Jul ’26'], barWidth:42 },
+  quarter: { label:'Quarter', labels:['Q2 ’25','Q3 ’25','Q4 ’25','Q1 ’26','Q2 ’26','Q3 ’26'], barWidth:56 },
+  year:    { label:'Year',    labels:['2023','2024','2025','2026'], barWidth:74 },
+  ytd:     { label:'YTD',     labels:['Jan ’26','Feb ’26','Mar ’26','Apr ’26','May ’26','Jun ’26','Jul ’26'], barWidth:48 },
+};
+
+const REFLECTOR_KPI_MAP = {
+  attrition: ['Setting Boundaries','Receiving Feedback','Being Resilient','Coping with Change','Accepting Vulnerability'],
+  revenue:   ['Negotiating Effectively','Influencing Others','Handling Objections','Demonstrating Credibility','Prioritizing Effectively'],
+  csat:      ['Conveying Empathy','Attuned Listening','Handling Objections','Being Amiable','Demonstrating Reliability','Purposeful Questioning','Building Rapport'],
+  esat:      ['Giving Feedback','Being Inclusive','Practicing Tolerance','Being Appreciative','Respecting Boundaries','Guiding Others'],
+};
+
+const LADDER_DATA = {
+  attrition: { time:-0.18, expertise:-0.33, applications:-0.51 },
+  revenue:   { time:0.14,  expertise:0.29,  applications:0.44 },
+  csat:      { time:0.21,  expertise:0.38,  applications:0.55 },
+  esat:      { time:0.24,  expertise:0.41,  applications:0.58 },
+};
+const LADDER_STAGES = [
+  { field:'time',         label:'Time spent learning' },
+  { field:'expertise',    label:'Expertise level reached' },
+  { field:'applications', label:'Applications confirmed at work' },
+];
+const LADDER_COLORS = ['#cfe8d3', '#5fc26e', '#1f7a30'];
+
+let bizPeriod = 'month';
+let bizMetric = 'attrition';
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function appsSeriesFor(n) {
+  const arr = [];
+  for (let i = 0; i < n; i++) {
+    const frac = n === 1 ? 1 : i / (n - 1);
+    arr.push(Math.round(150 + 150 * frac + 7 * Math.sin(i * 1.7 + 1)));
+  }
+  return arr;
+}
+function metricSeriesFor(metric, n) {
+  const arr = [];
+  for (let i = 0; i < n; i++) {
+    const rawFrac = n === 1 ? 1 : i / (n - 1);
+    const dirFrac = metric.direction === 'down' ? (1 - rawFrac) : rawFrac;
+    const wobble = Math.sin(i * 2.1 + metric.seed) * 0.07;
+    const frac = clamp(dirFrac + wobble, 0, 1);
+    arr.push(metric.axisMin + frac * (metric.axisMax - metric.axisMin));
+  }
+  return arr;
+}
+
+/* ---- Hero card ---- */
+function renderHero() {
+  document.getElementById('bizHeroGrid').innerHTML = METRICS.map(m => `
+    <div class="biz-hero-item ${m.key === bizMetric ? 'match' : ''}">
+      <div class="biz-hero-item-value">${m.heroValue}</div>
+      <div class="biz-hero-item-label">${m.heroLabel}</div>
+    </div>`).join('');
+}
+
+/* ---- Tabs ---- */
+function renderTabs() {
+  document.getElementById('bizTabs').innerHTML = METRICS.map(m =>
+    `<button class="biz-tab ${m.key === bizMetric ? 'active' : ''}" onclick="setBizMetric('${m.key}')">${m.tabLabel}</button>`
+  ).join('');
+}
+function setBizMetric(key) { bizMetric = key; renderAll(); }
+
+/* ---- Period toggle ---- */
+function renderPeriodToggle() {
+  const toggle = document.getElementById('bizPeriodToggle');
+  const thumb = document.getElementById('bizPeriodThumb');
+  toggle.innerHTML = '';
+  toggle.appendChild(thumb);
+  Object.keys(PERIODS_BIZ).forEach(k => {
+    const span = document.createElement('span');
+    span.textContent = PERIODS_BIZ[k].label;
+    span.className = k === bizPeriod ? 'active' : '';
+    span.onclick = () => setBizPeriod(k);
+    toggle.appendChild(span);
+  });
+  positionBizPeriodThumb();
+}
+function positionBizPeriodThumb() {
+  const toggle = document.getElementById('bizPeriodToggle');
+  const active = toggle.querySelector('span.active');
+  const thumb = document.getElementById('bizPeriodThumb');
+  if (!active || !thumb) return;
+  thumb.style.left = active.offsetLeft + 'px';
+  thumb.style.width = active.offsetWidth + 'px';
+}
+function setBizPeriod(key) { bizPeriod = key; renderAll(); }
+
+/* ---- Chart ---- */
+function niceStep(range) {
+  if (range <= 3) return 0.5;
+  if (range <= 6) return 1;
+  if (range <= 12) return 2;
+  if (range <= 24) return 4;
+  return Math.ceil(range / 6);
+}
+function renderChart() {
+  const cfg = PERIODS_BIZ[bizPeriod];
+  const metric = METRICS.find(m => m.key === bizMetric);
+  const n = cfg.labels.length;
+  const apps = appsSeriesFor(n);
+  const metricVals = metricSeriesFor(metric, n);
+  const maxPx = 260;
+
+  const appsMax = Math.max(...apps);
+  const leftStep = 50;
+  const leftMax = Math.ceil((appsMax * 1.15) / leftStep) * leftStep || leftStep;
+  const leftTicks = [];
+  for (let t = leftMax; t >= 0; t -= leftStep) leftTicks.push(t);
+
+  const rightStep = niceStep(metric.axisMax - metric.axisMin);
+  const rightMin = Math.floor(metric.axisMin / rightStep) * rightStep;
+  const rightMax = Math.ceil(metric.axisMax / rightStep) * rightStep;
+  const rightTicks = [];
+  for (let t = rightMax; t >= rightMin; t -= rightStep) rightTicks.push(t);
+
+  const bars = apps.map((v, i) => ({
+    label: cfg.labels[i],
+    value: v,
+    heightPx: (v / leftMax) * maxPx
+  }));
+
+  const points = metricVals.map((v, i) => {
+    const x = n === 1 ? 50 : (i / (n - 1)) * 100;
+    const y = maxPx - ((v - rightMin) / (rightMax - rightMin)) * maxPx;
+    return { x, y, value: v };
+  });
+  const polyline = points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  document.getElementById('bizChartBody').innerHTML = `
+    <div class="biz-chart-row">
+      <div class="biz-y-axis" style="height:${maxPx}px">${leftTicks.map(t => `<div class="biz-y-tick">${t}</div>`).join('')}</div>
+      <div class="biz-chart-main">
+        <div class="biz-gridlines" style="height:${maxPx}px">${leftTicks.map(() => `<div class="biz-gridline"></div>`).join('')}</div>
+        <div class="biz-cols" style="height:${maxPx}px">
+          ${bars.map(b => `
+            <div class="biz-col" style="width:${cfg.barWidth}px">
+              <div class="biz-bar" style="height:${b.heightPx.toFixed(1)}px"><span class="biz-bar-num">${b.value}</span></div>
+            </div>`).join('')}
+        </div>
+        <svg class="biz-trend-svg" style="height:${maxPx}px" viewBox="0 0 100 ${maxPx}" preserveAspectRatio="none">
+          <polyline points="${polyline}" fill="none" stroke="${'var(--teal)'}" stroke-width="2" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <div class="biz-x-labels">${bars.map(b => `<div class="biz-x-label" style="width:${cfg.barWidth}px">${b.label}</div>`).join('')}</div>
+      </div>
+      <div class="biz-y-axis-right" style="height:${maxPx}px">${rightTicks.map(t => `<div class="biz-y-tick">${t.toFixed(rightStep < 1 ? 1 : 0)}</div>`).join('')}</div>
+    </div>`;
+
+  document.getElementById('bizLegend').innerHTML = `
+    <div class="biz-legend-item"><span class="biz-legend-swatch"></span>Applications confirmed</div>
+    <div class="biz-legend-item"><span class="biz-legend-dot"></span>${metric.lineLabel}</div>`;
+}
+
+function renderMapping() {
+  const reflectors = REFLECTOR_KPI_MAP[bizMetric];
+  document.getElementById('bizMapping').innerHTML = `
+    <div class="biz-mapping-label">Reflectors your organization mapped to this KPI:</div>
+    <div class="biz-mapping-pills">${reflectors.map(r => `<span class="biz-mapping-pill">${r}</span>`).join('')}</div>
+    <button class="biz-mapping-edit">Edit mapping</button>`;
+}
+
+/* ---- Correlation Ladder (shares bizPeriod + bizMetric with the chart above) ---- */
+function ladderMultiplier(metricKey, periodKey) {
+  if (periodKey === 'ytd') return 1;
+  const periodIdx = { month:1, quarter:2, year:3 }[periodKey];
+  const m = METRICS.find(x => x.key === metricKey);
+  return 1 + 0.05 * Math.sin(m.seed * 3 + periodIdx);
+}
+function ladderDataFor(metricKey, periodKey) {
+  const base = LADDER_DATA[metricKey];
+  const mult = ladderMultiplier(metricKey, periodKey);
+  return {
+    time: +(base.time * mult).toFixed(2),
+    expertise: +(base.expertise * mult).toFixed(2),
+    applications: +(base.applications * mult).toFixed(2),
+  };
+}
+function formatLadderValue(v) {
+  const abs = Math.abs(v).toFixed(2);
+  return v < 0 ? '−' + abs : abs;
+}
+function renderLadderChart() {
+  const data = ladderDataFor(bizMetric, bizPeriod);
+  const maxAbs = Math.max(Math.abs(data.time), Math.abs(data.expertise), Math.abs(data.applications)) * 1.35;
+  document.getElementById('bizLadderBody').innerHTML = `
+    <div class="ladder2-body">
+      ${LADDER_STAGES.map((s, i) => {
+        const v = data[s.field];
+        const pct = clamp((Math.abs(v) / maxAbs) * 100, 0, 100);
+        return `
+        <div class="ladder2-row">
+          <div class="ladder2-label ${i === 2 ? 'strong' : ''}">${s.label}</div>
+          <div class="ladder2-track-wrap">
+            <div class="ladder2-gridlines"></div>
+            <div class="ladder2-track" style="width:${pct.toFixed(1)}%; background:${LADDER_COLORS[i]}">
+              <div class="ladder2-value">${formatLadderValue(v)}</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+/* ---- ROI proof graphs (own period toggle, independent of the KPI tabs above) ---- */
+const ROI_METRICS = [
+  { key:'employee', title:'Employee Learning Hours Saved',   value:'$1.00M', annual:40000, color:'#1f7a30', formula:'40,000 hrs/yr saved (2× the 20,000 hrs/yr spent on WOTG) × $25/hr employee wage.' },
+  { key:'manager',  title:'Manager Coaching Hours Saved',    value:'$0.72M', annual:18000, color:'#5fc26e', formula:'18,000 hrs/yr (30% of usage × 3) × $40/hr manager wage.' },
+  { key:'trainer',  title:'Trainer Hours Eliminated',        value:'$0.57M', annual:9520,  color:'#8fd6a0', formula:'9,520 trainer-hrs/yr (70% of usage, content-reuse ratio) × $60/hr trainer wage.' },
+  { key:'delivery', title:'Training Delivery Costs Avoided', value:'$0.14M', annual:2800,  color:'#cfe8d3', formula:'2,800 avoided live sessions/yr × $50/session logistics cost.' },
+];
+let roiPeriod = 'month';
+
+function roiSeriesFor(periodKey, annualTotal) {
+  const cfg = PERIODS_BIZ[periodKey];
+  const n = cfg.labels.length;
+  return cfg.labels.map((label, i) => {
+    const frac = n === 1 ? 1 : i / (n - 1);
+    let base;
+    if (periodKey === 'year') {
+      base = annualTotal * (0.55 + 0.45 * frac);
+    } else if (periodKey === 'quarter') {
+      base = (annualTotal / 4) * (0.7 + 0.3 * frac);
+    } else {
+      base = (annualTotal / 12) * (0.75 + 0.35 * frac);
+    }
+    const wobble = 1 + Math.sin(i * 1.6 + 0.7) * 0.05;
+    return { label, value: Math.max(1, Math.round(base * wobble)) };
+  });
+}
+
+function renderRoiProof() {
+  document.getElementById('roiProofGrid').innerHTML = ROI_METRICS.map(m => {
+    const series = roiSeriesFor(roiPeriod, m.annual);
+    const maxVal = Math.max(...series.map(d => d.value)) || 1;
+    return `
+      <div class="roi-mini-card">
+        <div class="roi-mini-title">${m.title}</div>
+        <div class="roi-mini-value">${m.value}<span style="font-size:0.7rem; font-weight:600; color:var(--grey3);"> / yr</span></div>
+        <div class="roi-mini-chart">
+          ${series.map(d => `
+            <div class="roi-mini-col">
+              <div class="roi-mini-tooltip">${d.value.toLocaleString()}</div>
+              <div class="roi-mini-bar" style="height:${((d.value / maxVal) * 100).toFixed(1)}%; background:${m.color}"></div>
+              <div class="roi-mini-x">${d.label}</div>
+            </div>`).join('')}
+        </div>
+        <div class="roi-mini-formula">${m.formula}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderRoiPeriodToggle() {
+  const toggle = document.getElementById('roiPeriodToggle');
+  const thumb = document.getElementById('roiPeriodThumb');
+  toggle.innerHTML = '';
+  toggle.appendChild(thumb);
+  Object.keys(PERIODS_BIZ).forEach(k => {
+    const span = document.createElement('span');
+    span.textContent = PERIODS_BIZ[k].label;
+    span.className = k === roiPeriod ? 'active' : '';
+    span.onclick = () => setRoiPeriod(k);
+    toggle.appendChild(span);
+  });
+  positionRoiPeriodThumb();
+}
+function positionRoiPeriodThumb() {
+  const toggle = document.getElementById('roiPeriodToggle');
+  const active = toggle.querySelector('span.active');
+  const thumb = document.getElementById('roiPeriodThumb');
+  if (!active || !thumb) return;
+  thumb.style.left = active.offsetLeft + 'px';
+  thumb.style.width = active.offsetWidth + 'px';
+}
+function setRoiPeriod(key) { roiPeriod = key; renderRoiPeriodToggle(); renderRoiProof(); }
+
+function renderAll() {
+  renderHero();
+  renderTabs();
+  renderChart();
+  renderLadderChart();
+  renderMapping();
+  positionBizPeriodThumb();
+}
+
+/* ---- Drill Down (standard, visual only) ---- */
+function toggleDrillDown() {
+  const drawer = document.getElementById('ddDrawer');
+  const overlay = document.getElementById('ddOverlay');
+  const open = drawer.classList.toggle('open');
+  overlay.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function toggleDD(btn) {
+  const item = btn.parentElement;
+  const open = item.classList.toggle('open');
+  btn.textContent = (open ? '− ' : '+ ') + btn.dataset.label;
+}
+
+/* ---- Skill Utilization by Department (Fable's real %s, no $) ---- */
+const UTIL_DEPTS = ['Sales', 'Engineering', 'Operations', 'Marketing', 'HR'];
+const UTIL_PCT = { Sales:68, Engineering:23, Operations:41, Marketing:55, HR:61 };
+function renderUtilRows() {
+  document.getElementById('utilRows').innerHTML = UTIL_DEPTS.map(dept => {
+    const pct = UTIL_PCT[dept];
+    const idle = 100 - pct;
+    return `
+      <div class="util-row">
+        <div class="util-row-label">${dept}</div>
+        <div class="util-bar-track">
+          <div class="util-bar-utilized" style="width:${pct}%">${pct}%</div>
+          <div class="util-bar-idle" style="width:${idle}%">${idle >= 12 ? idle + '%' : ''}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ---- Friction Heatmap (Fable's data, our Friction palette) ---- */
+const HEATMAP_TYPES = [
+  { key:'confidence', short:'IC&PS', full:'Interpersonal Confidence & Psychological Safety', color:'#0F766E' },
+  { key:'mindset',    short:'M&WA',  full:'Mindset & Willingness to Act',                     color:'#E45756' },
+  { key:'situation',  short:'SU&J',  full:'Situation Understanding & Judgement',               color:'#D97706' },
+  { key:'knowledge',  short:'K&SA',  full:'Knowledge & Skill Application',                     color:'#2563EB' },
+];
+const HEATMAP_DATA = {
+  Sales:       [38, 22, 25, 15],
+  Engineering: [46, 20, 18, 16],
+  Operations:  [55, 20, 17, 8],
+  Marketing:   [40, 35, 15, 10],
+  HR:          [33, 28, 20, 19],
+};
+function heatCellStyle(color, pct) {
+  const alpha = clamp(pct / 60, 0.12, 1);
+  const textColor = alpha > 0.55 ? '#fff' : 'var(--night)';
+  return `background:${hexToRgba(color, alpha)}; color:${textColor};`;
+}
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function renderHeatmap() {
+  const rows = UTIL_DEPTS.map(dept => {
+    const cells = HEATMAP_DATA[dept].map((v, i) => {
+      const type = HEATMAP_TYPES[i];
+      const key = dept + '|' + type.key;
+      const clickable = !!TILE_DATA[key];
+      const cls = 'heatmap-cell ' + (clickable ? 'hot-click' : 'tile-dim') + (key === selectedTileKey ? ' tile-selected' : '');
+      const tip = clickable ? 'Click to see what this friction is about' : 'Not available in this demo';
+      return `<td><div class="${cls}" style="${heatCellStyle(type.color, v)}" title="${tip}" ${clickable ? `onclick="selectTile('${dept}','${type.key}')"` : ''}>${v}%</div></td>`;
+    }).join('');
+    return `<tr><td class="heatmap-row-label">${dept}</td>${cells}</tr>`;
+  }).join('');
+  document.getElementById('heatmapContainer').innerHTML = `
+    <table class="heatmap-table">
+      <thead><tr><th></th>${HEATMAP_TYPES.map(t => `<th title="${t.full}">${t.short}</th>`).join('')}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+/* ---- Workplace Situation Archetypes (Fable's content, 4 of 20 cells populated) ---- */
+const TILE_DATA = {
+  'Operations|confidence': {
+    insight: 'Confidence friction in Operations rose 18 pts over four quarters while sentiment on these situations kept falling — a psychological-safety signal worth leadership attention.',
+    archetypes: [
+      ['Raising problems upward after seeing someone else get burned for it', 44],
+      ['Pushing back on timelines set above', 31],
+      ['Admitting a mistake before it is discovered', 17],
+    ],
+  },
+  'Engineering|confidence': {
+    insight: 'Engineering’s confidence friction lives in <b>peer-to-peer candor</b>, not hierarchy — feedback between friends and senior-heavy review forums dominate the top fifth of volume.',
+    archetypes: [
+      ['Giving critical feedback to a peer who is also a friend', 38],
+      ['Speaking up in reviews dominated by seniors', 29],
+      ['Saying no to scope creep from product', 18],
+    ],
+  },
+  'Marketing|mindset': {
+    insight: 'Marketing’s mindset friction tracks the <b>strategy shift</b>: doubts about relevance and recognition dominate — a motivation risk, not a skills gap.',
+    archetypes: [
+      ['Feeling the new direction makes my expertise irrelevant', 40],
+      ['Why stretch when effort is not recognized', 31],
+      ['Letting go of ownership when campaigns are reassigned', 16],
+    ],
+  },
+  'Sales|situation': {
+    insight: 'Sales’ friction is <b>judgement under ambiguity</b> with clients — coachable with situation practice; worth addressing before renewal season.',
+    archetypes: [
+      ['Reading whether a client’s silence means no', 36],
+      ['Escalate or absorb the unreasonable client demand', 28],
+      ['When to defend price vs. protect the relationship', 19],
+    ],
+  },
+};
+let selectedTileKey = 'Operations|confidence';
+function selectTile(dept, typeKey) {
+  selectedTileKey = dept + '|' + typeKey;
+  renderHeatmap();
+  renderArchetypes();
+}
+function renderArchetypes() {
+  const tile = TILE_DATA[selectedTileKey];
+  const [dept, typeKey] = selectedTileKey.split('|');
+  const type = HEATMAP_TYPES.find(t => t.key === typeKey);
+  document.getElementById('archTitle').textContent = `Workplace Situation Archetypes — ${dept} × ${type.full}`;
+  if (!tile) {
+    document.getElementById('archBody').innerHTML = `<div class="arch-empty">No archetype data available for this cell in the demo.</div>`;
+    return;
+  }
+  const maxPct = Math.max(...tile.archetypes.map(a => a[1]));
+  document.getElementById('archBody').innerHTML = `
+    <div class="arch-insight">${tile.insight}</div>
+    ${tile.archetypes.map(([label, pct]) => `
+      <div class="arch-row">
+        <div class="arch-label">“${label}”</div>
+        <div class="arch-bar-track">
+          <div class="arch-bar-fill" style="width:${((pct / maxPct) * 100).toFixed(1)}%; background:${type.color}">
+            <span class="arch-bar-pct">${pct}%</span>
+          </div>
+        </div>
+      </div>`).join('')}
+    <div class="ops-caption" style="font-size:0.72rem; color:var(--grey3); margin-top:0.8rem;">Top 20% of conversation volume · aggregated across 8+ conversations · no individual content.</div>`;
+}
+
+renderPeriodToggle();
+renderAll();
+renderRoiPeriodToggle();
+renderRoiProof();
+renderUtilRows();
+renderHeatmap();
+renderArchetypes();
+window.addEventListener('resize', () => { positionBizPeriodThumb(); positionRoiPeriodThumb(); });
+</script>
+</body>
+</html>

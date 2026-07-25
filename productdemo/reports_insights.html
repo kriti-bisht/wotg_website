@@ -1,0 +1,2232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wisdom on the Go — Reports &amp; Insights</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:   #041A40;
+  --night2:  #2A3C5D;
+  --night3:  #4F5F79;
+  --grey1:   #f0f2f5;
+  --grey2:   #b8c0cc;
+  --grey3:   #6b7685;
+  --white:   #ffffff;
+  --green:   #3ab54a;
+  --green2:  #2d9640;
+  --gold:    #E4CA0A;
+  --gold2:   #AB9808;
+  --amber:   #e8960a;
+  --amber2:  #c17d00;
+  --red:     #e0303a;
+  --teal:    #14B8A6;
+  --rose:    #E85D8A;
+  --sky:     #2E8DE0;
+  --sky2:    #1D6DB8;
+  --blue:    #3B5FE0;
+  --blue1:   #253b8b;
+  --blue2:   #3352c1;
+  --blue3:   #5675e4;
+  --blue4:   #899fec;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Poppins',sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(4,26,64,0.06), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(228,202,10,0.05), transparent 40%),
+    #fbfbfd;
+  min-height:100vh;
+  color:var(--night);
+}
+a { text-decoration:none; color:inherit; }
+
+/* ---- Layout ---- */
+.admin-shell { min-height:100vh; }
+
+/* ---- Sidebar ---- */
+.admin-sidebar {
+  position:fixed; top:0; left:0; width:216px; height:100vh; z-index:100;
+  background:var(--night); color:#fff; display:flex; flex-direction:column;
+  transform:translateX(0); transition:transform 0.25s; box-shadow:4px 0 24px rgba(0,0,0,0.18);
+}
+.admin-sidebar.collapsed { transform:translateX(-100%); }
+.admin-logo { padding:1.1rem 1rem 0.9rem; }
+.admin-logo .logo { font-size:1.15rem; }
+.admin-logo .w { font-weight:700; color:#fff; }
+.admin-logo .mid { font-weight:400; color:#fff; }
+.admin-logo .go { font-weight:700; color:var(--green); }
+.admin-logo .sanskrit { font-size:0.6rem; font-weight:300; letter-spacing:0.16em; color:#fff; opacity:0.75; margin-top:-0.1rem; }
+.admin-nav { flex:1; padding:0.6rem 0; overflow-y:auto; }
+.admin-nav-item {
+  display:flex; align-items:center; gap:0.65rem; width:100%; padding:0.7rem 1rem;
+  color:var(--grey1); font-size:0.82rem; border-left:3px solid transparent; cursor:pointer;
+  white-space:nowrap; transition:background 0.15s, border-color 0.15s;
+}
+.admin-nav-item svg { width:17px; height:17px; flex-shrink:0; }
+.admin-nav-item:hover { background:rgba(255,255,255,0.06); border-left-color:var(--green); }
+.admin-nav-item.active { background:rgba(255,255,255,0.08); border-left-color:var(--green); color:#fff; font-weight:600; }
+.admin-nav-divider { height:1px; background:rgba(255,255,255,0.1); margin:0.6rem 1rem; }
+.admin-nav-footer { padding:0.6rem 0 1rem; }
+
+/* ---- Header ---- */
+.admin-main { min-width:0; margin-left:216px; transition:margin-left 0.25s; }
+.admin-main.expanded { margin-left:0; }
+header.topbar { background:var(--night); }
+.header-inner { display:flex; align-items:center; padding:0.9rem 2rem; gap:1rem; }
+.burger-btn {
+  width:36px; height:36px; border-radius:8px; background:none; border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff;
+}
+.burger-btn:hover { background:rgba(255,255,255,0.16); }
+.burger-btn svg { width:20px; height:20px; }
+.admin-greeting .hello { font-weight:600; font-size:1.15rem; color:#fff; }
+.admin-greeting .hello .name { color:var(--gold); }
+.admin-greeting .sub { color:var(--grey2); font-size:0.88rem; }
+.header-spacer { flex:1; }
+.admin-profile { display:flex; align-items:center; gap:0.7rem; cursor:default; }
+.admin-profile img { width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.3); }
+.admin-profile-text .name { color:#fff; font-weight:600; font-size:0.92rem; }
+.admin-profile-text .title { color:var(--grey2); font-size:0.76rem; }
+
+/* ---- Content ---- */
+.admin-content { max-width:1560px; margin:0 auto; padding:1.6rem 2rem 3rem; }
+
+/* ---- Reports & Insights layout ---- */
+#riMain { transition:opacity 0.3s ease, transform 0.3s ease; opacity:1; transform:none; }
+#riMain.ri-fade-out { opacity:0; transform:scale(0.97) translateY(8px); }
+
+.ri-level-head { display:flex; align-items:center; gap:1rem; margin-bottom:1.3rem; flex-wrap:wrap; min-height:36px; }
+.ri-level-title { font-size:1.3rem; font-weight:700; color:var(--night); }
+.ri-level-head.ri-level1-head { justify-content:space-between; }
+.um-title { font-size:1.5rem; font-weight:700; color:var(--night); }
+.ri-back-btn {
+  font-family:'Poppins',sans-serif; font-size:0.8rem; font-weight:600; color:var(--grey3); background:var(--grey1);
+  border:none; border-radius:16px; padding:0.4rem 0.9rem; cursor:pointer; transition:background 0.15s, color 0.15s;
+}
+.ri-back-btn:hover { background:var(--grey2); color:var(--night); }
+.ri-dd-trigger {
+  display:flex; align-items:center; gap:0.45rem; font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600;
+  color:var(--night2); background:var(--white); border:1.5px solid rgba(4,26,64,0.14); border-radius:20px;
+  padding:0.5rem 1.05rem; cursor:pointer; transition:border-color 0.15s, color 0.15s; margin-left:auto;
+}
+.ri-dd-trigger svg { width:15px; height:15px; }
+.ri-dd-trigger:hover { border-color:var(--night2); color:var(--night); }
+
+/* ---- Drill Down overlay drawer ---- */
+.dd-overlay { position:fixed; inset:0; background:rgba(4,26,64,0.45); z-index:199; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.dd-overlay.open { opacity:1; pointer-events:auto; }
+.dd-drawer {
+  position:fixed; top:0; right:0; width:320px; height:100vh; z-index:200;
+  background:var(--white); display:flex; flex-direction:column;
+  transform:translateX(100%); transition:transform 0.25s; box-shadow:-4px 0 24px rgba(0,0,0,0.18);
+}
+.dd-drawer.open { transform:translateX(0); }
+.dd-drawer-head { display:flex; align-items:center; justify-content:space-between; padding:1.4rem 1.4rem 1rem; border-bottom:1px solid rgba(4,26,64,0.08); flex-shrink:0; }
+.dd-drawer-head h3 { font-size:1.05rem; font-weight:700; color:var(--night); }
+.dd-close-btn { width:32px; height:32px; border-radius:8px; border:none; background:var(--grey1); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--grey3); transition:background 0.15s, color 0.15s; flex-shrink:0; }
+.dd-close-btn:hover { background:var(--grey2); color:var(--night); }
+.dd-close-btn svg { width:16px; height:16px; }
+.dd-drawer-body { flex:1; overflow-y:auto; padding:1.2rem 1.4rem; }
+.dd-drawer-foot { padding:1rem 1.4rem 1.4rem; border-top:1px solid rgba(4,26,64,0.08); flex-shrink:0; }
+.dd-go-btn { width:100%; font-family:'Poppins',sans-serif; font-size:0.86rem; font-weight:600; color:#fff; background:var(--green); border:none; border-radius:20px; padding:0.65rem; cursor:pointer; transition:background 0.15s; }
+.dd-go-btn:hover { background:var(--green2); }
+.ri-dd-item { margin-bottom:0.6rem; }
+.ri-dd-toggle {
+  width:100%; text-align:left; background:var(--grey1); border:none; border-radius:10px; padding:0.7rem 0.9rem;
+  font-family:'Poppins',sans-serif; font-size:0.84rem; font-weight:600; color:var(--night2); cursor:pointer; transition:background 0.15s, color 0.15s;
+}
+.ri-dd-toggle:hover { background:var(--grey2); }
+.ri-dd-item.open .ri-dd-toggle { background:rgba(20,184,166,0.14); color:#0d8f81; }
+.ri-dd-panel { max-height:0; overflow:hidden; transition:max-height 0.25s ease; display:flex; flex-direction:column; gap:0.5rem; padding:0 0.4rem; }
+.ri-dd-item.open .ri-dd-panel { max-height:360px; padding:0.7rem 0.4rem 0.2rem; overflow-y:auto; }
+.ri-dd-panel label { display:flex; align-items:center; gap:0.55rem; font-size:0.8rem; color:var(--night2); cursor:pointer; }
+.ri-dd-panel input { accent-color:var(--teal); width:14px; height:14px; }
+
+/* ---- Level 1: report cards (single-column horizontal rows) ---- */
+.report-list { display:flex; flex-direction:column; gap:1rem; }
+.report-row {
+  background:var(--white); border-radius:14px; padding:1.3rem 1.7rem; box-shadow:0 6px 20px rgba(4,26,64,0.08);
+  border:1px solid rgba(4,26,64,0.05); border-left:5px solid transparent; position:relative; display:flex; align-items:center; gap:1.4rem;
+  transition:transform 0.2s ease, box-shadow 0.2s ease;
+}
+.report-row.clickable { cursor:pointer; }
+.report-row.clickable:hover { transform:translateY(-4px); box-shadow:0 16px 30px rgba(4,26,64,0.16); }
+.report-row-text { min-width:0; }
+.report-row-text h3 { font-size:1.22rem; font-weight:700; letter-spacing:-0.01em; color:var(--night); margin-bottom:0.4rem; }
+.report-row-text p { font-size:0.83rem; color:#7e8a9c; line-height:1.65; }
+.report-row.coming-soon { opacity:0.7; }
+.report-row-index { width:92px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:3.8rem; font-weight:700; color:#e2e7ed; }
+.report-soon-tag { position:absolute; top:1.2rem; right:1.4rem; font-size:0.6rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; color:var(--grey3); background:var(--grey1); padding:0.2rem 0.55rem; border-radius:10px; }
+
+/* ---- Level 2: competency cards ---- */
+.competency-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.1rem; }
+.competency-card { background:var(--white); border-radius:12px; padding:1.2rem 1.3rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05); cursor:pointer; transition:transform 0.2s ease, box-shadow 0.2s ease; }
+.competency-card:hover { transform:translateY(-5px); box-shadow:0 16px 30px rgba(4,26,64,0.16); }
+.competency-card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:0.9rem; }
+.comp-ring-wrap { position:relative; flex-shrink:0; }
+.comp-ring { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.comp-ring-inner { width:47px; height:47px; border-radius:50%; background:var(--white); display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:700; color:var(--night); }
+.ring-user-badge { position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; border-radius:50%; border:2px solid var(--white); box-shadow:0 2px 4px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; }
+.ring-user-badge svg { width:11px; height:11px; }
+.comp-card-icon { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 8px rgba(0,0,0,0.12); flex-shrink:0; }
+.comp-card-icon svg { width:18px; height:18px; }
+.competency-card h3 { font-size:0.92rem; color:var(--night); margin-bottom:0.4rem; }
+.competency-card p { font-size:0.76rem; color:var(--grey3); line-height:1.5; }
+
+/* ---- KPI-style metric cards (reused from Adoption Overview) ---- */
+.kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.1rem; margin-bottom:1.6rem; }
+.kpi-card {
+  background:var(--white); border-radius:12px; padding:1.2rem 1.3rem; border-left:6px solid transparent;
+  box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05);
+  transition:transform 0.2s ease, box-shadow 0.2s ease; min-width:0;
+}
+.kpi-card:hover { transform:translateY(-5px); box-shadow:0 16px 30px rgba(4,26,64,0.16); }
+.kpi-card-head { display:flex; align-items:center; justify-content:space-between; gap:0.6rem; margin-bottom:0.9rem; }
+.kpi-card-head-left { display:flex; align-items:center; gap:0.55rem; min-width:0; }
+.kpi-card-icon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+.kpi-card-icon svg { width:15px; height:15px; }
+.kpi-card.c-green h3 { color:var(--green2); } .kpi-card.c-green .kpi-card-icon { background:var(--green); color:#fff; } .kpi-card.c-green .kpi-avg-pill { background:rgba(58,181,74,0.12); color:var(--green2); } .kpi-card.c-green { border-left-color:var(--green); }
+.kpi-card.c-gold h3 { color:var(--gold2); } .kpi-card.c-gold .kpi-card-icon { background:var(--gold); color:#fff; } .kpi-card.c-gold .kpi-avg-pill { background:rgba(228,202,10,0.18); color:var(--gold2); } .kpi-card.c-gold { border-left-color:var(--gold); }
+.kpi-card.c-amber h3 { color:var(--amber2); } .kpi-card.c-amber .kpi-card-icon { background:var(--amber); color:#fff; } .kpi-card.c-amber .kpi-avg-pill { background:rgba(232,150,10,0.14); color:var(--amber2); } .kpi-card.c-amber { border-left-color:var(--amber); }
+.kpi-card.c-navy h3 { color:var(--night); } .kpi-card.c-navy .kpi-card-icon { background:var(--night2); color:#fff; } .kpi-card.c-navy .kpi-avg-pill { background:rgba(4,26,64,0.08); color:var(--night); } .kpi-card.c-navy { border-left-color:var(--night2); }
+.kpi-card.c-teal h3 { color:#0d8f81; } .kpi-card.c-teal .kpi-card-icon { background:var(--teal); color:#fff; } .kpi-card.c-teal .kpi-avg-pill { background:rgba(20,184,166,0.14); color:#0d8f81; } .kpi-card.c-teal { border-left-color:var(--teal); }
+.kpi-card.c-blue1 h3 { color:#1e2f6f; } .kpi-card.c-blue1 .kpi-card-icon { background:var(--blue1); color:#fff; } .kpi-card.c-blue1 .kpi-avg-pill { background:rgba(37,59,139,0.14); color:#1e2f6f; } .kpi-card.c-blue1 { border-left-color:var(--blue1); }
+.kpi-card.c-blue2 h3 { color:#29429a; } .kpi-card.c-blue2 .kpi-card-icon { background:var(--blue2); color:#fff; } .kpi-card.c-blue2 .kpi-avg-pill { background:rgba(51,82,193,0.14); color:#29429a; } .kpi-card.c-blue2 { border-left-color:var(--blue2); }
+.kpi-card.c-blue3 h3 { color:#455eb6; } .kpi-card.c-blue3 .kpi-card-icon { background:var(--blue3); color:#fff; } .kpi-card.c-blue3 .kpi-avg-pill { background:rgba(86,117,228,0.14); color:#455eb6; } .kpi-card.c-blue3 { border-left-color:var(--blue3); }
+.kpi-card.c-blue4 h3 { color:#6e7fbd; } .kpi-card.c-blue4 .kpi-card-icon { background:var(--blue4); color:#fff; } .kpi-card.c-blue4 .kpi-avg-pill { background:rgba(137,159,236,0.14); color:#6e7fbd; } .kpi-card.c-blue4 { border-left-color:var(--blue4); }
+.kpi-card.c-blue h3 { color:#2f4cb3; } .kpi-card.c-blue .kpi-card-icon { background:var(--blue); color:#fff; } .kpi-card.c-blue .kpi-avg-pill { background:rgba(59,95,224,0.14); color:#2f4cb3; } .kpi-card.c-blue { border-left-color:var(--blue); }
+.kpi-card.c-rose h3 { color:#b23763; } .kpi-card.c-rose .kpi-card-icon { background:var(--rose); color:#fff; } .kpi-card.c-rose .kpi-avg-pill { background:rgba(232,93,138,0.14); color:#b23763; } .kpi-card.c-rose { border-left-color:var(--rose); }
+.kpi-card.c-sky h3 { color:var(--sky2); } .kpi-card.c-sky .kpi-card-icon { background:var(--sky); color:#fff; } .kpi-card.c-sky .kpi-avg-pill { background:rgba(46,141,224,0.14); color:var(--sky2); } .kpi-card.c-sky { border-left-color:var(--sky); }
+.kpi-card.mono-card h3 { font-weight:500; color:var(--night2); }
+.kpi-card.mono-card .kpi-card-icon { background:rgba(4,26,64,0.10); border-radius:50%; box-shadow:0 2px 5px rgba(4,26,64,0.16), inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -1px 1px rgba(4,26,64,0.08); }
+.kpi-card.mono-card .kpi-card-icon svg { stroke:var(--night); }
+.kpi-card.mono-card .kpi-card-icon svg[fill="#fff"] { fill:var(--night); }
+.kpi-card.mono-card .kpi-card-icon svg *[fill="#fff"] { fill:var(--night); }
+.kpi-card.mono-card .kpi-avg-pill { font-size:0.58rem; font-weight:500; background:var(--grey1); color:var(--night2); }
+.kpi-card h3 { font-size:0.76rem; line-height:1.22; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.kpi-avg-pill { font-size:0.68rem; font-weight:700; padding:0.24rem 0.55rem; border-radius:12px; white-space:nowrap; flex-shrink:0; }
+.kpi-chart { position:relative; padding-top:1.1rem; }
+.kpi-chart-bars { display:flex; align-items:flex-end; gap:4px; height:92px; border-bottom:1.5px solid rgba(4,26,64,0.16); position:relative; }
+.kpi-bar-wrap { flex:1; height:100%; display:flex; align-items:flex-end; justify-content:center; }
+.kpi-bar { width:60%; border-radius:3px 3px 0 0; min-height:2px; cursor:default; transition:opacity 0.15s; position:relative; }
+.kpi-bar-wrap:hover .kpi-bar { opacity:0.7; }
+.kpi-chart-line { position:absolute; top:1.1rem; left:0; width:100%; height:92px; pointer-events:none; }
+.kpi-chart-axis-labels { display:flex; gap:4px; margin-top:0.35rem; }
+.kpi-axis-label { flex:1; text-align:center; font-size:0.56rem; color:var(--grey3); }
+.kpi-card[draggable="true"] { cursor:grab; }
+.kpi-card.dragging { opacity:0.35; }
+.kpi-card.overall-slot { cursor:pointer; }
+
+/* ---- Main report panel ---- */
+.tabs-panel { background:var(--white); border-radius:14px; padding:1.4rem 1.5rem 1.6rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:2px solid transparent; margin-bottom:1.6rem; transition:border-color 0.2s, box-shadow 0.2s; }
+.tabs-panel.drop-target { border-color:var(--teal); box-shadow:0 0 0 4px rgba(20,184,166,0.15), 0 6px 20px rgba(4,26,64,0.08); }
+.rh-graph-card.drop-target { border-color:var(--teal); box-shadow:0 0 0 4px rgba(20,184,166,0.15), 0 6px 20px rgba(4,26,64,0.08); }
+.ri-panel-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; margin-bottom:1.3rem; }
+.panel-identity { display:flex; align-items:center; gap:0.6rem; }
+.panel-identity-icon { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+.panel-identity-icon svg { width:16px; height:16px; }
+.panel-identity-icon.mono-icon { border-radius:50%; box-shadow:0 2px 5px rgba(4,26,64,0.16), inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -1px 1px rgba(4,26,64,0.08); }
+.panel-identity-icon.mono-icon svg { stroke:var(--night); }
+.panel-identity-icon.mono-icon svg[fill] { fill:var(--night); }
+.panel-identity-title { font-size:0.95rem; font-weight:700; }
+.panel-identity-back { font-size:0.72rem; font-weight:600; color:var(--grey3); background:var(--grey1); border:none; border-radius:12px; padding:0.28rem 0.7rem; cursor:pointer; margin-left:0.3rem; }
+.panel-identity-back:hover { color:var(--night); background:var(--grey2); }
+
+.period-toggle { position:relative; display:flex; background:var(--grey1); border-radius:20px; padding:0.2rem; }
+.period-toggle-thumb { position:absolute; top:0.2rem; bottom:0.2rem; left:0.2rem; background:var(--teal); border-radius:16px; transition:left 0.25s ease, width 0.25s ease; z-index:0; }
+.period-toggle span { position:relative; z-index:1; padding:0.32rem 0.75rem; font-size:0.72rem; color:var(--grey3); border-radius:16px; cursor:pointer; transition:color 0.15s; }
+.period-toggle span.active { color:#fff; font-weight:600; }
+
+.chart-legend { display:flex; gap:1.2rem; margin-top:0.9rem; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:0.4rem; font-size:0.76rem; color:var(--grey3); }
+.legend-dot { display:inline-block; width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+/* Shared always-visible number label for every bar chart */
+.bar-num {
+  position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:3px;
+  color:var(--night); font-size:0.6rem; font-weight:500;
+  white-space:nowrap; opacity:1; pointer-events:none; z-index:20;
+}
+
+/* Period-based single-series bar chart (used by swapped-in metrics) */
+.usage-axis-title { font-size:0.66rem; color:var(--grey3); font-weight:600; margin-bottom:0.4rem; }
+.usage-chart-row { display:flex; gap:0.7rem; padding-top:1.1rem; }
+.usage-y-axis { flex:none; width:32px; height:200px; display:flex; flex-direction:column; justify-content:space-between; text-align:right; padding-right:0.5rem; box-sizing:content-box; }
+.usage-y-tick { font-size:0.6rem; color:var(--grey3); line-height:1; }
+.usage-chart-main { position:relative; flex:1; min-width:0; }
+.usage-gridlines { position:absolute; top:0; left:0; right:0; height:200px; display:flex; flex-direction:column; justify-content:space-between; pointer-events:none; }
+.usage-gridline { width:100%; height:1px; background:rgba(4,26,64,0.08); }
+.usage-chart-cols { position:relative; display:flex; align-items:flex-end; justify-content:space-between; height:200px; }
+.usage-col { flex:none; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; }
+.usage-stack { width:100%; position:relative; }
+.usage-stack.pill { border-radius:999px; overflow:hidden; }
+.usage-seg-single { width:100%; border-radius:3px 3px 0 0; }
+.usage-trend-svg { position:absolute; top:0; left:0; width:100%; height:200px; pointer-events:none; }
+.usage-labels { display:flex; justify-content:space-between; margin-top:0.5rem; }
+.usage-day-label { flex:none; text-align:center; font-size:0.6rem; color:var(--grey3); white-space:nowrap; overflow:visible; }
+
+.axis-title-v { writing-mode:vertical-rl; transform:rotate(180deg); font-size:0.64rem; color:var(--grey3); font-weight:600; flex:none; display:flex; align-items:center; justify-content:center; padding:0 0.15rem; white-space:nowrap; }
+
+/* Expertise stacked bar chart */
+.expertise-chart-row { display:flex; gap:0.6rem; }
+.expertise-chart-main { flex:1; min-width:0; }
+.expertise-row { display:flex; align-items:center; gap:0.8rem; margin-bottom:0.65rem; }
+.expertise-label { width:200px; flex-shrink:0; font-size:0.8rem; color:var(--night2); text-align:right; }
+.expertise-bar { flex:1; display:flex; height:28px; border-radius:6px; overflow:hidden; }
+.expertise-seg { display:flex; align-items:center; justify-content:center; font-size:0.68rem; font-weight:700; white-space:nowrap; overflow:hidden; }
+.expertise-axis-label { text-align:center; font-size:0.68rem; color:var(--grey3); font-weight:600; margin-top:0.4rem; }
+
+/* ---- Level 3 two-column layout + Key Observations ---- */
+.ri-l3-body { display:flex; gap:1.4rem; align-items:flex-start; }
+.ri-l3-main { flex:1; min-width:0; }
+.ri-l3-side { width:290px; flex-shrink:0; }
+.key-obs-card { background:var(--white); border-radius:14px; padding:1.3rem 1.3rem 1.5rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05); position:sticky; top:1.6rem; }
+.key-obs-head { display:flex; align-items:center; gap:0.6rem; margin-bottom:1.15rem; }
+.key-obs-icon { width:32px; height:32px; border-radius:9px; background:linear-gradient(135deg, var(--blue), #2f4cb3); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+.key-obs-icon svg { width:16px; height:16px; }
+.key-obs-title { font-size:0.95rem; font-weight:700; color:var(--night); }
+.key-obs-list { display:flex; flex-direction:column; gap:0.95rem; }
+.key-obs-item { font-size:0.82rem; line-height:1.58; color:var(--night2); padding-left:1rem; position:relative; }
+.key-obs-item::before { content:''; position:absolute; left:0; top:0.5rem; width:6px; height:6px; border-radius:50%; background:var(--blue); }
+.ri-obs-section {
+  margin-top:0; background:var(--white); border-radius:14px; padding:1.4rem 1.5rem 1.6rem;
+  box-shadow:0 6px 20px rgba(4,26,64,0.08); transition:transform 0.2s ease, box-shadow 0.2s ease;
+}
+.ri-obs-section:hover { transform:translateY(-4px); box-shadow:0 14px 26px rgba(4,26,64,0.14); }
+.ri-obs-head { display:flex; align-items:center; gap:0.6rem; margin-bottom:1rem; }
+.ri-obs-icon { width:32px; height:32px; border-radius:9px; background:linear-gradient(135deg, var(--teal), #0d8f81); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+.ri-obs-icon svg { width:16px; height:16px; }
+.ri-obs-title { font-size:0.95rem; font-weight:700; color:var(--night); }
+.ri-obs-list { background:rgba(20,184,166,0.08); border-left:3px solid var(--teal); border-radius:6px; padding:0.9rem 1.1rem; display:flex; flex-direction:column; gap:0.6rem; }
+.ri-obs-item { font-size:0.82rem; line-height:1.55; color:var(--night2); }
+
+/* ---- Reflector Insights hub (graph + key insights top, 55-card grid bottom) ---- */
+.rh-top { display:flex; gap:1.4rem; align-items:stretch; margin-bottom:1.8rem; }
+.rh-graph-card { flex:1.5; min-width:0; background:var(--white); border-radius:14px; padding:1.4rem 1.5rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05); }
+.rh-insights-card { flex:1; min-width:0; }
+.rh-graph-controls { display:flex; gap:1.4rem; margin-bottom:1.3rem; flex-wrap:wrap; }
+.rh-control { display:flex; align-items:center; gap:0.6rem; }
+.rh-control-label { font-size:0.78rem; color:var(--grey3); font-weight:600; }
+.rh-select { min-width:170px; }
+.rh-rank-list { display:flex; flex-direction:column; gap:0.6rem; }
+.rank-row { display:flex; align-items:center; gap:0.8rem; }
+.rank-position { width:18px; text-align:right; font-weight:700; color:var(--grey3); font-size:0.78rem; flex-shrink:0; }
+.rank-label { width:190px; flex-shrink:0; font-size:0.82rem; color:var(--night2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rank-bar-track { flex:1; height:24px; background:var(--grey1); border-radius:6px; overflow:hidden; }
+.rank-bar-fill { height:100%; border-radius:6px; display:flex; align-items:center; justify-content:flex-end; min-width:2.2rem; transition:width 0.3s ease; background:var(--teal); }
+.rank-value { font-size:0.72rem; font-weight:700; color:#fff; padding:0 0.55rem; white-space:nowrap; }
+
+.rh-section-title { font-size:1.05rem; font-weight:700; color:var(--night); margin-bottom:1rem; display:flex; align-items:center; gap:0.6rem; }
+.rh-count-tag { font-size:0.68rem; font-weight:700; color:var(--grey3); background:var(--grey1); padding:0.22rem 0.6rem; border-radius:10px; }
+.reflector-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:0.65rem; }
+.reflector-chip {
+  background:var(--white); border-radius:10px; padding:0.75rem 0.9rem; border:1px solid rgba(4,26,64,0.05);
+  border-left:4px solid transparent; box-shadow:0 3px 10px rgba(4,26,64,0.05); position:relative;
+  transition:transform 0.2s ease, box-shadow 0.2s ease;
+}
+.reflector-chip.clickable { cursor:pointer; }
+.reflector-chip.clickable:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(4,26,64,0.14); }
+.reflector-chip-label { font-size:0.8rem; font-weight:600; color:var(--night); line-height:1.3; margin-bottom:0.2rem; }
+.reflector-chip-cap { font-size:0.68rem; color:var(--grey3); }
+.reflector-demo-tag { position:absolute; top:0.6rem; right:0.7rem; font-size:0.58rem; font-weight:700; text-transform:uppercase; letter-spacing:0.02em; color:#0d8f81; background:rgba(20,184,166,0.14); padding:0.15rem 0.45rem; border-radius:8px; }
+
+/* ---- Competency Footprint / Custom placeholder ---- */
+.footprint-list { display:flex; flex-direction:column; gap:0.6rem; margin-bottom:0.9rem; }
+.footprint-row { display:flex; align-items:center; justify-content:space-between; font-size:0.82rem; padding:0.5rem 0.7rem; background:var(--grey1); border-radius:8px; }
+.footprint-name { color:var(--night2); font-weight:600; }
+.footprint-share { color:var(--green2); font-weight:700; font-size:0.76rem; }
+.footprint-note { font-size:0.7rem; color:var(--grey3); line-height:1.5; }
+.custom-placeholder-card { opacity:0.75; }
+
+/* ---- Learning Friction hub ---- */
+.friction-trend-cols { display:flex; align-items:flex-end; justify-content:space-between; width:100%; }
+.friction-col { flex:none; }
+.friction-stack { width:100%; display:flex; flex-direction:column; border-radius:5px; overflow:hidden; box-shadow:0 2px 8px rgba(4,26,64,0.1); }
+.friction-seg { display:flex; align-items:center; justify-content:center; min-height:10px; }
+.friction-seg-num { font-size:0.62rem; font-weight:700; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.25); }
+.friction-trend-labels { display:flex; justify-content:space-between; margin-top:0.5rem; width:100%; }
+.friction-trend-label { flex:none; text-align:center; font-size:0.6rem; color:var(--grey3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.combo-severity-bar { display:flex; height:38px; border-radius:8px; overflow:hidden; margin-bottom:1.1rem; }
+.combo-severity-seg { display:flex; align-items:center; justify-content:center; font-size:0.74rem; font-weight:700; color:#fff; }
+.combo-tier-group { margin-bottom:1.3rem; }
+.combo-tier-group:last-child { margin-bottom:0; }
+.combo-tier-head { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.7rem; }
+.combo-tier-label { font-size:0.84rem; font-weight:600; color:var(--night2); }
+.combo-tier-pct { font-size:0.84rem; font-weight:700; margin-left:auto; }
+.chart-legend.nowrap { flex-wrap:nowrap; gap:0.6rem; }
+.chart-legend.nowrap .legend-item { white-space:normal; align-items:flex-start; flex:1; min-width:0; line-height:1.25; font-size:0.72rem; }
+.chart-legend.nowrap .legend-dot { margin-top:0.2rem; flex-shrink:0; }
+.rank-label.wrap { white-space:normal; overflow:visible; text-overflow:clip; line-height:1.3; }
+.fr-filter-tag { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.7rem; font-weight:600; color:#0d8f81; background:rgba(20,184,166,0.14); padding:0.3rem 0.7rem; border-radius:12px; margin-bottom:1rem; }
+.fr-filter-tag button { border:none; background:none; color:#0d8f81; cursor:pointer; font-weight:700; font-size:0.85rem; line-height:1; padding:0; }
+.rh-subnote { font-size:0.8rem; color:var(--grey3); line-height:1.55; margin-bottom:1rem; }
+.bubble-matrix { width:100%; border-collapse:collapse; }
+.bubble-matrix th, .bubble-matrix td { text-align:center; padding:0.5rem 0.3rem; }
+.bubble-matrix thead th { font-size:0.68rem; font-weight:600; color:var(--night2); white-space:normal; line-height:1.25; vertical-align:bottom; }
+.bubble-matrix tbody th { font-size:0.72rem; font-weight:600; color:var(--night2); text-align:left; white-space:normal; line-height:1.25; min-width:170px; max-width:190px; padding-right:0.8rem; }
+.bubble-row-dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:0.4rem; }
+.bubble { margin:0 auto; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.6rem; font-weight:700; box-shadow:0 2px 6px rgba(0,0,0,0.15); transition:transform 0.15s; }
+.bubble:hover { transform:scale(1.08); }
+.friction-area-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.2rem; }
+.friction-area-card { background:var(--white); border-radius:16px; padding:1.6rem 1.8rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05); border-left:6px solid transparent; transition:transform 0.2s ease, box-shadow 0.2s ease; }
+.friction-area-card.clickable { cursor:pointer; }
+.friction-area-card.clickable:hover { transform:translateY(-4px); box-shadow:0 16px 30px rgba(4,26,64,0.16); }
+.friction-area-top { display:flex; align-items:center; gap:1.3rem; }
+.friction-area-ring-wrap { flex-shrink:0; }
+.friction-area-ring { width:96px; height:96px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.friction-area-ring-inner { width:72px; height:72px; border-radius:50%; background:var(--white); display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:700; }
+.friction-area-text { min-width:0; }
+.friction-area-text h3 { font-size:1.02rem; color:var(--night); margin-bottom:0.45rem; line-height:1.3; }
+.friction-area-text p { font-size:0.8rem; color:var(--grey3); line-height:1.55; margin-bottom:0.6rem; }
+.friction-area-tag { display:inline-block; font-size:0.66rem; font-weight:700; padding:0.24rem 0.6rem; border-radius:10px; }
+.rf-inline-trigger { display:flex; align-items:center; gap:0.35rem; font-family:'Poppins',sans-serif; font-size:0.72rem; font-weight:600; color:var(--night2); background:var(--grey1); border:none; border-radius:14px; padding:0.35rem 0.75rem; cursor:pointer; transition:background 0.15s, color 0.15s; white-space:nowrap; }
+.rf-inline-trigger svg { width:12px; height:12px; }
+.rf-inline-trigger:hover { background:var(--grey2); color:var(--night); }
+.rank-bar-track.thin { height:6px; border-radius:3px; }
+.rank-bar-fill.thin { height:100%; border-radius:3px; min-width:4px; display:block; }
+.rank-value-outside { font-size:0.76rem; font-weight:700; color:var(--night2); width:36px; text-align:right; flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<div class="admin-shell">
+  <nav class="admin-sidebar" id="adminSidebar">
+    <div class="admin-logo">
+      <div class="logo"><span class="w">W</span><span class="mid">isdom on the </span><span class="go">GO!</span></div>
+      <div class="sanskrit">Tat Tvam Asi</div>
+    </div>
+    <div class="admin-nav">
+      <a href="admin_intro.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Adoption Overview
+      </a>
+      <a href="user_management.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        User Management
+      </a>
+      <a href="learning_management.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+        Learning Management
+      </a>
+      <a href="reports_insights.html" class="admin-nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12.5" y="8" width="3" height="10"/><rect x="18" y="5" width="3" height="13"/></svg>
+        Reports &amp; Insights
+      </a>
+      <a href="business_impact_2.html" class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m6 15 4-5 3.5 3L20 6"/><path d="M15 6h5v5"/></svg>
+        Business Impact
+      </a>
+      <div class="admin-nav-divider"></div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg>
+        Help &amp; information
+      </div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        Settings
+      </div>
+      <div class="admin-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log out
+      </div>
+    </div>
+  </nav>
+
+  <div class="admin-main">
+    <header class="topbar">
+      <div class="header-inner">
+        <button class="burger-btn" onclick="toggleSidePanel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9.5 4v16"/><rect x="4.3" y="5.3" width="4.2" height="13.4" rx="1.1" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <div class="admin-greeting">
+          <div class="hello">Hello <span class="name">Patty</span>!</div>
+          <div class="sub">Explore organizational learning insights</div>
+        </div>
+        <div class="header-spacer"></div>
+        <div class="admin-profile">
+          <div class="admin-profile-text" style="text-align:right">
+            <div class="name">Patty Merchant</div>
+            <div class="title">Global Head: Learning &amp; Talent Development</div>
+          </div>
+          <img src="assets/patty_headshot.jpg" alt="Patty Merchant">
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div id="riMain"></div>
+    </div>
+  </div>
+</div>
+
+<div class="dd-overlay" id="ddOverlay" onclick="toggleDrillDown()"></div>
+<div class="dd-drawer" id="ddDrawer">
+  <div class="dd-drawer-head">
+    <h3>Drill Down</h3>
+    <button class="dd-close-btn" onclick="toggleDrillDown()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="dd-drawer-body">
+    <div class="ri-dd-item">
+      <button class="ri-dd-toggle" data-label="Department" onclick="toggleDD(this)">+ Department</button>
+      <div class="ri-dd-panel">
+        <label><input type="checkbox">All Departments</label>
+        <label><input type="checkbox">Sales</label>
+        <label><input type="checkbox">Engineering</label>
+        <label><input type="checkbox">Marketing</label>
+        <label><input type="checkbox">Operations</label>
+        <label><input type="checkbox">HR</label>
+      </div>
+    </div>
+    <div class="ri-dd-item">
+      <button class="ri-dd-toggle" data-label="Grades" onclick="toggleDD(this)">+ Grades</button>
+      <div class="ri-dd-panel">
+        <label><input type="checkbox">L1</label>
+        <label><input type="checkbox">L2</label>
+        <label><input type="checkbox">L3</label>
+        <label><input type="checkbox">L4</label>
+        <label><input type="checkbox">L5</label>
+      </div>
+    </div>
+    <div class="ri-dd-item">
+      <button class="ri-dd-toggle" data-label="Targetted Learning Initiatives" onclick="toggleDD(this)">+ Targetted Learning Initiatives</button>
+      <div class="ri-dd-panel">
+        <label><input type="checkbox">New Hires</label>
+        <label><input type="checkbox">High Potential</label>
+        <label><input type="checkbox">Leadership Track</label>
+        <label><input type="checkbox">At Risk</label>
+      </div>
+    </div>
+    <div class="ri-dd-item" data-section="competency">
+      <button class="ri-dd-toggle" data-label="Competency" onclick="toggleDD(this)">+ Competency</button>
+      <div class="ri-dd-panel">
+        <label><input type="checkbox">Change Management</label>
+        <label><input type="checkbox">Conflict Management</label>
+        <label><input type="checkbox">Cultural Competence</label>
+        <label><input type="checkbox">Driving High Performance</label>
+        <label><input type="checkbox">Effective Communication</label>
+        <label><input type="checkbox">Emotional Intelligence</label>
+        <label><input type="checkbox">Ethics &amp; Integrity</label>
+        <label><input type="checkbox">Goal Setting</label>
+        <label><input type="checkbox">Intrapreneurship</label>
+      </div>
+    </div>
+    <div class="ri-dd-item" data-section="capability">
+      <button class="ri-dd-toggle" data-label="Capability" onclick="toggleDD(this)">+ Capability</button>
+      <div class="ri-dd-panel">
+        <label><input type="checkbox">Embodied Self-care</label>
+        <label><input type="checkbox">Social Presence</label>
+        <label><input type="checkbox">Interpersonal Responsiveness</label>
+        <label><input type="checkbox">Cultivating Relationships</label>
+        <label><input type="checkbox">Social Influence</label>
+        <label><input type="checkbox">Emotional Grounding</label>
+        <label><input type="checkbox">Result Orientation</label>
+        <label><input type="checkbox">Upholding Dignity</label>
+        <label><input type="checkbox">Self-Cultivation</label>
+      </div>
+    </div>
+  </div>
+  <div class="dd-drawer-foot">
+    <button class="dd-go-btn" onclick="applyDrillDownFilters()">Go</button>
+  </div>
+</div>
+
+<div class="dd-overlay" id="rfOverlay" onclick="toggleReflectorFilter()"></div>
+<div class="dd-drawer" id="rfDrawer">
+  <div class="dd-drawer-head">
+    <h3>Filter By Reflector</h3>
+    <button class="dd-close-btn" onclick="toggleReflectorFilter()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="dd-drawer-body" id="rfDrawerBody"></div>
+  <div class="dd-drawer-foot">
+    <button class="dd-go-btn" onclick="toggleReflectorFilter()">Go</button>
+  </div>
+</div>
+
+<script>
+function toggleSidePanel() {
+  document.getElementById('adminSidebar').classList.toggle('collapsed');
+  document.querySelector('.admin-main').classList.toggle('expanded');
+}
+function toggleDD(btn) {
+  const item = btn.parentElement;
+  const open = item.classList.toggle('open');
+  btn.textContent = (open ? '− ' : '+ ') + btn.dataset.label;
+}
+function toggleDrillDown() {
+  const drawer = document.getElementById('ddDrawer');
+  const overlay = document.getElementById('ddOverlay');
+  const open = drawer.classList.toggle('open');
+  overlay.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+const DD_TRIGGER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="4 4 20 4 14 12.5 14 19 10 21 10 12.5 4 4"/></svg>';
+const DD_TRIGGER_BTN = `<button class="ri-dd-trigger" onclick="toggleDrillDown()">${DD_TRIGGER_ICON}Drill Down</button>`;
+function toggleReflectorFilter() {
+  const drawer = document.getElementById('rfDrawer');
+  const overlay = document.getElementById('rfOverlay');
+  const open = drawer.classList.toggle('open');
+  overlay.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+const RF_TRIGGER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+function renderRfInlineBtn() {
+  return `<button class="rf-inline-trigger" onclick="toggleReflectorFilter()">${RF_TRIGGER_ICON}Filter by Reflector</button>`;
+}
+function renderReflectorFilterDrawerBody() {
+  return CAPABILITIES.map(cap => {
+    const items = REFLECTORS.filter(r => r.capability === cap.key);
+    return `
+    <div class="ri-dd-item">
+      <button class="ri-dd-toggle" data-label="${cap.label}" onclick="toggleDD(this)">+ ${cap.label}</button>
+      <div class="ri-dd-panel">
+        ${items.map(r => `<label><input type="checkbox">${r.label}</label>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------------------------------------------------------- */
+/* Data                                                              */
+/* ---------------------------------------------------------------- */
+const MONTHS = ['Jun','Jul','Aug','Sep','Oct','Nov'];
+const PERIODS = {
+  ytd:     { label:'YTD',     labels:['Dec ’25','Jan ’26','Feb ’26','Mar ’26','Apr ’26','May ’26','Jun ’26','Jul ’26','Aug ’26','Sep ’26','Oct ’26','Nov ’26'], seed:1, style:'bar', barWidth:40 },
+  year:    { label:'Year',    labels:['Jan ’26','Feb ’26','Mar ’26','Apr ’26','May ’26','Jun ’26','Jul ’26','Aug ’26','Sep ’26','Oct ’26','Nov ’26'], seed:4, style:'bar', barWidth:44 },
+  quarter: { label:'Quarter', labels:['Wk of 1st Oct','Wk of 8th Oct','Wk of 15th Oct','Wk of 22nd Oct','Wk of 29th Oct','Wk of 5th Nov'], seed:3, style:'bar', barWidth:52 },
+  month:   { label:'Month',   labels:['1st Nov','2nd Nov','3rd Nov','4th Nov','5th Nov','6th Nov','7th Nov','8th Nov','9th Nov','10th Nov','11th Nov','12th Nov','13th Nov','14th Nov'], seed:2, style:'pill', barWidth:12 },
+};
+
+const CARD_COLORS = { 'c-teal':'#14B8A6', 'c-gold':'#E4CA0A', 'c-amber':'#e8960a', 'c-green':'#3ab54a', 'c-navy':'#2A3C5D', 'c-rose':'#E85D8A', 'c-sky':'#2E8DE0', 'c-blue':'#3B5FE0', 'c-blue1':'#253b8b', 'c-blue2':'#3352c1', 'c-blue3':'#5675e4', 'c-blue4':'#899fec' };
+/* Level-3 detail pages: each competency/capability keeps its own identity color as
+   primary, paired with one fixed contrast — instead of 6 unrelated metric colors. */
+const COLOR_PAIRS = {
+  'c-teal':   { primary:'c-teal',   contrast:'c-rose' },
+  'c-gold':   { primary:'c-gold',   contrast:'c-navy' },
+  'c-amber':  { primary:'c-amber',  contrast:'c-teal' },
+  'c-green':  { primary:'c-green',  contrast:'c-navy' },
+  'c-navy':   { primary:'c-navy',   contrast:'c-gold' },
+  'c-rose':   { primary:'c-rose',   contrast:'c-navy' },
+  'c-sky':    { primary:'c-sky',    contrast:'c-amber' },
+  'c-blue1':  { primary:'c-blue1',  contrast:'c-rose' },
+  'c-blue2':  { primary:'c-blue2',  contrast:'c-rose' },
+  'c-blue3':  { primary:'c-blue3',  contrast:'c-rose' },
+  'c-blue4':  { primary:'c-blue4',  contrast:'c-rose' },
+};
+function shadeColor(hex, percent) {
+  let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  const mix = (c) => Math.round(percent > 0 ? c + (255 - c) * percent / 100 : c + c * percent / 100);
+  r = Math.max(0, Math.min(255, mix(r)));
+  g = Math.max(0, Math.min(255, mix(g)));
+  b = Math.max(0, Math.min(255, mix(b)));
+  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+const PIE_COLORS = ['c-teal','c-gold','c-amber','c-green','c-navy','c-blue','c-rose'].map(c => CARD_COLORS[c]);
+const MONO_RAMP_PERCENTS = [-50, -30, -12, 10, 28, 46];
+function monoRampFor(cls) { return MONO_RAMP_PERCENTS.map(p => shadeColor(CARD_COLORS[cls], p)); }
+
+const REPORT_CARDS = [
+  { key:'competency', label:'Competency Dashboard', desc:'Understand learner engagement, learning investment and proficiency across every organizational competency. Drill down into individual competencies to identify strengths, development priorities and adoption trends.', cls:'c-blue1', active:true, domain:'competency',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>' },
+  { key:'landscape', label:'Capability Landscape', desc:'Explore the organization’s capability profile to identify where human capabilities are strongest, where they are underdeveloped, and how they are evolving across teams and employee groups.', cls:'c-teal', active:true, domain:'capability',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 20 6-11 4 6 3-4 5 9Z"/></svg>' },
+  { key:'friction', label:'Learning Friction', desc:'Identify the underlying barriers preventing employees from demonstrating critical human skills. Analyze friction across the four learning drivers to understand where development efforts should be focused.', cls:'c-rose', active:true, domain:'friction',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14 15.5 9.5"/><circle cx="12" cy="14" r="1.2" fill="#fff" stroke="none"/><path d="M4.9 19a9 9 0 1 1 14.2 0"/></svg>' },
+  { key:'reflector', label:'Reflector Insights', desc:'Analyze Reflector demand to identify the human skills most frequently diagnosed, recommended and mapped across organizational competencies and learning initiatives. Explore demand, proficiency and growth trends over time.', cls:'c-gold', active:true, domain:'reflector',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>' },
+  { key:'challenges', label:'Workplace Challenges', desc:'Discover the most common workplace situations employees seek help with, helping identify recurring business challenges, emerging trends and areas requiring organizational attention.', cls:'c-amber', active:false,
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>' },
+];
+
+const COMPETENCIES = [
+  { key:'change-mgmt', label:'Change Management', cls:'c-rose', mono:true, sub:['Analyzing Change Impact','Building Change Readiness'],
+    skills:['Analyzing Change Impact','Building Change Readiness','Communicating Change','Managing Resistance'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>' },
+  { key:'conflict-mgmt', label:'Conflict Management', cls:'c-blue2', mono:true, sub:['Managing Difficult Conversations','Managing Objection'],
+    skills:['Managing Difficult Conversations','Managing Objection','De-escalation Techniques'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>' },
+  { key:'cultural-comp', label:'Cultural Competence', cls:'c-amber', mono:true, sub:['Navigating Cross-Cultural Conflict','Communicating Across Cultures'],
+    skills:['Navigating Cross-Cultural Conflict','Communicating Across Cultures','Inclusive Leadership'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.7 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.7-3.8-9s1.3-6.5 3.8-9Z"/></svg>' },
+  { key:'driving-perf', label:'Driving High Performance', cls:'c-green', mono:true, sub:['Measuring Performance','Improving Performance'],
+    skills:['Giving Performance Feedback','Identifying Performance Risks','Measuring Performance','Improving Performance','Using Positive Reinforcement','Addressing Underperformance'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 9 11 13 15 21 6"/><path d="M15 6h6v6"/></svg>' },
+  { key:'effective-comm', label:'Effective Communication', cls:'c-navy', mono:true, sub:['Public Speaking','Writing Effectively'],
+    skills:['Public Speaking','Writing Effectively','Active Listening','Presenting with Impact'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l4 4V6l-4 4H4a1 1 0 0 0-1 1Z"/><path d="M15 8a3 3 0 0 1 0 8"/><path d="M18 5a7 7 0 0 1 0 14"/></svg>' },
+  { key:'emotional-intel', label:'Emotional Intelligence', cls:'c-gold', mono:true, sub:['Practicing Discernment','Being Confident'],
+    skills:['Practicing Discernment','Being Confident','Self-Regulation','Empathetic Listening'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>' },
+  { key:'ethics-integrity', label:'Ethics & Integrity', cls:'c-teal', mono:true, sub:['Taking Professional Accountability','Building ethical Awareness'],
+    skills:['Taking Professional Accountability','Building Ethical Awareness','Navigating Grey Areas'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>' },
+  { key:'goal-setting', label:'Goal Setting', cls:'c-blue3', mono:true, sub:['Allocating Goals','Communicating Goals'],
+    skills:['Allocating Goals','Communicating Goals','Tracking Progress','Prioritizing Objectives'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="#fff" stroke="none"/></svg>' },
+  { key:'intrapreneurship', label:'Intrapreneurship', cls:'c-amber', mono:true, sub:['Resourcefulness','Practicing Strategic Thinking'],
+    skills:['Resourcefulness','Practicing Strategic Thinking','Driving Innovation','Taking Initiative'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a6 6 0 0 0-4 10.5c.6.6 1 1.3 1 2.5h6c0-1.2.4-1.9 1-2.5A6 6 0 0 0 12 2Z"/></svg>' },
+];
+
+const CAPABILITIES = [
+  { key:'embodied-selfcare', label:'Embodied Self-care', cls:'c-teal', mono:true, sub:['Practicing self-care','Building Healthy Habits'],
+    skills:['Practicing self-care','Building Healthy Habits'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 8-4-16-3 8H2"/></svg>' },
+  { key:'social-presence', label:'Social Presence', cls:'c-gold', mono:true, sub:['Being Considerate','Demonstrating Reliability'],
+    skills:['Being Considerate','Demonstrating Reliability','Structuring Messages Clearly','Being Amiable','Demonstrating Credibility','Being Assertive'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>' },
+  { key:'interpersonal-resp', label:'Interpersonal Responsiveness', cls:'c-amber', mono:true, sub:['Handling Emotional Responses','Respecting Boundaries'],
+    skills:['Handling Emotional Responses','Respecting Boundaries','Attuned Listening','Guiding Others','Handling Objections'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>' },
+  { key:'cultivating-rel', label:'Cultivating Relationships', cls:'c-sky', mono:true, sub:['Setting Boundaries','Resolving Conflicts'],
+    skills:['Setting Boundaries','Resolving Conflicts','Practicing Tolerance','Delivering Difficult Messages','Conveying Empathy','Purposeful Questioning','Building Rapport'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { key:'social-influence', label:'Social Influence', cls:'c-navy', mono:true, sub:['Networking','Influencing others'],
+    skills:['Expressing Disagreement','Tailoring/Customizing your Message','Networking','Influencing others','Navigating Relational Dynamics','Inviting/Promoting Participation','Negotiating Effectively'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v4a1 1 0 0 0 1 1h3l5 4V6l-5 4H4a1 1 0 0 0-1 1Z"/><path d="M17 8a5 5 0 0 1 0 8"/></svg>' },
+  { key:'emotional-grounding', label:'Emotional Grounding', cls:'c-blue4', mono:true, sub:['Stress Management','Regulating Emotions'],
+    skills:['Stress Management','Building Self-Awareness','Regulating Emotions','Practicing Reflection'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v13"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>' },
+  { key:'result-orientation', label:'Result Orientation', cls:'c-rose', mono:true, sub:['Goal Setting','Taking Ownership/Accountability'],
+    skills:['Giving Feedback','Receiving Feedback','Taking Ownership/Accountability','Being Proactive','Goal Setting','Analyzing Progress','Prioritizing Effectively','Being Resourceful','Taking Action','Being Timely','Being Resilient','Taking Initiative','Navigating Ambiguity','Pitching Effectively'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="#fff" stroke="none"/></svg>' },
+  { key:'upholding-dignity', label:'Upholding Dignity', cls:'c-teal', mono:true, sub:['Demonstrating Ethical Integrity','Being Fair'],
+    skills:['Demonstrating Ethical Integrity','Challenging Bias','Speaking Up Against Wrongdoing','Being Inclusive','Being Fair'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>' },
+  { key:'self-cultivation', label:'Self-Cultivation', cls:'c-gold', mono:true, sub:['Continuously Learning','Applying Feedback'],
+    skills:['Being Appreciative','Seeking Feedback','Continuously Learning','Applying Feedback','Coping with Change','Accepting Vulnerability'],
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 7 8 4 3 4c0 5 3 8 9 8Z"/><path d="M12 12c0-4 4-6 9-6 0 4-3 7-9 7Z"/></svg>' },
+];
+
+const REFLECTORS = [
+  { key:'practicing-selfcare', label:'Practicing self-care', capability:'embodied-selfcare', competencies:['emotional-intel'] },
+  { key:'building-healthy-habits', label:'Building Healthy Habits', capability:'embodied-selfcare', competencies:['driving-perf'] },
+  { key:'being-considerate', label:'Being Considerate', capability:'social-presence', competencies:['cultural-comp'] },
+  { key:'demonstrating-reliability', label:'Demonstrating Reliability', capability:'social-presence', competencies:['driving-perf'] },
+  { key:'structuring-messages-clearly', label:'Structuring Messages Clearly', capability:'social-presence', competencies:['effective-comm'] },
+  { key:'being-amiable', label:'Being Amiable', capability:'social-presence', competencies:['cultural-comp'] },
+  { key:'demonstrating-credibility', label:'Demonstrating Credibility', capability:'social-presence', competencies:['effective-comm'] },
+  { key:'being-assertive', label:'Being Assertive', capability:'social-presence', competencies:['conflict-mgmt'] },
+  { key:'handling-emotional-responses', label:'Handling Emotional Responses', capability:'interpersonal-resp', competencies:['emotional-intel'] },
+  { key:'respecting-boundaries', label:'Respecting Boundaries', capability:'interpersonal-resp', competencies:['conflict-mgmt'] },
+  { key:'attuned-listening', label:'Attuned Listening', capability:'interpersonal-resp', competencies:['effective-comm'] },
+  { key:'guiding-others', label:'Guiding Others', capability:'interpersonal-resp', competencies:['driving-perf'] },
+  { key:'handling-objections-disagreements', label:'Handling Objections', capability:'interpersonal-resp', competencies:['conflict-mgmt'] },
+  { key:'setting-boundaries', label:'Setting Boundaries', capability:'cultivating-rel', competencies:['conflict-mgmt'] },
+  { key:'resolving-conflicts', label:'Resolving Conflicts', capability:'cultivating-rel', competencies:['conflict-mgmt','effective-comm'] },
+  { key:'practicing-tolerance', label:'Practicing Tolerance', capability:'cultivating-rel', competencies:['cultural-comp'] },
+  { key:'delivering-difficult-messages', label:'Delivering Difficult Messages', capability:'cultivating-rel', competencies:['effective-comm'] },
+  { key:'conveying-empathy', label:'Conveying Empathy', capability:'cultivating-rel', competencies:['emotional-intel'] },
+  { key:'purposeful-questioning', label:'Purposeful Questioning', capability:'cultivating-rel', competencies:['effective-comm'] },
+  { key:'building-rapport', label:'Building Rapport', capability:'cultivating-rel', competencies:['cultural-comp'] },
+  { key:'expressing-disagreement-objection', label:'Expressing Disagreement', capability:'social-influence', competencies:['conflict-mgmt'] },
+  { key:'tailoring-customizing-message', label:'Tailoring/Customizing your Message', capability:'social-influence', competencies:['effective-comm'] },
+  { key:'networking', label:'Networking', capability:'social-influence', competencies:['intrapreneurship'] },
+  { key:'influencing-others', label:'Influencing others', capability:'social-influence', competencies:['effective-comm'] },
+  { key:'navigating-relational-dynamics', label:'Navigating Relational Dynamics', capability:'social-influence', competencies:['cultural-comp'] },
+  { key:'inviting-promoting-participation', label:'Inviting/Promoting Participation', capability:'social-influence', competencies:['effective-comm'] },
+  { key:'negotiating-effectively', label:'Negotiating Effectively', capability:'social-influence', competencies:['conflict-mgmt'] },
+  { key:'stress-management', label:'Stress Management', capability:'emotional-grounding', competencies:['emotional-intel'] },
+  { key:'building-self-awareness', label:'Building Self-Awareness', capability:'emotional-grounding', competencies:['emotional-intel'] },
+  { key:'regulating-emotions', label:'Regulating Emotions', capability:'emotional-grounding', competencies:['emotional-intel'] },
+  { key:'practicing-reflection', label:'Practicing Reflection', capability:'emotional-grounding', competencies:['emotional-intel','goal-setting'] },
+  { key:'giving-feedback', label:'Giving Feedback', capability:'result-orientation', competencies:['driving-perf'] },
+  { key:'receiving-feedback', label:'Receiving Feedback', capability:'result-orientation', competencies:['driving-perf'] },
+  { key:'taking-ownership-accountability', label:'Taking Ownership/Accountability', capability:'result-orientation', competencies:['ethics-integrity'] },
+  { key:'being-proactive', label:'Being Proactive', capability:'result-orientation', competencies:['intrapreneurship'] },
+  { key:'goal-setting-refl', label:'Goal Setting', capability:'result-orientation', competencies:['goal-setting'] },
+  { key:'analyzing-progress', label:'Analyzing Progress', capability:'result-orientation', competencies:['goal-setting'] },
+  { key:'prioritizing-effectively', label:'Prioritizing Effectively', capability:'result-orientation', competencies:['goal-setting'] },
+  { key:'being-resourceful', label:'Being Resourceful', capability:'result-orientation', competencies:['intrapreneurship'] },
+  { key:'taking-action', label:'Taking Action', capability:'result-orientation', competencies:['intrapreneurship'] },
+  { key:'being-timely', label:'Being Timely', capability:'result-orientation', competencies:['driving-perf'] },
+  { key:'being-resilient', label:'Being Resilient', capability:'result-orientation', competencies:['emotional-intel'] },
+  { key:'taking-initiative', label:'Taking Initiative', capability:'result-orientation', competencies:['intrapreneurship'] },
+  { key:'navigating-ambiguity', label:'Navigating Ambiguity', capability:'result-orientation', competencies:['intrapreneurship'] },
+  { key:'pitching-effectively', label:'Pitching Effectively', capability:'result-orientation', competencies:['effective-comm'] },
+  { key:'demonstrating-ethical-integrity', label:'Demonstrating Ethical Integrity', capability:'upholding-dignity', competencies:['ethics-integrity'] },
+  { key:'challenging-bias', label:'Challenging Bias', capability:'upholding-dignity', competencies:['ethics-integrity'] },
+  { key:'speaking-up-against-wrongdoing', label:'Speaking Up Against Wrongdoing', capability:'upholding-dignity', competencies:['ethics-integrity'] },
+  { key:'being-inclusive', label:'Being Inclusive', capability:'upholding-dignity', competencies:['cultural-comp'] },
+  { key:'being-fair', label:'Being Fair', capability:'upholding-dignity', competencies:['ethics-integrity'] },
+  { key:'being-appreciative', label:'Being Appreciative', capability:'self-cultivation', competencies:['emotional-intel'] },
+  { key:'seeking-feedback', label:'Seeking Feedback', capability:'self-cultivation', competencies:['driving-perf'] },
+  { key:'continuously-learning', label:'Continuously Learning', capability:'self-cultivation', competencies:['intrapreneurship'] },
+  { key:'applying-feedback', label:'Applying Feedback', capability:'self-cultivation', competencies:['driving-perf'] },
+  { key:'coping-with-change', label:'Coping with Change', capability:'self-cultivation', competencies:['change-mgmt'] },
+  { key:'accepting-vulnerability', label:'Accepting Vulnerability', capability:'self-cultivation', competencies:['emotional-intel'] },
+].map(r => ({ ...r, sub:[r.label], skills:[r.label], cls: CAPABILITIES.find(c => c.key === r.capability).cls, icon: CAPABILITIES.find(c => c.key === r.capability).icon }));
+
+const DEMO_REFLECTOR_KEY = 'resolving-conflicts';
+
+const METRICS = [
+  { key:'engaged',   label:'Users Engaged',   cls:'c-teal',  base:58,  step:20,
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+  { key:'hours',     label:'Learning Hours',  cls:'c-gold',  base:62,  step:20,
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>' },
+  { key:'timeshare', label:'Time Share',      cls:'c-amber', base:22,  step:10,
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l7.5 4.3"/></svg>' },
+  { key:'atoms',     label:'Atoms Completed', cls:'c-green', base:38,  step:20,
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1" fill="#fff"/><ellipse cx="12" cy="12" rx="10" ry="4.2"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/></svg>' },
+  { key:'feedback',  label:'Feedback',        cls:'c-navy',  base:4.1, step:1,
+    icon:'<svg viewBox="0 0 24 24" fill="#fff"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>' },
+  { key:'mindshare', label:'Mind Share',      cls:'c-rose',  base:16,  step:10,
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="12" r="2.5"/><path d="M8.2 7.3 15.8 10.7"/><path d="M8.2 16.7 15.8 13.3"/></svg>' },
+];
+const EXPERTISE_METRIC = { key:'expertise', label:'Expertise', cls:'c-blue',
+  icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4a3 3 0 0 0 3 3"/><path d="M17 6h3a3 3 0 0 1-3 3"/></svg>' };
+const DRAGGABLE_METRIC_KEY = 'hours';
+
+const FRICTION_COLORS = { confidence:'#0F766E', mindset:'#E45756', situation:'#D97706', knowledge:'#2563EB' };
+const FRICTION_AREAS = [
+  { key:'confidence', label:'Interpersonal Confidence & Psychological Safety',
+    desc:'Concerns that demonstrating the skill may carry social, relational, or reputational risk.' },
+  { key:'mindset', label:'Mindset & Willingness to Act',
+    desc:'Inner beliefs, values, or identity that make the required response feel difficult or uncomfortable.' },
+  { key:'knowledge', label:'Knowledge & Skill Application',
+    desc:'Knowing what to do, how to do it, and having the confidence and resources to do it well.' },
+  { key:'situation', label:'Situation Understanding & Judgement',
+    desc:'Difficulty understanding what the situation is really asking for and deciding the most effective response.' },
+];
+const FRICTION_COMBO_DIST = [
+  { tier:'single', label:'One friction area only', pct:47, cls:'c-green' },
+  { tier:'double', label:'Two friction areas together', pct:36, cls:'c-amber' },
+  { tier:'triple', label:'Three or more friction areas together', pct:17, cls:'c-rose' },
+];
+/* Each tier's rows sum exactly to that tier's pct in FRICTION_COMBO_DIST (47 / 36 / 17), so the
+   two cards visibly reconcile instead of listing an unrelated "top combos" subset. */
+const FRICTION_COMBO_DETAIL = {
+  single: [
+    { areas:['confidence'], pct:14 },
+    { areas:['situation'], pct:13 },
+    { areas:['mindset'], pct:12 },
+    { areas:['knowledge'], pct:8 },
+  ],
+  double: [
+    { areas:['situation','knowledge'], pct:14 },
+    { areas:['confidence','mindset'], pct:11 },
+    { areas:['mindset','situation'], pct:6 },
+    { areas:['confidence','knowledge'], pct:5 },
+  ],
+  triple: [
+    { areas:['confidence','mindset','situation'], pct:10 },
+    { areas:['mindset','knowledge','situation'], pct:7 },
+  ],
+};
+const FRICTION_BAR_WIDTH = 36;
+const WORKPLACE_CHALLENGES = [
+  { key:'managing-upwards', label:'Managing Upwards' },
+  { key:'performance-career', label:'Performance & Career' },
+  { key:'leading-teams', label:'Leading Teams & People' },
+  { key:'managing-stakeholders', label:'Managing Stakeholders' },
+  { key:'managing-workload', label:'Managing Workload' },
+  { key:'navigating-change', label:'Navigating Change' },
+  { key:'managing-self', label:'Managing Self' },
+];
+const WORKPLACE_CHALLENGE_FRICTION = {
+  'managing-upwards':      { confidence:38, mindset:22, knowledge:16, situation:24 },
+  'performance-career':    { confidence:34, mindset:26, knowledge:18, situation:22 },
+  'leading-teams':         { confidence:30, mindset:24, knowledge:20, situation:26 },
+  'managing-stakeholders': { confidence:26, mindset:18, knowledge:18, situation:38 },
+  'managing-workload':     { confidence:16, mindset:22, knowledge:20, situation:42 },
+  'navigating-change':     { confidence:20, mindset:40, knowledge:14, situation:26 },
+  'managing-self':         { confidence:18, mindset:36, knowledge:22, situation:24 },
+};
+
+/* ---------------------------------------------------------------- */
+/* State                                                             */
+/* ---------------------------------------------------------------- */
+let riLevel = 1;
+let activeDomain = 'competency';
+let activeCompIndex = null;
+let slicedMetric = null;
+let riPeriod = 'ytd';
+let rhPeriod = 'ytd';
+let rhRankMetric = 'hours';
+let rhFilterCompetencies = [];
+let rhFilterCapabilities = [];
+let frPeriod = 'ytd';
+let frFilterLabels = [];
+let frDetailAreaKey = null;
+let frSlicedMetric = null;
+const FRICTION_DEMO_AREA_KEY = 'confidence';
+
+const DOMAIN_META = {
+  competency: { data: COMPETENCIES, level2Title:'Competency Dashboard' },
+  capability: { data: CAPABILITIES, level2Title:'Capability Landscape' },
+  reflector:  { data: REFLECTORS,   level2Title:'Reflector Insights' },
+};
+function activeData() { return DOMAIN_META[activeDomain].data; }
+function demoReflectorIndex() { return REFLECTORS.findIndex(r => r.key === DEMO_REFLECTOR_KEY); }
+
+/* ---------------------------------------------------------------- */
+/* Data generators                                                   */
+/* ---------------------------------------------------------------- */
+const SKILL_DIST_OVERRIDE = {
+  'driving-perf': [
+    { label:'Giving Performance Feedback', low:15, emerging:40, expert:45 },
+    { label:'Identifying Performance Risks', low:10, emerging:50, expert:40 },
+    { label:'Measuring Performance', low:15, emerging:45, expert:30 },
+    { label:'Improving Performance', low:12, emerging:38, expert:50 },
+    { label:'Using Positive Reinforcement', low:15, emerging:20, expert:65 },
+    { label:'Addressing Underperformance', low:20, emerging:30, expert:50 },
+  ],
+};
+const PERIOD_SKILL_ADJUST = { ytd:0, year:-3, quarter:4, month:6 };
+function skillDistFor(compIndex, periodKey) {
+  periodKey = periodKey || 'ytd';
+  const comp = activeData()[compIndex];
+  let base;
+  if (SKILL_DIST_OVERRIDE[comp.key]) {
+    base = SKILL_DIST_OVERRIDE[comp.key];
+  } else {
+    const off = DOMAIN_SEED_OFFSET[activeDomain] || 0;
+    base = comp.skills.map((label, i) => {
+      const seed = (compIndex + off) * 11 + i * 3;
+      let low = 8 + Math.round(((Math.sin(seed * 1.7) + 1) / 2) * 20);
+      let expert = 25 + Math.round(((Math.cos(seed * 1.3) + 1) / 2) * 40);
+      let emerging = Math.max(10, 100 - low - expert);
+      const total = low + emerging + expert;
+      low = Math.round(low / total * 100);
+      emerging = Math.round(emerging / total * 100);
+      return { label, low, emerging, expert: 100 - low - emerging };
+    });
+  }
+  const adjust = PERIOD_SKILL_ADJUST[periodKey] || 0;
+  if (adjust === 0) return base;
+  return base.map((s, i) => {
+    const wobble = Math.sin((compIndex + i + 1) * 1.1) * 2;
+    const shift = Math.round(adjust + wobble);
+    let expert = Math.max(5, Math.min(90, s.expert + shift));
+    let low = Math.max(3, s.low - Math.round(shift * 0.4));
+    let emerging = 100 - expert - low;
+    if (emerging < 5) { emerging = 5; low = 100 - expert - emerging; }
+    return { label: s.label, low, emerging, expert };
+  });
+}
+function expertiseMiniSeriesFor(compIndex) {
+  const dist = skillDistFor(compIndex);
+  const avgExpert = dist.reduce((a, s) => a + s.expert, 0) / dist.length;
+  return MONTHS.map((_, i) => {
+    const wave = Math.sin((compIndex * 3 + i) * 0.7) * 0.08 + 1;
+    const growth = 1 + (i / 6) * 0.15;
+    return Math.max(0, Math.min(95, Math.round(avgExpert * wave * growth)));
+  });
+}
+function engagedAvgFor(compIndex) {
+  const series = metricMiniSeriesFor(compIndex, 'engaged');
+  return Math.round(series.reduce((a, b) => a + b, 0) / series.length);
+}
+function fmtMetric(key, v) {
+  if (key === 'feedback') return v.toFixed(1);
+  if (key === 'hours') return Math.round(v) + 'h';
+  if (key === 'atoms') return Math.round(v);
+  return Math.round(v) + '%';
+}
+function fmtMetricProse(key, v) {
+  if (key === 'feedback') return v.toFixed(1) + ' out of 5';
+  if (key === 'hours') return Math.round(v) + ' hours';
+  if (key === 'atoms') return Math.round(v) + ' atoms';
+  return Math.round(v) + '%';
+}
+function periodPrevUnitPhrase(periodKey) {
+  return { ytd: 'the month before', year: 'the month before', quarter: 'the week before', month: 'the day before' }[periodKey] || 'the prior period';
+}
+const DOMAIN_SEED_OFFSET = { competency: 0, capability: 37, reflector: 91 };
+function domainScaleFor(compIndex) {
+  const off = DOMAIN_SEED_OFFSET[activeDomain] || 0;
+  return 0.8 + ((Math.sin((compIndex + off) * 2.1) + 1) / 2) * 0.5;
+}
+function metricMiniSeriesFor(compIndex, key) {
+  if (key === 'expertise') return expertiseMiniSeriesFor(compIndex);
+  const m = METRICS.find(x => x.key === key);
+  const off = DOMAIN_SEED_OFFSET[activeDomain] || 0;
+  const seed = (compIndex + off) * 5 + METRICS.findIndex(x => x.key === key) * 2 + 1;
+  const scale = domainScaleFor(compIndex);
+  return MONTHS.map((_, i) => {
+    const wave = Math.sin((i + seed) * 0.8) * 0.18 + 1;
+    const growth = 1 + (i / 6) * 0.25;
+    let v = m.base * scale * wave * growth;
+    if (key === 'feedback') v = Math.min(5, Math.max(2.3, v));
+    return key === 'feedback' ? +v.toFixed(2) : Math.max(0, Math.round(v));
+  });
+}
+function metricPeriodSeries(compIndex, key, periodKey) {
+  const cfg = PERIODS[periodKey];
+  const m = METRICS.find(x => x.key === key);
+  const off = DOMAIN_SEED_OFFSET[activeDomain] || 0;
+  const seed = (compIndex + off) * 7 + METRICS.findIndex(x => x.key === key) * 3 + cfg.seed;
+  const scale = domainScaleFor(compIndex);
+  const n = cfg.labels.length;
+  return cfg.labels.map((label, i) => {
+    const wave = Math.sin((i + seed) * 0.6) * 0.15 + 1;
+    const growth = 1 + (i / n) * 0.28;
+    let v = m.base * scale * wave * growth;
+    if (key === 'feedback') v = Math.min(5, Math.max(2.2, v));
+    return { label, value: key === 'feedback' ? +v.toFixed(2) : Math.round(Math.max(0, v)) };
+  });
+}
+
+function hashLabels(labels) {
+  if (!labels.length) return 0;
+  let h = 0;
+  labels.join('|').split('').forEach(c => { h = (h * 31 + c.charCodeAt(0)) % 1000; });
+  return h;
+}
+function frictionSeed() {
+  return hashLabels(frFilterLabels);
+}
+function frictionAreaCurrentShare(key) {
+  const series = frictionShareSeriesFor('ytd');
+  return series[series.length - 1].shares[key];
+}
+function frictionShareSeriesFor(periodKey) {
+  const cfg = PERIODS[periodKey];
+  const labels = cfg.labels;
+  const n = labels.length;
+  const seed = frictionSeed();
+  const shiftA = seed ? ((seed % 11) - 5) : 0;
+  const shiftB = seed ? (((seed >> 2) % 9) - 4) : 0;
+  return labels.map((label, i) => {
+    const t = n > 1 ? i / (n - 1) : 1;
+    const wobble = k => Math.sin((i + k) * 1.3) * 1.2;
+    let knowledge = Math.max(14, Math.round(30 - t * 9 + wobble(3) + shiftB));
+    let confidence = Math.max(14, Math.round(22 + t * 9 + wobble(1) + shiftA));
+    let mindset = Math.max(14, Math.round(24 - t * 1 + wobble(2)));
+    let situation = 100 - knowledge - confidence - mindset;
+    if (situation < 12) { knowledge -= (12 - situation); situation = 12; }
+    return { label, shares: { confidence, mindset, knowledge, situation } };
+  });
+}
+const FRICTION_PERIOD_ADJUST = { ytd:0, year:-3, quarter:4, month:6 };
+function workplaceChallengeSharesFor(periodKey) {
+  const adjust = FRICTION_PERIOD_ADJUST[periodKey] || 0;
+  const seed = frictionSeed();
+  const seedShift = seed ? (seed % 7) - 3 : 0;
+  const result = {};
+  WORKPLACE_CHALLENGES.forEach((w, wi) => {
+    const base = WORKPLACE_CHALLENGE_FRICTION[w.key];
+    const wobble = k => Math.round(Math.sin((wi + k) * 1.4) * 1.5);
+    let confidence = Math.max(8, base.confidence + Math.round(adjust * 0.5) + wobble(1) + seedShift);
+    let knowledge = Math.max(8, base.knowledge - Math.round(adjust * 0.5) + wobble(2));
+    let mindset = Math.max(8, base.mindset + wobble(3));
+    let situation = 100 - confidence - knowledge - mindset;
+    if (situation < 8) { confidence -= (8 - situation); situation = 8; }
+    result[w.key] = { confidence, mindset, knowledge, situation };
+  });
+  return result;
+}
+function frictionComboDistFor(periodKey) {
+  periodKey = periodKey || 'ytd';
+  const seed = frictionSeed();
+  const adjust = FRICTION_PERIOD_ADJUST[periodKey] || 0;
+  const shift = (seed ? (seed % 9) - 4 : 0) + Math.round(adjust * 0.4);
+  const single = Math.max(30, FRICTION_COMBO_DIST[0].pct - shift);
+  const triple = Math.max(8, FRICTION_COMBO_DIST[2].pct + shift);
+  const double = 100 - single - triple;
+  return [
+    { ...FRICTION_COMBO_DIST[0], pct: single },
+    { ...FRICTION_COMBO_DIST[1], pct: double },
+    { ...FRICTION_COMBO_DIST[2], pct: triple },
+  ];
+}
+function frictionComboDetailFor(periodKey) {
+  const dist = frictionComboDistFor(periodKey);
+  const tierPct = { single: dist[0].pct, double: dist[1].pct, triple: dist[2].pct };
+  const scaleGroup = (items, targetTotal) => {
+    const baseTotal = items.reduce((a, b) => a + b.pct, 0);
+    const scaled = items.map(it => ({ ...it, pct: Math.max(1, Math.round(it.pct * targetTotal / baseTotal)) }));
+    const diff = targetTotal - scaled.reduce((a, b) => a + b.pct, 0);
+    if (diff !== 0) scaled[0] = { ...scaled[0], pct: scaled[0].pct + diff };
+    return scaled.sort((a, b) => b.pct - a.pct);
+  };
+  return {
+    single: scaleGroup(FRICTION_COMBO_DETAIL.single, tierPct.single),
+    double: scaleGroup(FRICTION_COMBO_DETAIL.double, tierPct.double),
+    triple: scaleGroup(FRICTION_COMBO_DETAIL.triple, tierPct.triple),
+  };
+}
+function comboLabel(areas) {
+  return areas.map(k => FRICTION_AREAS.find(f => f.key === k).label).join(' + ') + (areas.length === 1 ? ' (only)' : '');
+}
+const FRICTION_KPI_TOTALS = { atoms: 1480, hours: 2260, users: 940 };
+const FR_AREA_METRICS = [
+  { key:'atoms', label:'Atoms Delivered', unit:'', metricIdx:1 },
+  { key:'hours', label:'Learning Hours Spent', unit:'h', metricIdx:2 },
+  { key:'users', label:'Users Identified', unit:'', metricIdx:3 },
+];
+function frictionAreaKpiSeriesFor(key, metricKey, periodKey) {
+  const shareSeries = frictionShareSeriesFor(periodKey);
+  const idx = FRICTION_AREAS.findIndex(f => f.key === key);
+  const metricIdx = FR_AREA_METRICS.find(m => m.key === metricKey).metricIdx;
+  const total = FRICTION_KPI_TOTALS[metricKey];
+  return shareSeries.map((pt, i) => {
+    const wob = Math.round(Math.sin((idx + metricIdx + i) * 1.7) * 2);
+    const share = Math.max(8, pt.shares[key] + wob);
+    return { label: pt.label, value: Math.round(total * share / 100) };
+  });
+}
+function frictionAreaKpiMiniSeriesFor(key, metricKey) {
+  const idx = FRICTION_AREAS.findIndex(f => f.key === key);
+  const metricIdx = FR_AREA_METRICS.find(m => m.key === metricKey).metricIdx;
+  const total = FRICTION_KPI_TOTALS[metricKey];
+  const base = total / 12;
+  const seed = idx * 5 + metricIdx * 2 + 1;
+  return MONTHS.map((label, i) => {
+    const wave = Math.sin((i + seed) * 0.8) * 0.18 + 1;
+    const growth = 1 + (i / 6) * 0.25;
+    return { label, value: Math.round(base * wave * growth) };
+  });
+}
+function frictionAreaChallengeSharesFor(key, periodKey) {
+  const byChallenge = workplaceChallengeSharesFor(periodKey);
+  const raw = WORKPLACE_CHALLENGES.map(w => ({ key: w.key, label: w.label, value: byChallenge[w.key][key] }));
+  const total = raw.reduce((a, b) => a + b.value, 0) || 1;
+  const withPct = raw.map(r => ({ ...r, pct: Math.round(r.value / total * 100) }));
+  const diff = 100 - withPct.reduce((a, b) => a + b.pct, 0);
+  if (diff !== 0) withPct[0] = { ...withPct[0], pct: withPct[0].pct + diff };
+  return withPct.sort((a, b) => b.pct - a.pct);
+}
+function frictionAreaExclusivityFor(key, periodKey) {
+  const detail = frictionComboDetailFor(periodKey);
+  const groups = [
+    { tier:'single', label:'Exclusive — this area alone', cls:'c-green', items: detail.single.filter(c => c.areas.includes(key)) },
+    { tier:'double', label:'Paired with 1 other area', cls:'c-amber', items: detail.double.filter(c => c.areas.includes(key)) },
+    { tier:'triple', label:'Paired with 2 or more other areas', cls:'c-rose', items: detail.triple.filter(c => c.areas.includes(key)) },
+  ];
+  const rawTotals = groups.map(g => g.items.reduce((a, b) => a + b.pct, 0));
+  const grandTotal = rawTotals.reduce((a, b) => a + b, 0) || 1;
+  const pcts = rawTotals.map(t => Math.round(t / grandTotal * 100));
+  const diff = 100 - pcts.reduce((a, b) => a + b, 0);
+  if (diff !== 0) pcts[0] += diff;
+  return groups.map((g, i) => ({ ...g, pct: pcts[i] }));
+}
+function generateFrictionInsights(periodKey) {
+  const series = frictionShareSeriesFor(periodKey);
+  const first = series[0].shares, last = series[series.length - 1].shares;
+  const obs = [];
+  const dominant = FRICTION_AREAS.reduce((a, f) => (last[f.key] > last[a.key] ? f : a), FRICTION_AREAS[0]);
+  obs.push(`<strong>${dominant.label}</strong> is currently the largest source of friction, accounting for ${last[dominant.key]}% of blocked skill attempts.`);
+  let biggestMove = null;
+  FRICTION_AREAS.forEach(f => {
+    const change = last[f.key] - first[f.key];
+    if (!biggestMove || Math.abs(change) > Math.abs(biggestMove.change)) biggestMove = { f, change };
+  });
+  const dir = biggestMove.change >= 0 ? 'risen' : 'fallen';
+  obs.push(`<strong>${biggestMove.f.label}</strong> has ${dir} ${Math.abs(biggestMove.change)} points as a share of friction over this period — the largest shift of the four areas.`);
+  const nonKnowledge = 100 - last.knowledge;
+  obs.push(`${nonKnowledge}% of current friction sits outside pure Knowledge &amp; Skill gaps, meaning most of what's blocking employees won't be solved by more course content alone.`);
+  return obs;
+}
+
+/* ---------------------------------------------------------------- */
+/* Level rendering                                                   */
+/* ---------------------------------------------------------------- */
+function renderMain() {
+  const main = document.getElementById('riMain');
+  if (riLevel === 1) {
+    main.innerHTML = renderLevel1();
+  } else if (riLevel === 2) {
+    if (activeDomain === 'reflector') {
+      main.innerHTML = renderReflectorHub();
+      requestAnimationFrame(positionRhPeriodThumb);
+    } else if (activeDomain === 'friction') {
+      main.innerHTML = frDetailAreaKey ? renderFrictionAreaDetail(frDetailAreaKey) : renderFrictionHub();
+      requestAnimationFrame(positionFrPeriodThumb);
+    } else {
+      main.innerHTML = renderLevel2();
+    }
+  } else {
+    main.innerHTML = renderLevel3(activeCompIndex);
+    renderMetricCards();
+    renderRiPanelIdentity();
+    renderRiPeriodToggle();
+    renderRiPanelBody();
+  }
+}
+function goToLevel(n, opts) {
+  const main = document.getElementById('riMain');
+  main.classList.add('ri-fade-out');
+  setTimeout(() => {
+    riLevel = n;
+    if (opts && opts.domain) activeDomain = opts.domain;
+    if (opts && opts.compIndex !== undefined) activeCompIndex = opts.compIndex;
+    if (n !== 3) { slicedMetric = null; riPeriod = 'ytd'; }
+    if (n === 1) { frFilterLabels = []; frPeriod = 'ytd'; frDetailAreaKey = null; frSlicedMetric = null; }
+    renderMain();
+    main.classList.remove('ri-fade-out');
+  }, 300);
+}
+
+function renderLevel1() {
+  return `
+    <div class="ri-level-head ri-level1-head"><h1 class="um-title">Reports &amp; Insights</h1>${DD_TRIGGER_BTN}</div>
+    <div class="report-list">
+      ${REPORT_CARDS.map((r, i) => {
+        return `
+        <div class="report-row ${r.active ? 'clickable' : 'coming-soon'}" style="border-left-color:${i % 2 === 0 ? 'var(--green)' : 'var(--night)'}" ${r.active ? `onclick="goToLevel(2,{domain:'${r.domain}'})"` : ''}>
+          <div class="report-row-index">${String(i + 1).padStart(2, '0')}</div>
+          <div class="report-row-text"><h3>${r.label}</h3><p>${r.desc}</p></div>
+          ${!r.active ? '<span class="report-soon-tag">Coming Soon</span>' : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+const HUMAN_BADGE_ICON = '<svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0Z"/></svg>';
+
+function renderLevel2() {
+  const meta = DOMAIN_META[activeDomain];
+  return `
+    <div class="ri-level-head">
+      <button class="ri-back-btn" onclick="goToLevel(1)">&larr; Reports &amp; Insights</button>
+      <h2 class="ri-level-title">${meta.level2Title}</h2>
+      ${DD_TRIGGER_BTN}
+    </div>
+    <div class="competency-grid">
+      ${meta.data.map((c, i) => {
+        const avg = engagedAvgFor(i);
+        return `
+        <div class="competency-card" onclick="goToLevel(3,{compIndex:${i}})">
+          <div class="competency-card-top">
+            <div class="comp-ring-wrap">
+              <div class="comp-ring" style="background:conic-gradient(${CARD_COLORS[c.cls]} 0% ${avg}%, var(--grey1) ${avg}% 100%)"><div class="comp-ring-inner">${avg}%</div></div>
+              <div class="ring-user-badge" style="background:${CARD_COLORS[c.cls]}">${HUMAN_BADGE_ICON}</div>
+            </div>
+            <div class="comp-card-icon" style="background:${CARD_COLORS[c.cls]}">${c.icon}</div>
+          </div>
+          <h3>${c.label}</h3>
+          <p>${c.sub.join('<br>')}</p>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function reflectorPassesFilter(r) {
+  if (rhFilterCapabilities.length && !rhFilterCapabilities.includes(r.capability)) return false;
+  if (rhFilterCompetencies.length && !r.competencies.some(c => rhFilterCompetencies.includes(c))) return false;
+  return true;
+}
+
+function topReflectorsBy(metricKey, n, periodKey) {
+  periodKey = periodKey || 'ytd';
+  const pool = REFLECTORS.map((r, i) => ({ r, i })).filter(x => reflectorPassesFilter(x.r));
+  const scored = pool.map(({ r, i }) => {
+    const series = metricPeriodSeries(i, metricKey, periodKey);
+    const avg = series.reduce((a, b) => a + b.value, 0) / series.length;
+    return { r, i, avg };
+  });
+  scored.sort((a, b) => b.avg - a.avg);
+  return scored.slice(0, n);
+}
+
+function reflectorKeyInsights(top, metricKey, periodKey) {
+  if (!top.length) return ['No reflectors match the current filter.'];
+  const metricLabel = METRICS.find(m => m.key === metricKey).label;
+  const obs = [];
+  const leader = top[0];
+  const leaderCap = CAPABILITIES.find(c => c.key === leader.r.capability);
+  const series = metricPeriodSeries(leader.i, metricKey, periodKey);
+  const last = series[series.length - 1].value;
+  const prev = series.length > 1 ? series[series.length - 2].value : last;
+  const momChange = prev ? ((last - prev) / prev) * 100 : 0;
+  const dir = momChange >= 0 ? 'higher' : 'lower';
+  obs.push(`Employees spent ${fmtMetricProse(metricKey, last)} learning about <strong>${leader.r.label}</strong> most recently — ${Math.abs(momChange).toFixed(0)}% ${dir} than ${periodPrevUnitPhrase(periodKey)}, drawn from the ${leaderCap.label} capability.`);
+  const capCounts = {};
+  top.forEach(t => { capCounts[t.r.capability] = (capCounts[t.r.capability] || 0) + 1; });
+  const topCapEntry = Object.entries(capCounts).sort((a, b) => b[1] - a[1])[0];
+  const topCap = CAPABILITIES.find(c => c.key === topCapEntry[0]);
+  obs.push(`${topCapEntry[1]} of the top ${top.length} reflectors by ${metricLabel} come from <strong>${topCap.label}</strong>, more than any other capability.`);
+  const avgTop = top.reduce((a, t) => a + t.avg, 0) / top.length;
+  const orgBase = METRICS.find(m => m.key === metricKey).base;
+  obs.push(`This top group averages ${fmtMetricProse(metricKey, avgTop)} of ${metricLabel.toLowerCase()} each, well above the ${fmtMetricProse(metricKey, orgBase)} baseline across all ${REFLECTORS.length} reflectors.`);
+  return obs;
+}
+
+function rerenderReflectorHub() {
+  document.getElementById('riMain').innerHTML = renderReflectorHub();
+  requestAnimationFrame(positionRhPeriodThumb);
+}
+function positionRhPeriodThumb() {
+  const active = document.querySelector('#rhPeriodToggle span.active');
+  const thumb = document.getElementById('rhPeriodThumb');
+  if (!active || !thumb) return;
+  thumb.style.left = active.offsetLeft + 'px';
+  thumb.style.width = active.offsetWidth + 'px';
+}
+function setRhPeriod(key) { rhPeriod = key; rerenderReflectorHub(); }
+function setRhRankMetric(value) {
+  if (value === 'engaged') rhRankMetric = 'engaged';
+  else rhRankMetric = 'hours';
+  rerenderReflectorHub();
+}
+function applyDrillDownFilters() {
+  if (riLevel === 2 && activeDomain === 'reflector') {
+    const compPanel = document.querySelector('.ri-dd-item[data-section="competency"] .ri-dd-panel');
+    const capPanel = document.querySelector('.ri-dd-item[data-section="capability"] .ri-dd-panel');
+    rhFilterCompetencies = compPanel ? Array.from(compPanel.querySelectorAll('input:checked')).map(cb => {
+      const label = cb.parentElement.textContent.trim();
+      const c = COMPETENCIES.find(x => x.label === label);
+      return c ? c.key : null;
+    }).filter(Boolean) : [];
+    rhFilterCapabilities = capPanel ? Array.from(capPanel.querySelectorAll('input:checked')).map(cb => {
+      const label = cb.parentElement.textContent.trim();
+      const c = CAPABILITIES.find(x => x.label === label);
+      return c ? c.key : null;
+    }).filter(Boolean) : [];
+    rerenderReflectorHub();
+  }
+  if (riLevel === 2 && activeDomain === 'friction') {
+    const sections = ['Department', 'Grades', 'Targetted Learning Initiatives'];
+    frFilterLabels = sections.flatMap(label => {
+      const panel = Array.from(document.querySelectorAll('.ri-dd-item')).find(item => {
+        const btn = item.querySelector('.ri-dd-toggle');
+        return btn && btn.dataset.label === label;
+      });
+      if (!panel) return [];
+      return Array.from(panel.querySelectorAll('.ri-dd-panel input:checked')).map(cb => cb.parentElement.textContent.trim());
+    });
+    rerenderFrictionHub();
+  }
+  toggleDrillDown();
+}
+function clearFrictionFilter() { frFilterLabels = []; rerenderFrictionHub(); }
+
+function renderReflectorHub() {
+  const top = topReflectorsBy(rhRankMetric, 10, rhPeriod);
+  const maxVal = top.length ? Math.max(...top.map(t => t.avg)) : 1;
+  const insights = reflectorKeyInsights(top, rhRankMetric, rhPeriod);
+  const demoIdx = demoReflectorIndex();
+  const filteredReflectors = REFLECTORS.filter(reflectorPassesFilter);
+  return `
+    <div class="ri-level-head">
+      <button class="ri-back-btn" onclick="goToLevel(1)">&larr; Reports &amp; Insights</button>
+      <h2 class="ri-level-title">Reflector Insights</h2>
+      ${DD_TRIGGER_BTN}
+    </div>
+
+    <div class="rh-top">
+      <div class="rh-graph-card">
+        <div class="rh-graph-controls">
+          <div class="rh-control">
+            <span class="rh-control-label">Rank by</span>
+            <div class="filter-select-wrap">
+              <select class="filter-select rh-select" onchange="setRhRankMetric(this.value)">
+                <option value="hours" ${rhRankMetric === 'hours' ? 'selected' : ''}>Learning Investment</option>
+                <option value="engaged" ${rhRankMetric === 'engaged' ? 'selected' : ''}>Users Engaged</option>
+                <option value="timeshare">Time Share</option>
+                <option value="atoms">Atoms Completed</option>
+                <option value="feedback">Feedback</option>
+                <option value="mindshare">Mind Share</option>
+                <option value="expertise">Expertise</option>
+              </select>
+            </div>
+          </div>
+          <div class="rh-control">
+            <span class="rh-control-label">Show</span>
+            <div class="filter-select-wrap">
+              <select class="filter-select rh-select">
+                <option>Top 10</option>
+                <option>Top 20</option>
+                <option>Top 20%</option>
+                <option>Custom&hellip;</option>
+              </select>
+            </div>
+          </div>
+          <div class="rh-control">
+            <span class="rh-control-label">Period</span>
+            <div class="period-toggle" id="rhPeriodToggle">
+              <div class="period-toggle-thumb" id="rhPeriodThumb"></div>
+              ${['ytd', 'month', 'quarter', 'year'].map(k => `<span class="${k === rhPeriod ? 'active' : ''}" onclick="setRhPeriod('${k}')">${PERIODS[k].label}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="rh-rank-list">
+          ${top.length ? top.map((t, idx) => `
+            <div class="rank-row">
+              <div class="rank-position">${idx + 1}</div>
+              <div class="rank-label" title="${t.r.label}">${t.r.label}</div>
+              <div class="rank-bar-track">
+                <div class="rank-bar-fill" style="width:${(t.avg / maxVal * 100).toFixed(1)}%; background:${CARD_COLORS[METRICS.find(m => m.key === rhRankMetric).cls]}">
+                  <span class="rank-value">${fmtMetric(rhRankMetric, t.avg)}</span>
+                </div>
+              </div>
+            </div>`).join('') : '<p class="footprint-note">No reflectors match the current filter.</p>'}
+        </div>
+      </div>
+      <div class="key-obs-card rh-insights-card">
+        <div class="key-obs-head">
+          <div class="key-obs-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2 13.8 8.2 20 10 13.8 11.8 12 18 10.2 11.8 4 10 10.2 8.2Z"/></svg></div>
+          <div class="key-obs-title">Key Insights</div>
+        </div>
+        <div class="key-obs-list">
+          ${insights.map(o => `<div class="key-obs-item">${o}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <h3 class="rh-section-title">Skills Dashboard <span class="rh-count-tag">${filteredReflectors.length} of ${REFLECTORS.length} reflectors</span></h3>
+    <div class="reflector-grid">
+      ${filteredReflectors.map(r => {
+        const isDemo = r.key === DEMO_REFLECTOR_KEY;
+        const cap = CAPABILITIES.find(c => c.key === r.capability);
+        return `
+        <div class="reflector-chip ${isDemo ? 'clickable' : ''}" style="border-left-color:${CARD_COLORS[r.cls]}" ${isDemo ? `onclick="goToLevel(3,{domain:'reflector',compIndex:${demoIdx}})"` : ''}>
+          <div class="reflector-chip-label">${r.label}</div>
+          <div class="reflector-chip-cap">${cap.label}</div>
+          ${isDemo ? '<span class="reflector-demo-tag">View details</span>' : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function rerenderFrictionHub() {
+  document.getElementById('riMain').innerHTML = frDetailAreaKey ? renderFrictionAreaDetail(frDetailAreaKey) : renderFrictionHub();
+  requestAnimationFrame(positionFrPeriodThumb);
+}
+function openFrictionAreaDetail(key) {
+  frDetailAreaKey = key;
+  frSlicedMetric = null;
+  frPeriod = 'ytd';
+  rerenderFrictionHub();
+}
+function goBackFromFrictionAreaDetail() {
+  frDetailAreaKey = null;
+  frSlicedMetric = null;
+  rerenderFrictionHub();
+}
+function onFrMetricDragStart(e, key) {
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', key);
+  e.currentTarget.classList.add('dragging');
+}
+function onFrMetricDragEnd(e) { e.currentTarget.classList.remove('dragging'); }
+function onFrTrendDragOver(e) {
+  if (frSlicedMetric) return;
+  e.preventDefault();
+  const card = document.getElementById('frTrendCard');
+  if (card) card.classList.add('drop-target');
+}
+function onFrTrendDragLeave(e) {
+  const card = document.getElementById('frTrendCard');
+  if (card) card.classList.remove('drop-target');
+}
+function onFrTrendDrop(e) {
+  e.preventDefault();
+  const card = document.getElementById('frTrendCard');
+  if (card) card.classList.remove('drop-target');
+  if (frSlicedMetric) return;
+  const key = e.dataTransfer.getData('text/plain');
+  if (!FR_AREA_METRICS.find(m => m.key === key)) return;
+  frSlicedMetric = key;
+  frPeriod = 'ytd';
+  rerenderFrictionHub();
+}
+function frUnsliceMetric() {
+  frSlicedMetric = null;
+  frPeriod = 'ytd';
+  rerenderFrictionHub();
+}
+function positionFrPeriodThumb() {
+  document.querySelectorAll('.fr-period-toggle').forEach(toggle => {
+    const active = toggle.querySelector('span.active');
+    const thumb = toggle.querySelector('.period-toggle-thumb');
+    if (!active || !thumb) return;
+    thumb.style.left = active.offsetLeft + 'px';
+    thumb.style.width = active.offsetWidth + 'px';
+  });
+}
+function setFrPeriod(key) { frPeriod = key; rerenderFrictionHub(); }
+function renderFrPeriodToggle() {
+  return `
+    <div class="period-toggle fr-period-toggle">
+      <div class="period-toggle-thumb"></div>
+      ${['ytd', 'month', 'quarter', 'year'].map(k => `<span class="${k === frPeriod ? 'active' : ''}" onclick="setFrPeriod('${k}')">${PERIODS[k].label}</span>`).join('')}
+    </div>`;
+}
+function renderFrGraphControls(title) {
+  return `
+    <div class="rh-graph-controls" style="justify-content:space-between; align-items:center;">
+      <h3 class="rh-section-title" style="margin-bottom:0;">${title}</h3>
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        ${renderRfInlineBtn()}
+        ${renderFrPeriodToggle()}
+      </div>
+    </div>`;
+}
+
+function renderFrictionTrendChart(periodKey) {
+  const series = frictionShareSeriesFor(periodKey);
+  const chartH = 200;
+  return `
+    <div class="friction-trend-cols">
+      ${series.map(pt => `
+        <div class="friction-col" style="width:${FRICTION_BAR_WIDTH}px">
+          <div class="friction-stack" style="height:${chartH}px">
+            ${FRICTION_AREAS.map(f => {
+              const pct = pt.shares[f.key];
+              const px = Math.round(pct / 100 * chartH);
+              return `<div class="friction-seg" style="height:${px}px; background:${FRICTION_COLORS[f.key]}"><span class="friction-seg-num">${pct}%</span></div>`;
+            }).join('')}
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="friction-trend-labels">${series.map(pt => `<div class="friction-trend-label" style="width:${FRICTION_BAR_WIDTH}px">${pt.label}</div>`).join('')}</div>
+    <div class="chart-legend nowrap">
+      ${FRICTION_AREAS.map(f => `<div class="legend-item"><span class="legend-dot" style="background:${FRICTION_COLORS[f.key]}"></span>${f.label}</div>`).join('')}
+    </div>`;
+}
+
+function renderWorkplaceChallengeChart(periodKey) {
+  const sharesByChallenge = workplaceChallengeSharesFor(periodKey);
+  return `
+    <div class="expertise-chart-row">
+      <div class="expertise-chart-main" style="flex:1;">
+        ${WORKPLACE_CHALLENGES.map(w => {
+          const shares = sharesByChallenge[w.key];
+          return `
+          <div class="expertise-row">
+            <div class="expertise-label">${w.label}</div>
+            <div class="expertise-bar">
+              ${FRICTION_AREAS.map(f => `<div class="expertise-seg" style="width:${shares[f.key]}%; background:${FRICTION_COLORS[f.key]}">${shares[f.key]}%</div>`).join('')}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="chart-legend nowrap">
+      ${FRICTION_AREAS.map(f => `<div class="legend-item"><span class="legend-dot" style="background:${FRICTION_COLORS[f.key]}"></span>${f.label}</div>`).join('')}
+    </div>`;
+}
+
+function renderFrictionBubbleMatrix(periodKey) {
+  const sharesByChallenge = workplaceChallengeSharesFor(periodKey);
+  const minSize = 22, maxSize = 60, minPct = 12, maxPct = 44;
+  const sizeFor = pct => Math.round(minSize + (Math.max(minPct, Math.min(maxPct, pct)) - minPct) / (maxPct - minPct) * (maxSize - minSize));
+  return `
+    <div style="overflow-x:auto;">
+      <table class="bubble-matrix">
+        <thead>
+          <tr><th></th>${WORKPLACE_CHALLENGES.map(w => `<th>${w.label}</th>`).join('')}</tr>
+        </thead>
+        <tbody>
+          ${FRICTION_AREAS.map(f => `
+            <tr>
+              <th><span class="bubble-row-dot" style="background:${FRICTION_COLORS[f.key]}"></span>${f.label}</th>
+              ${WORKPLACE_CHALLENGES.map(w => {
+                const pct = sharesByChallenge[w.key][f.key];
+                const size = sizeFor(pct);
+                return `<td><div class="bubble" style="width:${size}px;height:${size}px;background:${FRICTION_COLORS[f.key]}">${pct}%</div></td>`;
+              }).join('')}
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <p class="footprint-note">Bubble size = % of that workplace challenge's friction coming from that area. Reading down a column shows the friction mix behind one challenge; reading across a row shows where one friction area shows up most.</p>`;
+}
+
+function renderFrictionCombinationSection(periodKey) {
+  const dist = frictionComboDistFor(periodKey);
+  const detail = frictionComboDetailFor(periodKey);
+  const tierGroups = [
+    { key:'single', ...dist[0] },
+    { key:'double', ...dist[1] },
+    { key:'triple', ...dist[2] },
+  ];
+  return `
+    <div class="rh-graph-card" style="margin-top:1.8rem;">
+      ${renderFrGraphControls('How Friction Compounds')}
+      <p class="rh-subnote">For every case where an employee is blocked, how many of the 4 friction areas are involved at the same time.</p>
+      <div class="combo-severity-bar">
+        ${dist.map(c => `<div class="combo-severity-seg" style="width:${c.pct}%; background:${CARD_COLORS[c.cls]}">${c.pct}%</div>`).join('')}
+      </div>
+      <div class="footprint-list">
+        ${dist.map(c => `
+          <div class="footprint-row">
+            <span class="footprint-name"><span class="legend-dot" style="background:${CARD_COLORS[c.cls]};display:inline-block;margin-right:0.5rem;"></span>${c.label}</span>
+            <span class="footprint-share" style="color:${CARD_COLORS[c.cls]}">${c.pct}%</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="rh-graph-card" style="margin-top:1.4rem;">
+      <h3 class="rh-section-title" style="margin-bottom:0.3rem;">Most Common Combinations</h3>
+      <p class="rh-subnote">Grouped and totalled to match the percentages above.</p>
+      ${tierGroups.map(t => `
+        <div class="combo-tier-group">
+          <div class="combo-tier-head">
+            <span class="legend-dot" style="background:${CARD_COLORS[t.cls]}"></span>
+            <span class="combo-tier-label">${t.label}</span>
+            <span class="combo-tier-pct" style="color:${CARD_COLORS[t.cls]}">${t.pct}%</span>
+          </div>
+          <div class="rh-rank-list">
+            ${detail[t.key].map(c => {
+              const label = comboLabel(c.areas);
+              return `
+              <div class="rank-row">
+                <div class="rank-label wrap" style="width:260px" title="${label}">${label}</div>
+                <div class="rank-bar-track">
+                  <div class="rank-bar-fill" style="width:${c.pct}%; background:${CARD_COLORS[t.cls]}">
+                    <span class="rank-value">${c.pct}%</span>
+                  </div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+function renderFrictionChallengeMatrixCard(periodKey) {
+  return `
+    <div class="rh-graph-card" style="margin-top:1.4rem;">
+      ${renderFrGraphControls('Friction &times; Workplace Challenge')}
+      <p class="rh-subnote">The three-way view: which friction area is most concentrated within which workplace challenge.</p>
+      ${renderFrictionBubbleMatrix(periodKey)}
+    </div>`;
+}
+
+function renderFrictionAreaCards() {
+  return `
+    <div class="friction-area-grid">
+      ${FRICTION_AREAS.map(f => {
+        const pct = frictionAreaCurrentShare(f.key);
+        const isDemo = f.key === FRICTION_DEMO_AREA_KEY;
+        return `
+        <div class="friction-area-card ${isDemo ? 'clickable' : ''}" style="border-left-color:${FRICTION_COLORS[f.key]}" ${isDemo ? `onclick="openFrictionAreaDetail('${f.key}')"` : ''}>
+          <div class="friction-area-top">
+            <div class="friction-area-ring-wrap">
+              <div class="friction-area-ring" style="background:conic-gradient(${FRICTION_COLORS[f.key]} 0% ${pct}%, var(--grey1) ${pct}% 100%)">
+                <div class="friction-area-ring-inner" style="color:${FRICTION_COLORS[f.key]}">${pct}%</div>
+              </div>
+            </div>
+            <div class="friction-area-text">
+              <h3>${f.label}</h3>
+              <p>${f.desc}</p>
+              <span class="friction-area-tag" style="background:${FRICTION_COLORS[f.key]}22; color:${FRICTION_COLORS[f.key]}">Share of friction, YTD</span>
+              ${isDemo ? '<span class="reflector-demo-tag" style="position:static; display:inline-block; margin-left:0.5rem;">View details</span>' : '<span class="footprint-note" style="display:block; margin-top:0.5rem;">Coming soon</span>'}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderFrictionAreaKpis(key) {
+  const color = FRICTION_COLORS[key];
+  const chartH = 92;
+  return `
+    <div class="rh-graph-card" style="margin-bottom:1.8rem;">
+      <div class="rh-graph-controls" style="justify-content:space-between; align-items:center;">
+        <h3 class="rh-section-title" style="margin-bottom:0;">Learning Activity</h3>
+        ${renderRfInlineBtn()}
+      </div>
+      <div class="kpi-grid" style="margin-bottom:0;">
+        ${FR_AREA_METRICS.map(m => {
+          const series = frictionAreaKpiMiniSeriesFor(key, m.key);
+          const avg = series.reduce((a, b) => a + b.value, 0) / series.length;
+          const ceiling = Math.max(...series.map(d => d.value)) * 1.25 || 1;
+          const heightPx = v => (v / ceiling) * chartH;
+          const linePoints = series.map((d, i) => `${(i / (series.length - 1) * 100).toFixed(1)},${(chartH - heightPx(d.value)).toFixed(1)}`).join(' ');
+          return `
+          <div class="kpi-card" style="border-left-color:${color}" draggable="true" ondragstart="onFrMetricDragStart(event,'${m.key}')" ondragend="onFrMetricDragEnd(event)">
+            <div class="kpi-card-head">
+              <div class="kpi-card-head-left"><h3>${m.label}</h3></div>
+              <div class="kpi-avg-pill" style="background:${color}22; color:${color}">Avg ${Math.round(avg)}${m.unit}</div>
+            </div>
+            <div class="kpi-chart">
+              <div class="kpi-chart-bars">
+                ${series.map(d => `<div class="kpi-bar-wrap"><div class="kpi-bar" style="height:${heightPx(d.value).toFixed(1)}px;background:${color}"><span class="bar-num">${d.value}${m.unit}</span></div></div>`).join('')}
+              </div>
+              <svg class="kpi-chart-line" viewBox="0 0 100 ${chartH}" preserveAspectRatio="none"><polyline points="${linePoints}" fill="none" stroke="var(--night)" stroke-width="1.4" stroke-dasharray="3,3" vector-effect="non-scaling-stroke"/></svg>
+              <div class="kpi-chart-axis-labels">${series.map(d => `<div class="kpi-axis-label">${d.label}</div>`).join('')}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function renderFrictionAreaTrendBar(key, periodKey) {
+  const cfg = PERIODS[periodKey];
+  const series = frictionShareSeriesFor(periodKey).map(pt => ({ label: pt.label, value: pt.shares[key] }));
+  const maxPx = 260;
+  const ticks = [100, 80, 60, 40, 20, 0];
+  const color = FRICTION_COLORS[key];
+  const isPill = cfg.style === 'pill';
+  const bars = series.map(d => {
+    const totalPx = (d.value / 100) * maxPx;
+    const floatPx = isPill ? totalPx * 0.4 : 0;
+    const pillHeightPx = isPill ? totalPx * 0.55 : totalPx;
+    return { ...d, totalPx, floatPx, pillHeightPx };
+  });
+  const trendPoints = isPill
+    ? bars.map((b, i) => `${(i / (bars.length - 1) * 100).toFixed(1)},${(maxPx - b.floatPx - b.pillHeightPx).toFixed(1)}`).join(' ')
+    : bars.map((b, i) => `${(i / (bars.length - 1) * 100).toFixed(1)},${(maxPx - b.totalPx).toFixed(1)}`).join(' ');
+  return `
+    <div class="usage-axis-title">Share of Friction (%)</div>
+    <div class="usage-chart-row">
+      <div class="usage-y-axis" style="height:${maxPx}px">${ticks.map(t => `<div class="usage-y-tick">${t}</div>`).join('')}</div>
+      <div class="usage-chart-main">
+        <div class="usage-gridlines" style="height:${maxPx}px">${ticks.map(() => `<div class="usage-gridline"></div>`).join('')}</div>
+        <div class="usage-chart-cols" style="height:${maxPx}px">
+          ${bars.map(b => `
+            <div class="usage-col" style="width:${cfg.barWidth}px">
+              <div class="usage-stack ${isPill ? 'pill' : ''}" style="height:${(isPill ? b.pillHeightPx : b.totalPx).toFixed(1)}px; margin-bottom:${b.floatPx.toFixed(1)}px">
+                <span class="bar-num">${b.value}%</span>
+                <div class="usage-seg-single" style="height:100%; background:${color}"></div>
+              </div>
+            </div>`).join('')}
+        </div>
+        <svg class="usage-trend-svg" style="height:${maxPx}px" viewBox="0 0 100 ${maxPx}" preserveAspectRatio="none">
+          <polyline points="${trendPoints}" fill="none" stroke="var(--night)" stroke-width="1.4" stroke-dasharray="3,3" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <div class="usage-labels">${bars.map(b => `<div class="usage-day-label" style="width:${cfg.barWidth}px">${b.label}</div>`).join('')}</div>
+      </div>
+    </div>`;
+}
+
+function renderFrictionAreaMetricDetailChart(key, metricKey, periodKey) {
+  const cfg = PERIODS[periodKey];
+  const m = FR_AREA_METRICS.find(x => x.key === metricKey);
+  const series = frictionAreaKpiSeriesFor(key, metricKey, periodKey);
+  const maxPx = 200;
+  const step = metricKey === 'hours' ? 100 : metricKey === 'atoms' ? 50 : 30;
+  const baseMax = Math.max(...series.map(d => d.value)) || step;
+  const niceMax = Math.ceil((baseMax * 1.2) / step) * step || step;
+  const ticks = [];
+  for (let t = niceMax; t >= 0; t -= step) ticks.push(t);
+  const color = FRICTION_COLORS[key];
+  const isPill = cfg.style === 'pill';
+  const bars = series.map(d => {
+    const totalPx = (d.value / niceMax) * maxPx;
+    const floatPx = isPill ? totalPx * 0.4 : 0;
+    const pillHeightPx = isPill ? totalPx * 0.55 : totalPx;
+    return { ...d, totalPx, floatPx, pillHeightPx };
+  });
+  const trendSvg = isPill ? `
+    <svg class="usage-trend-svg" viewBox="0 0 100 ${maxPx}" preserveAspectRatio="none">
+      <polyline points="${bars.map((b, i) => `${(i / (bars.length - 1) * 100).toFixed(1)},${(maxPx - b.floatPx - b.pillHeightPx).toFixed(1)}`).join(' ')}" fill="none" stroke="rgba(4,26,64,0.28)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+    </svg>` : '';
+  return `
+    <div class="usage-axis-title">${m.label}${m.unit ? ' (' + m.unit + ')' : ''}</div>
+    <div class="usage-chart-row">
+      <div class="usage-y-axis">${ticks.map(t => `<div class="usage-y-tick">${t}</div>`).join('')}</div>
+      <div class="usage-chart-main">
+        <div class="usage-gridlines">${ticks.map(() => `<div class="usage-gridline"></div>`).join('')}</div>
+        <div class="usage-chart-cols">
+          ${bars.map(b => `
+            <div class="usage-col" style="width:${cfg.barWidth}px">
+              <div class="usage-stack ${isPill ? 'pill' : ''}" style="height:${(isPill ? b.pillHeightPx : b.totalPx).toFixed(1)}px; margin-bottom:${b.floatPx.toFixed(1)}px">
+                <span class="bar-num">${b.value}${m.unit}</span>
+                <div class="usage-seg-single" style="height:100%; background:${color}"></div>
+              </div>
+            </div>`).join('')}
+        </div>
+        ${trendSvg}
+        <div class="usage-labels">${bars.map(b => `<div class="usage-day-label" style="width:${cfg.barWidth}px">${b.label}</div>`).join('')}</div>
+      </div>
+    </div>`;
+}
+
+function renderFrTrendPanel(key, periodKey) {
+  const sliced = !!frSlicedMetric;
+  const title = sliced ? FR_AREA_METRICS.find(m => m.key === frSlicedMetric).label : 'Share Over Time';
+  return `
+    <div class="rh-graph-card" id="frTrendCard" ondragover="onFrTrendDragOver(event)" ondragleave="onFrTrendDragLeave(event)" ondrop="onFrTrendDrop(event)">
+      <div class="rh-graph-controls" style="justify-content:space-between; align-items:center;">
+        <h3 class="rh-section-title" style="margin-bottom:0; display:flex; align-items:center; gap:0.6rem;">
+          ${title}
+          ${sliced ? `<button class="panel-identity-back" onclick="frUnsliceMetric()">&#10005; Back</button>` : ''}
+        </h3>
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          ${renderRfInlineBtn()}
+          ${renderFrPeriodToggle()}
+        </div>
+      </div>
+      ${sliced ? renderFrictionAreaMetricDetailChart(key, frSlicedMetric, periodKey) : renderFrictionAreaTrendBar(key, periodKey)}
+    </div>`;
+}
+
+function renderFrictionAreaChallengeBars(key, periodKey) {
+  const slices = frictionAreaChallengeSharesFor(key, periodKey);
+  const maxPct = Math.max(...slices.map(s => s.pct)) || 1;
+  return `
+    <div class="rh-rank-list">
+      ${slices.map((s, i) => `
+        <div class="rank-row">
+          <div class="rank-label" style="width:200px" title="${s.label}">${s.label}</div>
+          <div class="rank-bar-track thin">
+            <div class="rank-bar-fill thin" style="width:${(s.pct / maxPct * 100).toFixed(1)}%; background:${PIE_COLORS[i % PIE_COLORS.length]};"></div>
+          </div>
+          <span class="rank-value-outside">${s.pct}%</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderFrictionAreaDetail(key) {
+  const f = FRICTION_AREAS.find(x => x.key === key);
+  const exclusivity = frictionAreaExclusivityFor(key, frPeriod);
+  return `
+    <div class="ri-level-head">
+      <button class="ri-back-btn" onclick="goBackFromFrictionAreaDetail()">&larr; Learning Friction</button>
+      <h2 class="ri-level-title">${f.label}</h2>
+      ${DD_TRIGGER_BTN}
+    </div>
+    <p class="rh-subnote" style="margin-bottom:1.4rem;">${f.desc}</p>
+
+    ${renderFrictionAreaKpis(key)}
+
+    ${renderFrTrendPanel(key, frPeriod)}
+
+    <div class="rh-graph-card" style="margin-top:1.4rem;">
+      ${renderFrGraphControls('Share by Workplace Challenge')}
+      ${renderFrictionAreaChallengeBars(key, frPeriod)}
+    </div>
+
+    <div class="rh-graph-card" style="margin-top:1.4rem;">
+      ${renderFrGraphControls('Exclusivity')}
+      <p class="rh-subnote">Of every time ${f.label} was identified, how often it stood alone versus appeared alongside other friction areas.</p>
+      <div class="combo-severity-bar">
+        ${exclusivity.map(e => `<div class="combo-severity-seg" style="width:${e.pct}%; background:${CARD_COLORS[e.cls]}">${e.pct}%</div>`).join('')}
+      </div>
+      <div class="footprint-list">
+        ${exclusivity.map(e => `
+          <div class="footprint-row">
+            <span class="footprint-name"><span class="legend-dot" style="background:${CARD_COLORS[e.cls]};display:inline-block;margin-right:0.5rem;"></span>${e.label}</span>
+            <span class="footprint-share" style="color:${CARD_COLORS[e.cls]}">${e.pct}%</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderFrictionHub() {
+  const insights = generateFrictionInsights(frPeriod);
+  return `
+    <div class="ri-level-head">
+      <button class="ri-back-btn" onclick="goToLevel(1)">&larr; Reports &amp; Insights</button>
+      <h2 class="ri-level-title">Learning Friction</h2>
+      ${DD_TRIGGER_BTN}
+    </div>
+    ${frFilterLabels.length ? `<div class="fr-filter-tag">Filtered by: ${frFilterLabels.join(', ')} <button onclick="clearFrictionFilter()">&times;</button></div>` : ''}
+
+    ${renderFrictionAreaCards()}
+
+    <div class="rh-top" style="margin-top:1.8rem;">
+      <div class="rh-graph-card" style="flex:1.6;">
+        ${renderFrGraphControls('Friction Share Over Time')}
+        ${renderFrictionTrendChart(frPeriod)}
+      </div>
+      <div class="key-obs-card rh-insights-card">
+        <div class="key-obs-head">
+          <div class="key-obs-icon" style="background:linear-gradient(135deg, var(--rose), #b23763)"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2 13.8 8.2 20 10 13.8 11.8 12 18 10.2 11.8 4 10 10.2 8.2Z"/></svg></div>
+          <div class="key-obs-title">Key Insights</div>
+        </div>
+        <div class="key-obs-list">
+          ${insights.map(o => `<div class="key-obs-item">${o}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="rh-graph-card" style="margin-top:1.8rem;">
+      ${renderFrGraphControls('Friction Share by Workplace Challenge')}
+      ${renderWorkplaceChallengeChart(frPeriod)}
+    </div>
+
+    ${renderFrictionCombinationSection(frPeriod)}
+    ${renderFrictionChallengeMatrixCard(frPeriod)}
+  `;
+}
+
+function renderLevel3(compIndex) {
+  const comp = activeData()[compIndex];
+  const meta = DOMAIN_META[activeDomain];
+  return `
+    <div class="ri-level-head">
+      <button class="ri-back-btn" onclick="goToLevel(2)">&larr; ${meta.level2Title}</button>
+      <h2 class="ri-level-title">${comp.label}</h2>
+      ${DD_TRIGGER_BTN}
+    </div>
+    <div class="ri-l3-body">
+      <div class="ri-l3-main">
+        <div class="kpi-grid" id="riMetricGrid"></div>
+        <div class="tabs-panel" id="riMainPanelCard" ondragover="onExpertiseDragOver(event)" ondragleave="onExpertiseDragLeave(event)" ondrop="onExpertiseDrop(event)">
+          <div class="ri-panel-head">
+            <div class="panel-identity" id="riPanelIdentity"></div>
+            <div id="riPeriodToggleWrap"></div>
+          </div>
+          <div id="riPanelBody"></div>
+        </div>
+      </div>
+      ${activeDomain === 'reflector' ? `
+      <div class="ri-l3-side">
+        <div class="key-obs-card">
+          <div class="key-obs-head">
+            <div class="key-obs-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2 13.8 8.2 20 10 13.8 11.8 12 18 10.2 11.8 4 10 10.2 8.2Z"/></svg></div>
+            <div class="key-obs-title">Key Observations</div>
+          </div>
+          <div class="key-obs-list">
+            ${generateObservations(compIndex).map(o => `<div class="key-obs-item">${o}</div>`).join('')}
+          </div>
+        </div>
+        ${renderCompetencyFootprintCard(compIndex) + renderCustomPlaceholderCard()}
+      </div>` : ''}
+    </div>
+    ${activeDomain !== 'reflector' ? `
+    <div class="ri-obs-section">
+      <div class="ri-obs-head">
+        <div class="ri-obs-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2 13.8 8.2 20 10 13.8 11.8 12 18 10.2 11.8 4 10 10.2 8.2Z"/></svg></div>
+        <div class="ri-obs-title">Key Observations</div>
+      </div>
+      <div class="ri-obs-list">
+        ${generateObservations(compIndex).map(o => `<div class="ri-obs-item">${o}</div>`).join('')}
+      </div>
+    </div>` : ''}`;
+}
+
+function competencyFootprintFor(reflectorIndex) {
+  const refl = REFLECTORS[reflectorIndex];
+  const counts = {};
+  REFLECTORS.forEach(r => r.competencies.forEach(c => { counts[c] = (counts[c] || 0) + 1; }));
+  return refl.competencies.map(cKey => {
+    const comp = COMPETENCIES.find(c => c.key === cKey);
+    const count = counts[cKey];
+    return { label: comp.label, share: Math.round(100 / count), count };
+  });
+}
+function renderCompetencyFootprintCard(reflectorIndex) {
+  const footprint = competencyFootprintFor(reflectorIndex);
+  return `
+    <div class="key-obs-card footprint-card">
+      <div class="key-obs-head">
+        <div class="key-obs-icon" style="background:linear-gradient(135deg, var(--green), var(--green2))"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></div>
+        <div class="key-obs-title">Competency Footprint</div>
+      </div>
+      <div class="footprint-list">
+        ${footprint.map(f => `
+          <div class="footprint-row">
+            <span class="footprint-name">${f.label}</span>
+            <span class="footprint-share">${f.share}% share</span>
+          </div>`).join('')}
+      </div>
+      <p class="footprint-note">Share = this reflector's slice of all reflectors attached to that competency (YTD).</p>
+    </div>`;
+}
+function renderCustomPlaceholderCard() {
+  return `
+    <div class="key-obs-card custom-placeholder-card">
+      <div class="key-obs-head">
+        <div class="key-obs-icon" style="background:var(--grey2)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></div>
+        <div class="key-obs-title" style="color:var(--grey3)">Custom Comparison</div>
+      </div>
+      <p class="footprint-note">Mix and match any two metrics into one joint graph. Coming soon.</p>
+    </div>`;
+}
+
+function generateObservations(compIndex) {
+  const comp = activeData()[compIndex];
+  const obs = [];
+
+  let best = null, worst = null;
+  METRICS.forEach(m => {
+    const series = metricMiniSeriesFor(compIndex, m.key);
+    const first = series[0], last = series[series.length - 1];
+    const change = m.key === 'feedback' ? (last - first) : (first === 0 ? 0 : ((last - first) / first) * 100);
+    const rec = { label: m.label, change, last, key: m.key };
+    if (!best || change > best.change) best = rec;
+    if (!worst || change < worst.change) worst = rec;
+  });
+  if (best) {
+    const unit = best.key === 'feedback' ? ' pts' : '%';
+    obs.push(`<strong>${best.label}</strong> shows the strongest momentum, up ${Math.abs(best.change).toFixed(best.key === 'feedback' ? 1 : 0)}${unit} from June to November, now at ${fmtMetricProse(best.key, best.last)}.`);
+  }
+  if (worst && worst.key !== best.key) {
+    const dir = worst.change < 0 ? 'declined' : 'grew only slightly';
+    const unit = worst.key === 'feedback' ? ' pts' : '%';
+    obs.push(`<strong>${worst.label}</strong> ${dir} (${Math.abs(worst.change).toFixed(worst.key === 'feedback' ? 1 : 0)}${unit} change), the softest trend of the six metrics tracked.`);
+  }
+
+  const dist = skillDistFor(compIndex);
+  const strongest = dist.reduce((a, b) => (b.expert > a.expert ? b : a));
+  const weakest = dist.reduce((a, b) => (b.expert < a.expert ? b : a));
+  obs.push(`<strong>${strongest.label}</strong> is the most mastered skill in this competency at ${strongest.expert}% expert-level, while <strong>${weakest.label}</strong> lags with only ${weakest.expert}% expert-level and ${weakest.low}% still rated low.`);
+
+  const fbSeries = metricMiniSeriesFor(compIndex, 'feedback');
+  const fbAvg = fbSeries.reduce((a, b) => a + b, 0) / fbSeries.length;
+  const fbTone = fbAvg >= 4.5 ? 'rated excellent by learners' : fbAvg >= 3.8 ? 'holding at a solid level' : 'an area worth watching';
+  obs.push(`Learner feedback for ${comp.label} averages <strong>${fbAvg.toFixed(1)}/5</strong>, ${fbTone}.`);
+
+  return obs;
+}
+
+/* ---------------------------------------------------------------- */
+/* Level 3: metric cards + main panel                                */
+/* ---------------------------------------------------------------- */
+function renderMetricCards() {
+  const chartH = 92;
+  const cards = METRICS.map(m => (slicedMetric === m.key) ? EXPERTISE_METRIC : m);
+  const comp = activeData()[activeCompIndex];
+  const pair = COLOR_PAIRS[comp.cls] || { primary: comp.cls, contrast: comp.cls };
+  const mono = comp.mono && monoRampFor(comp.cls);
+  document.getElementById('riMetricGrid').innerHTML = cards.map((card, i) => {
+    const isExpertiseSlot = card.key === 'expertise';
+    const cls = mono ? comp.cls : (i % 2 === 0 ? pair.primary : pair.contrast);
+    const scaled = metricMiniSeriesFor(activeCompIndex, card.key);
+    const avg = scaled.reduce((a, b) => a + b, 0) / scaled.length;
+    const ceiling = Math.max(...scaled) * 1.25 || 1;
+    const heightPx = v => (v / ceiling) * chartH;
+    const linePoints = scaled.map((v, i) => `${(i / (scaled.length - 1) * 100).toFixed(1)},${(chartH - heightPx(v)).toFixed(1)}`).join(' ');
+    const color = mono ? mono[i % mono.length] : CARD_COLORS[cls];
+    const isDraggable = !isExpertiseSlot && card.key === DRAGGABLE_METRIC_KEY;
+    const dragAttrs = isDraggable ? `draggable="true" ondragstart="onMetricDragStart(event,'${card.key}')" ondragend="onMetricDragEnd(event)"` : '';
+    const clickAttr = isExpertiseSlot ? `onclick="triggerMetricSlice(null)"` : '';
+    return `
+      <div class="kpi-card ${cls} ${mono ? 'mono-card' : ''} ${isExpertiseSlot ? 'overall-slot' : ''}" data-key="${card.key}" ${dragAttrs} ${clickAttr}>
+        <div class="kpi-card-head">
+          <div class="kpi-card-head-left"><div class="kpi-card-icon">${card.icon}</div><h3>${card.label}</h3></div>
+          <div class="kpi-avg-pill">Avg ${fmtMetric(card.key, avg)}</div>
+        </div>
+        <div class="kpi-chart">
+          <div class="kpi-chart-bars">
+            ${scaled.map(v => `<div class="kpi-bar-wrap"><div class="kpi-bar" style="height:${heightPx(v).toFixed(1)}px;background:${color}"><span class="bar-num">${fmtMetric(card.key, v)}</span></div></div>`).join('')}
+          </div>
+          <svg class="kpi-chart-line" viewBox="0 0 100 ${chartH}" preserveAspectRatio="none"><polyline points="${linePoints}" fill="none" stroke="var(--night)" stroke-width="1.4" stroke-dasharray="3,3" vector-effect="non-scaling-stroke"/></svg>
+          <div class="kpi-chart-axis-labels">${MONTHS.map(mo => `<div class="kpi-axis-label">${mo}</div>`).join('')}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderRiPanelIdentity() {
+  const sliced = !!slicedMetric;
+  const def = sliced ? METRICS.find(m => m.key === slicedMetric) : EXPERTISE_METRIC;
+  const comp = activeData()[activeCompIndex];
+  const mono = !!comp.mono && !sliced;
+  const textColor = sliced ? { 'c-teal':'#0d8f81','c-gold':'#AB9808','c-amber':'#c17d00','c-green':'#2d9640','c-navy':'#2A3C5D','c-rose':'#b23763' }[def.cls] : (mono ? 'var(--night2)' : '#2f4cb3');
+  const iconBg = mono ? 'rgba(4,26,64,0.10)' : CARD_COLORS[def.cls];
+  document.getElementById('riPanelIdentity').innerHTML = `
+    <div class="panel-identity-icon ${mono ? 'mono-icon' : ''}" id="riPanelIdentityIcon" style="background:${iconBg}">${def.icon}</div>
+    <div class="panel-identity-title" style="color:${textColor}">${def.label}</div>
+    ${sliced ? `<button class="panel-identity-back" onclick="triggerMetricSlice(null)">✕ Back to Expertise</button>` : ''}
+  `;
+  const panelCard = document.getElementById('riMainPanelCard');
+  panelCard.classList.toggle('sliced-metric', sliced);
+  panelCard.style.borderColor = sliced ? CARD_COLORS[def.cls] : 'transparent';
+}
+
+function renderRiPeriodToggle() {
+  const wrap = document.getElementById('riPeriodToggleWrap');
+  const keys = ['ytd', 'month', 'quarter', 'year'];
+  wrap.innerHTML = `
+    <div class="period-toggle" id="riPeriodToggle">
+      <div class="period-toggle-thumb" id="riPeriodThumb"></div>
+      ${keys.map(k => `<span class="${k === riPeriod ? 'active' : ''}" onclick="setRiPeriod('${k}')">${PERIODS[k].label}</span>`).join('')}
+    </div>`;
+  requestAnimationFrame(() => {
+    const active = document.querySelector('#riPeriodToggle span.active');
+    const thumb = document.getElementById('riPeriodThumb');
+    if (!active || !thumb) return;
+    thumb.style.left = active.offsetLeft + 'px';
+    thumb.style.width = active.offsetWidth + 'px';
+    const m = slicedMetric ? METRICS.find(x => x.key === slicedMetric) : EXPERTISE_METRIC;
+    const comp = activeData()[activeCompIndex];
+    const mono = !!comp.mono && !slicedMetric;
+    if (m) thumb.style.background = mono ? 'var(--night2)' : CARD_COLORS[m.cls];
+  });
+}
+function setRiPeriod(key) {
+  riPeriod = key;
+  renderRiPeriodToggle();
+  renderRiPanelBody();
+}
+
+function renderExpertiseChart(compIndex, periodKey) {
+  const dist = skillDistFor(compIndex, periodKey);
+  const comp = activeData()[compIndex];
+  const pair = COLOR_PAIRS[comp.cls] || { primary: comp.cls, contrast: comp.cls };
+  const base = CARD_COLORS[pair.primary];
+  const lowBg = shadeColor(base, 58);
+  const emergingBase = shadeColor(base, 18);
+  const emergingHatch = shadeColor(base, -12);
+  const emergingBg = `${emergingBase} repeating-linear-gradient(135deg, ${hexToRgba(emergingHatch, 0.4)} 0 6px, transparent 6px 12px)`;
+  const expertBg = shadeColor(base, -10);
+  return `
+    <div class="expertise-chart-row">
+      <div class="axis-title-v">Skills in scope</div>
+      <div class="expertise-chart-main">
+        ${dist.map(s => `
+          <div class="expertise-row">
+            <div class="expertise-label">${s.label}</div>
+            <div class="expertise-bar">
+              <div class="expertise-seg low" style="width:${s.low}%; background:${lowBg}; color:var(--night)">${s.low}%</div>
+              <div class="expertise-seg emerging" style="width:${s.emerging}%; background:${emergingBg}; color:#fff">${s.emerging}%</div>
+              <div class="expertise-seg expert" style="width:${s.expert}%; background:${expertBg}; color:#fff">${s.expert}%</div>
+            </div>
+          </div>`).join('')}
+        <div class="expertise-axis-label">Engagement &amp; Expertise</div>
+      </div>
+    </div>
+    <div class="chart-legend">
+      <div class="legend-item"><span class="legend-dot" style="background:${lowBg}"></span>Low</div>
+      <div class="legend-item"><span class="legend-dot" style="background:${emergingBg}"></span>Emerging</div>
+      <div class="legend-item"><span class="legend-dot" style="background:${expertBg}"></span>Expert</div>
+    </div>`;
+}
+
+function renderMetricDetailChart(compIndex, key, periodKey) {
+  const cfg = PERIODS[periodKey];
+  const m = METRICS.find(x => x.key === key);
+  const series = metricPeriodSeries(compIndex, key, periodKey);
+  const maxPx = 200;
+  const step = m.step;
+  const baseMax = Math.max(...series.map(d => d.value)) || step;
+  const niceMax = Math.ceil((baseMax * 1.2) / step) * step || step;
+  const ticks = [];
+  for (let t = niceMax; t >= 0; t -= step) ticks.push(t);
+  const isPill = cfg.style === 'pill';
+  const color = CARD_COLORS[m.cls];
+
+  const bars = series.map(d => {
+    const totalPx = (d.value / niceMax) * maxPx;
+    const floatPx = isPill ? totalPx * 0.4 : 0;
+    const pillHeightPx = isPill ? totalPx * 0.55 : totalPx;
+    return { ...d, totalPx, floatPx, pillHeightPx };
+  });
+
+  const trendSvg = isPill ? `
+    <svg class="usage-trend-svg" viewBox="0 0 100 ${maxPx}" preserveAspectRatio="none">
+      <polyline points="${bars.map((b, i) => `${(i / (bars.length - 1) * 100).toFixed(1)},${(maxPx - b.floatPx - b.pillHeightPx).toFixed(1)}`).join(' ')}" fill="none" stroke="rgba(4,26,64,0.28)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+    </svg>` : '';
+
+  const unitLabel = key === 'feedback' ? ' (out of 5)' : key === 'hours' ? ' (hrs)' : key === 'atoms' ? '' : ' (%)';
+
+  return `
+    <div class="usage-axis-title">${m.label}${unitLabel}</div>
+    <div class="usage-chart-row">
+      <div class="usage-y-axis">${ticks.map(t => `<div class="usage-y-tick">${t}</div>`).join('')}</div>
+      <div class="usage-chart-main">
+        <div class="usage-gridlines">${ticks.map(() => `<div class="usage-gridline"></div>`).join('')}</div>
+        <div class="usage-chart-cols">
+          ${bars.map(b => `
+            <div class="usage-col" style="width:${cfg.barWidth}px">
+              <div class="usage-stack ${isPill ? 'pill' : ''}" style="height:${(isPill ? b.pillHeightPx : b.totalPx).toFixed(1)}px; margin-bottom:${b.floatPx.toFixed(1)}px">
+                <span class="bar-num">${fmtMetric(key, b.value)}</span>
+                <div class="usage-seg-single" style="height:100%; background:${color}"></div>
+              </div>
+            </div>`).join('')}
+        </div>
+        ${trendSvg}
+        <div class="usage-labels">${bars.map(b => `<div class="usage-day-label" style="width:${cfg.barWidth}px">${b.label}</div>`).join('')}</div>
+      </div>
+    </div>`;
+}
+
+function renderRiPanelBody() {
+  const body = document.getElementById('riPanelBody');
+  if (!slicedMetric) {
+    body.innerHTML = renderExpertiseChart(activeCompIndex, riPeriod);
+    return;
+  }
+  body.innerHTML = renderMetricDetailChart(activeCompIndex, slicedMetric, riPeriod);
+  const cfg = PERIODS[riPeriod];
+  if (cfg.style === 'pill') {
+    requestAnimationFrame(() => {
+      const cols = body.querySelectorAll('.usage-col');
+      const container = body.querySelector('.usage-chart-main');
+      const polyline = body.querySelector('.usage-trend-svg polyline');
+      if (!cols.length || !container || !polyline) return;
+      const cRect = container.getBoundingClientRect();
+      const maxPx = 200;
+      const m = METRICS.find(x => x.key === slicedMetric);
+      const series = metricPeriodSeries(activeCompIndex, slicedMetric, riPeriod);
+      const baseMax = Math.max(...series.map(d => d.value)) || m.step;
+      const niceMax = Math.ceil((baseMax * 1.2) / m.step) * m.step || m.step;
+      const pts = Array.from(cols).map((col, i) => {
+        const r = col.getBoundingClientRect();
+        const xPct = ((r.left + r.width / 2) - cRect.left) / cRect.width * 100;
+        const totalPx = (series[i].value / niceMax) * maxPx;
+        const floatPx = totalPx * 0.4, pillHeightPx = totalPx * 0.55;
+        const y = maxPx - floatPx - pillHeightPx;
+        return `${xPct.toFixed(1)},${y.toFixed(1)}`;
+      }).join(' ');
+      polyline.setAttribute('points', pts);
+    });
+  }
+}
+
+/* ---------------------------------------------------------------- */
+/* Drag-and-drop: any metric card <-> Expertise main panel           */
+/* ---------------------------------------------------------------- */
+function onMetricDragStart(e, key) {
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', key);
+  e.currentTarget.classList.add('dragging');
+}
+function onMetricDragEnd(e) { e.currentTarget.classList.remove('dragging'); }
+function onExpertiseDragOver(e) {
+  if (slicedMetric) return;
+  e.preventDefault();
+  document.getElementById('riMainPanelCard').classList.add('drop-target');
+}
+function onExpertiseDragLeave(e) {
+  document.getElementById('riMainPanelCard').classList.remove('drop-target');
+}
+function onExpertiseDrop(e) {
+  e.preventDefault();
+  document.getElementById('riMainPanelCard').classList.remove('drop-target');
+  if (slicedMetric) return;
+  const key = e.dataTransfer.getData('text/plain');
+  if (!METRICS.find(m => m.key === key)) return;
+  triggerMetricSlice(key);
+}
+
+function triggerMetricSlice(newKey) {
+  const targetDataKey = newKey ? newKey : 'expertise';
+  const slotIcon = document.querySelector(`#riMetricGrid .kpi-card[data-key="${targetDataKey}"] .kpi-card-icon`);
+  const panelIcon = document.getElementById('riPanelIdentityIcon');
+  const r1 = slotIcon ? slotIcon.getBoundingClientRect() : null;
+  const r2 = panelIcon ? panelIcon.getBoundingClientRect() : null;
+  let ghostA, ghostB;
+  if (r1 && r2) {
+    ghostA = slotIcon.cloneNode(true);
+    ghostB = panelIcon.cloneNode(true);
+    [[ghostA, r1], [ghostB, r2]].forEach(([g, r]) => {
+      g.style.position = 'fixed'; g.style.margin = '0'; g.style.zIndex = 9999;
+      g.style.left = r.left + 'px'; g.style.top = r.top + 'px';
+      g.style.width = r.width + 'px'; g.style.height = r.height + 'px';
+      g.style.transition = 'transform 0.55s cubic-bezier(.4,0,.2,1)';
+      g.style.pointerEvents = 'none';
+      document.body.appendChild(g);
+    });
+  }
+
+  slicedMetric = newKey;
+  riPeriod = 'ytd';
+  renderMetricCards();
+  renderRiPanelIdentity();
+  renderRiPeriodToggle();
+  renderRiPanelBody();
+
+  if (ghostA && ghostB) {
+    requestAnimationFrame(() => {
+      ghostA.style.transform = `translate(${r2.left - r1.left}px, ${r2.top - r1.top}px)`;
+      ghostB.style.transform = `translate(${r1.left - r2.left}px, ${r1.top - r2.top}px)`;
+    });
+    setTimeout(() => { ghostA.remove(); ghostB.remove(); }, 600);
+  }
+}
+
+document.getElementById('rfDrawerBody').innerHTML = renderReflectorFilterDrawerBody();
+renderMain();
+</script>
+</body>
+</html>

@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wisdom on the Go — Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:   #041A40;
+  --night2:  #2A3C5D;
+  --night3:  #4F5F79;
+  --grey1:   #f0f2f5;
+  --grey2:   #b8c0cc;
+  --grey3:   #6b7685;
+  --white:   #ffffff;
+  --green:   #3ab54a;
+  --green2:  #2d9640;
+  --gold:    #E4CA0A;
+  --gold2:   #AB9808;
+  --slant:   28px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Poppins',sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(4,26,64,0.06), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(228,202,10,0.05), transparent 40%),
+    #fbfbfd;
+  min-height:100vh;
+}
+.page { max-width:1600px; margin:0 auto; }
+
+/* ---- Header (full-bleed dark) ---- */
+header.topbar { background:var(--night); }
+.header-inner {
+  max-width:1600px; margin:0 auto;
+  display:flex; align-items:center;
+  padding:0.8rem 2rem;
+}
+.logo-block { text-decoration:none; display:flex; flex-direction:column; gap:0; }
+.logo { font-size:1.5rem; }
+.logo .w { font-weight:700; color:var(--white); }
+.logo .mid { font-weight:400; color:var(--white); }
+.logo .go { font-weight:700; color:var(--green); }
+.logo-sanskrit { font-size:0.62rem; font-weight:300; letter-spacing:0.16em; color:var(--white); opacity:0.75; padding-left:0.1rem; margin-top:-0.15rem; }
+
+.greeting { margin-left:2rem; }
+.greeting .hello { font-weight:600; font-size:1.1rem; color:var(--white); }
+.greeting .hello .name { color:var(--green); }
+.greeting .sub { color:var(--grey2); font-size:0.9rem; }
+.header-spacer { flex:1; }
+.header-icons { display:flex; gap:0.9rem; align-items:center; }
+.icon-item { position:relative; }
+.icon-item a.icon-btn {
+  width:38px; height:38px; border-radius:50%;
+  background:rgba(255,255,255,0.08);
+  display:flex; align-items:center; justify-content:center;
+  transition:background 0.15s; text-decoration:none;
+}
+.icon-item a.icon-btn:hover { background:rgba(255,255,255,0.16); }
+.icon-item.profile a.icon-btn { padding:0; overflow:hidden; background:transparent; border:2px solid rgba(255,255,255,0.3); }
+.icon-item.profile a.icon-btn img { width:100%; height:100%; object-fit:cover; }
+.header-icons svg { width:19px; height:19px; }
+
+.icon-tooltip {
+  position:absolute; top:48px; left:50%; transform:translateX(-50%);
+  background:rgba(0,0,0,0.85); color:#fff; font-size:0.68rem;
+  padding:0.3rem 0.6rem; border-radius:5px; white-space:nowrap;
+  opacity:0; pointer-events:none; transition:opacity 0.15s;
+}
+.icon-item:hover .icon-tooltip { opacity:1; }
+
+.notif-badge {
+  position:absolute; top:1px; right:1px; width:10px; height:10px;
+  background:#e14b4b; border:2px solid var(--night); border-radius:50%;
+}
+.icon-item.seen .notif-badge { display:none; }
+
+.notif-dropdown {
+  position:absolute; top:48px; right:0; width:300px; z-index:500;
+  background:var(--white); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.25);
+  padding:0.4rem; display:none;
+}
+.notif-dropdown.open { display:block; animation:notifSlide 0.2s ease; }
+@keyframes notifSlide { from{opacity:0; transform:translateY(-8px);} to{opacity:1; transform:translateY(0);} }
+.notif-row {
+  display:flex; gap:0.65rem; align-items:flex-start;
+  padding:0.7rem 0.7rem 0.7rem 0.6rem; margin-bottom:0.3rem; border-radius:6px;
+  border-left:4px solid transparent;
+}
+.notif-row:last-child { margin-bottom:0; }
+.notif-row.skill-row { background:rgba(58,181,74,0.06); border-left-color:var(--green); }
+.notif-row.skill-row:hover { background:rgba(58,181,74,0.12); }
+.notif-row.meeting-row { background:rgba(201,168,76,0.08); border-left-color:var(--gold); }
+.notif-row.meeting-row:hover { background:rgba(201,168,76,0.16); }
+.notif-row.urgent-row { background:rgba(224,48,58,0.08); border-left-color:#e0303a; cursor:pointer; }
+.notif-row.urgent-row:hover { background:rgba(224,48,58,0.16); }
+.notif-row.urgent-row .notif-text strong { color:#e0303a; }
+.notif-icon {
+  width:30px; height:30px; border-radius:8px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.notif-icon svg { width:16px; height:16px; }
+.notif-icon.skill { background:rgba(58,181,74,0.15); color:var(--green2); }
+.notif-icon.meeting { background:rgba(201,168,76,0.18); color:var(--gold2); }
+.notif-icon.urgent { background:rgba(224,48,58,0.16); color:#e0303a; font-weight:800; font-size:1rem; }
+.notif-text { font-size:0.82rem; color:var(--night2); line-height:1.45; text-align:left; }
+
+.notes-dropdown {
+  position:absolute; top:48px; right:0; width:260px; z-index:500;
+  background:var(--white); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.25);
+  padding:0.4rem; display:none;
+}
+.notes-dropdown.open { display:block; animation:notifSlide 0.2s ease; }
+.notes-row {
+  padding:0.65rem 0.8rem; border-radius:6px; text-align:left;
+  border-left:4px solid transparent; margin-bottom:0.15rem;
+}
+.notes-row:last-child { margin-bottom:0; }
+.notes-row-title { font-size:0.83rem; color:var(--grey3); font-weight:500; }
+.notes-row-date { font-size:0.7rem; color:var(--grey3); opacity:0.7; margin-top:0.1rem; }
+.notes-row.clickable { cursor:pointer; border-left-color:var(--green); background:rgba(58,181,74,0.06); }
+.notes-row.clickable .notes-row-title { color:var(--night); font-weight:600; }
+.notes-row.clickable .notes-row-date { color:var(--green2); opacity:1; }
+.notes-row.clickable:hover { background:rgba(58,181,74,0.13); }
+
+/* ---- Hero: avatar + cards ---- */
+.hero { display:flex; gap:0; padding:1.3rem 2rem 1rem; align-items:stretch; height:350px; }
+.avatar-wrap { flex-shrink:0; width:170px; overflow:hidden; margin-right:1.6rem; }
+.avatar-wrap img { height:100%; width:100%; object-fit:cover; object-position:top; display:block; }
+
+.card-group { flex:1; display:flex; box-shadow:0 20px 45px rgba(4,26,64,0.10); }
+.card { display:flex; flex-direction:column; background:var(--white); position:relative; transition:transform 0.2s ease, box-shadow 0.2s ease; }
+.card:hover { transform:translateY(-5px); z-index:10; box-shadow:0 16px 30px rgba(4,26,64,0.18); }
+.card:nth-child(1) { flex: 1 1 0; }
+.card:nth-child(2) { flex: 1 1 0; }
+.card:nth-child(3) { flex: 1 1 0; }
+
+.card:nth-child(1) { clip-path: polygon(0 0, 100% 0, calc(100% - var(--slant)) 100%, 0 100%); }
+.card:nth-child(2) { clip-path: polygon(var(--slant) 0, 100% 0, calc(100% - var(--slant)) 100%, 0 100%); margin-left: calc(-1 * var(--slant)); z-index:2; }
+.card:nth-child(3) { clip-path: polygon(var(--slant) 0, 100% 0, 100% 100%, 0 100%); margin-left: calc(-1 * var(--slant)); z-index:1; }
+
+.card-header {
+  padding:1.15rem 1.3rem; color:#fff; font-weight:600; font-size:1.08rem;
+  text-align:center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 3px 6px rgba(0,0,0,0.15);
+}
+.card:nth-child(1) .card-header { background:linear-gradient(180deg, var(--green) 0%, var(--green2) 100%); padding-right:calc(1.3rem + (var(--slant) / 2)); }
+.card:nth-child(2) .card-header { background:linear-gradient(180deg, var(--gold) 0%, var(--gold2) 100%); padding-left:calc(1.3rem + (var(--slant) / 2)); padding-right:calc(1.3rem + (var(--slant) / 2)); }
+.card:nth-child(3) .card-header { background:linear-gradient(180deg, var(--night2) 0%, var(--night) 100%); padding-left:calc(1.3rem + (var(--slant) / 2)); }
+
+.card-body { padding:1.2rem 1.3rem; flex:1; display:flex; flex-direction:column; }
+.card:nth-child(1) .card-body { padding-right:calc(1.3rem + (var(--slant) / 2)); }
+.card:nth-child(2) .card-body { padding-left:calc(1.3rem + (var(--slant) / 2)); padding-right:calc(1.3rem + (var(--slant) / 2)); }
+.card:nth-child(3) .card-body { padding-left:calc(1.3rem + (var(--slant) / 2)); }
+.card-body ul { list-style:none; }
+.card-body li {
+  padding:0.55rem 0; font-size:0.95rem; color:var(--night2);
+  border-bottom:1px solid rgba(0,0,0,0.05); text-align:left;
+}
+.card-body li:last-child { border-bottom:none; }
+.card-body li.hotspot { position:relative; cursor:pointer; transition:color 0.15s; }
+.card-body li.hotspot:hover { color:var(--green2); font-weight:500; }
+.card-body li.hotspot .li-tooltip { top:-32px; bottom:auto; left:0; right:auto; }
+.card-body li.hotspot:hover .li-tooltip { opacity:1; }
+
+/* ---- Live chat panel (replaces hero on send) ---- */
+.chat-panel {
+  display:none; flex-direction:column;
+  height:350px; margin:1.3rem 2rem 0;
+  background:var(--white); border-radius:12px;
+  box-shadow:0 6px 20px rgba(22,32,46,0.12);
+  overflow:hidden;
+}
+.chat-panel.active { display:flex; }
+.hero.chatting { display:none; }
+.chat-panel-head {
+  flex-shrink:0; padding:0.7rem 1.3rem; background:var(--night);
+  color:var(--white); font-size:0.85rem; font-weight:600;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.chat-panel-head .live-label { display:flex; align-items:center; gap:0.5rem; }
+.chat-panel-head .live-dot {
+  width:7px; height:7px; border-radius:50%; background:var(--green);
+  box-shadow:0 0 0 rgba(58,181,74,0.5); animation:liveDotPulse 1.6s ease-in-out infinite;
+}
+@keyframes liveDotPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.close-btn-wrap { position:relative; }
+.chat-panel-close {
+  background:none; border:none; color:#fff; cursor:pointer;
+  font-size:1.8rem; line-height:1; padding:0.1rem 0.6rem; border-radius:4px;
+  font-family:'Poppins',sans-serif;
+}
+.chat-panel-close:hover { background:rgba(255,255,255,0.15); }
+.close-tooltip { top:50%; right:48px; transform:translateY(-50%); }
+.close-btn-wrap.ready-to-close:hover .close-tooltip { opacity:1; }
+.close-btn-wrap.ready-to-close .chat-panel-close {
+  animation: closePulse 1.4s ease-in-out infinite;
+}
+@keyframes closePulse {
+  0%, 100% { background:rgba(255,255,255,0.12); }
+  50% { background:rgba(58,181,74,0.75); }
+}
+.chat-messages { flex:1; overflow-y:auto; padding:1rem 1.3rem; }
+.cmsg { display:flex; gap:0.65rem; align-items:flex-start; margin-bottom:0.9rem; animation:cmsgIn 0.3s ease; }
+.cmsg:last-child { margin-bottom:0; }
+@keyframes cmsgIn { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
+.cmsg.cmsg-user { flex-direction:row-reverse; }
+.cmsg-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; overflow:hidden; border:2px solid rgba(22,32,46,0.08); }
+.cmsg-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+.cmsg-body { max-width:72%; }
+.cmsg.cmsg-user .cmsg-body { text-align:right; }
+.cmsg-bubble {
+  display:inline-block; text-align:left; padding:0.7rem 1rem; border-radius:4px;
+  font-size:0.86rem; line-height:1.55; font-weight:400; position:relative;
+}
+.cmsg-ai .cmsg-bubble { background:var(--grey1); border:1px solid rgba(22,32,46,0.08); color:var(--night2); }
+.cmsg-user .cmsg-bubble { background:rgba(58,181,74,0.12); border:1px solid rgba(58,181,74,0.25); color:var(--night); }
+.cmsg-bubble p { margin:0 0 0.4rem; }
+.cmsg-bubble p:last-child { margin-bottom:0; }
+.cmsg-bubble p.emoji-line { padding-left:1.1rem; }
+.cmsg-bubble ul.italic-list { font-style:italic; }
+.cmsg-bubble strong { font-weight:700; color:var(--night); }
+.cmsg-bubble ul { margin:0.15rem 0 0.4rem 1.1rem; padding:0; }
+.cmsg-bubble li { margin-bottom:0.35rem; }
+.cmsg-bubble li:last-child { margin-bottom:0; }
+.cmsg-name { font-size:0.68rem; color:var(--grey3); margin-bottom:0.2rem; }
+.cmsg-user .cmsg-name { text-align:right; }
+.typing-row { display:flex; gap:0.65rem; align-items:center; }
+.typing-indicator { display:flex; align-items:center; gap:4px; padding:0.7rem 1rem; background:var(--grey1); border:1px solid rgba(22,32,46,0.08); border-radius:4px; }
+.typing-indicator span { width:6px; height:6px; background:var(--green); border-radius:50%; opacity:0.4; animation:typingDot 1.2s ease-in-out infinite; }
+.typing-indicator span:nth-child(2) { animation-delay:0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay:0.4s; }
+@keyframes typingDot { 0%,80%,100%{opacity:0.2; transform:scale(0.8)} 40%{opacity:1; transform:scale(1)} }
+
+/* Application Confirmation form */
+.app-form { background:var(--white); border:1px solid rgba(22,32,46,0.08); border-radius:8px; padding:1.1rem 1.2rem; margin-top:0.4rem; }
+.app-form-q { margin-bottom:1.1rem; }
+.app-form-q:last-of-type { margin-bottom:1rem; }
+.app-form-label { font-size:0.84rem; color:var(--night2); font-weight:500; margin-bottom:0.55rem; line-height:1.45; }
+.app-form-options { display:flex; gap:0.6rem; flex-wrap:wrap; }
+.app-form-chip {
+  font-family:'Poppins',sans-serif; font-size:0.8rem; color:var(--night2);
+  background:var(--grey1); border:1px solid rgba(22,32,46,0.1); border-radius:20px;
+  padding:0.45rem 1rem; cursor:pointer; transition:background 0.15s, border-color 0.15s, color 0.15s;
+}
+.app-form-chip:hover { border-color:var(--green); }
+.app-form-chip.selected { background:var(--green); border-color:var(--green); color:#fff; font-weight:600; }
+.app-form-textarea {
+  width:100%; min-height:64px; resize:vertical; font-family:'Poppins',sans-serif; font-size:0.83rem;
+  color:var(--night2); background:var(--grey1); border:1px solid rgba(22,32,46,0.1); border-radius:8px;
+  padding:0.65rem 0.8rem; outline:none;
+}
+.app-form-textarea:focus { border-color:var(--green); }
+.app-form-submit {
+  font-family:'Poppins',sans-serif; font-size:0.85rem; font-weight:600; color:#fff;
+  background:var(--green); border:none; border-radius:8px; padding:0.6rem 1.4rem; cursor:pointer;
+}
+.app-form-submit:hover { background:var(--green2); }
+
+/* ---- Chat / typing bar ---- */
+.chat-bar {
+  margin:0 2rem 1rem; padding:0.15rem 0.4rem 0.15rem 1.3rem;
+  background:var(--white); border:1px solid rgba(22,32,46,0.1);
+  border-radius:30px; display:flex; align-items:center; gap:0.8rem;
+  box-shadow:0 3px 10px rgba(22,32,46,0.06);
+}
+.chat-bar input {
+  flex:1; border:none; outline:none; background:transparent;
+  font-family:'Poppins',sans-serif; font-size:0.92rem; color:var(--grey3);
+  padding:0.85rem 0;
+}
+.chat-bar input::placeholder { color:var(--grey3); }
+.chat-bar .chat-icon-btn {
+  width:38px; height:38px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--green); cursor:pointer;
+}
+.chat-bar .chat-icon-btn svg { width:18px; height:18px; }
+.chat-icon-item { position:relative; }
+.chat-icon-tooltip {
+  position:absolute; bottom:52px; right:0; z-index:500;
+  background:rgba(0,0,0,0.85); color:#fff; font-size:0.68rem;
+  padding:0.3rem 0.6rem; border-radius:5px; white-space:nowrap;
+  opacity:0; pointer-events:none; transition:opacity 0.15s;
+}
+.chat-icon-item:hover .chat-icon-tooltip { opacity:1; }
+
+.charts-strip { padding:0 2rem 1.2rem; display:flex; gap:1.4rem; align-items:stretch; }
+.insight-card {
+  flex:1; background:var(--white); border-radius:12px; padding:0.65rem 1.1rem;
+  box-shadow:0 6px 20px rgba(22,32,46,0.1);
+  transition:transform 0.2s ease, box-shadow 0.2s ease;
+}
+.insight-card:hover { transform:translateY(-5px); box-shadow:0 14px 28px rgba(22,32,46,0.16); }
+.insight-card h3 { font-size:0.92rem; color:var(--night2); margin-bottom:0.45rem; white-space:nowrap; }
+.card-head-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem; }
+.card-head-row h3 { margin-bottom:0; }
+.period-toggle { display:flex; background:var(--grey1); border-radius:20px; padding:0.2rem; }
+.period-toggle span {
+  padding:0.28rem 0.65rem; font-size:0.68rem; color:var(--grey3); border-radius:16px; cursor:pointer;
+}
+.period-toggle span.active { background:var(--green); color:#fff; font-weight:600; }
+.period-toggle-bottom { display:inline-flex; margin-top:0.55rem; }
+.period-toggle-bottom span { padding:0.2rem 0.5rem; font-size:0.6rem; }
+
+/* Learning Momentum */
+.stat-tile { display:flex; align-items:center; gap:0.7rem; padding:0.28rem 0; border-bottom:1px solid rgba(0,0,0,0.05); }
+.stat-tile:last-child { border-bottom:none; }
+.stat-tile .stat-icon {
+  width:30px; height:30px; border-radius:8px; background:rgba(58,181,74,0.1);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.stat-tile .stat-icon svg { width:16px; height:16px; color:var(--green2); }
+.stat-tile .stat-text { flex:1; }
+.stat-tile .stat-value { font-weight:700; font-size:0.98rem; color:var(--night); }
+.stat-tile .stat-label { font-size:0.7rem; color:var(--grey3); }
+.stat-tile.streak .stat-icon { background:rgba(201,168,76,0.15); }
+.stat-tile.streak .stat-icon svg { color:var(--gold2); }
+.ring-wrap { position:relative; width:30px; height:30px; flex-shrink:0; }
+.ring-wrap svg { transform:rotate(-90deg); }
+.ring-wrap .ring-bg { fill:none; stroke:rgba(58,181,74,0.15); stroke-width:4; }
+.ring-wrap .ring-fg { fill:none; stroke:var(--green); stroke-width:4; stroke-linecap:round; }
+
+/* Star Collection */
+.star-item { padding:0.32rem 0; border-bottom:1px solid rgba(0,0,0,0.05); }
+.star-item:last-child { border-bottom:none; }
+.star-item .skill-name { font-size:0.82rem; color:var(--night2); margin-bottom:0.2rem; font-weight:500; }
+.star-item .stars svg { width:15px; height:15px; }
+.star-item .stars svg.filled { fill:url(#starShine); filter:drop-shadow(0 1px 1.5px rgba(168,121,31,0.45)); }
+.star-item .stars svg.empty { fill:#e2e2e2; }
+
+/* Annual Growth Map */
+.bar-row { margin-bottom:0.2rem; }
+.bar-row:last-child { margin-bottom:0; }
+.bar-row .bar-label { font-size:0.68rem; color:var(--night2); margin-bottom:0.14rem; }
+.bar-track { height:6px; background:#eef0f2; border-radius:4px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:4px; }
+.bar-fill.green { background:var(--green); }
+.bar-fill.gold { background:var(--gold); }
+.bar-fill.grey { background:#c7cdd6; }
+.bar-legend { display:flex; gap:0.9rem; margin-top:0.3rem; font-size:0.64rem; color:var(--grey3); }
+.bar-legend span { display:inline-flex; align-items:center; gap:0.3rem; }
+.bar-legend .swatch { width:8px; height:8px; border-radius:50%; }
+.bar-legend .swatch.green { background:var(--green); }
+.bar-legend .swatch.gold { background:var(--gold); }
+.bar-legend .swatch.grey { background:#c7cdd6; }
+
+/* ---- Burger + side panel ---- */
+.burger-btn {
+  width:38px; height:38px; border-radius:8px; background:rgba(255,255,255,0.08);
+  border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  margin-right:1.2rem; flex-shrink:0;
+}
+.burger-btn:hover { background:rgba(255,255,255,0.16); }
+.burger-btn span { display:block; width:18px; height:2px; background:#fff; border-radius:2px; }
+.burger-btn span + span { margin-top:4px; }
+
+.panel-overlay {
+  position:fixed; top:72px; left:0; right:0; bottom:0; background:rgba(0,0,0,0.45);
+  opacity:0; pointer-events:none; transition:opacity 0.25s; z-index:90;
+}
+.panel-overlay.open { opacity:1; pointer-events:auto; }
+
+.notes-lightbox {
+  position:fixed; inset:0; background:rgba(10,15,22,0.82); z-index:300;
+  display:flex; align-items:center; justify-content:center; padding:2.5rem;
+  opacity:0; pointer-events:none; transition:opacity 0.2s;
+}
+.notes-lightbox.open { opacity:1; pointer-events:auto; }
+.notes-lightbox-inner { position:relative; max-width:90vw; max-height:90vh; }
+.notes-lightbox-inner img {
+  display:block; max-width:90vw; max-height:90vh; border-radius:10px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.notes-lightbox-close {
+  position:absolute; top:-18px; right:-18px; width:36px; height:36px;
+  border-radius:50%; background:var(--night); color:#fff; border:2px solid var(--white);
+  font-size:1.4rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-family:'Poppins',sans-serif;
+}
+.notes-lightbox-close:hover { background:var(--green2); }
+
+/* ---- My Learning Progress: report hub + reports ---- */
+.progress-overlay {
+  position:fixed; inset:0; background:rgba(4,26,64,0.35); z-index:400;
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  display:flex; align-items:center; justify-content:center; padding:2rem;
+  opacity:0; pointer-events:none; transition:opacity 0.2s;
+}
+.progress-overlay.open { opacity:1; pointer-events:auto; }
+.progress-modal {
+  background:var(--white); border-radius:14px; width:min(1080px, 100%); height:min(86vh, 780px);
+  display:flex; flex-direction:column; box-shadow:0 24px 70px rgba(0,0,0,0.5); overflow:hidden;
+}
+.progress-modal-head {
+  flex-shrink:0; background:var(--night); color:#fff; padding:0.9rem 1.4rem;
+  display:flex; align-items:center; gap:1rem;
+}
+.progress-back {
+  background:none; border:none; color:var(--grey2); font-family:'Poppins',sans-serif;
+  font-size:0.8rem; cursor:pointer; padding:0.3rem 0.5rem; border-radius:5px; flex-shrink:0;
+}
+.progress-back:hover { color:#fff; background:rgba(255,255,255,0.1); }
+.progress-title { font-weight:600; font-size:1rem; flex:1; }
+.progress-close {
+  background:none; border:none; color:#fff; cursor:pointer; font-size:1.6rem; line-height:1;
+  padding:0.1rem 0.55rem; border-radius:4px; font-family:'Poppins',sans-serif; flex-shrink:0;
+}
+.progress-close:hover { background:rgba(255,255,255,0.15); }
+.progress-modal-body {
+  flex:1; overflow-y:auto; padding:1.6rem;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(4,26,64,0.06), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(228,202,10,0.05), transparent 40%),
+    #fbfbfd;
+}
+.report-panel { border:1px solid rgba(22,32,46,0.07); }
+
+/* Hub */
+.report-hub-wrap { display:flex; flex-direction:column; justify-content:center; min-height:100%; }
+.report-hub-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.1rem; }
+.report-card {
+  background:var(--white); border-radius:12px; padding:1.3rem; cursor:pointer;
+  box-shadow:0 4px 14px rgba(22,32,46,0.08); transition:transform 0.15s, box-shadow 0.15s;
+  border:1px solid rgba(22,32,46,0.06); border-left:6px solid transparent;
+}
+.report-card:hover { transform:translateY(-3px); box-shadow:0 10px 24px rgba(22,32,46,0.14); }
+.report-card-icon {
+  width:52px; height:52px; border-radius:13px; display:flex; align-items:center; justify-content:center;
+  margin-bottom:0.9rem; box-shadow:0 4px 10px rgba(0,0,0,0.12);
+}
+.report-card-icon svg { width:25px; height:25px; }
+.report-card h3 { font-size:1.02rem; color:var(--night); margin-bottom:0.4rem; }
+.report-card p { font-size:0.82rem; color:var(--grey3); line-height:1.5; }
+.report-card.c-green { border-left-color:var(--green); }
+.report-card.c-green h3 { color:var(--green2); }
+.report-card.c-green .report-card-icon { background:var(--green); color:#fff; }
+.report-card.c-gold { border-left-color:var(--gold); }
+.report-card.c-gold h3 { color:var(--gold2); }
+.report-card.c-gold .report-card-icon { background:var(--gold); color:#fff; }
+.report-card.c-amber { border-left-color:#e8960a; }
+.report-card.c-amber h3 { color:#c17d00; }
+.report-card.c-amber .report-card-icon { background:#e8960a; color:#fff; }
+.report-card.c-navy { border-left-color:var(--night); }
+.report-card.c-navy h3 { color:var(--night); }
+.report-card.c-navy .report-card-icon { background:var(--night2); color:#fff; }
+
+/* Assessment History tiles */
+.assess-tile { border-radius:12px; margin-bottom:1rem; overflow:hidden; box-shadow:0 4px 14px rgba(22,32,46,0.08); background:var(--white); border-left:6px solid transparent; }
+.assess-tile:last-child { margin-bottom:0; }
+.assess-tile-head { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.3rem; color:var(--night); }
+.assess-tile-title { font-size:0.98rem; font-weight:600; }
+.assess-tile-right { display:flex; align-items:center; gap:0.7rem; }
+.assess-tile-score {
+  font-size:0.95rem; font-weight:700; color:#fff; padding:0.35rem 0.85rem; border-radius:20px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+.assess-tile-chevron { width:14px; height:14px; transition:transform 0.2s; color:var(--grey3); }
+.assess-tile.expandable { cursor:pointer; }
+.assess-tile.expanded .assess-tile-chevron { transform:rotate(180deg); }
+.assess-tile-detail { max-height:0; overflow:hidden; transition:max-height 0.3s ease; background:var(--white); }
+.assess-tile.expanded .assess-tile-detail { max-height:400px; }
+.assess-tile-detail-inner { padding:1.1rem 1.3rem; }
+.assess-tile-detail-label { font-size:0.78rem; color:var(--grey3); margin-bottom:0.7rem; }
+.assess-skill-row { display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0; border-bottom:1px solid rgba(0,0,0,0.06); }
+.assess-skill-row:last-child { border-bottom:none; }
+.assess-skill-name { font-size:0.85rem; color:var(--night2); font-weight:500; }
+.assess-skill-meta { font-size:0.72rem; color:var(--grey3); margin-top:0.1rem; }
+.assess-skill-score { font-size:0.95rem; font-weight:700; }
+.assess-tile.assess-band-green { border-left-color:var(--green); }
+.assess-tile.assess-band-green .assess-tile-title { color:var(--green2); }
+.assess-tile.assess-band-green .assess-tile-score { background:linear-gradient(135deg, var(--green) 0%, var(--green2) 100%); }
+.assess-tile.assess-band-amber { border-left-color:#f5a623; }
+.assess-tile.assess-band-amber .assess-tile-title { color:#d97a00; }
+.assess-tile.assess-band-amber .assess-tile-score { background:linear-gradient(135deg, #f5a623 0%, #d97a00 100%); }
+.assess-tile.assess-band-red { border-left-color:#ea5a5a; }
+.assess-tile.assess-band-red .assess-tile-title { color:#c9302c; }
+.assess-tile.assess-band-red .assess-tile-score { background:linear-gradient(135deg, #ea5a5a 0%, #c9302c 100%); }
+
+/* Shared report chrome */
+.report-view-title { font-size:1.15rem; font-weight:600; color:var(--night); margin-bottom:0.3rem; }
+.report-view-sub { font-size:0.82rem; color:var(--grey3); margin-bottom:1.2rem; }
+.report-panel { background:var(--white); border-radius:12px; padding:1.3rem; box-shadow:0 4px 14px rgba(22,32,46,0.08); margin-bottom:1.1rem; }
+.report-panel h4 { font-size:0.9rem; color:var(--night2); margin-bottom:0.9rem; }
+
+.peer-callout {
+  background:rgba(58,181,74,0.09); border:1px solid rgba(58,181,74,0.25); border-radius:10px;
+  padding:0.8rem 1.1rem; font-size:0.86rem; color:var(--night2); margin-bottom:1.1rem;
+}
+.peer-callout strong { color:var(--green2); }
+
+.metric-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; }
+.metric-tile { text-align:left; }
+.metric-tile .metric-value { font-size:1.5rem; font-weight:700; color:var(--night); }
+.metric-tile .metric-label { font-size:0.76rem; color:var(--grey3); margin-top:0.15rem; }
+.metric-tile .metric-peer { font-size:0.7rem; color:var(--grey3); opacity:0.75; margin-top:0.3rem; }
+
+.time-filter { display:flex; background:var(--grey1); border-radius:20px; padding:0.2rem; width:fit-content; margin-bottom:1.2rem; }
+.time-filter span { padding:0.32rem 0.85rem; font-size:0.75rem; color:var(--grey3); border-radius:16px; cursor:pointer; }
+.time-filter span.active { background:var(--green); color:#fff; font-weight:600; }
+
+/* trend bars (horizontal, reused across reports) */
+.trend-row { margin-bottom:0.6rem; }
+.trend-row:last-child { margin-bottom:0; }
+.trend-row-top { display:flex; justify-content:space-between; font-size:0.78rem; color:var(--night2); margin-bottom:0.25rem; }
+.trend-track { height:9px; background:#eef0f2; border-radius:5px; overflow:hidden; }
+.trend-fill { height:100%; border-radius:5px; background:var(--green); }
+
+/* outcome distribution chips */
+.outcome-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; }
+.outcome-tile { text-align:center; border-radius:10px; padding:1rem 0.5rem; }
+.outcome-tile .outcome-value { font-size:1.4rem; font-weight:700; }
+.outcome-tile .outcome-label { font-size:0.74rem; margin-top:0.2rem; }
+.outcome-tile.worked { background:rgba(58,181,74,0.14); }
+.outcome-tile.worked .outcome-value { color:#249041; }
+.outcome-tile.neutral { background:rgba(245,166,35,0.18); }
+.outcome-tile.neutral .outcome-value { color:#d97a00; }
+.outcome-tile.notwork { background:rgba(224,48,58,0.13); }
+.outcome-tile.notwork .outcome-value { color:#e0303a; }
+.outcome-tile .outcome-label { color:var(--grey3); }
+
+/* mastery skill rows (clickable to expand quarterly trend) */
+.skill-mastery-row { border-bottom:1px solid rgba(0,0,0,0.06); padding:0.8rem 0; cursor:pointer; }
+.skill-mastery-row:last-child { border-bottom:none; }
+.skill-mastery-top { display:flex; align-items:center; justify-content:space-between; }
+.skill-mastery-name { font-size:0.86rem; color:var(--night2); font-weight:500; }
+.skill-mastery-right { display:flex; align-items:center; gap:0.6rem; }
+.skill-mastery-score { font-size:0.86rem; font-weight:700; color:var(--night); }
+.skill-trend-tag { font-size:0.68rem; padding:0.18rem 0.55rem; border-radius:12px; font-weight:600; }
+.skill-trend-tag.improving { background:rgba(58,181,74,0.18); color:#249041; }
+.skill-trend-tag.stable { background:rgba(107,118,133,0.16); color:var(--grey3); }
+.skill-trend-tag.declining { background:rgba(224,48,58,0.16); color:#e0303a; }
+.skill-mastery-chevron { width:12px; height:12px; color:var(--grey3); transition:transform 0.2s; }
+.skill-mastery-row.expanded .skill-mastery-chevron { transform:rotate(180deg); }
+.skill-mastery-detail { max-height:0; overflow:hidden; transition:max-height 0.25s ease; }
+.skill-mastery-row.expanded .skill-mastery-detail { max-height:220px; padding-top:0.8rem; }
+
+/* competency overview (report 4) */
+.competency-card {
+  background:var(--white); border-radius:10px; padding:1rem 1.2rem; margin-bottom:0.8rem; cursor:pointer;
+  border:1px solid rgba(22,32,46,0.06); transition:box-shadow 0.15s;
+}
+.competency-card:hover { box-shadow:0 6px 16px rgba(22,32,46,0.1); }
+.competency-card:last-child { margin-bottom:0; }
+.competency-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem; }
+.competency-name { font-size:0.92rem; font-weight:600; color:var(--night); }
+.competency-score-wrap { display:flex; align-items:center; gap:0.6rem; }
+.competency-score { font-size:1rem; font-weight:700; }
+.competency-level-tag { font-size:0.68rem; padding:0.2rem 0.6rem; border-radius:12px; font-weight:600; }
+.competency-level-tag.proficient { background:rgba(58,181,74,0.18); color:#249041; }
+.competency-level-tag.developing { background:rgba(245,166,35,0.2); color:#d97a00; }
+.competency-level-tag.emerging { background:rgba(224,48,58,0.16); color:#e0303a; }
+.competency-dist { display:flex; gap:1rem; font-size:0.74rem; color:var(--grey3); }
+.competency-dist span.dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:0.3rem; }
+.competency-dist .dot.green { background:#3ab54a; }
+.competency-dist .dot.amber { background:#f5a623; }
+.competency-dist .dot.red { background:#e0303a; }
+
+/* reflector drill-down (report 4 detail) */
+.reflector-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0.7rem 0; border-bottom:1px solid rgba(0,0,0,0.06);
+}
+.reflector-row:last-child { border-bottom:none; }
+.reflector-name { font-size:0.86rem; color:var(--night2); }
+.reflector-status { display:flex; align-items:center; gap:0.5rem; font-size:0.76rem; font-weight:600; }
+.reflector-status .dot { width:10px; height:10px; border-radius:50%; }
+.reflector-status.green { color:#249041; }
+.reflector-status.green .dot { background:#3ab54a; }
+.reflector-status.amber { color:#d97a00; }
+.reflector-status.amber .dot { background:#f5a623; }
+.reflector-status.red { color:#e0303a; }
+.reflector-status.red .dot { background:#e0303a; }
+
+.side-panel {
+  position:fixed; top:72px; left:0; height:calc(100vh - 72px); width:280px;
+  background:var(--night); color:#fff; z-index:100;
+  transform:translateX(-100%); transition:transform 0.25s;
+  display:flex; flex-direction:column;
+  box-shadow:4px 0 24px rgba(0,0,0,0.3);
+}
+.side-panel.open { transform:translateX(0); }
+
+.panel-nav { padding:1rem 0; flex:1; overflow-y:auto; }
+.nav-toggle {
+  width:100%; display:flex; align-items:center; gap:0.8rem; position:relative;
+  padding:0.75rem 1.4rem; color:var(--grey1); background:none; border:none;
+  font-family:'Poppins',sans-serif; font-size:0.92rem; border-left:3px solid transparent;
+  transition:background 0.15s, border-color 0.15s; cursor:pointer; text-align:left;
+}
+.nav-toggle:hover { background:rgba(255,255,255,0.06); border-left-color:var(--green); }
+.nav-toggle svg.item-icon { width:20px; height:20px; flex-shrink:0; }
+.nav-toggle span.label { flex:1; }
+.nav-toggle svg.chevron { width:14px; height:14px; flex-shrink:0; transition:transform 0.2s; color:var(--grey3); }
+.nav-section.expanded .nav-toggle svg.chevron { transform:rotate(180deg); }
+.nav-toggle-tooltip {
+  position:absolute; top:50%; left:100%; transform:translateY(-50%); margin-left:10px;
+  background:rgba(0,0,0,0.9); color:#fff; font-size:0.7rem; font-weight:400;
+  padding:0.4rem 0.7rem; border-radius:5px; white-space:normal; width:180px; line-height:1.35;
+  opacity:0; pointer-events:none; transition:opacity 0.15s; z-index:500;
+}
+.nav-toggle:hover .nav-toggle-tooltip { opacity:1; }
+
+.nav-submenu {
+  max-height:0; overflow:hidden; transition:max-height 0.25s ease;
+}
+.nav-section.expanded .nav-submenu { max-height:300px; }
+.nav-submenu a {
+  display:flex; align-items:center; gap:0.7rem;
+  padding:0.55rem 1.4rem 0.55rem 2.4rem; color:var(--grey2); text-decoration:none;
+  font-size:0.85rem;
+}
+.nav-submenu a:hover { color:#fff; }
+.nav-submenu a svg { width:15px; height:15px; flex-shrink:0; opacity:0.7; }
+.nav-submenu .show-more {
+  display:flex; align-items:center; gap:0.4rem;
+  padding:0.4rem 1.4rem 0.7rem 2.4rem; color:var(--grey3);
+  font-size:0.78rem; background:none; border:none; cursor:pointer; font-family:'Poppins',sans-serif;
+}
+.nav-submenu .show-more svg { width:11px; height:11px; }
+.nav-submenu a.nav-urgent { color:#ff8080; font-weight:600; }
+.nav-submenu a.nav-urgent:hover { color:#ffa3a3; }
+.nav-urgent-badge {
+  display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+  width:16px; height:16px; border-radius:50%; background:#e0303a; color:#fff;
+  font-size:0.65rem; font-weight:800;
+}
+
+.side-panel-footer {
+  padding:1.2rem 1.4rem; border-top:1px solid rgba(255,255,255,0.08);
+  font-size:0.7rem; color:var(--grey3);
+}
+.side-panel-footer .brand { color:var(--grey2); margin-bottom:0.2rem; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="starShine" x1="20%" y1="10%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#fff3c4"/>
+      <stop offset="40%" stop-color="#e8c14a"/>
+      <stop offset="100%" stop-color="#a8791f"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="notes-lightbox" id="notesLightbox" onclick="closeNotesLightbox(event)">
+  <div class="notes-lightbox-inner">
+    <button class="notes-lightbox-close" onclick="closeNotesLightbox(event)">&times;</button>
+    <img src="assets/my_notes.jpg" alt="My Notes — Prioritizing Effectively" onclick="event.stopPropagation()">
+  </div>
+</div>
+
+<div class="progress-overlay" id="progressOverlay">
+  <div class="progress-modal">
+    <div class="progress-modal-head">
+      <button class="progress-back" id="progressBackBtn" onclick="showReportHub()" style="display:none">&larr; Back to Reports</button>
+      <div class="progress-title">My Learning Progress</div>
+      <button class="progress-close" onclick="closeProgressOverlay()">&times;</button>
+    </div>
+    <div class="progress-modal-body" id="progressBody"></div>
+  </div>
+</div>
+
+<div class="progress-overlay" id="assessOverlay">
+  <div class="progress-modal">
+    <div class="progress-modal-head">
+      <div class="progress-title">Assessment History</div>
+      <button class="progress-close" onclick="closeAssessOverlay()">&times;</button>
+    </div>
+    <div class="progress-modal-body" id="assessBody"></div>
+  </div>
+</div>
+
+<div class="panel-overlay" id="panelOverlay" onclick="toggleSidePanel()"></div>
+<nav class="side-panel" id="sidePanel">
+  <div class="panel-nav">
+    <div class="nav-section">
+      <button class="nav-toggle" onclick="toggleAccordion(this)">
+        <svg class="item-icon" viewBox="0 0 24 24" fill="none" stroke="#3ab54a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>
+        <span class="label">Parking Lot</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <span class="nav-toggle-tooltip">Ideas and topics you've parked to revisit later.</span>
+      </button>
+      <div class="nav-submenu">
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg> Give Manager Feedback</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg> Team Strategy for Next Quarter</a>
+        <button class="show-more">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          Show More
+        </button>
+      </div>
+    </div>
+
+    <div class="nav-section" id="convHistorySection">
+      <button class="nav-toggle" onclick="toggleAccordion(this)">
+        <svg class="item-icon" viewBox="0 0 24 24" fill="none" stroke="#3ab54a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
+        <span class="label">Conversation History</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <span class="nav-toggle-tooltip">Past chats and learning sessions you've had with Kriti.</span>
+      </button>
+      <div class="nav-submenu">
+        <a href="#" class="nav-urgent" onclick="openApplicationForm(event)"><span class="nav-urgent-badge">!</span> Prioritizing Effectively</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg> Set Effective Goals</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg> Present to Stakeholders</a>
+        <button class="show-more">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          Show More
+        </button>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <button class="nav-toggle" onclick="toggleAccordion(this)">
+        <svg class="item-icon" viewBox="0 0 24 24" fill="none" stroke="#3ab54a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><rect x="5" y="13" width="3" height="7"/><rect x="10.5" y="9" width="3" height="11"/><rect x="16" y="5" width="3" height="15"/><path d="m14.5 3.5 4-1.5 1.5 4"/></svg>
+        <span class="label">Analyze my Learning Needs</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <span class="nav-toggle-tooltip">A breakdown of the skill gaps most relevant to you right now.</span>
+      </button>
+      <div class="nav-submenu">
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Social Presence</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Result Orientation</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Self Cultivation</a>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <button class="nav-toggle" onclick="toggleAccordion(this)">
+        <svg class="item-icon" viewBox="0 0 24 24" fill="none" stroke="#3ab54a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="0.6" fill="#3ab54a"/></svg>
+        <span class="label">Focus Hub</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <span class="nav-toggle-tooltip">Your current active goals, curated for focused practice.</span>
+      </button>
+      <div class="nav-submenu">
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Receiving Feedback</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Goal Setting</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Analyzing Progress</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Being Timely</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Taking Initiative</a>
+      </div>
+    </div>
+  </div>
+  <div class="side-panel-footer">
+    <div class="brand">Wisdom on the GO! @2026</div>
+    <div>Beta version 0.1</div>
+  </div>
+</nav>
+
+<div class="page">
+  <header class="topbar">
+    <div class="header-inner">
+      <button class="burger-btn" onclick="toggleSidePanel()">
+        <span></span><span></span><span></span>
+      </button>
+      <a class="logo-block" href="wisdom_index_open.html">
+        <span class="logo"><span class="w">W</span><span class="mid">isdom on the </span><span class="go">GO!</span></span>
+        <span class="logo-sanskrit">Tat Tvam Asi</span>
+      </a>
+      <div class="greeting">
+        <div class="hello">Hello <span class="name">James</span>,</div>
+        <div class="sub">How can I help you today?</div>
+      </div>
+      <div class="header-spacer"></div>
+      <div class="header-icons">
+        <div class="icon-item" id="notesItem">
+          <a class="icon-btn" href="#" onclick="toggleNotesList(event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M12 12v6"/><path d="M9.5 15.5 12 18l2.5-2.5"/></svg>
+          </a>
+          <span class="icon-tooltip">My Notes</span>
+          <div class="notes-dropdown" id="notesDropdown">
+            <div class="notes-row clickable" onclick="openNotesLightbox(event)">
+              <div class="notes-row-title">Prioritizing Effectively</div>
+              <div class="notes-row-date">24 Jul 2026</div>
+            </div>
+            <div class="notes-row">
+              <div class="notes-row-title">Being Resilient</div>
+              <div class="notes-row-date">18 Jul 2026</div>
+            </div>
+            <div class="notes-row">
+              <div class="notes-row-title">Demonstrating Credibility</div>
+              <div class="notes-row-date">14 Jul 2026</div>
+            </div>
+            <div class="notes-row">
+              <div class="notes-row-title">Attuned Listening</div>
+              <div class="notes-row-date">9 Jul 2026</div>
+            </div>
+          </div>
+        </div>
+        <div class="icon-item">
+          <a class="icon-btn" href="#" onclick="openAssessOverlay(event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3"/><path d="M8.5 12.5 10.5 14.5 15.5 9.5"/></svg>
+          </a>
+          <span class="icon-tooltip">Assessment History</span>
+        </div>
+        <div class="icon-item">
+          <a class="icon-btn" href="#" onclick="openProgressOverlay(event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12.5" y="8" width="3" height="10"/><rect x="18" y="5" width="3" height="13"/></svg>
+          </a>
+          <span class="icon-tooltip">My Learning Progress</span>
+        </div>
+        <div class="icon-item" id="notifItem">
+          <a class="icon-btn" href="#" onclick="toggleNotifications(event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 3.5 1 5.5 2 7H4c1-1.5 2-3.5 2-7Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
+            <span class="notif-badge"></span>
+          </a>
+          <span class="icon-tooltip">Notifications</span>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-row urgent-row" onclick="revealConversationHistory(event)">
+              <div class="notif-icon urgent">!</div>
+              <div class="notif-text"><strong>Prioritizing Effectively</strong> — application confirmation pending. Confirm now?</div>
+            </div>
+            <div class="notif-row skill-row">
+              <div class="notif-icon skill"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg></div>
+              <div class="notif-text">Your manager has recommended a new skill for you. Explore it now?</div>
+            </div>
+            <div class="notif-row meeting-row">
+              <div class="notif-icon meeting"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+              <div class="notif-text">You have a 1:1 scheduled with Ana at 12:30 pm tomorrow. Want to prepare together?</div>
+            </div>
+          </div>
+        </div>
+        <div class="icon-item profile">
+          <a class="icon-btn" href="#">
+            <img src="assets/profile_headshot.jpg" alt="Profile">
+          </a>
+          <span class="icon-tooltip">My Profile</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="hero" id="hero">
+    <div class="avatar-wrap">
+      <img src="assets/kriti_fullbody.png" alt="Meryl">
+    </div>
+    <div class="card-group">
+      <div class="card">
+        <div class="card-header">Peer Recommendations</div>
+        <div class="card-body">
+          <ul>
+            <li class="hotspot" onclick="startHotspotChat(TRANSCRIPT_NRD)">Navigating Relational Dynamics<span class="chat-icon-tooltip li-tooltip">Click to explore this skill</span></li>
+            <li class="hotspot" onclick="startHotspotChat(TRANSCRIPT_SMC)">Structuring Messages Clearly<span class="chat-icon-tooltip li-tooltip">Click to explore this skill</span></li>
+            <li>Building Healthy Habits</li>
+            <li>Applying Feedback</li>
+            <li>Making Action</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Manager Recommendations</div>
+        <div class="card-body">
+          <ul>
+            <li>Learning Continuously</li>
+            <li class="hotspot" onclick="startHotspotChat(TRANSCRIPT_CWC)">Coping with Change<span class="chat-icon-tooltip li-tooltip">Click to explore this skill</span></li>
+            <li>Being Considerate</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Strategic Learning Goals</div>
+        <div class="card-body">
+          <ul>
+            <li>Remote Work Integration</li>
+            <li class="hotspot" onclick="startHotspotChat(TRANSCRIPT_DT)">Digital Transformation<span class="chat-icon-tooltip li-tooltip">Click to explore this skill</span></li>
+            <li>Market Expansion</li>
+            <li>Talent Retention</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-panel-head">
+      <div class="live-label"><span class="live-dot"></span> <span id="chatPanelLabel">Live conversation with James</span></div>
+      <div class="close-btn-wrap" id="closeBtnWrap">
+        <button class="chat-panel-close" onclick="closeChatDemo()">&times;</button>
+        <span class="chat-icon-tooltip close-tooltip">Click to close</span>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+  </div>
+
+  <div class="chat-bar">
+    <input type="text" id="chatInput" placeholder="" value="Hi Kriti">
+    <div class="chat-icon-btn" title="Voice">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 21v-4"/></svg>
+    </div>
+    <div class="chat-icon-item">
+      <div class="chat-icon-btn send" id="sendBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg>
+      </div>
+      <span class="chat-icon-tooltip">Click to view a demo conversation</span>
+    </div>
+  </div>
+
+  <div class="charts-strip">
+
+    <div class="insight-card">
+      <h3>Learning Momentum</h3>
+      <div class="stat-tile streak">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2c.6 3.5-2.6 4.8-3.8 7.3C8.6 11.4 9 13 10.3 14c.8.6 1.9.4 2.4-.4.5-.8.3-1.6-.2-2.1 2.1.6 3.5 2.7 3.5 4.8 0 3.1-2.5 5.7-5.6 5.7S4.8 19.4 4.8 16.3c0-4.6 3.7-6.1 5.4-9.2 1-1.9 1.3-3.2.9-5.1 1 .5 2.1 1.3 2.4 0Z"/></svg></div>
+        <div class="stat-text"><div class="stat-value">2 days</div><div class="stat-label">Current Streak</div></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4.2"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/></svg></div>
+        <div class="stat-text"><div class="stat-value">7</div><div class="stat-label">Learning Atoms</div></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <div class="stat-text"><div class="stat-value">5</div><div class="stat-label">Skills Trained</div></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+        <div class="stat-text"><div class="stat-value">19 min</div><div class="stat-label">Avg. Session</div></div>
+      </div>
+      <div class="stat-tile">
+        <div class="ring-wrap">
+          <svg width="30" height="30" viewBox="0 0 30 30">
+            <circle class="ring-bg" cx="15" cy="15" r="12.5"/>
+            <circle class="ring-fg" cx="15" cy="15" r="12.5" stroke-dasharray="78.5" stroke-dashoffset="3.14"/>
+          </svg>
+        </div>
+        <div class="stat-text"><div class="stat-value">96%</div><div class="stat-label">Completion Rate</div></div>
+      </div>
+      <div class="period-toggle period-toggle-bottom">
+        <span class="active">Month</span><span>Quarter</span><span>Year</span>
+      </div>
+    </div>
+
+    <div class="insight-card">
+      <h3>Annual Star Stock</h3>
+      <div class="star-item">
+        <div class="skill-name">Giving Feedback</div>
+        <div class="stars">
+          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        </div>
+      </div>
+      <div class="star-item">
+        <div class="skill-name">Influencing Others</div>
+        <div class="stars">
+          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        </div>
+      </div>
+      <div class="star-item">
+        <div class="skill-name">Demonstrating Reliability</div>
+        <div class="stars">
+          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        </div>
+      </div>
+      <div class="star-item">
+        <div class="skill-name">Being Resilient</div>
+        <div class="stars">
+          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        </div>
+      </div>
+      <div class="star-item">
+        <div class="skill-name">Being Fair</div>
+        <div class="stars">
+          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-card">
+      <h3>Annual Growth Map</h3>
+      <div class="bar-row"><div class="bar-label">Demonstrating Credibility</div><div class="bar-track"><div class="bar-fill green" style="width:90%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Attuned Listening</div><div class="bar-track"><div class="bar-fill green" style="width:85%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Taking Accountability</div><div class="bar-track"><div class="bar-fill green" style="width:82%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Being Amiable</div><div class="bar-track"><div class="bar-fill gold" style="width:62%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Structuring Messages Clearly</div><div class="bar-track"><div class="bar-fill gold" style="width:58%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Negotiating Effectively</div><div class="bar-track"><div class="bar-fill gold" style="width:54%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Being Inclusive</div><div class="bar-track"><div class="bar-fill grey" style="width:18%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Prioritizing Effectively</div><div class="bar-track"><div class="bar-fill grey" style="width:15%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Respecting Boundaries</div><div class="bar-track"><div class="bar-fill grey" style="width:12%"></div></div></div>
+      <div class="bar-legend">
+        <span><i class="swatch green"></i> Current Strengths</span>
+        <span><i class="swatch gold"></i> Biggest Improvements</span>
+        <span><i class="swatch grey"></i> Unexplored</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggleSidePanel() {
+  const panel = document.getElementById('sidePanel');
+  panel.classList.toggle('open');
+  document.getElementById('panelOverlay').classList.toggle('open');
+  document.body.style.overflow = panel.classList.contains('open') ? 'hidden' : '';
+}
+function toggleAccordion(btn) {
+  btn.parentElement.classList.toggle('expanded');
+}
+function toggleNotesList(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('notesDropdown').classList.toggle('open');
+}
+function openNotesLightbox(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('notesDropdown').classList.remove('open');
+  document.getElementById('notesLightbox').classList.add('open');
+}
+function closeNotesLightbox(e) {
+  e.preventDefault();
+  document.getElementById('notesLightbox').classList.remove('open');
+}
+/* ---- My Learning Progress: data ---- */
+const REPORT_DATA = {
+  investment: {
+    Month:     { hours:'6h 45m',  atoms:27,  skills:12, avgDuration:'15 min', peer:{hours:'5h 30m',  atoms:21,  skills:9,  avgDuration:'17 min'}, pct:22 },
+    Quarter:   { hours:'19h 20m', atoms:74,  skills:18, avgDuration:'16 min', peer:{hours:'16h 10m', atoms:61,  skills:14, avgDuration:'18 min'}, pct:19 },
+    Year:      { hours:'71h 05m', atoms:268, skills:29, avgDuration:'16 min', peer:{hours:'59h 40m', atoms:221, skills:24, avgDuration:'19 min'}, pct:19 },
+    'All Time':{ hours:'94h 30m', atoms:341, skills:31, avgDuration:'17 min', peer:{hours:'78h 15m', atoms:289, skills:26, avgDuration:'20 min'}, pct:21 },
+  },
+  applied: {
+    completed:27, applied:19, rate:70, peerRate:58,
+    outcomes:{ worked:13, neutral:4, notwork:2 },
+    monthly:[ {m:'Jan', v:3}, {m:'Feb', v:4}, {m:'Mar', v:5}, {m:'Apr', v:7} ],
+  },
+  mastery: {
+    overall:[ {q:'Q1', v:54}, {q:'Q2', v:63}, {q:'Q3', v:71}, {q:'Q4', v:79} ],
+    skills:[
+      { name:'Prioritizing', score:82, trend:'improving', history:[60,68,75,82] },
+      { name:'Navigating Ambiguity', score:68, trend:'improving', history:[50,56,61,68] },
+      { name:'Giving Feedback', score:74, trend:'stable', history:[73,75,72,74] },
+      { name:'Handling Objections and Disagreements', score:61, trend:'improving', history:[45,51,56,61] },
+      { name:'Taking Ownership', score:77, trend:'declining', history:[85,83,80,77] },
+    ],
+  },
+  competency:[
+    { key:'sdm', name:'Strategic Decision-Making', score:74, level:'proficient', reflectors:[
+      {name:'Prioritizing', status:'green'}, {name:'Navigating Ambiguity', status:'green'}, {name:'Goal Setting', status:'green'},
+      {name:'Taking Ownership', status:'green'}, {name:'Being Resourceful', status:'green'},
+      {name:'Applying Feedback', status:'amber'}, {name:'Handling Objections and Disagreements', status:'amber'},
+      {name:'Taking Initiative', status:'red'},
+    ]},
+    { key:'cce', name:'Customer-Centric Execution', score:68, level:'developing', reflectors:[
+      {name:'Attuned Listening', status:'green'}, {name:'Structuring Messages Clearly', status:'green'}, {name:'Demonstrating Credibility', status:'green'},
+      {name:'Negotiating Effectively', status:'amber'}, {name:'Being Amiable', status:'amber'}, {name:'Pitching Effectively', status:'amber'},
+      {name:'Handling Objections and Disagreements', status:'red'},
+    ]},
+    { key:'cl', name:'Collaborative Leadership', score:59, level:'developing', reflectors:[
+      {name:'Giving Feedback', status:'green'}, {name:'Building Healthy Habits', status:'green'},
+      {name:'Being Considerate', status:'amber'}, {name:'Applying Feedback', status:'amber'}, {name:'Respecting Boundaries', status:'amber'},
+      {name:'Taking Initiative', status:'red'},
+    ]},
+    { key:'ae', name:'Adaptive Execution', score:46, level:'emerging', reflectors:[
+      {name:'Coping with Change', status:'green'},
+      {name:'Navigating Ambiguity', status:'amber'}, {name:'Being Resourceful', status:'amber'}, {name:'Taking Action', status:'amber'},
+      {name:'Goal Setting', status:'red'}, {name:'Developing Others', status:'red'},
+    ]},
+  ],
+};
+
+function openProgressOverlay(e) {
+  e.preventDefault();
+  document.getElementById('progressOverlay').classList.add('open');
+  showReportHub();
+}
+
+/* ---- Assessment History ---- */
+const ASSESSMENT_DATA = [
+  { label:'October Assessment', score:79, expandable:true, skills:[
+    { name:'Demonstrating Credibility', questions:3, score:95 },
+    { name:'Attuned Listening', questions:3, score:90 },
+    { name:'Taking Accountability', questions:3, score:80 },
+    { name:'Negotiating Effectively', questions:3, score:70 },
+    { name:'Being Amiable', questions:3, score:60 },
+  ]},
+  { label:'July Assessment', score:71, expandable:false },
+  { label:'April Assessment', score:63, expandable:false },
+  { label:'January Assessment', score:54, expandable:false },
+];
+function scoreBand(score) {
+  if (score >= 70) return 'green';
+  if (score >= 55) return 'amber';
+  return 'red';
+}
+function openAssessOverlay(e) {
+  e.preventDefault();
+  document.getElementById('assessOverlay').classList.add('open');
+  const body = document.getElementById('assessBody');
+  body.innerHTML = ASSESSMENT_DATA.map((a, i) => {
+    const band = scoreBand(a.score);
+    const cls = a.expandable ? `assess-tile expandable assess-band-${band}` : `assess-tile assess-band-${band}`;
+    const clickAttr = a.expandable ? ` onclick="toggleAssessTile(${i})"` : '';
+    const chevron = a.expandable ? `<svg class="assess-tile-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>` : '';
+    const detail = a.expandable ? `
+      <div class="assess-tile-detail" id="assessDetail${i}">
+        <div class="assess-tile-detail-inner">
+          <div class="assess-tile-detail-label">Skills covered in this assessment</div>
+          ${a.skills.map(s => `
+            <div class="assess-skill-row">
+              <div>
+                <div class="assess-skill-name">${s.name}</div>
+                <div class="assess-skill-meta">${s.questions} questions</div>
+              </div>
+              <div class="assess-skill-score" style="color:${scoreBand(s.score)==='green'?'#249041':scoreBand(s.score)==='amber'?'#d97a00':'#e0303a'}">${s.score}%</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>` : '';
+    return `
+      <div class="${cls}" id="assessTile${i}"${clickAttr}>
+        <div class="assess-tile-head">
+          <div class="assess-tile-title">${a.label}</div>
+          <div class="assess-tile-right"><span class="assess-tile-score">${a.score}%</span>${chevron}</div>
+        </div>
+        ${detail}
+      </div>`;
+  }).join('');
+}
+function closeAssessOverlay() {
+  document.getElementById('assessOverlay').classList.remove('open');
+}
+function toggleAssessTile(i) {
+  document.getElementById('assessTile' + i).classList.toggle('expanded');
+}
+function closeProgressOverlay() {
+  document.getElementById('progressOverlay').classList.remove('open');
+}
+function showReportHub() {
+  document.getElementById('progressBackBtn').style.display = 'none';
+  document.getElementById('progressBody').innerHTML = `
+    <div class="report-hub-wrap">
+    <div class="report-hub-grid">
+      <div class="report-card c-green" onclick="renderReport('investment')">
+        <div class="report-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+        </div>
+        <h3>Skill Investment</h3>
+        <p>How much time and effort you're putting into developing your human skills.</p>
+      </div>
+      <div class="report-card c-gold" onclick="renderReport('applied')">
+        <div class="report-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6Z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <h3>Applied Learning</h3>
+        <p>How often you've applied what you learned in a real work situation.</p>
+      </div>
+      <div class="report-card c-amber" onclick="renderReport('mastery')">
+        <div class="report-card-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        </div>
+        <h3>Mastery</h3>
+        <p>How your proficiency develops over time, based on quarterly assessments.</p>
+      </div>
+      <div class="report-card c-navy" onclick="renderReport('competency')">
+        <div class="report-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>
+        </div>
+        <h3>Competency-Level Proficiency</h3>
+        <p>Your proficiency against the business competencies assigned by your organization.</p>
+      </div>
+    </div>
+    </div>
+  `;
+}
+function renderReport(key) {
+  document.getElementById('progressBackBtn').style.display = 'inline-block';
+  if (key === 'investment') renderInvestment('Month');
+  if (key === 'applied') renderApplied();
+  if (key === 'mastery') renderMastery();
+  if (key === 'competency') renderCompetencyOverview();
+}
+
+function renderInvestment(filter) {
+  const d = REPORT_DATA.investment[filter];
+  const filters = ['Month','Quarter','Year','All Time'];
+  document.getElementById('progressBody').innerHTML = `
+    <div class="report-view-title">Skill Investment</div>
+    <div class="report-view-sub">How much time and effort you're putting into developing your human skills.</div>
+    <div class="time-filter">
+      ${filters.map(f => `<span class="${f===filter?'active':''}" onclick="renderInvestment('${f}')">${f}</span>`).join('')}
+    </div>
+    <div class="peer-callout">You're investing <strong>${d.pct}% more time</strong> than your peer group this ${filter.toLowerCase()}.</div>
+    <div class="report-panel">
+      <div class="metric-grid">
+        <div class="metric-tile"><div class="metric-value">${d.hours}</div><div class="metric-label">Hours Invested</div><div class="metric-peer">Peer avg: ${d.peer.hours}</div></div>
+        <div class="metric-tile"><div class="metric-value">${d.atoms}</div><div class="metric-label">Learning Atoms Completed</div><div class="metric-peer">Peer avg: ${d.peer.atoms}</div></div>
+        <div class="metric-tile"><div class="metric-value">${d.skills}</div><div class="metric-label">Skills Covered</div><div class="metric-peer">Peer avg: ${d.peer.skills}</div></div>
+        <div class="metric-tile"><div class="metric-value">${d.avgDuration}</div><div class="metric-label">Avg. Atom Duration</div><div class="metric-peer">Peer avg: ${d.peer.avgDuration}</div></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderApplied() {
+  const d = REPORT_DATA.applied;
+  const maxMonthly = Math.max(...d.monthly.map(m => m.v));
+  document.getElementById('progressBody').innerHTML = `
+    <div class="report-view-title">Applied Learning</div>
+    <div class="report-view-sub">How often you've applied what you learned in a real work situation.</div>
+    <div class="peer-callout">Your application rate (<strong>${d.rate}%</strong>) is ahead of your peer group average (${d.peerRate}%).</div>
+    <div class="report-panel">
+      <div class="metric-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="metric-tile"><div class="metric-value">${d.completed}</div><div class="metric-label">Learning Atoms Completed</div></div>
+        <div class="metric-tile"><div class="metric-value">${d.applied}</div><div class="metric-label">Learning Atoms Applied</div></div>
+        <div class="metric-tile"><div class="metric-value">${d.rate}%</div><div class="metric-label">Application Rate</div></div>
+      </div>
+    </div>
+    <div class="report-panel">
+      <h4>Application Outcomes</h4>
+      <div class="outcome-grid">
+        <div class="outcome-tile worked"><div class="outcome-value">${d.outcomes.worked}</div><div class="outcome-label">Worked Well</div></div>
+        <div class="outcome-tile neutral"><div class="outcome-value">${d.outcomes.neutral}</div><div class="outcome-label">Neutral or Mixed</div></div>
+        <div class="outcome-tile notwork"><div class="outcome-value">${d.outcomes.notwork}</div><div class="outcome-label">Did Not Work</div></div>
+      </div>
+    </div>
+    <div class="report-panel">
+      <h4>Applications Over Time</h4>
+      ${d.monthly.map(m => `
+        <div class="trend-row">
+          <div class="trend-row-top"><span>${m.m}</span><span>${m.v}</span></div>
+          <div class="trend-track"><div class="trend-fill" style="width:${(m.v/maxMonthly*100)}%"></div></div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderMastery() {
+  const d = REPORT_DATA.mastery;
+  document.getElementById('progressBody').innerHTML = `
+    <div class="report-view-title">Mastery</div>
+    <div class="report-view-sub">How your proficiency develops over time, based on quarterly assessments.</div>
+    <div class="report-panel">
+      <h4>Overall Mastery Trend</h4>
+      ${d.overall.map(q => `
+        <div class="trend-row">
+          <div class="trend-row-top"><span>${q.q}</span><span>${q.v}%</span></div>
+          <div class="trend-track"><div class="trend-fill" style="width:${q.v}%"></div></div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="report-panel">
+      <h4>Skill-Level Mastery — click a skill for its quarterly trend</h4>
+      ${d.skills.map((s, i) => `
+        <div class="skill-mastery-row" id="masteryRow${i}" onclick="toggleMasteryRow(${i})">
+          <div class="skill-mastery-top">
+            <div class="skill-mastery-name">${s.name}</div>
+            <div class="skill-mastery-right">
+              <span class="skill-trend-tag ${s.trend}">${s.trend.charAt(0).toUpperCase()+s.trend.slice(1)}</span>
+              <span class="skill-mastery-score">${s.score}%</span>
+              <svg class="skill-mastery-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+          <div class="skill-mastery-detail">
+            ${['Q1','Q2','Q3','Q4'].map((q,qi) => `
+              <div class="trend-row">
+                <div class="trend-row-top"><span>${q}</span><span>${s.history[qi]}%</span></div>
+                <div class="trend-track"><div class="trend-fill" style="width:${s.history[qi]}%"></div></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+function toggleMasteryRow(i) {
+  document.getElementById('masteryRow'+i).classList.toggle('expanded');
+}
+
+function renderCompetencyOverview() {
+  const list = REPORT_DATA.competency;
+  document.getElementById('progressBody').innerHTML = `
+    <div class="report-view-title">Competency-Level Proficiency</div>
+    <div class="report-view-sub">Your proficiency against the business competencies assigned by your organization.</div>
+    ${list.map(c => {
+      const counts = { green:0, amber:0, red:0 };
+      c.reflectors.forEach(r => counts[r.status]++);
+      const total = c.reflectors.length;
+      return `
+        <div class="competency-card" onclick="renderCompetencyDetail('${c.key}')">
+          <div class="competency-top">
+            <div class="competency-name">${c.name}</div>
+            <div class="competency-score-wrap">
+              <span class="competency-score">${c.score}%</span>
+              <span class="competency-level-tag ${c.level}">${c.level.charAt(0).toUpperCase()+c.level.slice(1)}</span>
+            </div>
+          </div>
+          <div class="competency-dist">
+            <span><i class="dot green"></i>${counts.green} of ${total} Mastered</span>
+            <span><i class="dot amber"></i>${counts.amber} of ${total} Emerging</span>
+            <span><i class="dot red"></i>${counts.red} of ${total} Not Started</span>
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+function renderCompetencyDetail(key) {
+  const c = REPORT_DATA.competency.find(x => x.key === key);
+  const statusLabel = { green:'Mastered', amber:'Emerging', red:'Not Started' };
+  document.getElementById('progressBody').innerHTML = `
+    <div class="progress-back" style="display:inline-block;margin-bottom:0.8rem;padding:0;color:var(--green2);cursor:pointer;" onclick="renderCompetencyOverview()">&larr; All Competencies</div>
+    <div class="report-view-title">${c.name}</div>
+    <div class="report-view-sub">Overall Competency Proficiency: ${c.score}% — ${c.level.charAt(0).toUpperCase()+c.level.slice(1)}</div>
+    <div class="report-panel">
+      <h4>Underlying Skills</h4>
+      ${c.reflectors.map(r => `
+        <div class="reflector-row">
+          <div class="reflector-name">${r.name}</div>
+          <div class="reflector-status ${r.status}"><span class="dot"></span>${statusLabel[r.status]}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function toggleNotifications(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('notifDropdown').classList.toggle('open');
+  document.getElementById('notifItem').classList.add('seen');
+}
+document.addEventListener('click', (e) => {
+  const notifItem = document.getElementById('notifItem');
+  if (notifItem && !notifItem.contains(e.target)) {
+    document.getElementById('notifDropdown').classList.remove('open');
+  }
+  const notesItem = document.getElementById('notesItem');
+  if (notesItem && !notesItem.contains(e.target)) {
+    document.getElementById('notesDropdown').classList.remove('open');
+  }
+});
+
+const TRANSCRIPT_ONBOARDING = [
+  { who:'James', html:'<p>Hi Kriti</p>' },
+  { who:'Kriti', html:'<p>Hey James, good to have you here — what kind of day are we working with?</p>' },
+  { who:'James', html:"<p>Good day it's bright sunny day out there how about you</p>" },
+  { who:'Kriti', html:"<p>I'm doing well, thanks James — bright sunny days do help. Tell me about a work-related situation, and I'll help you figure out the top human skill that could help.</p>" },
+  { who:'James', html:'<p>OK so there is one person in the team who is good but keeps giving tangential ideas in discussions and so causes problem in getting into a conclusion in an effective meeting</p>' },
+  { who:'Kriti', html:"<p>James, when this team member takes the discussion sideways, what have you tried so far, what do you think they're trying to achieve, and what are you considering doing next?</p>" },
+  { who:'James', html:"<p>I've tried multiple things tried to give him feedback. And he always agreed to the feedback but then does not follow it the other doesn't do it on purpose but it's somehow he's not aligned and so comes up with some other idea and then people start discussing that and then the meeting goes in a different direction and we're not able to end it causes a lot of problem in making meeting longer and also not effective</p>" },
+  { who:'Kriti', html:'<p>Given that feedback hasn\'t stuck, what are you currently thinking you should do the next time he introduces an off-track idea in a meeting?</p>' },
+  { who:'James', html:'<p>Not very sure try to cut him off but he still comes back on it again so…</p>' },
+  { who:'Kriti', html:"<p>James, thank you for taking the time to answer all those questions. Based on what you've shared, the human skill that seems most useful here is <strong>Prioritizing Effectively</strong>.</p><ul><li>This matters because your meetings need to stay focused long enough to reach clear conclusions and end well.</li><li>What seems to be getting in the way is that tangential ideas keep pulling attention off course, and you're not yet sure how to steer the conversation back in the moment without the same issue resurfacing.</li></ul><p>Shall we work on it?</p>" },
+  { who:'James', html:'<p>Sure!</p>' },
+  { who:'Kriti', html:"<p>Let's dive into your Learning Atom James!</p><p>🎉 Here's some good news — Based on everything you've shared, you're already top-notch at a few of the things needed to demonstrate Prioritizing Effectively in this situation.</p><p class=\"emoji-line\">🏅 You already care strongly about keeping meetings focused, effective, and moving toward a clear conclusion.</p><p class=\"emoji-line\">🏅 You can already see that the meeting is going off track, even if the best in-the-moment response has felt less clear.</p><p class=\"emoji-line\">🏅 There's no strong sign that worries about how others may react are the main thing getting your way here.</p><p>So, we'll keep this Learning Atom lean by zooming in on only the area that needs a little fine-tuning. Today, we'll:</p><p>👉 Apply the Park-and-Progress method to sort what needs attention now, move side topics out of the main path, and keep the meeting moving toward a decision.</p>" },
+];
+
+const TRANSCRIPT_SMC = [
+  { who:'Kriti', html:"<p>Hey James, I'm glad you picked this one!</p><p><strong>Structuring Messages Clearly</strong> is about organizing your thoughts so your audience quickly understands what matters, why it matters and what action, if any, is expected from them.</p><p>Over the past month, this has been one of the most frequently diagnosed human skills among other Assistant managers in your organization. It often becomes important when people have valuable ideas, but they don't seem to land with others as expected. Something feels a miss between intent and impact.</p><p><strong>I'd love to hear what made you click on this skill today. Tell me about a work situation that came to mind.</strong></p>" },
+  { who:'James', html:"<p>I present project updates every Friday. The meetings go well, but leadership keeps asking questions that I thought I'd already answered.</p>" },
+  { who:'Kriti', html:"<p>That's a common situation.</p><p>Before we look at the skill itself, I'd like to understand something.</p><p><strong>When you prepare those updates, what's your main focus?</strong> Is it making sure everyone knows everything that's happened during the week, or helping leadership quickly understand what decisions or attention the project needs?</p>" },
+  { who:'James', html:"<p>Honestly, I mostly focus on making sure I don't leave anything important out.</p>" },
+  { who:'Kriti', html:"<p>That answer explains a lot.</p><p><strong>Structuring Messages Clearly isn't about saying more—it's about helping your audience think more easily.</strong></p><p>Your instinct is to be thorough, which is valuable. But your leaders aren't listening with the same goal that you're speaking.</p><p>You're trying to communicate everything that's happened.</p><p>They're listening for things like:</p><ul class=\"italic-list\"><li>Is the project on track?</li><li>What's changed?</li><li>Is there a decision I need to make?</li><li>Is there a risk I should know about?</li></ul><p>The clearer your structure answers those questions first, the less effort your audience has to spend finding what matters.</p>" },
+  { who:'James', html:"<p>So it's less about speaking better and more about organizing information around what the audience needs?</p>" },
+  { who:'Kriti', html:"<p>Exactly. That's the essence of this skill.</p><p>Clear communication isn't measured by how much information you share—it's measured by how easily your audience can understand, decide and act after hearing your message.</p><p>Should we explore this skill further by:</p><ul><li>thinking through what your audience may be expecting from you during these updates</li><li>exploring a technique that you can adopt to structure your messages in a way that delivers the audience's expectations</li></ul><p>What do you say?</p>" },
+];
+
+const TRANSCRIPT_NRD = [
+  { who:'Kriti', html:"<p><strong>Hey James...Great choice!</strong></p><p><strong>Navigating Relational Dynamics is about understanding the relationships, influence and workplace dynamics that affect how things get done.</strong></p><p>Over the past month, this has been one of the most commonly diagnosed human skills amongst your peer group across departments.</p><p><strong>Before we dive in, I'd love to hear the story behind your choice. What's been happening at work?</strong></p>" },
+  { who:'James', html:"<p>I'm leading a cross-functional project. Everyone says they support it, but getting anything done takes forever. Some people help, others stay quiet, some say they'll deliver but then don't.</p><p>They seem to want to run things by the operation manager…I don't know why? This is a Quality COE project, why do we have to think about Operations? That manager is not even a part of the project team.</p>" },
+  { who:'Kriti', html:"<p>Thanks for sharing that.</p><p>Just to clarify, what are some of the things that the project team members seem to want the operations manager's views on and how does he respond when they reach out?</p>" },
+  { who:'James', html:"<p>I think they check to get a view on the client's reaction to what we are trying to do. Most of his input is about how he thinks the client will react to the changes we're proposing… he has been here 10 years you see, knows the client well</p><p>The problem is that he takes quite a while to come back with his thoughts. Until then, no one wants to commit to anything, so the whole project seems to pause while everyone waits for his input.</p>" },
+  { who:'Kriti', html:"<p>That's a great clue.</p><p>It tells us that the Operations Manager has something more valuable than formal ownership—<strong>credibility</strong>. People trust their judgement, so they're comfortable waiting for their input before moving ahead.</p><p>One of the key ideas behind Navigating Relational Dynamics is learning to spot these influencers. They may not own the work, but they often shape how quickly, and how confidently, everyone else moves.</p><p><strong>Now here's something to think about. If everyone waits for his input before moving forward, how might that change the way you engage with him throughout the project – even though he is not a core member of the project team?</strong></p>" },
+];
+
+const TRANSCRIPT_CWC = [
+  { who:'Kriti', html:"<p><strong>Hi James, good to have you back!</strong></p><p>Your manager believes that <strong>Coping with Change</strong> is an important skill for the team right now.</p><p>They shared that client priorities are changing frequently, projects are evolving midway and the team is often expected to adapt quickly while maintaining quality.</p><p>They felt that strengthening this skill would help everyone navigate these situations more effectively.</p><p><strong>Would you like to explore what this skill looks like in your work and how to demonstrate it effectively?</strong></p>" },
+  { who:'James', html:"<p>Yes.</p>" },
+  { who:'Kriti', html:"<p>Great.</p><p>Your manager mentioned that this skill becomes especially important when:</p><ul><li>Client priorities change midway through a project.</li><li>Work that was almost complete needs to be reworked.</li><li>The team has to change direction with very little notice.</li></ul><p><strong>Have you experienced a situation like this? Tell me about it.</strong></p>" },
+  { who:'James', html:"<p>Yes. We spent almost two weeks building a solution for a client. Just before we were ready to present it, the client changed direction completely. We had to scrap most of the work and start again. It was frustrating because it felt like all that effort had gone to waste.</p>" },
+  { who:'Kriti', html:"<p>I can understand why that would feel frustrating.</p><p><strong>Once you realized the work had to change, what happened next?</strong> I'm less interested in what the client did, and more interested in how <em>you</em> responded over the next few days.</p>" },
+  { who:'James', html:"<p>It wasn't really the extra work. I know rework is part of consulting.</p><p>What bothered me was feeling that everything we'd done for two weeks suddenly counted for nothing. We'd invested a lot of thought into the solution and then, with one client decision, it felt like all of that effort had been thrown away.</p><p>I kept thinking that if we'd pushed back harder, we wouldn't have had to start over. Instead of seeing the new direction as progress, I just saw it as fixing something that shouldn't have changed in the first place.</p>" },
+  { who:'Kriti', html:"<p>🎉 Here's some good news! Based on everything you've shared, you're already doing a lot of what it takes to demonstrate <strong>Coping with Change</strong> in this situation.</p><p class=\"emoji-line\">🏅 You're willing to adapt and move forward once a new direction is decided.</p><p class=\"emoji-line\">🏅 You already have the knowledge and ability to adjust your work when things change.</p><p class=\"emoji-line\">🏅 There's no strong sign that concerns about how others might react are making it harder for you to adapt.</p><p><strong>So, we'll keep this Learning Atom lean by focusing on just one area.</strong></p><p>Right now, the biggest barrier seems to be <strong>how you're viewing the change itself.</strong> Because the original effort feels wasted, the change naturally feels like a burden rather than part of reaching the best outcome.</p><p><strong>👉 Today, we'll explore a different way of interpreting change so you can adapt more quickly without feeling that your earlier effort has been lost.</strong></p>" },
+];
+
+const TRANSCRIPT_DT = [
+  { who:'Kriti', html:"<p>Hi James!</p><p>One of this year's strategic priorities for the business is <strong>Digital Transformation</strong>.</p><p>Before we talk about your role, I'm curious…</p><p><strong>Why do you think Digital Transformation has become such an important priority for the business?</strong></p>" },
+  { who:'James', html:"<p>I guess customers expect more digital experiences now. They want things to be faster and easier, and I suppose if we don't keep up, competitors probably will. Beyond that, I'm not really sure.</p>" },
+  { who:'Kriti', html:"<p>Exactly. Digital Transformation isn't just about implementing new technology. It's about finding better ways to work, making it easier for customers to do business with us and helping the organization deliver value more efficiently. Technology enables that transformation, but people make it happen.</p><p>Now let's bring that closer to home.</p><p><strong>How do you think you, as a Customer Success Partner, help move this strategic goal forward?</strong></p>" },
+  { who:'James', html:"<p>Honestly, I'm not sure.</p><p>I always thought Digital Transformation was mainly for the IT and Product teams. I help customers, answer questions and resolve issues. I don't build technology, so I don't really see how I contribute.</p>" },
+  { who:'Kriti', html:"<p>That's a very common assumption.</p><p>Technology alone doesn't transform a business—<strong>people adopting it does</strong>.</p><p>As a Customer Success Partner, you help customers understand new capabilities, overcome concerns and gain value from new ways of working. Every successful adoption moves Digital Transformation from being a technology initiative to a business outcome.</p><p>But there's another contribution that's just as important.</p><p>You're one of the people closest to the customer. Every day, you hear what customers are trying to achieve, where they struggle, what frustrates them and what they wished worked differently. When those insights make their way back to Product, Operations or Leadership, they help the business improve its products, services and processes.</p><p>In other words, you're not just helping customers adopt change—you also help the business <strong>shape the right changes to make</strong>.</p><p><strong>Given this, what human skills do you think become especially important for someone in your role to help drive Digital Transformation?</strong></p>" },
+  { who:'James', html:"<p>I don't know – maybe listening to customers and telling the business what they want…</p>" },
+  { who:'Kriti', html:"<p><strong>That's a great point, James!</strong> Every customer conversation gives you valuable insight into what customers need, where they struggle and what could work better. Sharing those insights helps the business make smarter decisions about where and how to innovate.</p><p><strong>That's why three human skills stand out as especially important for someone in your role:</strong></p><p class=\"emoji-line\">⭐ <strong>Attuned Listening</strong> – So you truly understand what customers are saying, including their goals, concerns, context and intent.</p><p class=\"emoji-line\">⭐ <strong>Taking Initiative</strong> – So you proactively act on opportunities to improve the customer experience instead of waiting to be asked.</p><p class=\"emoji-line\">⭐ <strong>Pitching Effectively</strong> – So you can clearly communicate the value of new ideas, features and ways of working in a way that customers are willing to embrace.</p><p>Which of these would you like to explore today?</p>" },
+];
+
+function readPauseMs(html) {
+  const n = html.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length;
+  if (n < 20) return 3000;
+  return 7000;
+}
+
+let chatSessionId = 0;
+
+function stripTags(html) {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function appendChatMessage(area, who, html) {
+  const isUser = who === 'James';
+  const row = document.createElement('div');
+  row.className = 'cmsg ' + (isUser ? 'cmsg-user' : 'cmsg-ai');
+  row.innerHTML =
+    '<div class="cmsg-avatar"><img src="' + (isUser ? 'assets/profile_headshot.jpg' : 'assets/kriti_chatphoto.png') + '" alt="' + who + '"></div>' +
+    '<div class="cmsg-body"><div class="cmsg-name">' + who + '</div><div class="cmsg-bubble">' + html + '</div></div>';
+  area.appendChild(row);
+  area.scrollTop = area.scrollHeight;
+}
+
+function typeIntoInput(sessionId, text, callback) {
+  const input = document.getElementById('chatInput');
+  input.value = '';
+  const duration = Math.min(3000, 700 + text.length * 22);
+  const interval = Math.max(16, duration / text.length);
+  let idx = 0;
+  const timer = setInterval(() => {
+    if (sessionId !== chatSessionId) { clearInterval(timer); return; }
+    idx++;
+    input.value = text.slice(0, idx);
+    if (idx >= text.length) {
+      clearInterval(timer);
+      callback();
+    }
+  }, interval);
+}
+
+function playTranscript(sessionId, transcript, startIndex) {
+  const area = document.getElementById('chatMessages');
+  const input = document.getElementById('chatInput');
+  let i = startIndex;
+
+  function step() {
+    if (sessionId !== chatSessionId) return;
+    if (i >= transcript.length) {
+      setTimeout(() => {
+        if (sessionId !== chatSessionId) return;
+        document.getElementById('closeBtnWrap').classList.add('ready-to-close');
+      }, 2500);
+      return;
+    }
+    const { who, html } = transcript[i];
+
+    if (who === 'James') {
+      typeIntoInput(sessionId, stripTags(html), () => {
+        if (sessionId !== chatSessionId) return;
+        setTimeout(() => {
+          if (sessionId !== chatSessionId) return;
+          appendChatMessage(area, who, html);
+          input.value = '';
+          i++;
+          setTimeout(step, readPauseMs(html));
+        }, 450);
+      });
+      return;
+    }
+
+    const typingRow = document.createElement('div');
+    typingRow.className = 'cmsg cmsg-ai';
+    typingRow.innerHTML =
+      '<div class="cmsg-avatar"><img src="assets/kriti_chatphoto.png" alt="Kriti"></div>' +
+      '<div class="cmsg-body"><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
+    area.appendChild(typingRow);
+    area.scrollTop = area.scrollHeight;
+
+    setTimeout(() => {
+      if (sessionId !== chatSessionId) return;
+      typingRow.querySelector('.cmsg-body').innerHTML =
+        '<div class="cmsg-name">Kriti</div><div class="cmsg-bubble">' + html + '</div>';
+      area.scrollTop = area.scrollHeight;
+      i++;
+      setTimeout(step, readPauseMs(html));
+    }, 1100);
+  }
+  step();
+}
+
+function openChatPanel() {
+  document.getElementById('hero').classList.add('chatting');
+  document.getElementById('chatPanel').classList.add('active');
+  document.getElementById('chatMessages').innerHTML = '';
+  document.getElementById('closeBtnWrap').classList.remove('ready-to-close');
+}
+
+function startChatDemo() {
+  if (document.getElementById('chatPanel').classList.contains('active')) return;
+  const sessionId = ++chatSessionId;
+  openChatPanel();
+  const area = document.getElementById('chatMessages');
+  const input = document.getElementById('chatInput');
+  input.readOnly = true;
+
+  // Step 0: send off the pre-loaded "Hi Kriti"
+  appendChatMessage(area, TRANSCRIPT_ONBOARDING[0].who, TRANSCRIPT_ONBOARDING[0].html);
+  input.value = '';
+
+  setTimeout(() => playTranscript(sessionId, TRANSCRIPT_ONBOARDING, 1), readPauseMs(TRANSCRIPT_ONBOARDING[0].html));
+}
+
+function startHotspotChat(transcript) {
+  if (document.getElementById('chatPanel').classList.contains('active')) return;
+  const sessionId = ++chatSessionId;
+  openChatPanel();
+  const input = document.getElementById('chatInput');
+  input.readOnly = true;
+  input.value = '';
+  playTranscript(sessionId, transcript, 0);
+}
+
+function closeChatDemo() {
+  chatSessionId++;
+  document.getElementById('chatPanel').classList.remove('active');
+  document.getElementById('hero').classList.remove('chatting');
+  document.getElementById('closeBtnWrap').classList.remove('ready-to-close');
+  document.getElementById('chatPanelLabel').textContent = 'Live conversation with James';
+  const input = document.getElementById('chatInput');
+  input.readOnly = false;
+  input.value = 'Hi Kriti';
+}
+
+/* ---- Application Confirmation form ---- */
+function revealConversationHistory(e) {
+  if (e) e.preventDefault();
+  document.getElementById('notifDropdown').classList.remove('open');
+  document.getElementById('sidePanel').classList.add('open');
+  document.getElementById('panelOverlay').classList.add('open');
+  document.getElementById('convHistorySection').classList.add('expanded');
+  document.body.style.overflow = 'hidden';
+}
+
+function openApplicationForm(e) {
+  if (e) e.preventDefault();
+  document.getElementById('notifDropdown').classList.remove('open');
+  document.getElementById('sidePanel').classList.remove('open');
+  document.getElementById('panelOverlay').classList.remove('open');
+  document.getElementById('convHistorySection').classList.add('expanded');
+  document.body.style.overflow = '';
+
+  chatSessionId++;
+  openChatPanel();
+  document.getElementById('chatPanelLabel').textContent = 'Application Confirmation — Prioritizing Effectively';
+  const input = document.getElementById('chatInput');
+  input.readOnly = true;
+  input.value = '';
+
+  const area = document.getElementById('chatMessages');
+  appendChatMessage(area, 'Kriti', "<p>Since we covered <strong>Prioritizing Effectively</strong> and the Minimum Useful Report Sort technique, I'd love a quick check-in on how it's gone in practice.</p>");
+
+  const form = document.createElement('div');
+  form.className = 'app-form';
+  form.id = 'appForm';
+  form.innerHTML = `
+    <div class="app-form-q">
+      <div class="app-form-label">Q1. Since your Learning Atom, have you used the Minimum Useful Report Sort technique to manage multiple reports?</div>
+      <div class="app-form-options" data-q="q1">
+        <button type="button" class="app-form-chip" onclick="selectFormChip(this)">Yes</button>
+        <button type="button" class="app-form-chip" onclick="selectFormChip(this)">No</button>
+      </div>
+    </div>
+    <div class="app-form-q">
+      <div class="app-form-label">Q2. Overall, how did it work out?</div>
+      <div class="app-form-options" data-q="q2">
+        <button type="button" class="app-form-chip" onclick="selectFormChip(this)">Worked Well</button>
+        <button type="button" class="app-form-chip" onclick="selectFormChip(this)">Mixed Outcome</button>
+        <button type="button" class="app-form-chip" onclick="selectFormChip(this)">Did Not Work</button>
+      </div>
+    </div>
+    <div class="app-form-q">
+      <div class="app-form-label">Q3. What worked well when you applied the technique?</div>
+      <textarea class="app-form-textarea" id="appFormQ3" placeholder="Type your answer..."></textarea>
+    </div>
+    <div class="app-form-q">
+      <div class="app-form-label">Q4. What didn't work as expected, or what got in the way?</div>
+      <textarea class="app-form-textarea" id="appFormQ4" placeholder="Type your answer..."></textarea>
+    </div>
+    <button type="button" class="app-form-submit" onclick="submitApplicationForm()">Submit</button>
+  `;
+  area.appendChild(form);
+  area.scrollTop = 0;
+}
+
+function selectFormChip(btn) {
+  const group = btn.parentElement;
+  group.querySelectorAll('.app-form-chip').forEach(c => c.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function submitApplicationForm() {
+  const area = document.getElementById('chatMessages');
+  const form = document.getElementById('appForm');
+  if (form) form.remove();
+
+  appendChatMessage(area, 'James', '<p>Submitted my check-in on Prioritizing Effectively.</p>');
+  appendChatMessage(area, 'Kriti', "<p>Thanks, James! I've logged this — it'll feed straight into your Applied Learning report.</p>");
+
+  // resolve the urgent flags now that it's been actioned
+  const notifRow = document.querySelector('.notif-row.urgent-row');
+  if (notifRow) notifRow.remove();
+  document.getElementById('notifItem').classList.add('seen');
+  const navUrgent = document.querySelector('.nav-urgent');
+  if (navUrgent) {
+    navUrgent.classList.remove('nav-urgent');
+    const badge = navUrgent.querySelector('.nav-urgent-badge');
+    if (badge) {
+      badge.outerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>';
+    }
+  }
+}
+
+document.getElementById('sendBtn').addEventListener('click', startChatDemo);
+</script>
+</body>
+</html>
