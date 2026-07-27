@@ -110,6 +110,47 @@ header.topbar { background:var(--night); }
 .lm-tab.active[data-accent="amber"]  { color:var(--amber2); background:rgba(232,150,10,0.14); border-bottom-color:var(--amber); }
 .lm-tab.active { font-weight:700; }
 
+/* ---- Guided tour ---- */
+.tour-start-btn {
+  display:flex; align-items:center; gap:0.4rem; font-family:'Poppins',sans-serif; font-size:0.78rem; font-weight:600;
+  color:var(--gold); background:rgba(228,202,10,0.12); border:1.5px solid rgba(228,202,10,0.5); border-radius:20px;
+  padding:0.5rem 1rem; cursor:pointer; transition:background 0.15s, transform 0.15s; margin-right:1rem;
+}
+.tour-start-btn:hover { background:rgba(228,202,10,0.2); transform:translateY(-1px); }
+.tour-start-btn svg { width:14px; height:14px; }
+
+.tour-popup {
+  position:fixed; z-index:600; width:280px; background:rgba(255,250,222,0.94); backdrop-filter:blur(10px) saturate(160%);
+  -webkit-backdrop-filter:blur(10px) saturate(160%);
+  border:1.5px solid var(--gold); border-radius:14px; padding:1rem 1.1rem 1.05rem;
+  box-shadow:0 14px 34px rgba(0,0,0,0.35); display:none; transition:top 0.2s ease, left 0.2s ease;
+}
+.tour-popup.visible { display:block; }
+.tour-popup { --arrow-left: 32px; }
+.tour-popup::before {
+  content:''; position:absolute; top:-7px; left:var(--arrow-left); width:12px; height:12px;
+  background:rgba(255,250,222,0.94); border-left:1.5px solid var(--gold); border-top:1.5px solid var(--gold);
+  transform:rotate(45deg);
+}
+.tour-popup.arrow-down::before {
+  top:auto; bottom:-7px; border-left:none; border-top:none;
+  border-right:1.5px solid var(--gold); border-bottom:1.5px solid var(--gold);
+}
+.tour-popup-step { font-size:0.66rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--gold2); margin-bottom:0.35rem; }
+.tour-popup-title { font-size:0.92rem; font-weight:700; color:var(--night); margin-bottom:0.4rem; }
+.tour-popup-body { font-size:0.78rem; line-height:1.55; color:var(--night2); margin-bottom:0.9rem; }
+.tour-popup-actions { display:flex; align-items:center; justify-content:space-between; gap:0.6rem; }
+.tour-btn-got-it {
+  font-family:'Poppins',sans-serif; font-size:0.76rem; font-weight:700; color:var(--night); background:var(--gold);
+  border:none; border-radius:16px; padding:0.45rem 1rem; cursor:pointer; transition:background 0.15s;
+}
+.tour-btn-got-it:hover { background:#f0d838; }
+.tour-btn-dismiss {
+  font-family:'Poppins',sans-serif; font-size:0.72rem; font-weight:600; color:var(--night2); background:none;
+  border:none; cursor:pointer; text-decoration:underline; padding:0.45rem 0.2rem; transition:color 0.15s;
+}
+.tour-btn-dismiss:hover { color:var(--night); }
+
 .lm-panel { display:none; }
 .lm-panel.active { display:block; }
 
@@ -273,6 +314,10 @@ header.topbar { background:var(--night); }
           <div class="sub">Define, organize and assign learning across the organization</div>
         </div>
         <div class="header-spacer"></div>
+        <button class="tour-start-btn" onclick="startTour()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2 1.5-2 3.5"/><path d="M12 17h.01"/></svg>
+          Start Tour
+        </button>
         <div class="admin-profile">
           <div class="admin-profile-text" style="text-align:right">
             <div class="name">Patty Merchant</div>
@@ -336,7 +381,7 @@ header.topbar { background:var(--night); }
         <div class="um-table-card">
           <div class="um-table-scroll">
             <table class="um-table">
-              <thead><tr><th>Strategic Learning Goal</th><th>Linked Capabilities</th><th>Linked Competencies</th><th>Owner</th><th>Status</th><th></th></tr></thead>
+              <thead><tr><th>Strategic Learning Goal</th><th>Linked Capabilities</th><th>Linked Competencies</th><th>Reflectors</th><th>Owner</th><th>Status</th><th></th></tr></thead>
               <tbody id="goalsTableBody"></tbody>
             </table>
           </div>
@@ -518,62 +563,62 @@ const COMPETENCIES = [
 ];
 
 const REFLECTORS = [
-  { key:'practicing-selfcare', label:'Practicing self-care', capability:'embodied-selfcare', competencies:['emotional-intel'] },
-  { key:'building-healthy-habits', label:'Building Healthy Habits', capability:'embodied-selfcare', competencies:['driving-perf'] },
-  { key:'being-considerate', label:'Being Considerate', capability:'social-presence', competencies:['cultural-comp'] },
-  { key:'demonstrating-reliability', label:'Demonstrating Reliability', capability:'social-presence', competencies:['driving-perf'] },
+  { key:'practicing-selfcare', label:'Practicing self-care', capability:'embodied-selfcare', competencies:[] },
+  { key:'building-healthy-habits', label:'Building Healthy Habits', capability:'embodied-selfcare', competencies:[] },
+  { key:'being-considerate', label:'Being Considerate', capability:'social-presence', competencies:[] },
+  { key:'demonstrating-reliability', label:'Demonstrating Reliability', capability:'social-presence', competencies:[] },
   { key:'structuring-messages-clearly', label:'Structuring Messages Clearly', capability:'social-presence', competencies:['effective-comm'] },
-  { key:'being-amiable', label:'Being Amiable', capability:'social-presence', competencies:['cultural-comp'] },
-  { key:'demonstrating-credibility', label:'Demonstrating Credibility', capability:'social-presence', competencies:['effective-comm'] },
-  { key:'being-assertive', label:'Being Assertive', capability:'social-presence', competencies:['conflict-mgmt'] },
-  { key:'handling-emotional-responses', label:'Handling Emotional Responses', capability:'interpersonal-resp', competencies:['emotional-intel'] },
-  { key:'respecting-boundaries', label:'Respecting Boundaries', capability:'interpersonal-resp', competencies:['conflict-mgmt'] },
+  { key:'being-amiable', label:'Being Amiable', capability:'social-presence', competencies:[] },
+  { key:'demonstrating-credibility', label:'Demonstrating Credibility', capability:'social-presence', competencies:[] },
+  { key:'being-assertive', label:'Being Assertive', capability:'social-presence', competencies:[] },
+  { key:'handling-emotional-responses', label:'Handling Emotional Responses', capability:'interpersonal-resp', competencies:[] },
+  { key:'respecting-boundaries', label:'Respecting Boundaries', capability:'interpersonal-resp', competencies:[] },
   { key:'attuned-listening', label:'Attuned Listening', capability:'interpersonal-resp', competencies:['effective-comm'] },
   { key:'guiding-others', label:'Guiding Others', capability:'interpersonal-resp', competencies:['driving-perf'] },
   { key:'handling-objections-disagreements', label:'Handling Objections', capability:'interpersonal-resp', competencies:['conflict-mgmt'] },
-  { key:'setting-boundaries', label:'Setting Boundaries', capability:'cultivating-rel', competencies:['conflict-mgmt'] },
-  { key:'resolving-conflicts', label:'Resolving Conflicts', capability:'cultivating-rel', competencies:['conflict-mgmt','effective-comm'] },
+  { key:'setting-boundaries', label:'Setting Boundaries', capability:'cultivating-rel', competencies:[] },
+  { key:'resolving-conflicts', label:'Resolving Conflicts', capability:'cultivating-rel', competencies:['conflict-mgmt'] },
   { key:'practicing-tolerance', label:'Practicing Tolerance', capability:'cultivating-rel', competencies:['cultural-comp'] },
-  { key:'delivering-difficult-messages', label:'Delivering Difficult Messages', capability:'cultivating-rel', competencies:['effective-comm'] },
+  { key:'delivering-difficult-messages', label:'Delivering Difficult Messages', capability:'cultivating-rel', competencies:[] },
   { key:'conveying-empathy', label:'Conveying Empathy', capability:'cultivating-rel', competencies:['emotional-intel'] },
-  { key:'purposeful-questioning', label:'Purposeful Questioning', capability:'cultivating-rel', competencies:['effective-comm'] },
-  { key:'building-rapport', label:'Building Rapport', capability:'cultivating-rel', competencies:['cultural-comp'] },
+  { key:'purposeful-questioning', label:'Purposeful Questioning', capability:'cultivating-rel', competencies:[] },
+  { key:'building-rapport', label:'Building Rapport', capability:'cultivating-rel', competencies:[] },
   { key:'expressing-disagreement-objection', label:'Expressing Disagreement', capability:'social-influence', competencies:['conflict-mgmt'] },
-  { key:'tailoring-customizing-message', label:'Tailoring/Customizing your Message', capability:'social-influence', competencies:['effective-comm'] },
-  { key:'networking', label:'Networking', capability:'social-influence', competencies:['intrapreneurship'] },
-  { key:'influencing-others', label:'Influencing others', capability:'social-influence', competencies:['effective-comm'] },
-  { key:'navigating-relational-dynamics', label:'Navigating Relational Dynamics', capability:'social-influence', competencies:['cultural-comp'] },
-  { key:'inviting-promoting-participation', label:'Inviting/Promoting Participation', capability:'social-influence', competencies:['effective-comm'] },
-  { key:'negotiating-effectively', label:'Negotiating Effectively', capability:'social-influence', competencies:['conflict-mgmt'] },
-  { key:'stress-management', label:'Stress Management', capability:'emotional-grounding', competencies:['emotional-intel'] },
-  { key:'building-self-awareness', label:'Building Self-Awareness', capability:'emotional-grounding', competencies:['emotional-intel'] },
+  { key:'tailoring-customizing-message', label:'Tailoring/Customizing your Message', capability:'social-influence', competencies:[] },
+  { key:'networking', label:'Networking', capability:'social-influence', competencies:[] },
+  { key:'influencing-others', label:'Influencing others', capability:'social-influence', competencies:[] },
+  { key:'navigating-relational-dynamics', label:'Navigating Relational Dynamics', capability:'social-influence', competencies:[] },
+  { key:'inviting-promoting-participation', label:'Inviting/Promoting Participation', capability:'social-influence', competencies:[] },
+  { key:'negotiating-effectively', label:'Negotiating Effectively', capability:'social-influence', competencies:[] },
+  { key:'stress-management', label:'Stress Management', capability:'emotional-grounding', competencies:[] },
+  { key:'building-self-awareness', label:'Building Self-Awareness', capability:'emotional-grounding', competencies:[] },
   { key:'regulating-emotions', label:'Regulating Emotions', capability:'emotional-grounding', competencies:['emotional-intel'] },
-  { key:'practicing-reflection', label:'Practicing Reflection', capability:'emotional-grounding', competencies:['emotional-intel','goal-setting'] },
+  { key:'practicing-reflection', label:'Practicing Reflection', capability:'emotional-grounding', competencies:[] },
   { key:'giving-feedback', label:'Giving Feedback', capability:'result-orientation', competencies:['driving-perf'] },
-  { key:'receiving-feedback', label:'Receiving Feedback', capability:'result-orientation', competencies:['driving-perf'] },
-  { key:'taking-ownership-accountability', label:'Taking Ownership/Accountability', capability:'result-orientation', competencies:['ethics-integrity'] },
-  { key:'being-proactive', label:'Being Proactive', capability:'result-orientation', competencies:['intrapreneurship'] },
+  { key:'receiving-feedback', label:'Receiving Feedback', capability:'result-orientation', competencies:[] },
+  { key:'taking-ownership-accountability', label:'Taking Ownership/Accountability', capability:'result-orientation', competencies:[] },
+  { key:'being-proactive', label:'Being Proactive', capability:'result-orientation', competencies:[] },
   { key:'goal-setting-refl', label:'Goal Setting', capability:'result-orientation', competencies:['goal-setting'] },
-  { key:'analyzing-progress', label:'Analyzing Progress', capability:'result-orientation', competencies:['goal-setting'] },
+  { key:'analyzing-progress', label:'Analyzing Progress', capability:'result-orientation', competencies:[] },
   { key:'prioritizing-effectively', label:'Prioritizing Effectively', capability:'result-orientation', competencies:['goal-setting'] },
   { key:'being-resourceful', label:'Being Resourceful', capability:'result-orientation', competencies:['intrapreneurship'] },
-  { key:'taking-action', label:'Taking Action', capability:'result-orientation', competencies:['intrapreneurship'] },
-  { key:'being-timely', label:'Being Timely', capability:'result-orientation', competencies:['driving-perf'] },
-  { key:'being-resilient', label:'Being Resilient', capability:'result-orientation', competencies:['emotional-intel'] },
+  { key:'taking-action', label:'Taking Action', capability:'result-orientation', competencies:[] },
+  { key:'being-timely', label:'Being Timely', capability:'result-orientation', competencies:[] },
+  { key:'being-resilient', label:'Being Resilient', capability:'result-orientation', competencies:[] },
   { key:'taking-initiative', label:'Taking Initiative', capability:'result-orientation', competencies:['intrapreneurship'] },
-  { key:'navigating-ambiguity', label:'Navigating Ambiguity', capability:'result-orientation', competencies:['intrapreneurship'] },
-  { key:'pitching-effectively', label:'Pitching Effectively', capability:'result-orientation', competencies:['effective-comm'] },
+  { key:'navigating-ambiguity', label:'Navigating Ambiguity', capability:'result-orientation', competencies:['change-mgmt'] },
+  { key:'pitching-effectively', label:'Pitching Effectively', capability:'result-orientation', competencies:[] },
   { key:'demonstrating-ethical-integrity', label:'Demonstrating Ethical Integrity', capability:'upholding-dignity', competencies:['ethics-integrity'] },
-  { key:'challenging-bias', label:'Challenging Bias', capability:'upholding-dignity', competencies:['ethics-integrity'] },
+  { key:'challenging-bias', label:'Challenging Bias', capability:'upholding-dignity', competencies:[] },
   { key:'speaking-up-against-wrongdoing', label:'Speaking Up Against Wrongdoing', capability:'upholding-dignity', competencies:['ethics-integrity'] },
   { key:'being-inclusive', label:'Being Inclusive', capability:'upholding-dignity', competencies:['cultural-comp'] },
-  { key:'being-fair', label:'Being Fair', capability:'upholding-dignity', competencies:['ethics-integrity'] },
-  { key:'being-appreciative', label:'Being Appreciative', capability:'self-cultivation', competencies:['emotional-intel'] },
-  { key:'seeking-feedback', label:'Seeking Feedback', capability:'self-cultivation', competencies:['driving-perf'] },
-  { key:'continuously-learning', label:'Continuously Learning', capability:'self-cultivation', competencies:['intrapreneurship'] },
-  { key:'applying-feedback', label:'Applying Feedback', capability:'self-cultivation', competencies:['driving-perf'] },
+  { key:'being-fair', label:'Being Fair', capability:'upholding-dignity', competencies:[] },
+  { key:'being-appreciative', label:'Being Appreciative', capability:'self-cultivation', competencies:[] },
+  { key:'seeking-feedback', label:'Seeking Feedback', capability:'self-cultivation', competencies:[] },
+  { key:'continuously-learning', label:'Continuously Learning', capability:'self-cultivation', competencies:[] },
+  { key:'applying-feedback', label:'Applying Feedback', capability:'self-cultivation', competencies:[] },
   { key:'coping-with-change', label:'Coping with Change', capability:'self-cultivation', competencies:['change-mgmt'] },
-  { key:'accepting-vulnerability', label:'Accepting Vulnerability', capability:'self-cultivation', competencies:['emotional-intel'] },
+  { key:'accepting-vulnerability', label:'Accepting Vulnerability', capability:'self-cultivation', competencies:[] },
 ];
 
 const LEARNING_GOALS = [
@@ -636,15 +681,18 @@ function renderCompetencyTable() {
     const mappedReflectors = REFLECTORS.filter(r => r.competencies.includes(c.key));
     const mappedCapKeys = [...new Set(mappedReflectors.map(r => r.capability))];
     const capLabels = mappedCapKeys.map(k => CAPABILITIES.find(cap => cap.key === k).label);
-    const shown = capLabels.slice(0, 2);
-    const more = capLabels.length - shown.length;
+    const shownCaps = capLabels.slice(0, 2);
+    const moreCaps = capLabels.length - shownCaps.length;
+    const reflLabels = mappedReflectors.map(r => r.label);
+    const shownRefl = reflLabels.slice(0, 2);
+    const moreRefl = reflLabels.length - shownRefl.length;
     return `<tr>
       <td><div class="lm-item-cell">
         <div class="lm-icon-chip ${c.cls}">${c.icon}</div>
         <div class="lm-item-name">${c.label}</div>
       </div></td>
-      <td><div class="lm-chip-row">${shown.map(l => `<span class="lm-chip">${l}</span>`).join('')}${more > 0 ? `<span class="lm-chip-more">+${more} more</span>` : ''}</div></td>
-      <td>${mappedReflectors.length} reflectors</td>
+      <td><div class="lm-chip-row">${shownCaps.map(l => `<span class="lm-chip">${l}</span>`).join('')}${moreCaps > 0 ? `<span class="lm-chip-more">+${moreCaps} more</span>` : ''}</div></td>
+      <td><div class="lm-chip-row">${shownRefl.map(l => `<span class="lm-chip">${l}</span>`).join('')}${moreRefl > 0 ? `<span class="lm-chip-more">+${moreRefl} more</span>` : ''}</div></td>
       <td><span class="badge badge-active">Active</span></td>
       <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
     </tr>`;
@@ -658,10 +706,14 @@ function renderGoalsTable() {
   const rows = LEARNING_GOALS.map(g => {
     const capLabels = g.capabilities.map(k => CAPABILITIES.find(c => c.key === k).label);
     const compLabels = g.competencies.map(k => COMPETENCIES.find(c => c.key === k).label);
+    const reflLabels = REFLECTORS.filter(r => r.competencies.some(k => g.competencies.includes(k))).map(r => r.label);
+    const shownRefl = reflLabels.slice(0, 2);
+    const moreRefl = reflLabels.length - shownRefl.length;
     return `<tr>
       <td><div class="lm-item-name">${g.label}</div></td>
       <td><div class="lm-chip-row">${capLabels.map(l => `<span class="lm-chip">${l}</span>`).join('')}</div></td>
       <td><div class="lm-chip-row">${compLabels.map(l => `<span class="lm-chip">${l}</span>`).join('')}</div></td>
+      <td><div class="lm-chip-row">${shownRefl.map(l => `<span class="lm-chip">${l}</span>`).join('')}${moreRefl > 0 ? `<span class="lm-chip-more">+${moreRefl} more</span>` : ''}</div></td>
       <td>${g.owner}</td>
       <td><span class="badge ${badgeCls[g.status]}">${g.status}</span></td>
       <td><button class="um-action-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button></td>
@@ -755,6 +807,85 @@ renderAssessmentTable();
 renderAssignmentsTable();
 renderInitiativeAccordions();
 renderAssignmentAccordions();
+
+const TOUR_SECTION = 'Learning Management Tour';
+const TOUR_STEPS = [
+  { anchor:'.lm-tab[data-tab="competency"]', num:1, title:'Competency Builder', body:"Make the WOTG learning architecture uniquely yours by mapping your organization's unique competencies to the Reflectors that build them. Then assign targeted, measurable Reflectors to the employees who need them most." },
+  { anchor:'.lm-tab[data-tab="goals"]', num:2, title:'Strategic Goal Builder', body:'Reverse-engineer business strategy into measurable human skills. Translate strategic goals into Reflectors that employees can develop through their everyday work.' },
+  { anchor:'.lm-tab[data-tab="initiative"]', num:3, title:'Learning Initiative Builder', body:'Create targeted learning journeys for specific groups or enhance and reinforce existing programs using Reflectors, Competencies, Capabilities or Strategic Goals.' },
+  { anchor:'.lm-tab[data-tab="assignment"]', num:4, title:'Learning Assignment Center', body:"Assign the right skills to the right people. Deliver personalized learning that aligns with each employee's role, responsibilities and development needs—because learning is never one-size-fits-all." },
+  { anchor:'.lm-tab[data-tab="assessment"]', num:5, title:'Assessment Builder', body:'Need assessments beyond those already available in WOTG? Create your own scenario-based assessments tailored to your organization\'s competencies, learning initiatives and business needs.' },
+];
+let tourStepIndex = -1;
+function startTour() {
+  tourStepIndex = -1;
+  advanceTour();
+}
+function advanceTour() {
+  tourStepIndex++;
+  if (tourStepIndex >= TOUR_STEPS.length) { finishTour(); return; }
+  positionAndShowTourStep(TOUR_STEPS[tourStepIndex]);
+}
+function positionAndShowTourStep(step) {
+  const anchor = document.querySelector(step.anchor);
+  const popup = document.getElementById('tourPopup');
+  if (!anchor) { advanceTour(); return; }
+
+  document.getElementById('tourPopupStep').textContent = TOUR_SECTION;
+  document.getElementById('tourPopupTitle').textContent = `${step.num}. ${step.title}`;
+  document.getElementById('tourPopupBody').textContent = step.body;
+  popup.classList.add('visible');
+
+  const margin = 14;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const rect = anchor.getBoundingClientRect();
+  const popupW = popup.offsetWidth, popupH = popup.offsetHeight;
+
+  let left = Math.min(rect.left, vw - popupW - margin);
+  left = Math.max(left, margin);
+
+  const spaceBelow = vh - rect.bottom;
+  const spaceAbove = rect.top;
+  let top, arrowDown;
+  if (spaceBelow >= popupH + margin || spaceBelow >= spaceAbove) {
+    top = Math.min(rect.bottom + margin, vh - popupH - margin);
+    top = Math.max(top, margin);
+    arrowDown = false;
+  } else {
+    top = Math.max(rect.top - popupH - margin, margin);
+    arrowDown = true;
+  }
+
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+  popup.classList.toggle('arrow-down', arrowDown);
+
+  const anchorCenterX = rect.left + rect.width / 2;
+  let arrowLeft = anchorCenterX - left - 6;
+  arrowLeft = Math.max(16, Math.min(arrowLeft, popupW - 28));
+  popup.style.setProperty('--arrow-left', arrowLeft + 'px');
+}
+function tourGotIt() {
+  document.getElementById('tourPopup').classList.remove('visible');
+  advanceTour();
+}
+function finishTour() {
+  document.getElementById('tourPopup').classList.remove('visible');
+}
+function dismissTour() {
+  document.getElementById('tourPopup').classList.remove('visible');
+  tourStepIndex = TOUR_STEPS.length;
+}
 </script>
+
+<div class="tour-popup" id="tourPopup">
+  <div class="tour-popup-step" id="tourPopupStep"></div>
+  <div class="tour-popup-title" id="tourPopupTitle"></div>
+  <div class="tour-popup-body" id="tourPopupBody"></div>
+  <div class="tour-popup-actions">
+    <button class="tour-btn-dismiss" onclick="dismissTour()">Dismiss tour</button>
+    <button class="tour-btn-got-it" onclick="tourGotIt()">Got it</button>
+  </div>
+</div>
 </body>
 </html>

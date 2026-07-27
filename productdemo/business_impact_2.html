@@ -93,12 +93,71 @@ header.topbar { background:var(--night); }
 
 /* ---- Drill Down trigger + drawer (standard, matches every other page) ---- */
 .ri-dd-trigger {
-  display:flex; align-items:center; gap:0.45rem; font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600;
+  position:relative; display:flex; align-items:center; gap:0.45rem; font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600;
   color:var(--night2); background:var(--white); border:1.5px solid rgba(4,26,64,0.14); border-radius:20px;
   padding:0.5rem 1.05rem; cursor:pointer; transition:border-color 0.15s, color 0.15s; margin-left:auto;
 }
 .ri-dd-trigger svg { width:15px; height:15px; }
+
+.dd-tooltip {
+  position:absolute; top:calc(100% + 10px); right:0; z-index:80; width:250px;
+  background:rgba(255,250,222,0.94); backdrop-filter:blur(10px) saturate(160%); -webkit-backdrop-filter:blur(10px) saturate(160%);
+  border:1.5px solid var(--gold); border-radius:14px; text-align:left; white-space:normal;
+  font-family:'Poppins',sans-serif; font-weight:400;
+  padding:0.85rem 0.95rem; box-shadow:0 14px 34px rgba(0,0,0,0.35);
+  opacity:0; pointer-events:none; transform:translateY(-4px); transition:opacity 0.15s, transform 0.15s;
+}
+.dd-tooltip::before {
+  content:''; position:absolute; top:-7px; right:24px; width:12px; height:12px;
+  background:rgba(255,250,222,0.94); border-left:1.5px solid var(--gold); border-top:1.5px solid var(--gold);
+  transform:rotate(45deg);
+}
+.dd-tooltip strong { display:block; font-size:0.8rem; font-weight:700; color:var(--night); margin-bottom:0.4rem; }
+.dd-tooltip span { display:block; font-size:0.74rem; line-height:1.55; color:var(--night2); }
+.ri-dd-trigger:hover .dd-tooltip { opacity:1; }
 .ri-dd-trigger:hover { border-color:var(--night2); color:var(--night); }
+
+/* ---- Guided tour ---- */
+.tour-start-btn {
+  display:flex; align-items:center; gap:0.4rem; font-family:'Poppins',sans-serif; font-size:0.78rem; font-weight:600;
+  color:var(--gold); background:rgba(228,202,10,0.12); border:1.5px solid rgba(228,202,10,0.5); border-radius:20px;
+  padding:0.5rem 1rem; cursor:pointer; transition:background 0.15s, transform 0.15s; margin-right:1rem;
+}
+.tour-start-btn:hover { background:rgba(228,202,10,0.2); transform:translateY(-1px); }
+.tour-start-btn svg { width:14px; height:14px; }
+
+.tour-popup {
+  position:fixed; z-index:600; width:280px; background:rgba(255,250,222,0.94); backdrop-filter:blur(10px) saturate(160%);
+  -webkit-backdrop-filter:blur(10px) saturate(160%);
+  border:1.5px solid var(--gold); border-radius:14px; padding:1rem 1.1rem 1.05rem;
+  box-shadow:0 14px 34px rgba(0,0,0,0.35); display:none; transition:top 0.2s ease, left 0.2s ease;
+}
+.tour-popup.visible { display:block; }
+.tour-popup { --arrow-left: 32px; }
+.tour-popup::before {
+  content:''; position:absolute; top:-7px; left:var(--arrow-left); width:12px; height:12px;
+  background:rgba(255,250,222,0.94); border-left:1.5px solid var(--gold); border-top:1.5px solid var(--gold);
+  transform:rotate(45deg);
+}
+.tour-popup.arrow-down::before {
+  top:auto; bottom:-7px; border-left:none; border-top:none;
+  border-right:1.5px solid var(--gold); border-bottom:1.5px solid var(--gold);
+}
+.tour-popup-step { font-size:0.66rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--gold2); margin-bottom:0.35rem; }
+.tour-popup-title { font-size:0.92rem; font-weight:700; color:var(--night); margin-bottom:0.4rem; }
+.tour-popup-body { font-size:0.78rem; line-height:1.55; color:var(--night2); margin-bottom:0.9rem; }
+.tour-popup-actions { display:flex; align-items:center; justify-content:space-between; gap:0.6rem; }
+.tour-btn-got-it {
+  font-family:'Poppins',sans-serif; font-size:0.76rem; font-weight:700; color:var(--night); background:var(--gold);
+  border:none; border-radius:16px; padding:0.45rem 1rem; cursor:pointer; transition:background 0.15s;
+}
+.tour-btn-got-it:hover { background:#f0d838; }
+.tour-btn-dismiss {
+  font-family:'Poppins',sans-serif; font-size:0.72rem; font-weight:600; color:var(--night2); background:none;
+  border:none; cursor:pointer; text-decoration:underline; padding:0.45rem 0.2rem; transition:color 0.15s;
+}
+.tour-btn-dismiss:hover { color:var(--night); }
+
 .dd-overlay { position:fixed; inset:0; background:rgba(4,26,64,0.45); z-index:199; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .dd-overlay.open { opacity:1; pointer-events:auto; }
 .dd-drawer {
@@ -304,9 +363,13 @@ header.topbar { background:var(--night); }
         </button>
         <div class="admin-greeting">
           <div class="hello">Hello <span class="name">Patty</span>!</div>
-          <div class="sub">See the business value created by confirmed human skill application</div>
+          <div class="sub">Know the business impact of learning.</div>
         </div>
         <div class="header-spacer"></div>
+        <button class="tour-start-btn" onclick="startTour()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2 1.5-2 3.5"/><path d="M12 17h.01"/></svg>
+          Start Tour
+        </button>
         <div class="admin-profile">
           <div class="admin-profile-text" style="text-align:right">
             <div class="name">Patty Merchant</div>
@@ -326,11 +389,12 @@ header.topbar { background:var(--night); }
         <button class="ri-dd-trigger" onclick="toggleDrillDown()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="4 4 20 4 14 12.5 14 19 10 21 10 12.5 4 4"/></svg>
           Drill Down
+          <div class="dd-tooltip"><strong>Reveal Insights from Every Angle</strong><span>Analyze learning impact across different organizational dimensions. Slice data vertically and horizontally to uncover trends, compare groups, and identify where capability gaps and strengths exist.</span></div>
         </button>
       </div>
 
       <!-- ============ Business Value Created ============ -->
-      <div class="biz-hero">
+      <div class="biz-hero" id="bizValueHero">
         <div class="biz-hero-label">Business Value Created</div>
         <div class="biz-hero-value">$3.0M</div>
         <div class="biz-hero-sub">Estimated business value associated with human skill improvements.</div>
@@ -338,7 +402,7 @@ header.topbar { background:var(--night); }
       </div>
 
       <!-- ============ KPI Trends vs. Confirmed Human Skill Application ============ -->
-      <div class="biz-chart-card">
+      <div class="biz-chart-card" id="kpiTrendsCard">
         <div class="biz-chart-head">
           <div class="biz-chart-title">KPI Trends vs. Confirmed Human Skill Application</div>
           <div class="period-toggle" id="bizPeriodToggle">
@@ -351,7 +415,7 @@ header.topbar { background:var(--night); }
       </div>
 
       <!-- ============ Correlation Ladder ============ -->
-      <div class="biz-chart-card" style="margin-top:1.6rem;">
+      <div class="biz-chart-card" id="correlationLadderCard" style="margin-top:1.6rem;">
         <div class="biz-chart-head">
           <div>
             <div class="biz-chart-title">Correlation Ladder</div>
@@ -363,7 +427,7 @@ header.topbar { background:var(--night); }
       </div>
 
       <!-- ============ ROI: Human Capability Development ============ -->
-      <div class="biz-hero" style="margin-top:1.6rem; margin-bottom:0;">
+      <div class="biz-hero" id="roiHero" style="margin-top:1.6rem; margin-bottom:0;">
         <div class="biz-hero-label">Return on Human Capability Development Investment</div>
         <div class="biz-hero-value">$2.43M</div>
         <div class="biz-hero-sub">Estimated cost savings and avoided spend created by the shift to confirmed human skill application.</div>
@@ -402,7 +466,7 @@ header.topbar { background:var(--night); }
       </div>
 
       <!-- ============ Workplace Intelligence ============ -->
-      <div class="biz-hero no-value" style="margin-top:1.6rem;">
+      <div class="biz-hero no-value" id="workplaceIntelHero" style="margin-top:1.6rem;">
         <div class="biz-hero-label">Workplace Intelligence</div>
         <div class="biz-hero-sub">Real-world intelligence on capability, friction, and workplace challenges.</div>
       </div>
@@ -423,7 +487,7 @@ header.topbar { background:var(--night); }
       </div>
 
       <!-- ============ Friction Heatmap ============ -->
-      <div class="biz-chart-card heatmap-scroll" style="margin-top:1.6rem;">
+      <div class="biz-chart-card heatmap-scroll" id="frictionHeatmapCard" style="margin-top:1.6rem;">
         <div class="biz-chart-head">
           <div>
             <div class="biz-chart-title">Friction Heatmap</div>
@@ -972,6 +1036,92 @@ renderUtilRows();
 renderHeatmap();
 renderArchetypes();
 window.addEventListener('resize', () => { positionBizPeriodThumb(); positionRoiPeriodThumb(); });
+
+const TOUR_SECTION = 'Business Impact Tour';
+const TOUR_STEPS = [
+  { anchor:'#bizValueHero', num:1, title:'Business Value Created', body:"Take the driver's seat in defining business impact! We know that every business KPI is driven by different employees demonstrating different human skills (Reflectors). WOTG lets you define those relationships, then track the cumulative impact for the business." },
+  { anchor:'#kpiTrendsCard', num:2, title:'KPI Trends vs. Confirmed Human Skill Application', body:'Track business KPIs alongside confirmed application on identified Reflectors over time. Compare trends to understand how increasing skill application aligns with improvements in business performance.' },
+  { anchor:'#correlationLadderCard', num:3, title:'Correlation Ladder', body:'Learning alone rarely changes business outcomes. Compare how the relationship with the selected KPI changes as employees progress from learning to expertise, to confirmed application. The ladder updates automatically based on the KPI selected above.' },
+  { anchor:'#roiHero', num:4, title:'Return on Human Capability Development Investment', body:'Estimate the operational value created through human skill development. Quantify savings across employee learning time, manager coaching, trainer effort and training delivery costs.' },
+  { anchor:'#workplaceIntelHero', num:5, title:'Workplace Intelligence', body:'Go beyond learning metrics to understand what is happening across your organization. Discover where capability is being applied, where it remains underutilized and the workplace patterns driving learning demand.' },
+  { anchor:'#frictionHeatmapCard', num:6, title:'Friction Heatmap & Workplace Situation Archetypes', body:'Understand both where employees struggle and why. The Friction Heatmap highlights the dominant barriers to skill application, while Workplace Situation Archetypes reveal the real workplace situations behind those patterns, while protecting the user\'s privacy, to help you prioritize the interventions that will create the greatest impact.' },
+];
+let tourStepIndex = -1;
+function startTour() {
+  tourStepIndex = -1;
+  advanceTour();
+}
+function advanceTour() {
+  tourStepIndex++;
+  if (tourStepIndex >= TOUR_STEPS.length) { finishTour(); return; }
+  positionAndShowTourStep(TOUR_STEPS[tourStepIndex]);
+}
+function positionAndShowTourStep(step) {
+  const anchor = document.querySelector(step.anchor);
+  const popup = document.getElementById('tourPopup');
+  if (!anchor) { advanceTour(); return; }
+
+  document.getElementById('tourPopupStep').textContent = TOUR_SECTION;
+  document.getElementById('tourPopupTitle').textContent = `${step.num}. ${step.title}`;
+  document.getElementById('tourPopupBody').textContent = step.body;
+  popup.classList.add('visible');
+
+  anchor.scrollIntoView({ block:'center', behavior:'smooth' });
+
+  const positionNow = () => {
+    const margin = 14;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const rect = anchor.getBoundingClientRect();
+    const popupW = popup.offsetWidth, popupH = popup.offsetHeight;
+
+    let left = Math.min(rect.left, vw - popupW - margin);
+    left = Math.max(left, margin);
+
+    const spaceBelow = vh - rect.bottom;
+    const spaceAbove = rect.top;
+    let top, arrowDown;
+    if (spaceBelow >= popupH + margin || spaceBelow >= spaceAbove) {
+      top = Math.min(rect.bottom + margin, vh - popupH - margin);
+      top = Math.max(top, margin);
+      arrowDown = false;
+    } else {
+      top = Math.max(rect.top - popupH - margin, margin);
+      arrowDown = true;
+    }
+
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+    popup.classList.toggle('arrow-down', arrowDown);
+
+    const anchorCenterX = rect.left + rect.width / 2;
+    let arrowLeft = anchorCenterX - left - 6;
+    arrowLeft = Math.max(16, Math.min(arrowLeft, popupW - 28));
+    popup.style.setProperty('--arrow-left', arrowLeft + 'px');
+  };
+  positionNow();
+  setTimeout(positionNow, 320);
+}
+function tourGotIt() {
+  document.getElementById('tourPopup').classList.remove('visible');
+  advanceTour();
+}
+function finishTour() {
+  document.getElementById('tourPopup').classList.remove('visible');
+}
+function dismissTour() {
+  document.getElementById('tourPopup').classList.remove('visible');
+  tourStepIndex = TOUR_STEPS.length;
+}
 </script>
+
+<div class="tour-popup" id="tourPopup">
+  <div class="tour-popup-step" id="tourPopupStep"></div>
+  <div class="tour-popup-title" id="tourPopupTitle"></div>
+  <div class="tour-popup-body" id="tourPopupBody"></div>
+  <div class="tour-popup-actions">
+    <button class="tour-btn-dismiss" onclick="dismissTour()">Dismiss tour</button>
+    <button class="tour-btn-got-it" onclick="tourGotIt()">Got it</button>
+  </div>
+</div>
 </body>
 </html>
