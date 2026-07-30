@@ -556,7 +556,7 @@ header.topbar { background:var(--night); }
       </div>
     </div>
     <div class="ri-dd-item">
-      <button class="ri-dd-toggle" data-label="Targetted Learning Initiatives" onclick="toggleDD(this)">+ Targetted Learning Initiatives</button>
+      <button class="ri-dd-toggle" data-label="Targeted Learning Initiatives" onclick="toggleDD(this)">+ Targeted Learning Initiatives</button>
       <div class="ri-dd-panel">
         <label><input type="checkbox">New Hires</label>
         <label><input type="checkbox">High Potential</label>
@@ -1351,7 +1351,7 @@ function applyDrillDownFilters() {
     rerenderReflectorHub();
   }
   if (riLevel === 2 && activeDomain === 'friction') {
-    const sections = ['Department', 'Grades', 'Targetted Learning Initiatives'];
+    const sections = ['Department', 'Grades', 'Targeted Learning Initiatives'];
     frFilterLabels = sections.flatMap(label => {
       const panel = Array.from(document.querySelectorAll('.ri-dd-item')).find(item => {
         const btn = item.querySelector('.ri-dd-toggle');
