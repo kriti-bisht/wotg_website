@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Wisdom on the Go · AI Diagnostic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:   #16202e;
+  --night2:  #1e2d40;
+  --night3:  #243349;
+  --grey1:   #f0f2f5;
+  --grey2:   #b8c0cc;
+  --grey3:   #6b7685;
+  --white:   #ffffff;
+  --green:   #3ab54a;
+  --green2:  #2d9640;
+  --gold:    #c9a84c;
+  --border:  rgba(255,255,255,0.09);
+  --user-bubble: #1e3a28;
+  --ai-bubble:   #1e2d40;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+@supports (height: 100dvh){ html,body{height:100dvh} }
+html,body{height:var(--vvh, 100dvh)}
+html{
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,0.1) transparent;
+}
+html::-webkit-scrollbar{width:4px}
+html::-webkit-scrollbar-track{background:transparent}
+html::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+body{
+  background:linear-gradient(160deg,#0d1825 0%,#16202e 40%,#1a2535 70%,#0f1b2a 100%);
+  color:var(--grey1);
+  font-family:'Poppins',sans-serif;
+  font-weight:300;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* NAV */
+nav{
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:1rem 2.5rem;
+  background:rgba(22,32,46,0.95);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  z-index:10;
+}
+.logo-block{display:flex;flex-direction:column;gap:0;text-decoration:none;cursor:pointer}
+.logo-text{font-size:1.5rem;color:var(--white)}
+.logo-w{font-weight:700}
+.logo-mid{font-weight:400}
+.logo-go{font-weight:700;color:var(--green)}
+.logo-sanskrit{font-size:0.62rem;font-weight:300;letter-spacing:0.16em;color:var(--white);opacity:0.75;padding-left:0.1rem;margin-top:-0.15rem}
+.nav-right{display:flex;align-items:center;gap:1.5rem}
+nav a{font-size:0.78rem;color:var(--grey2);text-decoration:none;letter-spacing:0.06em;transition:color 0.2s}
+nav a:hover{color:var(--white)}
+.log-out-btn{
+  background:transparent;border:1px solid var(--border);border-radius:3px;
+  color:var(--grey2);font-family:'Poppins',sans-serif;font-size:0.73rem;
+  font-weight:400;letter-spacing:0.04em;padding:0 1rem;height:32px;
+  display:inline-flex;align-items:center;
+  cursor:pointer;transition:border-color 0.2s,color 0.2s,background 0.2s;
+}
+.log-out-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--white)}
+
+/* CHAT LAYOUT */
+.chat-layout{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  max-width:860px;
+  width:100%;
+  margin:0 auto;
+  padding:0 1.5rem;
+  min-height:0;
+  overflow:hidden;
+}
+
+/* MESSAGES AREA — the one dedicated scroll container. Keeping scroll
+   contained here (instead of scrolling the whole document) means its
+   scrollHeight/scrollTop are governed purely by CSS flex sizing, not by
+   how the visual viewport happens to be resizing at any given moment. */
+.messages-area{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:2rem 0 1rem;
+  display:flex;
+  flex-direction:column;
+  gap:1.2rem;
+}
+
+/* WELCOME STATE */
+.welcome .eyebrow{
+  font-size:0.62rem;font-weight:500;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--green);margin-bottom:1.2rem;
+}
+.welcome h2{
+  font-size:1.9rem;font-weight:300;color:var(--white);line-height:1.25;margin-bottom:1rem;
+}
+.welcome h2 em{font-style:normal;color:var(--green);font-weight:500}
+.welcome p{font-size:0.85rem;line-height:1.7;color:var(--grey2)}
+.welcome-hint{
+  margin-top:1.8rem;display:flex;flex-direction:column;gap:0.5rem;
+}
+.hint-chip{
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:3px;padding:0.6rem 1rem;font-size:0.78rem;color:var(--grey2);
+  cursor:pointer;transition:border-color 0.2s,color 0.2s;text-align:left;
+}
+.hint-chip:hover{border-color:rgba(58,181,74,0.4);color:var(--white)}
+
+/* MESSAGES */
+.msg{display:flex;gap:0.8rem;align-items:flex-start;animation:msgIn 0.25s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.msg-user{flex-direction:row-reverse}
+
+/* This wrapper is a plain block flex item (not itself a flex container) —
+   its width comes from the single, well-defined shrink-to-fit algorithm.
+   Nesting flex-in-flex here previously left sizing ambiguous across
+   browsers, which is what caused short words to wrap unpredictably. */
+.msg > div:last-child{max-width:80%;flex-shrink:0}
+.msg-user > div:last-child{text-align:right}
+.msg:not(.msg-user) > div:last-child{text-align:left}
+
+.msg-avatar{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.68rem;font-weight:600;letter-spacing:0.02em;
+  overflow:hidden;
+}
+.msg-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar-ai{background:rgba(58,181,74,0.15);color:var(--green);border:1px solid rgba(58,181,74,0.25)}
+.avatar-user{background:rgba(228,202,10,0.15);color:rgb(228,202,10);border:1px solid rgba(228,202,10,0.25)}
+
+.msg-bubble{
+  display:inline-block;
+  position:relative;
+  /* No max-width here on purpose — a percentage max-width on this element
+     was verified (via headless-browser measurement) to make WebKit compute
+     an intrinsic width smaller than the text actually needs, forcing short
+     words to wrap unnecessarily. The wrapper's max-width below is the only
+     cap needed; long text still wraps normally since overflow-wrap kicks in
+     once content actually exceeds that cap. */
+  padding:0.85rem 1.1rem;border-radius:4px;
+  font-size:0.92rem;line-height:1.65;font-weight:300;
+  overflow-wrap:break-word;
+  text-align:left;
+}
+.msg-bubble p.msg-line{margin:0 0 0.65rem 0}
+.msg-bubble p.msg-line:last-child{margin-bottom:0}
+.msg-bubble ul{margin:0.2rem 0 0.65rem 1.15rem;padding:0}
+.msg-bubble ul:last-child{margin-bottom:0}
+.msg-bubble li{margin-bottom:0.3rem}
+.msg-bubble li:last-child{margin-bottom:0}
+.msg-bubble a{color:var(--green);text-decoration:underline}
+.msg-bubble a:hover{color:var(--green2)}
+.bubble-ai{
+  background:var(--ai-bubble);border:1px solid var(--border);color:var(--grey1);
+}
+.bubble-ai::before{
+  content:'';position:absolute;left:-8px;top:14px;
+  width:0;height:0;
+  border-top:7px solid transparent;border-bottom:7px solid transparent;
+  border-right:9px solid var(--ai-bubble);
+}
+.bubble-user{
+  background:var(--user-bubble);border:1px solid rgba(58,181,74,0.2);
+  color:var(--white);
+}
+.bubble-user::before{
+  content:'';position:absolute;right:-8px;top:14px;
+  width:0;height:0;
+  border-top:7px solid transparent;border-bottom:7px solid transparent;
+  border-left:9px solid var(--user-bubble);
+}
+.msg-meta{font-size:0.62rem;color:var(--grey3);margin-top:0.4rem;letter-spacing:0.04em}
+
+/* TYPING INDICATOR */
+.typing-wrap{display:flex;align-items:center;gap:0.5rem}
+.typing-word{font-size:0.78rem;color:var(--grey3);letter-spacing:0.02em}
+.typing-indicator{display:flex;align-items:center;gap:4px;padding:0.7rem 0.2rem}
+.typing-indicator span{
+  width:6px;height:6px;background:var(--green);border-radius:50%;opacity:0.4;
+  animation:typingDot 1.2s ease-in-out infinite;
+}
+.typing-indicator span:nth-child(2){animation-delay:0.2s}
+.typing-indicator span:nth-child(3){animation-delay:0.4s}
+@keyframes typingDot{0%,80%,100%{opacity:0.2;transform:scale(0.8)}40%{opacity:1;transform:scale(1)}}
+
+/* INPUT AREA */
+.input-area{
+  flex-shrink:0;
+  position:relative;
+  padding:1rem 0 calc(1.5rem + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border);
+  background:var(--night);
+}
+/* Once the on-screen keyboard is open it already covers the home-indicator
+   area, so the safe-area reservation is no longer needed — iOS doesn't
+   always shrink env(safe-area-inset-bottom) back to 0 in that state, which
+   otherwise leaves a stale gap of reserved padding under the input bar. */
+body.keyboard-open .input-area{padding-bottom:1.5rem}
+/* full-width solid backing so the bottom strip (and avatar feet cover) spans edge-to-edge */
+.input-area::before{
+  content:'';
+  position:absolute;
+  top:-1px;left:50%;
+  width:100vw;
+  height:calc(100% + 1px);
+  transform:translateX(-50%);
+  background:var(--night);
+  border-top:1px solid var(--border);
+  z-index:-1;
+}
+.input-row{
+  display:flex;gap:0.75rem;align-items:flex-end;
+}
+.input-wrap{
+  flex:1;position:relative;
+}
+textarea{
+  display:block;
+  width:100%;
+  padding:0.78rem 1.1rem;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:4px;
+  color:var(--white);
+  font-family:'Poppins',sans-serif;
+  font-size:0.91rem;
+  font-weight:300;
+  line-height:1.55;
+  resize:none;
+  outline:none;
+  height:48px;
+  min-height:48px;
+  max-height:160px;
+  transition:border-color 0.2s;
+  overflow-y:auto;
+}
+textarea::placeholder{color:rgba(255,255,255,0.25)}
+textarea:focus{border-color:rgba(58,181,74,0.45)}
+textarea:disabled{opacity:0.5;cursor:not-allowed}
+
+.send-btn{
+  -webkit-appearance:none;appearance:none;
+  width:48px;height:48px;flex-shrink:0;
+  background:var(--green);border:none;border-radius:4px;
+  color:var(--white);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s,transform 0.15s;
+}
+.send-btn:hover:not(:disabled){background:var(--green2);transform:translateY(-1px)}
+.send-btn:disabled{background:rgba(58,181,74,0.25);cursor:not-allowed;transform:none}
+.send-btn svg{width:18px;height:18px}
+
+.mic-btn{
+  -webkit-appearance:none;appearance:none;
+  width:48px;height:48px;flex-shrink:0;
+  background:var(--green);border:none;border-radius:4px;
+  color:var(--white);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s,color 0.2s,border-color 0.2s;
+  -webkit-user-select:none;user-select:none;touch-action:none;
+}
+.mic-btn:hover:not(:disabled){background:var(--green2)}
+.mic-btn:disabled{opacity:0.35;cursor:not-allowed}
+.mic-btn svg{width:18px;height:18px;pointer-events:none}
+.mic-btn svg.icon-stop{display:none}
+.mic-btn.listening svg.icon-mic{display:none}
+.mic-btn.listening svg.icon-stop{display:block}
+.mic-btn.listening{
+  background:rgba(220,53,69,0.85);color:#fff;
+  animation:micPulse 1.1s ease-in-out infinite;
+}
+@keyframes micPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+
+.input-hint{
+  margin-top:0.55rem;font-size:0.65rem;color:var(--white);letter-spacing:0.04em;
+}
+.input-hint kbd{
+  background:rgba(255,255,255,0.07);border:1px solid var(--border);
+  border-radius:2px;padding:0.1rem 0.35rem;font-family:'Poppins',sans-serif;
+  font-size:0.6rem;
+}
+
+/* NEW CONVERSATION BUTTON */
+.new-chat-btn{
+  background:transparent;border:1px solid var(--border);border-radius:3px;
+  color:var(--grey2);font-family:'Poppins',sans-serif;font-size:0.73rem;
+  font-weight:400;letter-spacing:0.04em;padding:0.45rem 1rem;
+  cursor:pointer;transition:border-color 0.2s,color 0.2s;
+}
+.new-chat-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--white)}
+
+/* END CONVERSATION BUTTON */
+.end-chat-btn{
+  background:transparent;border:1px solid rgba(220,53,69,0.35);border-radius:3px;
+  color:rgba(240,128,144,0.8);font-family:'Poppins',sans-serif;font-size:0.73rem;
+  font-weight:400;letter-spacing:0.04em;padding:0 1rem;height:32px;
+  display:inline-flex;align-items:center;
+  cursor:pointer;transition:border-color 0.2s,color 0.2s,background 0.2s;
+}
+.end-chat-btn:hover{border-color:rgba(220,53,69,0.7);color:#f08090;background:rgba(220,53,69,0.08)}
+.end-chat-btn:disabled{opacity:0.35;cursor:not-allowed}
+
+/* SESSION ENDED NOTICE */
+.session-ended-notice{
+  text-align:center;padding:1rem;margin:0.5rem 0;
+  font-size:0.75rem;letter-spacing:0.08em;color:var(--grey3);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+
+/* ERROR BUBBLE */
+.bubble-error{
+  background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.25);
+  color:#f08090;
+}
+
+@media(max-width:600px){
+  nav{padding:0.75rem 1rem}
+  .chat-layout{padding:0 0.75rem}
+  .msg > div:last-child{max-width:88%}
+  .nav-right{gap:0.6rem}
+  .new-chat-btn{display:none}
+  nav a{display:none}
+  .end-chat-btn{font-size:0.72rem;padding:0.45rem 0.8rem;height:auto}
+  .log-out-btn{font-size:0.72rem;padding:0.45rem 0.8rem;height:auto}
+  textarea{font-size:16px}
+  .input-hint{display:none}
+}
+
+/* END SESSION MODAL */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);
+  -webkit-backdrop-filter:blur(5px);
+  backdrop-filter:blur(5px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;
+  animation:fadeOverlay 0.15s ease;
+}
+.modal-overlay.hidden{display:none}
+@keyframes fadeOverlay{from{opacity:0}to{opacity:1}}
+.modal-card{
+  background:#1e2d40;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:8px;
+  padding:2.2rem 2.5rem 2rem;
+  max-width:420px;width:90%;
+  text-align:center;
+  animation:slideCard 0.18s ease;
+}
+@keyframes slideCard{from{transform:translateY(-12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{
+  font-size:1.1rem;font-weight:500;color:var(--white);
+  letter-spacing:0.02em;margin-bottom:0.65rem;
+}
+.modal-desc{
+  font-size:0.82rem;color:var(--grey2);line-height:1.65;margin-bottom:2rem;
+}
+.modal-actions{display:flex;gap:0.75rem;justify-content:center}
+.modal-btn{
+  padding:0.6rem 1.6rem;border-radius:4px;
+  font-family:'Poppins',sans-serif;font-size:0.8rem;font-weight:500;
+  letter-spacing:0.05em;cursor:pointer;border:1px solid;
+  transition:background 0.2s,border-color 0.2s,color 0.2s;
+}
+.modal-btn-cancel{
+  background:transparent;border-color:rgba(255,255,255,0.15);color:var(--grey2);
+}
+.modal-btn-cancel:hover{border-color:rgba(255,255,255,0.35);color:var(--white)}
+.modal-btn-confirm{
+  background:rgba(220,53,69,0.12);border-color:rgba(220,53,69,0.45);color:#f08090;
+}
+.modal-btn-confirm:hover{background:rgba(220,53,69,0.28);border-color:rgba(220,53,69,0.75);color:#fff}
+
+/* ===== WELCOME NOTE + AVATAR (right, standing low; callout above head) ===== */
+.welcome{max-width:760px;text-align:left;padding:1.4rem 0.5rem 2rem;margin:auto}
+.welcome-inner{display:flex;gap:1.4rem;align-items:flex-start}
+.welcome-note{flex:1;min-width:0}
+.welcome-note h2{font-size:1.6rem;font-weight:300;color:var(--white);line-height:1.2;margin-bottom:2.6rem}
+.welcome-note h2 em{font-style:normal;color:var(--green);font-weight:600}
+.welcome-note h3{font-size:0.95rem;font-weight:600;color:var(--white);margin:0.95rem 0 0.3rem}
+.welcome-note p{font-size:0.91rem;line-height:1.5;color:var(--grey2);margin-bottom:0.9rem}
+.welcome-note ul{margin:0.1rem 0 0.9rem 1.15rem;padding:0}
+.welcome-note li{font-size:0.91rem;line-height:1.5;color:var(--grey2);margin-bottom:0}
+.welcome-note strong{color:var(--grey1);font-weight:600}
+.welcome-note em{font-style:normal;color:var(--green)}
+.welcome-note .ready-line{margin-top:1rem;padding-top:0.8rem;font-size:1.02rem;color:var(--white)}
+/* avatar column: callout sits ABOVE her head so the figure never covers it */
+.welcome-avatar{display:flex;flex-direction:column;align-items:center;width:120px;flex-shrink:0;align-self:flex-end;pointer-events:none}
+.avatar-callout{position:relative;background:var(--green);color:#fff;font-size:0.78rem;font-weight:600;line-height:1.15;padding:0.45rem 0.8rem;border-radius:14px;white-space:nowrap;margin-bottom:10px;box-shadow:0 6px 16px rgba(0,0,0,0.35)}
+.avatar-callout::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:var(--green);border-bottom:0}
+.avatar-img{width:120px;display:block;filter:drop-shadow(0 12px 22px rgba(0,0,0,0.4))}
+/* wide screens: pin her bottom-anchored, overlapping the right edge of the text column;
+   nudged down (top clearance) so head + callout are always fully visible */
+/* phones: stack above the note */
+@media(max-width:600px){
+  .welcome-inner{flex-direction:column-reverse;align-items:center}
+  .welcome-avatar{position:static;width:110px;margin:0.5rem 0 1.4rem}
+  .avatar-img{width:110px}
+}
+/* fit "Kriti" in the small message avatar chip */
+.avatar-ai{font-size:0.52rem;letter-spacing:0.01em}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo-block">
+    <div class="logo-text">
+      <span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span>
+    </div>
+    <div class="logo-sanskrit">Tat Tvam Asi</div>
+  </a>
+  <div class="nav-right">
+    <button class="log-out-btn" id="logOutBtn" onclick="logOut()">Log out</button>
+    <button class="end-chat-btn" id="endChatBtn" onclick="endConversation()">End session</button>
+  </div>
+</nav>
+
+<div class="chat-layout">
+  <div class="messages-area" id="messagesArea">
+    <div class="welcome" id="welcomeScreen">
+      <div class="welcome-inner">
+      <div class="welcome-note">
+        <h2>Welcome to <span class="logo-w">W</span>isdom on the <span class="logo-go">GO!</span> 👋</h2>
+        <p style="margin-bottom:1.6rem">No endless lectures, no dry theory, and no searching for one life-changing insight. <strong>Real growth comes from consistently applying the right human skill in the right situation</strong>—and that's exactly what we'll do, one real work situation at a time!</p>
+        <p style="margin-bottom:0.15rem"><strong>🚀 What's in it for You?</strong></p>
+        <ul style="margin-bottom:1.6rem">
+          <li>Navigate a real work situation that matters to you—in just 15 minutes.</li>
+          <li>Identify the one human skill most likely to help you succeed.</li>
+          <li>Understand what's getting in the way of demonstrating it—and how to overcome those barriers.</li>
+          <li>Build expertise by applying your skills—not by sitting through theory or generic advice.</li>
+        </ul>
+        <p style="margin-bottom:0.15rem"><strong>🔒 Zero Judgment. Total Privacy.</strong></p>
+        <p>Your growth happens in a safe space. Your conversations stay entirely between you and Kriti. No other human will see them...ever!</p>
+        <p class="ready-line"><strong>Ready?</strong> Say <em>“Hi Kriti”</em> to crack on!</p>
+      </div>
+      <div class="welcome-avatar">
+        <div class="avatar-callout">Hi, I’m Kriti</div>
+        <img class="avatar-img" src="native_kriti_fullbody.png" alt="Kriti">
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="input-area" id="inputArea">
+    <div class="input-row">
+      <div class="input-wrap">
+        <textarea
+          id="userInput"
+          placeholder="Describe your situation..."
+          rows="1"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        >Hi Kriti</textarea>
+      </div>
+      <button class="mic-btn" id="micBtn" title="Tap to talk">
+        <svg class="icon-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        <svg class="icon-stop" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <rect x="6" y="6" width="12" height="12" rx="2"/>
+        </svg>
+      </button>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send message">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+    <p class="input-hint" id="inputHint">Tap the mic to talk, tap again to stop, then hit Send</p>
+  </div>
+</div>
+
+<!-- END SESSION MODAL -->
+<div class="modal-overlay hidden" id="endModal">
+  <div class="modal-card">
+    <h3 class="modal-title">Do you really want to end the session?</h3>
+    <p class="modal-desc">Your conversation will be closed and your session end time will be saved.</p>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="cancelEnd()">No, continue</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmEnd()">Yes, end session</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+// Wired to the real backend now (backend_api.py, live on Azure). The old
+// n8n webhook wiring is gone for good -- this talks to the new "letters"
+// (one message in, one reply out) endpoints instead: /api/opening/message
+// for the very first stretch of chit-chat, then /api/message for
+// everything after INITIAL_USER_INPUT fires, and /api/driver-diagnosis/submit
+// for the one part of the conversation that's a form, not free text.
+// ─────────────────────────────────────────────────────────────────────────────
+const API_BASE = 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewebsites.net';
+
+let userId     = '';
+let sessionId  = '';   // empty until the backend hands us a real one
+let currentPhase = 'opening';
+let isWaiting  = false;
+let sessionEnded = false;
+let userInitials = 'U';
+let pendingForm = null;
+let stopMicIfActive = function(){}; // replaced once voice input initializes below
+
+function computeInitials(name) {
+  if (!name) return 'U';
+  return name.trim().split(/\s+/).map(function(w){ return w[0].toUpperCase(); }).join('');
+}
+
+function initSession() {
+  // Each page load starts a fresh conversation -- resuming a half-finished
+  // one across a reload isn't built yet, deliberately out of scope for
+  // this first real wiring pass.
+  userId = localStorage.getItem('user_id') || '';
+  sessionId = '';
+  currentPhase = 'opening';
+  if (!userId) {
+    // No real login happened -- send them back rather than let the page
+    // try to talk to the backend with no user_id at all.
+    window.location.href = 'native_login.html';
+    return;
+  }
+  const userName = localStorage.getItem('user_name') || '';
+  userInitials = computeInitials(userName);
+}
+
+// ─── BACKEND CALLS ──────────────────────────────────────────────────────────
+async function apiPost(path, body) {
+  const res = await fetch(API_BASE + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(function(){ return {}; });
+  if (!res.ok) {
+    throw new Error(data.detail || 'Something went wrong talking to the server.');
+  }
+  return data;
+}
+
+// One phase's worth of terminal endings -- refuse to send further messages,
+// same protection the backend itself already enforces.
+const TERMINAL_PHASES = ['complete', 'scope_session_end', 'objection_session_end'];
+
+// Shared handler for whatever comes back from ANY of the 3 endpoints --
+// they all share the same shape: { messages, phase, session_complete, form? }.
+async function handleBackendResult(result) {
+  currentPhase = result.phase;
+  pendingForm = result.form || null;
+
+  // The caller already showed the dots for the real wait (the actual LLM
+  // call) and removed them right as this function was entered -- so the
+  // first message in the envelope appears immediately, no fake pause.
+  // Only messages 2+ (several texts riding in the same reply) still get a
+  // short staggered dots-pause between them, so they read like separate
+  // texts rather than one big dump.
+  const messages = result.messages || [];
+  for (let i = 0; i < messages.length; i++) {
+    if (i > 0) {
+      showTyping(currentPhase);
+      await sleep(800);
+      removeTyping();
+    }
+    if (messages[i]) appendMessage('ai', messages[i]);
+  }
+
+  if (pendingForm) {
+    renderDriverDiagnosisForm(pendingForm);
+  }
+
+  if (result.session_complete || TERMINAL_PHASES.includes(currentPhase)) {
+    lockConversationEnded();
+  }
+}
+
+function lockConversationEnded() {
+  if (sessionEnded) return;
+  sessionEnded = true;
+  const input = document.getElementById('userInput');
+  input.disabled = true;
+  input.placeholder = 'Conversation ended.';
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('micBtn').disabled = true;
+  document.getElementById('endChatBtn').disabled = true;
+}
+
+// ─── DRIVER DIAGNOSIS FORM ──────────────────────────────────────────────────
+// The one part of the conversation that's a form (0-4 questions shown
+// together), not free text -- per Kriti's explicit spec: all pending
+// questions at once, one Submit sends every answer together.
+function renderDriverDiagnosisForm(form) {
+  removeWelcome();
+  const area = document.getElementById('messagesArea');
+  const shouldScroll = isNearBottom();
+
+  const wrap = document.createElement('div');
+  wrap.className = 'msg';
+  wrap.id = 'driverFormRow';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'native_chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+
+  const card = document.createElement('div');
+  card.className = 'msg-bubble bubble-ai';
+  card.style.maxWidth = '100%';
+
+  const answers = {};
+
+  form.forEach(function(q, qIndex) {
+    const qBlock = document.createElement('div');
+    qBlock.style.marginBottom = qIndex < form.length - 1 ? '1.1rem' : '0.4rem';
+
+    const qText = document.createElement('div');
+    qText.style.marginBottom = '0.5rem';
+    qText.textContent = q.question;
+    qBlock.appendChild(qText);
+
+    q.options.forEach(function(optText) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = optText;
+      btn.style.cssText = 'display:block;width:100%;text-align:left;margin-bottom:0.4rem;padding:0.55rem 0.8rem;' +
+        'background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;color:var(--grey1);' +
+        'font-family:Poppins,sans-serif;font-size:0.85rem;cursor:pointer;transition:border-color 0.2s,background 0.2s;';
+      btn.onclick = function() {
+        answers[q.driver_name] = optText;
+        // Mark this question's options so the chosen one is visibly selected.
+        Array.from(qBlock.querySelectorAll('button')).forEach(function(b) {
+          b.style.borderColor = 'var(--border)';
+          b.style.background = 'rgba(255,255,255,0.05)';
+        });
+        btn.style.borderColor = 'rgba(58,181,74,0.6)';
+        btn.style.background = 'rgba(58,181,74,0.12)';
+        updateSubmitState();
+      };
+      qBlock.appendChild(btn);
+    });
+
+    card.appendChild(qBlock);
+  });
+
+  const submitBtn = document.createElement('button');
+  submitBtn.type = 'button';
+  submitBtn.textContent = 'Submit answers';
+  submitBtn.disabled = true;
+  submitBtn.style.cssText = 'margin-top:0.5rem;padding:0.6rem 1.4rem;background:var(--green);border:none;' +
+    'border-radius:4px;color:#fff;font-family:Poppins,sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;';
+  submitBtn.onclick = function() { submitDriverDiagnosisForm(answers); };
+  card.appendChild(submitBtn);
+
+  function updateSubmitState() {
+    submitBtn.disabled = Object.keys(answers).length < form.length;
+    submitBtn.style.opacity = submitBtn.disabled ? '0.5' : '1';
+  }
+
+  wrap.appendChild(avatar);
+  wrap.appendChild(card);
+  area.appendChild(wrap);
+  if (shouldScroll) scrollMessagesToBottom();
+}
+
+async function submitDriverDiagnosisForm(answers) {
+  const row = document.getElementById('driverFormRow');
+  if (row) row.remove();
+  pendingForm = null;
+
+  isWaiting = true;
+  document.getElementById('userInput').disabled = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  showTyping(currentPhase);
+  try {
+    const result = await apiPost('/api/driver-diagnosis/submit', { user_id: userId, session_id: sessionId, answers: answers });
+    removeTyping();
+    await handleBackendResult(result);
+  } catch (err) {
+    removeTyping();
+    appendError(err.message || 'Something went wrong sending your answers.');
+  }
+
+  isWaiting = false;
+  if (!sessionEnded) {
+    document.getElementById('userInput').disabled = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+function endConversation() {
+  if (isWaiting || sessionEnded) return;
+  document.getElementById('endModal').classList.remove('hidden');
+}
+
+function cancelEnd() {
+  document.getElementById('endModal').classList.add('hidden');
+}
+
+function confirmEnd() {
+  document.getElementById('endModal').classList.add('hidden');
+  doEndSession();
+}
+
+function doEndSession() {
+  if (sessionEnded) return;
+  sessionEnded = true;
+
+  const timestamp = new Date().toISOString();
+
+  // Lock the UI
+  const input = document.getElementById('userInput');
+  input.disabled = true;
+  input.placeholder = 'Conversation ended.';
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('micBtn').disabled = true;
+  document.getElementById('endChatBtn').disabled = true;
+
+  removeWelcome();
+  const area = document.getElementById('messagesArea');
+  const notice = document.createElement('div');
+  notice.className = 'session-ended-notice';
+  notice.textContent = 'Session ended · ' + new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '  —  Redirecting…';
+  area.appendChild(notice);
+  scrollMessagesToBottom();
+
+  localStorage.removeItem('session_id');
+  localStorage.removeItem('user_name');
+  localStorage.removeItem('user_email');
+  localStorage.removeItem('user_company');
+  localStorage.removeItem('user_id');
+  localStorage.removeItem('remembered_user_id');
+  localStorage.removeItem('remembered_name');
+
+  setTimeout(function() {
+    window.location.href = 'native_login.html';
+  }, 1500);
+}
+
+// Distinct from "End session": this does NOT touch the in-progress
+// conversation on the backend at all -- it's a plain client-side sign-out.
+// It just clears this browser's saved login and sends the person back to
+// native_login.html; the session itself is left exactly as it was, mid-conversation
+// or not. No confirmation needed since nothing is being closed out.
+function logOut() {
+  localStorage.removeItem('user_name');
+  localStorage.removeItem('user_email');
+  localStorage.removeItem('user_company');
+  localStorage.removeItem('user_id');
+  localStorage.removeItem('remembered_user_id');
+  localStorage.removeItem('remembered_name');
+  window.location.href = 'native_login.html';
+}
+
+function useHint(el) {
+  const input = document.getElementById('userInput');
+  input.value = el.textContent.trim();
+  autoResize(input);
+  input.focus();
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function formatTime() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function removeWelcome() {
+  const w = document.getElementById('welcomeScreen');
+  if (w) w.remove();
+}
+
+// Messages scroll inside their own container now, not the whole page — so
+// "near bottom" and "scroll to bottom" both operate on that container's own
+// scroll position, independent of the visual viewport / keyboard state.
+function isNearBottom() {
+  const area = document.getElementById('messagesArea');
+  const threshold = 150;
+  return (area.scrollTop + area.clientHeight) >= (area.scrollHeight - threshold);
+}
+
+function scrollMessagesToBottom() {
+  const area = document.getElementById('messagesArea');
+  area.scrollTop = area.scrollHeight;
+}
+
+function appendMessage(role, text) {
+  removeWelcome();
+  const area = document.getElementById('messagesArea');
+  const shouldScroll = isNearBottom();
+
+  const isUser = role === 'user';
+  const msg = document.createElement('div');
+  msg.className = 'msg' + (isUser ? ' msg-user' : '');
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar ' + (isUser ? 'avatar-user' : 'avatar-ai');
+  if (isUser) {
+    avatar.textContent = userInitials;
+  } else {
+    const avatarImg = document.createElement('img');
+    avatarImg.src = 'native_chatphoto.png';
+    avatarImg.alt = 'Kriti';
+    avatar.appendChild(avatarImg);
+  }
+
+  const right = document.createElement('div');
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble ' + (isUser ? 'bubble-user' : 'bubble-ai');
+  bubble.innerHTML = formatResponse(text);
+
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = formatTime();
+
+  right.appendChild(bubble);
+  right.appendChild(meta);
+  msg.appendChild(avatar);
+  msg.appendChild(right);
+  area.appendChild(msg);
+  if (shouldScroll) scrollMessagesToBottom();
+  return bubble;
+}
+
+function appendError(text) {
+  removeWelcome();
+  const area = document.getElementById('messagesArea');
+  const shouldScroll = isNearBottom();
+  const msg = document.createElement('div');
+  msg.className = 'msg';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'native_chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+
+  const right = document.createElement('div');
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble bubble-error';
+  bubble.textContent = text;
+
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = formatTime();
+
+  right.appendChild(bubble);
+  right.appendChild(meta);
+  msg.appendChild(avatar);
+  msg.appendChild(right);
+  area.appendChild(msg);
+  if (shouldScroll) scrollMessagesToBottom();
+}
+
+// Keyed to the real FSM phase names now, not the old n8n ones.
+const PHASE_WORDS = {
+  opening:              ['Just a moment…', 'Thinking that through…'],
+  diagnosis:            ['Interpreting…', 'Finding the clues…', 'Making notes…', 'Thinking that through…'],
+  reflector_disclosure: ['Reflecting…', 'Identifying patterns…', 'Weighing what matters…', 'Connecting the dots…'],
+  reflector_objection:  ['Reflecting…', 'Weighing what matters…', 'Thinking that through…'],
+  rediagnosis:          ['Reconsidering…', 'Looking at this again…'],
+  driver_diagnosis:     ['Pulling that together…', 'Just a moment…'],
+  content_creation:     ['Building your Learning Atom…', 'Shaping your training…', 'Personalizing your plan…', 'Almost ready…'],
+  training:             ['Thinking that through…', 'Considering your situation…'],
+};
+const WORD_CYCLE_MS = 1800;
+let typingWordInterval = null;
+
+function showTyping(phase) {
+  removeWelcome();
+  const area = document.getElementById('messagesArea');
+  const shouldScroll = isNearBottom();
+  const row = document.createElement('div');
+  row.className = 'msg';
+  row.id = 'typingRow';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'native_chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'typing-wrap';
+
+  const words = PHASE_WORDS[phase];
+  if (words) {
+    const wordEl = document.createElement('span');
+    wordEl.className = 'typing-word';
+    wordEl.textContent = words[0];
+    let i = 0;
+    typingWordInterval = setInterval(function() {
+      i = (i + 1) % words.length;
+      wordEl.textContent = words[i];
+    }, WORD_CYCLE_MS);
+    wrap.appendChild(wordEl);
+  }
+
+  const indicator = document.createElement('div');
+  indicator.className = 'typing-indicator';
+  indicator.innerHTML = '<span></span><span></span><span></span>';
+  wrap.appendChild(indicator);
+
+  row.appendChild(avatar);
+  row.appendChild(wrap);
+  area.appendChild(row);
+  if (shouldScroll) scrollMessagesToBottom();
+}
+
+function removeTyping() {
+  if (typingWordInterval) {
+    clearInterval(typingWordInterval);
+    typingWordInterval = null;
+  }
+  const t = document.getElementById('typingRow');
+  if (t) t.remove();
+}
+
+function formatResponse(text) {
+  if (!text) return '';
+
+  function inlineFormat(s) {
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+      .replace(/(?<!["'=])(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em style="color:var(--green);font-style:normal">$1</em>');
+  }
+
+  // Convert consecutive "- item" or "• item" lines into a real bullet list.
+  // Every other non-blank line becomes its own paragraph, with real spacing
+  // below it, instead of being run together with a plain <br> -- these
+  // messages write one complete thought per line, so each line should read
+  // like its own paragraph, not one dense, cramped block.
+  const lines = text.split('\n');
+  let html = '';
+  let listItems = [];
+
+  function flushList() {
+    if (listItems.length) {
+      html += '<ul>' + listItems.map(li => `<li>${inlineFormat(li)}</li>`).join('') + '</ul>';
+      listItems = [];
+    }
+  }
+
+  for (const line of lines) {
+    const match = line.match(/^[-•]\s+(.*)$/);
+    if (match) {
+      listItems.push(match[1]);
+    } else {
+      flushList();
+      if (line.trim() !== '') {
+        html += `<p class="msg-line">${inlineFormat(line)}</p>`;
+      }
+    }
+  }
+  flushList();
+
+  return html;
+}
+
+// ─── SEND MESSAGE ───────────────────────────────────────────────────────────
+// Talks to the real backend now. Which endpoint depends on currentPhase:
+// still 'opening' -> /api/opening/message (this is the one endpoint that
+// also creates the real session_id, the first time it's called); anything
+// else free-text -> /api/message. driver_diagnosis is handled by its own
+// form UI above, not this function.
+async function sendMessage() {
+  if (isWaiting || sessionEnded) return;
+  if (currentPhase === 'driver_diagnosis') return; // answered via the form, not here
+  stopMicIfActive();
+
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  isWaiting = true;
+  input.value = '';
+  autoResize(input);
+  input.disabled = true;
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('micBtn').disabled = true;
+
+  appendMessage('user', text);
+
+  try {
+    if (currentPhase === 'opening') {
+      const userName = localStorage.getItem('user_name') || '';
+      // Dots go up BEFORE the real wait starts (the LLM call lives inside
+      // this apiPost), not after -- otherwise they only ever flash for a
+      // moment once the reply has already arrived.
+      showTyping('opening');
+      const result = await apiPost('/api/opening/message', {
+        user_id: userId, name: userName, message: text,
+        session_id: sessionId || null,
+      });
+      removeTyping();
+      sessionId = result.session_id;
+
+      if (result.backend_tag === 'INITIAL_USER_INPUT') {
+        // Opening handed off -- the rest of the conversation (signpost,
+        // disclosure, however far it cascaded) rides in this same response.
+        await handleBackendResult(result);
+      } else if (result.user_facing_response) {
+        appendMessage('ai', result.user_facing_response);
+      }
+    } else {
+      showTyping(currentPhase);
+      const result = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: text });
+      removeTyping();
+      await handleBackendResult(result);
+    }
+  } catch (err) {
+    removeTyping();
+    appendError(err.message || 'Something went wrong reaching the server.');
+  }
+
+  isWaiting = false;
+  if (!sessionEnded) {
+    input.disabled = false;
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('micBtn').disabled = false;
+    input.focus();
+  }
+}
+
+function sleep(ms) {
+  return new Promise(function(resolve) { setTimeout(resolve, ms); });
+}
+
+// Show native "Leave site?" dialog on tab close if session is still active
+window.addEventListener('beforeunload', function(e) {
+  if (!sessionEnded) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+// When the tab actually closes -- nothing to send yet, no backend connected.
+
+initSession();
+
+// ─── VOICE INPUT (tap-to-record mic, Web Speech API) ─────────────────────
+(function(){
+  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = document.getElementById('micBtn');
+  if (!micBtn) return;
+
+  if (!SpeechRecognitionAPI) {
+    micBtn.style.display = 'none';
+    return;
+  }
+
+  let recognition = null;
+  let listening = false;
+  let baseText = '';
+
+  function createRecognition() {
+    const r = new SpeechRecognitionAPI();
+    r.continuous = true;
+    r.interimResults = true;
+    r.lang = 'en-US';
+
+    r.onresult = function(event) {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      const input = document.getElementById('userInput');
+      const separator = baseText && !baseText.endsWith(' ') ? ' ' : '';
+      input.value = baseText + separator + transcript;
+      autoResize(input);
+    };
+
+    r.onerror = function() {
+      stopListening();
+    };
+
+    r.onend = function() {
+      if (listening) {
+        // Safari/WebKit can silently die on re-using an instance —
+        // spin up a fresh one each time it ends while still "listening"
+        recognition = createRecognition();
+        try { recognition.start(); } catch(e) {}
+      }
+    };
+
+    return r;
+  }
+
+  function startListening() {
+    if (listening || micBtn.disabled) return;
+    listening = true;
+    baseText = document.getElementById('userInput').value;
+    micBtn.classList.add('listening');
+    micBtn.title = 'Tap to stop';
+    recognition = createRecognition();
+    try { recognition.start(); } catch(e) {}
+  }
+
+  function stopListening() {
+    if (!listening) return;
+    listening = false;
+    micBtn.classList.remove('listening');
+    micBtn.title = 'Tap to talk';
+    // Stop the recognizer from writing into the input box the moment we
+    // decide to stop — a final result can still arrive asynchronously after
+    // .stop() is called, and without this it overwrites the box (which may
+    // have already been cleared by a send) with a leftover ghost transcript.
+    if (recognition) recognition.onresult = null;
+    try { recognition && recognition.stop(); } catch(e) {}
+  }
+
+  stopMicIfActive = stopListening;
+
+  micBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    if (listening) { stopListening(); } else { startListening(); }
+  });
+})();
+
+// Keep the newest message visible when the on-screen keyboard opens/closes
+if (window.visualViewport && navigator.maxTouchPoints > 0) {
+  // window.innerHeight isn't a reliable "keyboard closed" baseline on every
+  // device — measured on-device, it shrinks right along with
+  // visualViewport.height instead of staying fixed. Track the largest height
+  // we've actually observed instead, and compare against that. Scoped to
+  // touch devices only — a desktop window resize shouldn't be mistaken for a
+  // keyboard opening.
+  let maxObservedHeight = window.visualViewport.height;
+
+  function syncViewportHeight() {
+    const vv = window.visualViewport;
+    document.documentElement.style.setProperty('--vvh', vv.height + 'px');
+    if (vv.height > maxObservedHeight) maxObservedHeight = vv.height;
+
+    const keyboardOpen = (maxObservedHeight - vv.height) > 150;
+    document.body.classList.toggle('keyboard-open', keyboardOpen);
+
+    // Measured on-device: when the keyboard is open, visualViewport.offsetTop
+    // shifts the visible window down into the page (observed: 337px) to keep
+    // the focused input above the keyboard — but our content is still
+    // painted from the top of the page. Without shifting to match, the gap
+    // between where our content ends and where the visible window actually
+    // is shows up as empty space. Shifting body down by that same offset
+    // keeps our content aligned with whatever the browser is actually
+    // showing.
+    document.body.style.transform = vv.offsetTop ? `translateY(${vv.offsetTop}px)` : '';
+  }
+  syncViewportHeight();
+  window.visualViewport.addEventListener('resize', function() {
+    // Capture bottom-ness BEFORE the container shrinks — shrinking is what
+    // pushes scrollTop away from the new bottom, so checking after would
+    // punish the user for a resize they didn't cause, and skip re-snapping
+    // exactly when it's needed most.
+    const wasNearBottom = isNearBottom();
+    syncViewportHeight();
+    if (wasNearBottom) scrollMessagesToBottom();
+  });
+}
+
+// Pin avatar bottom exactly to the top of the input bar
+(function(){
+  function positionAvatar(){
+    const avatar = document.querySelector('.welcome-avatar');
+    const inputArea = document.getElementById('inputArea');
+    if(!avatar || !inputArea) return;
+    if(window.innerWidth < 1240){
+      avatar.style.bottom = '';
+      avatar.style.top = '';
+      return;
+    }
+    const inputTop = inputArea.getBoundingClientRect().top;
+    const bottomOffset = window.innerHeight - inputTop;
+    avatar.style.bottom = bottomOffset + 'px';
+    avatar.style.top = 'auto';
+  }
+  // Run on load and whenever window resizes
+  window.addEventListener('resize', positionAvatar);
+  // Also run after a short delay to catch any late layout shifts
+  window.addEventListener('load', positionAvatar);
+  document.addEventListener('DOMContentLoaded', positionAvatar);
+  setTimeout(positionAvatar, 100);
+  window._positionAvatar = positionAvatar;
+})();
+</script>
+</body>
+</html>

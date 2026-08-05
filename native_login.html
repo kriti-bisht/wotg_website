@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wisdom on the Go · Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --night:   #16202e;
+      --night2:  #1e2d40;
+      --night3:  #243349;
+      --grey1:   #f0f2f5;
+      --grey2:   #b8c0cc;
+      --grey3:   #6b7685;
+      --white:   #ffffff;
+      --green:   #3ab54a;
+      --green2:  #2d9640;
+      --border:  rgba(255,255,255,0.09);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: linear-gradient(160deg, #0d1825 0%, #16202e 40%, #1a2535 70%, #0f1b2a 100%);
+      background-attachment: fixed;
+      color: var(--grey1);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 300;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(22,32,46,0.95);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo-block { display: flex; flex-direction: column; gap: 0; }
+    .logo-text { font-size: 1.5rem; color: var(--white); }
+    .logo-w { font-weight: 700; }
+    .logo-mid { font-weight: 400; }
+    .logo-go { font-weight: 700; color: var(--green); }
+    .logo-sanskrit {
+      font-size: 0.62rem; font-weight: 300; letter-spacing: 0.16em;
+      color: var(--white); opacity: 0.75; padding-left: 0.1rem; margin-top: -0.15rem;
+    }
+
+    /* PAGE LAYOUT */
+    .page-center {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+    }
+
+    /* CARD */
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(30,45,64,0.6);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2.5rem 2.5rem 2rem;
+      backdrop-filter: blur(12px);
+    }
+    .card-eyebrow {
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 1rem;
+    }
+    .card h1 {
+      font-size: 1.8rem;
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1.25;
+      margin-bottom: 0.5rem;
+    }
+    .card h1 em {
+      font-style: normal;
+      font-weight: 600;
+      color: var(--green);
+    }
+    .card-sub {
+      font-size: 0.88rem;
+      color: var(--grey2);
+      margin-bottom: 1.75rem;
+      line-height: 1.6;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--grey2);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      padding: 0.7rem 0.5rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn.active {
+      color: var(--white);
+      border-bottom-color: var(--green);
+    }
+
+    /* FORM */
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--grey2);
+      margin-bottom: 0.45rem;
+    }
+    input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.7rem 1rem;
+      color: var(--white);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.94rem;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input::placeholder { color: var(--grey3); }
+    input:focus { border-color: rgba(58,181,74,0.5); }
+
+    /* REMEMBER ME */
+    .remember-row {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-bottom: 1.2rem;
+    }
+    .remember-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--green);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .remember-row label {
+      margin: 0;
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 0.85rem;
+      color: var(--grey2);
+      cursor: pointer;
+    }
+
+    /* BUTTON */
+    .btn {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.85rem 1rem;
+      background: var(--green);
+      color: var(--white);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .btn:hover { background: var(--green2); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ERROR */
+    .error-msg {
+      display: none;
+      font-size: 0.78rem;
+      color: #e05c5c;
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    /* FOOTER NOTE */
+    .card-note {
+      margin-top: 1.5rem;
+      font-size: 0.72rem;
+      color: var(--grey3);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* MOBILE */
+    @media (max-width: 480px) {
+      nav { padding: 0.85rem 1.25rem; }
+      .page-center { padding: 1.25rem 1rem; }
+      .card { padding: 1.75rem 1.5rem 1.5rem; }
+      .card h1 { font-size: 1.5rem; }
+      .tab-btn { font-size: 0.76rem; padding: 0.65rem 0.35rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo-block">
+      <div class="logo-text">
+        <span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span>
+      </div>
+      <div class="logo-sanskrit">Tat Tvam Asi</div>
+    </div>
+  </nav>
+
+  <div class="page-center">
+    <div class="card">
+      <p class="card-eyebrow">User Testing · Beta</p>
+      <h1>Let's get <em>started.</em></h1>
+      <p class="card-sub">Tell us a little about yourself before we begin the session.</p>
+
+      <div class="tabs">
+        <button type="button" class="tab-btn active" id="tabLogin">Log In</button>
+        <button type="button" class="tab-btn" id="tabSignup">New Here</button>
+      </div>
+
+      <!-- LOG IN -->
+      <div class="form-panel active" id="panelLogin">
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="loginUsername">Username</label>
+            <input type="text" id="loginUsername" placeholder="e.g. jane.doe" required autocomplete="username" />
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
+          </div>
+          <div class="remember-row">
+            <input type="checkbox" id="rememberMe" />
+            <label for="rememberMe">Keep me signed in on this device</label>
+          </div>
+          <button type="submit" class="btn" id="loginBtn">Log In →</button>
+          <p class="error-msg" id="loginError">Something went wrong. Please try again.</p>
+        </form>
+      </div>
+
+      <!-- SIGN UP -->
+      <div class="form-panel" id="panelSignup">
+        <form id="signupForm">
+          <div class="form-group">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" placeholder="e.g. Jane" required />
+          </div>
+          <div class="form-group">
+            <label for="designation">Designation</label>
+            <input type="text" id="designation" placeholder="e.g. Product Manager" required />
+          </div>
+          <div class="form-group">
+            <label for="department">Department</label>
+            <input type="text" id="department" placeholder="e.g. Product" required />
+          </div>
+          <div class="form-group">
+            <label for="company">Company / Organisation</label>
+            <input type="text" id="company" placeholder="e.g. Acme Corp" required />
+          </div>
+          <div class="form-group">
+            <label for="country">Country of Location</label>
+            <input type="text" id="country" placeholder="e.g. India" required />
+          </div>
+          <div class="form-group">
+            <label for="signupUsername">Choose a Username</label>
+            <input type="text" id="signupUsername" placeholder="e.g. jane.doe" required autocomplete="username" />
+          </div>
+          <div class="form-group">
+            <label for="signupPassword">Choose a Password</label>
+            <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" placeholder="••••••••" required autocomplete="new-password" />
+          </div>
+
+          <button type="submit" class="btn" id="signupBtn">Create My Account →</button>
+          <p class="error-msg" id="signupError">Something went wrong. Please try again.</p>
+        </form>
+      </div>
+
+      <p class="card-note">Your information is used only for this testing session and is not shared.</p>
+    </div>
+  </div>
+
+  <script>
+    // Points at backend_api.py -- now running live on Azure (WOTG_Production
+    // resource group, App Service "wotg-backend"). Change this if the
+    // backend ever moves to a different address.
+    const API_BASE = 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewebsites.net';
+
+    const tabLogin  = document.getElementById('tabLogin');
+    const tabSignup = document.getElementById('tabSignup');
+    const panelLogin  = document.getElementById('panelLogin');
+    const panelSignup = document.getElementById('panelSignup');
+
+    function showTab(which) {
+      const loginActive = which === 'login';
+      tabLogin.classList.toggle('active', loginActive);
+      tabSignup.classList.toggle('active', !loginActive);
+      panelLogin.classList.toggle('active', loginActive);
+      panelSignup.classList.toggle('active', !loginActive);
+    }
+    tabLogin.addEventListener('click', () => showTab('login'));
+    tabSignup.addEventListener('click', () => showTab('signup'));
+
+    function goToChat(userId, name) {
+      localStorage.setItem('user_id', userId);
+      localStorage.setItem('user_name', name);
+      window.location.href = 'native_chat.html';
+    }
+
+    // "Keep me signed in" -- prototype-level persistence, same trust model
+    // already used everywhere else in this build (localStorage presence IS
+    // the session, no separate expiring token). If a remembered identity is
+    // already here, skip the form entirely.
+    const rememberedUserId = localStorage.getItem('remembered_user_id');
+    const rememberedName   = localStorage.getItem('remembered_name');
+    if (rememberedUserId && rememberedName) {
+      goToChat(rememberedUserId, rememberedName);
+    }
+
+    // ---- LOG IN ----
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const errorMsg = document.getElementById('loginError');
+      errorMsg.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Logging in...';
+
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const remember = document.getElementById('rememberMe').checked;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Login failed.');
+
+        if (remember) {
+          localStorage.setItem('remembered_user_id', data.user_id);
+          localStorage.setItem('remembered_name', data.name);
+        }
+        goToChat(data.user_id, data.name);
+      } catch (err) {
+        errorMsg.textContent = err.message || 'Incorrect username or password.';
+        errorMsg.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Log In →';
+      }
+    });
+
+    // ---- SIGN UP ----
+    document.getElementById('signupForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('signupBtn');
+      const errorMsg = document.getElementById('signupError');
+      errorMsg.style.display = 'none';
+
+      const password = document.getElementById('signupPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      if (password !== confirmPassword) {
+        errorMsg.textContent = 'Passwords do not match.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+
+      const payload = {
+        username: document.getElementById('signupUsername').value.trim(),
+        password: password,
+        name: document.getElementById('name').value.trim().replace(/\b\w/g, c => c.toUpperCase()),
+        designation: document.getElementById('designation').value.trim(),
+        department: document.getElementById('department').value.trim(),
+        company: document.getElementById('company').value.trim(),
+        country: document.getElementById('country').value.trim(),
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Could not create your account.');
+
+        goToChat(data.user_id, data.name);
+      } catch (err) {
+        errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
+        errorMsg.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Create My Account →';
+      }
+    });
+  </script>
+
+</body>
+</html>
