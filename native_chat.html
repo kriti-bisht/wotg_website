@@ -591,6 +591,24 @@ async function handleBackendResult(result) {
     renderDriverDiagnosisForm(pendingForm);
   }
 
+  // 'reflector_identification' isn't a phase that waits on the user -- it's
+  // just the signpost message, shown on its own specifically so it appears
+  // BEFORE the real 10-25+ second Identifier/Finalization/Disclosure wait,
+  // not bundled in after it. The instant it's shown, automatically continue
+  // to actually get the disclosure reveal -- nothing for the user to do here.
+  if (currentPhase === 'reflector_identification') {
+    showTyping(currentPhase);
+    try {
+      const nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
+      removeTyping();
+      await handleBackendResult(nextResult);
+    } catch (err) {
+      removeTyping();
+      appendError(err.message || 'Something went wrong continuing the conversation.');
+    }
+    return;
+  }
+
   if (result.session_complete || TERMINAL_PHASES.includes(currentPhase)) {
     lockConversationEnded();
   }
@@ -744,20 +762,18 @@ function doEndSession() {
   const area = document.getElementById('messagesArea');
   const notice = document.createElement('div');
   notice.className = 'session-ended-notice';
-  notice.textContent = 'Session ended · ' + new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '  —  Redirecting…';
+  notice.textContent = 'Session ended · ' + new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '  —  Starting a new conversation…';
   area.appendChild(notice);
   scrollMessagesToBottom();
 
-  localStorage.removeItem('session_id');
-  localStorage.removeItem('user_name');
-  localStorage.removeItem('user_email');
-  localStorage.removeItem('user_company');
-  localStorage.removeItem('user_id');
-  localStorage.removeItem('remembered_user_id');
-  localStorage.removeItem('remembered_name');
-
+  // Ending a session is NOT logging out -- stay signed in as the same
+  // person, just go back to this same page's own welcome/cover screen
+  // ("Hi Kriti") ready for a fresh conversation. Reloading this same page
+  // does exactly that: initSession() already resets currentPhase/sessionId
+  // on every load, and localStorage (user_id/user_name) is left untouched
+  // here on purpose, unlike logOut() which clears it deliberately.
   setTimeout(function() {
-    window.location.href = 'native_login.html';
+    window.location.reload();
   }, 1500);
 }
 
@@ -892,6 +908,7 @@ function appendError(text) {
 const PHASE_WORDS = {
   opening:              ['Just a moment…', 'Thinking that through…'],
   diagnosis:            ['Interpreting…', 'Finding the clues…', 'Making notes…', 'Thinking that through…'],
+  reflector_identification: ['Identifying the skill that fits…', 'Connecting the dots…', 'Almost there…'],
   reflector_disclosure: ['Reflecting…', 'Identifying patterns…', 'Weighing what matters…', 'Connecting the dots…'],
   reflector_objection:  ['Reflecting…', 'Weighing what matters…', 'Thinking that through…'],
   rediagnosis:          ['Reconsidering…', 'Looking at this again…'],
