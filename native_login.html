@@ -206,6 +206,50 @@
       text-align: center;
     }
 
+    /* FORGOT PASSWORD LINK */
+    .forgot-link {
+      display: block;
+      text-align: right;
+      font-size: 0.78rem;
+      color: var(--green);
+      text-decoration: none;
+      margin: -0.6rem 0 1.2rem;
+    }
+    .forgot-link:hover { color: var(--green2); text-decoration: underline; }
+
+    /* SECONDARY STATES (forgot password / sent / forced password change) */
+    .state-panel { display: none; }
+    .state-panel.active { display: block; }
+    .btn-link {
+      display: block;
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.85rem 1rem;
+      background: transparent;
+      color: var(--green);
+      text-align: center;
+      text-decoration: none;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      border: 1px solid rgba(58,181,74,0.35);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-link:hover { background: rgba(58,181,74,0.1); }
+    .success-icon {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: rgba(58,181,74,0.15); color: var(--green);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin: 0 auto 1.25rem;
+    }
+    .success-text {
+      font-size: 0.9rem; color: var(--grey2); line-height: 1.6; margin-bottom: 1.5rem;
+    }
+    .center-text { text-align: center; }
+
     /* FOOTER NOTE */
     .card-note {
       margin-top: 1.5rem;
@@ -242,69 +286,121 @@
       <h1>Let's get <em>started.</em></h1>
       <p class="card-sub">Tell us a little about yourself before we begin the session.</p>
 
-      <div class="tabs">
-        <button type="button" class="tab-btn active" id="tabLogin">Log In</button>
-        <button type="button" class="tab-btn" id="tabSignup">New Here</button>
+      <!-- MAIN LOGIN/SIGNUP STATE -->
+      <div class="state-panel active" id="authState">
+        <div class="tabs">
+          <button type="button" class="tab-btn active" id="tabLogin">Log In</button>
+          <button type="button" class="tab-btn" id="tabSignup">New Here</button>
+        </div>
+
+        <!-- LOG IN -->
+        <div class="form-panel active" id="panelLogin">
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="loginUsername">Username</label>
+              <input type="text" id="loginUsername" placeholder="e.g. jane.doe" required autocomplete="username" />
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
+            </div>
+            <a href="#" class="forgot-link" id="forgotLink">Forgot password?</a>
+            <div class="remember-row">
+              <input type="checkbox" id="rememberMe" />
+              <label for="rememberMe">Keep me signed in on this device</label>
+            </div>
+            <button type="submit" class="btn" id="loginBtn">Log In →</button>
+            <p class="error-msg" id="loginError">Something went wrong. Please try again.</p>
+          </form>
+        </div>
+
+        <!-- SIGN UP -->
+        <div class="form-panel" id="panelSignup">
+          <form id="signupForm">
+            <div class="form-group">
+              <label for="name">Your Name</label>
+              <input type="text" id="name" placeholder="e.g. Jane" required />
+            </div>
+            <div class="form-group">
+              <label for="signupEmail">Email</label>
+              <input type="email" id="signupEmail" placeholder="e.g. jane@company.com" required autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label for="designation">Designation</label>
+              <input type="text" id="designation" placeholder="e.g. Product Manager" required />
+            </div>
+            <div class="form-group">
+              <label for="department">Department</label>
+              <input type="text" id="department" placeholder="e.g. Product" required />
+            </div>
+            <div class="form-group">
+              <label for="company">Company / Organisation</label>
+              <input type="text" id="company" placeholder="e.g. Acme Corp" required />
+            </div>
+            <div class="form-group">
+              <label for="country">Country of Location</label>
+              <input type="text" id="country" placeholder="e.g. India" required />
+            </div>
+            <div class="form-group">
+              <label for="signupUsername">Choose a Username</label>
+              <input type="text" id="signupUsername" placeholder="e.g. jane.doe" required autocomplete="username" />
+            </div>
+            <div class="form-group">
+              <label for="signupPassword">Choose a Password</label>
+              <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <input type="password" id="confirmPassword" placeholder="••••••••" required autocomplete="new-password" />
+            </div>
+
+            <button type="submit" class="btn" id="signupBtn">Create My Account →</button>
+            <p class="error-msg" id="signupError">Something went wrong. Please try again.</p>
+          </form>
+        </div>
       </div>
 
-      <!-- LOG IN -->
-      <div class="form-panel active" id="panelLogin">
-        <form id="loginForm">
+      <!-- FORGOT PASSWORD: REQUEST STATE -->
+      <div class="state-panel" id="forgotState">
+        <p class="card-eyebrow">Password Reset</p>
+        <h1>Forgot your <em>password?</em></h1>
+        <p class="card-sub">Enter the email on your account and we'll send you a link to set a new password.</p>
+        <form id="forgotForm">
           <div class="form-group">
-            <label for="loginUsername">Username</label>
-            <input type="text" id="loginUsername" placeholder="e.g. jane.doe" required autocomplete="username" />
+            <label for="forgotEmail">Email</label>
+            <input type="email" id="forgotEmail" placeholder="e.g. jane@company.com" required autocomplete="email" />
           </div>
-          <div class="form-group">
-            <label for="loginPassword">Password</label>
-            <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
-          </div>
-          <div class="remember-row">
-            <input type="checkbox" id="rememberMe" />
-            <label for="rememberMe">Keep me signed in on this device</label>
-          </div>
-          <button type="submit" class="btn" id="loginBtn">Log In →</button>
-          <p class="error-msg" id="loginError">Something went wrong. Please try again.</p>
+          <button type="submit" class="btn" id="forgotBtn">Send Reset Link →</button>
+          <p class="error-msg" id="forgotError">Something went wrong. Please try again.</p>
         </form>
+        <a href="#" class="btn-link" id="backToLoginFromForgot" style="margin-top:1rem;">Back to Log In</a>
       </div>
 
-      <!-- SIGN UP -->
-      <div class="form-panel" id="panelSignup">
-        <form id="signupForm">
-          <div class="form-group">
-            <label for="name">Your Name</label>
-            <input type="text" id="name" placeholder="e.g. Jane" required />
-          </div>
-          <div class="form-group">
-            <label for="designation">Designation</label>
-            <input type="text" id="designation" placeholder="e.g. Product Manager" required />
-          </div>
-          <div class="form-group">
-            <label for="department">Department</label>
-            <input type="text" id="department" placeholder="e.g. Product" required />
-          </div>
-          <div class="form-group">
-            <label for="company">Company / Organisation</label>
-            <input type="text" id="company" placeholder="e.g. Acme Corp" required />
-          </div>
-          <div class="form-group">
-            <label for="country">Country of Location</label>
-            <input type="text" id="country" placeholder="e.g. India" required />
-          </div>
-          <div class="form-group">
-            <label for="signupUsername">Choose a Username</label>
-            <input type="text" id="signupUsername" placeholder="e.g. jane.doe" required autocomplete="username" />
-          </div>
-          <div class="form-group">
-            <label for="signupPassword">Choose a Password</label>
-            <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
-          </div>
-          <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" placeholder="••••••••" required autocomplete="new-password" />
-          </div>
+      <!-- FORGOT PASSWORD: SENT STATE -->
+      <div class="state-panel" id="forgotSentState">
+        <div class="success-icon">✓</div>
+        <p class="card-eyebrow center-text">Password Reset</p>
+        <h1 class="center-text">Check your <em>email.</em></h1>
+        <p class="success-text center-text">If that email is on file, a reset link has been sent. It's valid for 30 minutes.</p>
+        <a href="#" class="btn-link" id="backToLoginFromSent">Back to Log In</a>
+      </div>
 
-          <button type="submit" class="btn" id="signupBtn">Create My Account →</button>
-          <p class="error-msg" id="signupError">Something went wrong. Please try again.</p>
+      <!-- FORCED PASSWORD CHANGE STATE (bulk-created accounts, first login only) -->
+      <div class="state-panel" id="forcedState">
+        <p class="card-eyebrow">One More Step</p>
+        <h1>Set a real <em>password.</em></h1>
+        <p class="card-sub">Your account was created for you with a temporary password. Choose your own to continue.</p>
+        <form id="forcedForm">
+          <div class="form-group">
+            <label for="forcedPassword">New Password</label>
+            <input type="password" id="forcedPassword" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+          </div>
+          <div class="form-group">
+            <label for="forcedConfirmPassword">Confirm Password</label>
+            <input type="password" id="forcedConfirmPassword" placeholder="••••••••" required autocomplete="new-password" />
+          </div>
+          <button type="submit" class="btn" id="forcedBtn">Set Password &amp; Continue →</button>
+          <p class="error-msg" id="forcedError">Something went wrong. Please try again.</p>
         </form>
       </div>
 
@@ -313,10 +409,10 @@
   </div>
 
   <script>
-    // Points at backend_api.py -- now running live on Azure (WOTG_Production
-    // resource group, App Service "wotg-backend"). Change this if the
-    // backend ever moves to a different address.
-    const API_BASE = 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewebsites.net';
+    // Points at user_management_api.py -- accounts (signup/login/password
+    // reset) live in their own App Service now, separate from the
+    // Opening-conversation backend. Change this if the service ever moves.
+    const API_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
 
     const tabLogin  = document.getElementById('tabLogin');
     const tabSignup = document.getElementById('tabSignup');
@@ -332,6 +428,31 @@
     }
     tabLogin.addEventListener('click', () => showTab('login'));
     tabSignup.addEventListener('click', () => showTab('signup'));
+
+    // ---- TOP-LEVEL STATE SWITCHING (auth form / forgot password / forced password change) ----
+    const authState      = document.getElementById('authState');
+    const forgotState    = document.getElementById('forgotState');
+    const forgotSentState = document.getElementById('forgotSentState');
+    const forcedState    = document.getElementById('forcedState');
+
+    function showState(el) {
+      [authState, forgotState, forgotSentState, forcedState].forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    document.getElementById('forgotLink').addEventListener('click', function (e) {
+      e.preventDefault();
+      document.getElementById('forgotError').style.display = 'none';
+      showState(forgotState);
+    });
+    document.getElementById('backToLoginFromForgot').addEventListener('click', function (e) {
+      e.preventDefault();
+      showState(authState);
+    });
+    document.getElementById('backToLoginFromSent').addEventListener('click', function (e) {
+      e.preventDefault();
+      showState(authState);
+    });
 
     function goToChat(userId, name) {
       localStorage.setItem('user_id', userId);
@@ -350,6 +471,10 @@
     }
 
     // ---- LOG IN ----
+    let pendingForcedUserId = null;  // set only while forcedState is showing
+    let pendingForcedName = null;
+    let pendingRemember = false;
+
     document.getElementById('loginForm').addEventListener('submit', async function (e) {
       e.preventDefault();
       const btn = document.getElementById('loginBtn');
@@ -370,6 +495,22 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'Login failed.');
+
+        if (data.must_change_password) {
+          // Bulk-created account, first login -- park them on the forced
+          // password screen instead of the chat page. "Remember me" (if
+          // checked) is honored once they finish setting their real password.
+          pendingForcedUserId = data.user_id;
+          pendingForcedName = data.name;
+          pendingRemember = remember;
+          document.getElementById('forcedPassword').value = '';
+          document.getElementById('forcedConfirmPassword').value = '';
+          document.getElementById('forcedError').style.display = 'none';
+          showState(forcedState);
+          btn.disabled = false;
+          btn.textContent = 'Log In →';
+          return;
+        }
 
         if (remember) {
           localStorage.setItem('remembered_user_id', data.user_id);
@@ -404,6 +545,7 @@
 
       const payload = {
         username: document.getElementById('signupUsername').value.trim(),
+        email: document.getElementById('signupEmail').value.trim(),
         password: password,
         name: document.getElementById('name').value.trim().replace(/\b\w/g, c => c.toUpperCase()),
         designation: document.getElementById('designation').value.trim(),
@@ -427,6 +569,79 @@
         errorMsg.style.display = 'block';
         btn.disabled = false;
         btn.textContent = 'Create My Account →';
+      }
+    });
+
+    // ---- FORGOT PASSWORD (request) ----
+    document.getElementById('forgotForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('forgotBtn');
+      const errorMsg = document.getElementById('forgotError');
+      errorMsg.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      const email = document.getElementById('forgotEmail').value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/reset-password/request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        // Always the same outcome regardless of whether the email matched
+        // an account -- that's the backend's explicit privacy behavior, not
+        // something to second-guess here.
+        if (!res.ok) throw new Error('Something went wrong. Please try again.');
+        showState(forgotSentState);
+      } catch (err) {
+        errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
+        errorMsg.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Reset Link →';
+      }
+    });
+
+    // ---- FORCED PASSWORD CHANGE (first login after bulk-create) ----
+    document.getElementById('forcedForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('forcedBtn');
+      const errorMsg = document.getElementById('forcedError');
+      errorMsg.style.display = 'none';
+
+      const newPassword = document.getElementById('forcedPassword').value;
+      const confirmPassword = document.getElementById('forcedConfirmPassword').value;
+      if (newPassword !== confirmPassword) {
+        errorMsg.textContent = 'Passwords do not match.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/first-login-set-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: pendingForcedUserId, new_password: newPassword }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || 'Something went wrong. Please try again.');
+
+        // Same "remember me" contract as the normal login path, using the
+        // name login already gave us (this endpoint doesn't return one).
+        if (pendingRemember) {
+          localStorage.setItem('remembered_user_id', pendingForcedUserId);
+          localStorage.setItem('remembered_name', pendingForcedName);
+        }
+        goToChat(pendingForcedUserId, pendingForcedName);
+      } catch (err) {
+        errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
+        errorMsg.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Set Password & Continue →';
       }
     });
   </script>

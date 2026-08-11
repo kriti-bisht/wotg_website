@@ -56,6 +56,7 @@ nav{
   border-bottom:1px solid var(--border);
   z-index:10;
 }
+.nav-left{display:flex;align-items:center}
 .logo-block{display:flex;flex-direction:column;gap:0;text-decoration:none;cursor:pointer}
 .logo-text{font-size:1.5rem;color:var(--white)}
 .logo-w{font-weight:700}
@@ -63,6 +64,115 @@ nav{
 .logo-go{font-weight:700;color:var(--green)}
 .logo-sanskrit{font-size:0.62rem;font-weight:300;letter-spacing:0.16em;color:var(--white);opacity:0.75;padding-left:0.1rem;margin-top:-0.15rem}
 .nav-right{display:flex;align-items:center;gap:1.5rem}
+
+/* MAIN LAYOUT -- sidebar (Learning Goals) on the left, chat on the right,
+   side by side, sharing the space below nav. Replaces the old approach of
+   stacking the goals card above the chat, which pushed the whole
+   conversation down every time the page loaded. */
+/* GREETING -- "Hello Name, / How can I help you today?" next to the logo */
+.greeting{margin-left:1.75rem;padding-left:1.75rem;border-left:1px solid var(--border)}
+.greeting-line1{font-size:1.05rem;color:var(--white)}
+.greeting-line1 strong{color:var(--green);font-weight:600}
+.greeting-line2{font-size:0.85rem;color:var(--white);margin-top:0.15rem}
+@media(max-width:700px){ .greeting-line2{display:none} }
+@media(max-width:560px){ .greeting{display:none} }
+
+/* LEARNING GOALS -- a button that drops the card down on click, instead of
+   a permanent panel, since there's no room to show goals AND the chat side
+   by side once the screen gets phone-narrow. Works the same way (tap to
+   open, tap again/tap outside to close) at every screen size, so nothing
+   different has to happen on mobile vs desktop. */
+.goals-dropdown-wrap{position:relative}
+.goals-toggle-btn{
+  background:transparent;border:1px solid rgba(58,181,74,0.35);border-radius:3px;
+  color:var(--green);font-family:'Poppins',sans-serif;font-size:0.73rem;font-weight:500;
+  letter-spacing:0.03em;padding:0 1rem;height:32px;
+  display:inline-flex;align-items:center;
+  cursor:pointer;transition:background 0.2s,color 0.2s;
+}
+.goals-toggle-btn:hover,.goals-toggle-btn.active{background:var(--green);color:#fff}
+.goals-dropdown{
+  display:none;
+  position:absolute;
+  top:calc(100% + 10px);
+  right:0;
+  width:300px;
+  max-width:calc(100vw - 2rem);
+  z-index:20;
+}
+.goals-dropdown.open{display:block}
+@media(max-width:600px){
+  .goals-dropdown{position:fixed;top:64px;right:0.75rem;left:0.75rem;width:auto;max-width:none}
+}
+.goals-card{
+  background:var(--grey1);
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 14px 34px rgba(0,0,0,0.45);
+}
+.goals-header{
+  background:var(--green);
+  padding:0.7rem 1.1rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:0.5rem;
+}
+.goals-title{font-size:0.85rem;font-weight:600;letter-spacing:0.03em;color:#fff}
+.goals-badge{
+  font-size:0.6rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;
+  background:rgba(255,255,255,0.24);color:#fff;
+  padding:0.26rem 0.55rem;border-radius:20px;
+  white-space:nowrap;
+}
+.goals-body{
+  display:flex;
+  flex-direction:column;
+  gap:0.6rem;
+  padding:0.9rem 1rem 1rem;
+}
+.goal-slot{
+  border:1.5px dashed #c3cad6;
+  border-radius:8px;
+  min-height:64px;
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+  padding:0 0.8rem;
+  color:#8f98a8;
+}
+.goal-slot .goal-slot-icon{
+  flex-shrink:0;
+  width:26px;height:26px;border-radius:50%;
+  border:1.5px dashed #c3cad6;
+}
+.goal-slot .goal-slot-label{font-size:0.7rem;font-weight:500;letter-spacing:0.02em}
+/* Filled goal item -- an actual assigned skill, once loaded. Solid green
+   icon (vs. the dashed empty-placeholder look above) so a real assignment
+   visually reads as "set", not "still waiting on". */
+.goal-item{
+  border:1.5px solid rgba(58,181,74,0.35);
+  border-radius:8px;
+  min-height:auto;
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+  padding:0.6rem 0.8rem;
+  color:#2c3440;
+  background:rgba(58,181,74,0.06);
+}
+.goal-item .goal-item-icon{
+  flex-shrink:0;
+  width:26px;height:26px;border-radius:50%;
+  background:var(--green);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;line-height:1;
+}
+.goal-item .goal-item-label{font-size:0.76rem;font-weight:500;letter-spacing:0.02em}
+.goals-loading,.goals-error{
+  font-size:0.72rem;color:#8f98a8;padding:0.4rem 0.2rem;text-align:center;
+}
+.goals-error{color:#c0392b}
 nav a{font-size:0.78rem;color:var(--grey2);text-decoration:none;letter-spacing:0.06em;transition:color 0.2s}
 nav a:hover{color:var(--white)}
 .log-out-btn{
@@ -422,13 +532,35 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
 <body>
 
 <nav>
-  <a href="index.html" class="logo-block">
-    <div class="logo-text">
-      <span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span>
+  <div class="nav-left">
+    <a href="index.html" class="logo-block">
+      <div class="logo-text">
+        <span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span>
+      </div>
+      <div class="logo-sanskrit">Tat Tvam Asi</div>
+    </a>
+    <div class="greeting" id="greeting">
+      <div class="greeting-line1">Hello <strong id="greetingName"></strong>,</div>
+      <div class="greeting-line2">How can I help you today?</div>
     </div>
-    <div class="logo-sanskrit">Tat Tvam Asi</div>
-  </a>
+  </div>
   <div class="nav-right">
+    <div class="goals-dropdown-wrap">
+      <button class="goals-toggle-btn" id="goalsToggleBtn" onclick="toggleGoalsDropdown(event)">
+        🎯 My Learning Goals
+      </button>
+      <div class="goals-dropdown" id="goalsDropdown">
+        <div class="goals-card">
+          <div class="goals-header">
+            <span class="goals-title">🎯 Learning Goals</span>
+            <span class="goals-badge" id="goalsBadge">…</span>
+          </div>
+          <div class="goals-body" id="goalsBody">
+            <div class="goals-loading">Loading…</div>
+          </div>
+        </div>
+      </div>
+    </div>
     <button class="log-out-btn" id="logOutBtn" onclick="logOut()">Log out</button>
     <button class="end-chat-btn" id="endChatBtn" onclick="endConversation()">End session</button>
   </div>
@@ -515,6 +647,9 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
 // for the one part of the conversation that's a form, not free text.
 // ─────────────────────────────────────────────────────────────────────────────
 const API_BASE = 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewebsites.net';
+// Accounts + skills live in their own App Service, separate from the
+// Opening-conversation backend above -- this is what /api/user-skills is on.
+const USER_MGMT_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
 
 let userId     = '';
 let sessionId  = '';   // empty until the backend hands us a real one
@@ -545,7 +680,96 @@ function initSession() {
   }
   const userName = localStorage.getItem('user_name') || '';
   userInitials = computeInitials(userName);
+  const greetingNameEl = document.getElementById('greetingName');
+  const greetingEl = document.getElementById('greeting');
+  if (greetingNameEl && greetingEl) {
+    // First name only, reads more natural than the full name in a greeting --
+    // hides the whole greeting block if no name was ever saved.
+    var firstName = userName.trim().split(/\s+/)[0] || '';
+    if (firstName) {
+      greetingNameEl.textContent = firstName;
+    } else {
+      greetingEl.style.display = 'none';
+    }
+  }
+  loadLearningGoals();
 }
+
+// ─── LEARNING GOALS DATA ────────────────────────────────────────────────────
+// Fetched once on page load (the dropdown itself opens/closes purely client-
+// side, no need to refetch on every click) -- shows however many skills this
+// person actually has assigned, no cap on the count per Kriti's explicit call.
+async function loadLearningGoals() {
+  const badge = document.getElementById('goalsBadge');
+  const body = document.getElementById('goalsBody');
+  try {
+    const res = await fetch(`${USER_MGMT_BASE}/api/user-skills?user_id=${encodeURIComponent(userId)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Could not load learning goals.');
+
+    const skills = data.skills || [];
+    badge.textContent = skills.length === 1 ? '1 Skill' : `${skills.length} Skills`;
+
+    if (skills.length === 0) {
+      body.innerHTML = '';
+      const slot = document.createElement('div');
+      slot.className = 'goal-slot';
+      const icon = document.createElement('div');
+      icon.className = 'goal-slot-icon';
+      const label = document.createElement('span');
+      label.className = 'goal-slot-label';
+      label.textContent = 'No skills assigned yet';
+      slot.appendChild(icon);
+      slot.appendChild(label);
+      body.appendChild(slot);
+      return;
+    }
+
+    body.innerHTML = '';
+    skills.forEach(function(skillName) {
+      const item = document.createElement('div');
+      item.className = 'goal-item';
+      const icon = document.createElement('div');
+      icon.className = 'goal-item-icon';
+      icon.textContent = '✓';
+      const label = document.createElement('span');
+      label.className = 'goal-item-label';
+      label.textContent = skillName;
+      item.appendChild(icon);
+      item.appendChild(label);
+      body.appendChild(item);
+    });
+  } catch (err) {
+    badge.textContent = '';
+    body.innerHTML = '';
+    const errEl = document.createElement('div');
+    errEl.className = 'goals-error';
+    errEl.textContent = 'Could not load learning goals.';
+    body.appendChild(errEl);
+  }
+}
+
+// ─── LEARNING GOALS DROPDOWN ────────────────────────────────────────────────
+// Button-triggered dropdown, not a permanent panel -- there's no screen
+// room to show goals AND the chat side by side once things get phone-narrow,
+// so this same open/close behavior is used at every screen size instead of
+// switching approaches on mobile.
+function toggleGoalsDropdown(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('goalsDropdown');
+  const btn = document.getElementById('goalsToggleBtn');
+  dropdown.classList.toggle('open');
+  btn.classList.toggle('active');
+}
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('goalsDropdown');
+  const btn = document.getElementById('goalsToggleBtn');
+  if (!dropdown || !dropdown.classList.contains('open')) return;
+  if (!dropdown.contains(event.target) && event.target !== btn) {
+    dropdown.classList.remove('open');
+    btn.classList.remove('active');
+  }
+});
 
 // ─── BACKEND CALLS ──────────────────────────────────────────────────────────
 async function apiPost(path, body) {
@@ -591,12 +815,14 @@ async function handleBackendResult(result) {
     renderDriverDiagnosisForm(pendingForm);
   }
 
-  // 'reflector_identification' isn't a phase that waits on the user -- it's
-  // just the signpost message, shown on its own specifically so it appears
-  // BEFORE the real 10-25+ second Identifier/Finalization/Disclosure wait,
-  // not bundled in after it. The instant it's shown, automatically continue
-  // to actually get the disclosure reveal -- nothing for the user to do here.
-  if (currentPhase === 'reflector_identification') {
+  // 'reflector_identification' and 'content_creation' aren't phases that
+  // wait on the user -- each is just its own signpost message, shown on its
+  // own specifically so it appears BEFORE the real slow wait behind it
+  // (Identifier/Finalization/Disclosure, or Content Writers/Training
+  // Coordinator/stitching), not bundled in after it. The instant either
+  // signpost is shown, automatically continue to get the real result --
+  // nothing for the user to do here.
+  if (currentPhase === 'reflector_identification' || currentPhase === 'content_creation') {
     showTyping(currentPhase);
     try {
       const nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
