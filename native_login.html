@@ -155,6 +155,19 @@
     input::placeholder { color: var(--grey3); }
     input:focus { border-color: rgba(58,181,74,0.5); }
 
+    /* PASSWORD VISIBILITY TOGGLE -- Kriti's explicit call, 2026-08-14:
+       no way to see what you typed on any of the 5 password fields. */
+    .password-field { position: relative; }
+    .password-field input { padding-right: 2.75rem; }
+    .password-toggle-btn {
+      position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%);
+      background: transparent; border: none; cursor: pointer;
+      color: var(--grey3); padding: 0.4rem; line-height: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.2s;
+    }
+    .password-toggle-btn:hover { color: var(--white); }
+
     /* REMEMBER ME */
     .remember-row {
       display: flex;
@@ -302,7 +315,10 @@
             </div>
             <div class="form-group">
               <label for="loginPassword">Password</label>
-              <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
+              <div class="password-field">
+                <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
+                <button type="button" class="password-toggle-btn" aria-label="Show password" onclick="togglePasswordVisibility('loginPassword', this)"></button>
+              </div>
             </div>
             <a href="#" class="forgot-link" id="forgotLink">Forgot password?</a>
             <div class="remember-row">
@@ -347,11 +363,17 @@
             </div>
             <div class="form-group">
               <label for="signupPassword">Choose a Password</label>
-              <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+              <div class="password-field">
+                <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+                <button type="button" class="password-toggle-btn" aria-label="Show password" onclick="togglePasswordVisibility('signupPassword', this)"></button>
+              </div>
             </div>
             <div class="form-group">
               <label for="confirmPassword">Confirm Password</label>
-              <input type="password" id="confirmPassword" placeholder="••••••••" required autocomplete="new-password" />
+              <div class="password-field">
+                <input type="password" id="confirmPassword" placeholder="••••••••" required autocomplete="new-password" />
+                <button type="button" class="password-toggle-btn" aria-label="Show password" onclick="togglePasswordVisibility('confirmPassword', this)"></button>
+              </div>
             </div>
 
             <button type="submit" class="btn" id="signupBtn">Create My Account →</button>
@@ -393,11 +415,17 @@
         <form id="forcedForm">
           <div class="form-group">
             <label for="forcedPassword">New Password</label>
-            <input type="password" id="forcedPassword" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+            <div class="password-field">
+              <input type="password" id="forcedPassword" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
+              <button type="button" class="password-toggle-btn" aria-label="Show password" onclick="togglePasswordVisibility('forcedPassword', this)"></button>
+            </div>
           </div>
           <div class="form-group">
             <label for="forcedConfirmPassword">Confirm Password</label>
-            <input type="password" id="forcedConfirmPassword" placeholder="••••••••" required autocomplete="new-password" />
+            <div class="password-field">
+              <input type="password" id="forcedConfirmPassword" placeholder="••••••••" required autocomplete="new-password" />
+              <button type="button" class="password-toggle-btn" aria-label="Show password" onclick="togglePasswordVisibility('forcedConfirmPassword', this)"></button>
+            </div>
           </div>
           <button type="submit" class="btn" id="forcedBtn">Set Password &amp; Continue →</button>
           <p class="error-msg" id="forcedError">Something went wrong. Please try again.</p>
@@ -413,6 +441,21 @@
     // reset) live in their own App Service now, separate from the
     // Opening-conversation backend. Change this if the service ever moves.
     const API_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
+
+    // PASSWORD VISIBILITY TOGGLE -- Kriti's explicit call, 2026-08-14.
+    // Two small inline icons (no external dependency), swapped on click.
+    const EYE_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const EYE_OFF_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const nowShowing = input.type === 'password';
+      input.type = nowShowing ? 'text' : 'password';
+      btn.innerHTML = nowShowing ? EYE_OFF_ICON : EYE_ICON;
+      btn.setAttribute('aria-label', nowShowing ? 'Hide password' : 'Show password');
+    }
+    // Start every toggle button showing the "eye" icon (password hidden, click to reveal).
+    document.querySelectorAll('.password-toggle-btn').forEach(btn => { btn.innerHTML = EYE_ICON; });
 
     const tabLogin  = document.getElementById('tabLogin');
     const tabSignup = document.getElementById('tabSignup');

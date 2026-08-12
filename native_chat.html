@@ -140,13 +140,14 @@ nav{
   gap:0.6rem;
   padding:0 0.8rem;
   color:#8f98a8;
+  min-width:0; /* same overflow fix as .goal-item, for consistency */
 }
 .goal-slot .goal-slot-icon{
   flex-shrink:0;
   width:26px;height:26px;border-radius:50%;
   border:1.5px dashed #c3cad6;
 }
-.goal-slot .goal-slot-label{font-size:0.7rem;font-weight:500;letter-spacing:0.02em}
+.goal-slot .goal-slot-label{font-size:0.7rem;font-weight:500;letter-spacing:0.02em;overflow-wrap:break-word;min-width:0}
 /* Filled goal item -- an actual assigned skill, once loaded. Solid green
    icon (vs. the dashed empty-placeholder look above) so a real assignment
    visually reads as "set", not "still waiting on". */
@@ -160,6 +161,12 @@ nav{
   padding:0.6rem 0.8rem;
   color:#2c3440;
   background:rgba(58,181,74,0.06);
+  /* A flex item's default min-width is "auto" -- it refuses to shrink
+     below its content's natural width, which is exactly why a long skill
+     name pushed outside the box instead of wrapping (worst on mobile,
+     where the dropdown itself is narrower). Kriti's explicit call,
+     2026-08-14. */
+  min-width:0;
 }
 .goal-item .goal-item-icon{
   flex-shrink:0;
@@ -168,7 +175,10 @@ nav{
   display:flex;align-items:center;justify-content:center;
   font-size:0.7rem;line-height:1;
 }
-.goal-item .goal-item-label{font-size:0.76rem;font-weight:500;letter-spacing:0.02em}
+.goal-item .goal-item-label{
+  font-size:0.76rem;font-weight:500;letter-spacing:0.02em;
+  overflow-wrap:break-word;min-width:0;
+}
 .goals-loading,.goals-error{
   font-size:0.72rem;color:#8f98a8;padding:0.4rem 0.2rem;text-align:center;
 }
@@ -815,14 +825,15 @@ async function handleBackendResult(result) {
     renderDriverDiagnosisForm(pendingForm);
   }
 
-  // 'reflector_identification' and 'content_creation' aren't phases that
-  // wait on the user -- each is just its own signpost message, shown on its
-  // own specifically so it appears BEFORE the real slow wait behind it
-  // (Identifier/Finalization/Disclosure, or Content Writers/Training
-  // Coordinator/stitching), not bundled in after it. The instant either
+  // 'reflector_identification', 'driver_diagnosis_resolving', and
+  // 'content_creation' aren't phases that wait on the user -- each is just
+  // its own signpost message, shown on its own specifically so it appears
+  // BEFORE the real slow wait behind it (Identifier/Finalization/Disclosure,
+  // resolving each answered driver's verdict, or Content Writers/Training
+  // Coordinator/stitching), not bundled in after it. The instant any
   // signpost is shown, automatically continue to get the real result --
   // nothing for the user to do here.
-  if (currentPhase === 'reflector_identification' || currentPhase === 'content_creation') {
+  if (currentPhase === 'reflector_identification' || currentPhase === 'driver_diagnosis_resolving' || currentPhase === 'content_creation') {
     showTyping(currentPhase);
     try {
       const nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
@@ -840,15 +851,37 @@ async function handleBackendResult(result) {
   }
 }
 
+// Shared by all 4 ways a session can end -- you clicking "End session", or
+// any of the backend's 3 own endings (Scope Checker, Objection Handler's
+// dead end, or Training finishing normally). Kriti's explicit call: all of
+// them need to look and feel exactly the same to you, only the message
+// text leading up to it differs. doEndSession() below just calls this now,
+// so there's one single place this behavior is defined.
 function lockConversationEnded() {
   if (sessionEnded) return;
   sessionEnded = true;
+
   const input = document.getElementById('userInput');
   input.disabled = true;
   input.placeholder = 'Conversation ended.';
   document.getElementById('sendBtn').disabled = true;
   document.getElementById('micBtn').disabled = true;
   document.getElementById('endChatBtn').disabled = true;
+
+  removeWelcome();
+  const area = document.getElementById('messagesArea');
+  const notice = document.createElement('div');
+  notice.className = 'session-ended-notice';
+  const timestamp = new Date();
+  notice.textContent = 'Session ended · ' + timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '  —  Starting a new conversation…';
+  area.appendChild(notice);
+  scrollMessagesToBottom();
+
+  // Same as doEndSession()'s own comment used to say: not a logout, just
+  // back to this page's own welcome screen ready for a fresh conversation.
+  setTimeout(function() {
+    window.location.reload();
+  }, 1500);
 }
 
 // ─── DRIVER DIAGNOSIS FORM ──────────────────────────────────────────────────
@@ -970,45 +1003,49 @@ function confirmEnd() {
   doEndSession();
 }
 
-function doEndSession() {
-  if (sessionEnded) return;
-  sessionEnded = true;
-
-  const timestamp = new Date().toISOString();
-
-  // Lock the UI
-  const input = document.getElementById('userInput');
-  input.disabled = true;
-  input.placeholder = 'Conversation ended.';
-  document.getElementById('sendBtn').disabled = true;
-  document.getElementById('micBtn').disabled = true;
-  document.getElementById('endChatBtn').disabled = true;
-
-  removeWelcome();
-  const area = document.getElementById('messagesArea');
-  const notice = document.createElement('div');
-  notice.className = 'session-ended-notice';
-  notice.textContent = 'Session ended · ' + new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '  —  Starting a new conversation…';
-  area.appendChild(notice);
-  scrollMessagesToBottom();
-
-  // Ending a session is NOT logging out -- stay signed in as the same
-  // person, just go back to this same page's own welcome/cover screen
-  // ("Hi Kriti") ready for a fresh conversation. Reloading this same page
-  // does exactly that: initSession() already resets currentPhase/sessionId
-  // on every load, and localStorage (user_id/user_name) is left untouched
-  // here on purpose, unlike logOut() which clears it deliberately.
-  setTimeout(function() {
-    window.location.reload();
-  }, 1500);
+// Tells the backend a PERSON ended this conversation -- distinct from the
+// backend's own 3 endings (Scope Checker, Objection Handler, Training
+// finishing), which already record their own real reason. Without this,
+// final_status in the database just sat at "in_progress" forever no
+// matter how many times someone clicked End Session -- confirmed bug,
+// fixed 2026-08-12. Guards against firing at all if there's no session yet
+// (e.g. logging out from a fresh page before ever sending a message) or
+// if it's already been marked ended. Errors are swallowed on purpose --
+// the person's own action (the reload, the redirect) should never hang or
+// fail just because this one background call had trouble.
+async function notifyBackendSessionEnded() {
+  if (!sessionId || sessionEnded) return;
+  try {
+    await apiPost('/api/session/end', { user_id: userId, session_id: sessionId });
+  } catch (err) {
+    console.warn('Could not notify backend the session ended:', err.message);
+  }
 }
 
-// Distinct from "End session": this does NOT touch the in-progress
-// conversation on the backend at all -- it's a plain client-side sign-out.
-// It just clears this browser's saved login and sends the person back to
-// native_login.html; the session itself is left exactly as it was, mid-conversation
-// or not. No confirmation needed since nothing is being closed out.
-function logOut() {
+function doEndSession() {
+  // Ending a session is NOT logging out -- stay signed in as the same
+  // person, just go back to this same page's own welcome/cover screen
+  // ("Hi Kriti") ready for a fresh conversation. initSession() already
+  // resets currentPhase/sessionId on every load, and localStorage
+  // (user_id/user_name) is left untouched here on purpose, unlike
+  // logOut() which clears it deliberately. lockConversationEnded() does
+  // all the visual work -- same notice, same reload, shared with every
+  // backend-triggered ending too. Fired without waiting on it: the 1.5s
+  // reload delay below already gives it time to land.
+  notifyBackendSessionEnded();
+  lockConversationEnded();
+}
+
+// Logging out now ALSO ends the conversation, not just the login --
+// Kriti's explicit call, 2026-08-12 ("will change this setting later, but
+// for now, fix and wire both"). Still does the plain client-side sign-out
+// it always did underneath -- clears this browser's saved login, sends
+// the person back to native_login.html -- just no longer leaves the
+// backend conversation dangling at "in_progress" while doing it. Awaited
+// this time (unlike doEndSession() above) since there's no reload delay
+// here to give the request room to land before the page navigates away.
+async function logOut() {
+  await notifyBackendSessionEnded();
   localStorage.removeItem('user_name');
   localStorage.removeItem('user_email');
   localStorage.removeItem('user_company');
@@ -1130,17 +1167,30 @@ function appendError(text) {
   if (shouldScroll) scrollMessagesToBottom();
 }
 
-// Keyed to the real FSM phase names now, not the old n8n ones.
+// Keyed to the real FSM phase names now, not the old n8n ones. Kriti's
+// explicit call, 2026-08-14: opening works fast enough to need nothing;
+// diagnosis and reflector_identification share the same list (to the
+// user it's one continuous "figuring things out" stretch, right up until
+// the reflector is identified); content_creation gets its own list for
+// the big chunk after the signpost message; every other phase not listed
+// here falls through to just the plain 3-dot indicator, no cycling words
+// (see showTyping()'s `if (words)` check below).
 const PHASE_WORDS = {
-  opening:              ['Just a moment…', 'Thinking that through…'],
-  diagnosis:            ['Interpreting…', 'Finding the clues…', 'Making notes…', 'Thinking that through…'],
-  reflector_identification: ['Identifying the skill that fits…', 'Connecting the dots…', 'Almost there…'],
-  reflector_disclosure: ['Reflecting…', 'Identifying patterns…', 'Weighing what matters…', 'Connecting the dots…'],
-  reflector_objection:  ['Reflecting…', 'Weighing what matters…', 'Thinking that through…'],
-  rediagnosis:          ['Reconsidering…', 'Looking at this again…'],
-  driver_diagnosis:     ['Pulling that together…', 'Just a moment…'],
-  content_creation:     ['Building your Learning Atom…', 'Shaping your training…', 'Personalizing your plan…', 'Almost ready…'],
-  training:             ['Thinking that through…', 'Considering your situation…'],
+  diagnosis: [
+    'Interpreting…', 'Finding the clues…', 'Making notes…', 'Checking the signal…',
+    'Thinking that through…', 'Connecting the dots…', 'Weighing what matters…',
+    'Identifying patterns…', 'Reflecting…',
+  ],
+  reflector_identification: [
+    'Interpreting…', 'Finding the clues…', 'Making notes…', 'Checking the signal…',
+    'Thinking that through…', 'Connecting the dots…', 'Weighing what matters…',
+    'Identifying patterns…', 'Reflecting…',
+  ],
+  content_creation: [
+    'Building your Learning Atom…', 'Shaping your training…', 'Personalizing your Learning Atom…',
+    'Almost ready…', 'Working through the final bits…', 'Designing the content…',
+    'Making it crisp…', 'Rechecking relevance…',
+  ],
 };
 const WORD_CYCLE_MS = 1800;
 let typingWordInterval = null;
@@ -1167,8 +1217,14 @@ function showTyping(phase) {
   if (words) {
     const wordEl = document.createElement('span');
     wordEl.className = 'typing-word';
-    wordEl.textContent = words[0];
-    let i = 0;
+    // Random starting point each call (Kriti's explicit call, 2026-08-14) --
+    // most turns finish well before a full cycle, so always starting at
+    // word 1 meant the later words in a long list almost never showed.
+    // Still steps through sequentially from there, wrapping around, so the
+    // whole list gets covered once before anything repeats -- just not
+    // always from the same word.
+    let i = Math.floor(Math.random() * words.length);
+    wordEl.textContent = words[i];
     typingWordInterval = setInterval(function() {
       i = (i + 1) % words.length;
       wordEl.textContent = words[i];
