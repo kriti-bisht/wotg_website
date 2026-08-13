@@ -64,6 +64,16 @@ nav{
 .logo-go{font-weight:700;color:var(--green)}
 .logo-sanskrit{font-size:0.62rem;font-weight:300;letter-spacing:0.16em;color:var(--white);opacity:0.75;padding-left:0.1rem;margin-top:-0.15rem}
 .nav-right{display:flex;align-items:center;gap:1.5rem}
+/* NAV PILLS -- Learning Goals / Log out / End session -- 3 separate buttons
+   with different colors, but sized as one uniform group so they always
+   render as equal boxes. Height was already equal (32px each); width
+   wasn't, since padding alone doesn't equalize different label lengths --
+   a shared min-width fixes that. pill-break is a literal <br> inside each
+   label, hidden here and shown only on mobile (below), so the 2-line wrap
+   is guaranteed and identical for all 3, not dependent on how much room
+   happens to be left. Kriti's explicit call, 2026-08-13. */
+.goals-toggle-btn,.log-out-btn,.end-chat-btn{min-width:7.4rem;justify-content:center;text-align:center;white-space:nowrap}
+.pill-break{display:none}
 
 /* MAIN LAYOUT -- sidebar (Learning Goals) on the left, chat on the right,
    side by side, sharing the space below nav. Replaces the old approach of
@@ -455,11 +465,18 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
   nav{padding:0.75rem 1rem}
   .chat-layout{padding:0 0.75rem}
   .msg > div:last-child{max-width:88%}
-  .nav-right{gap:0.6rem}
+  .nav-right{gap:0.5rem}
   .new-chat-btn{display:none}
   nav a{display:none}
-  .end-chat-btn{font-size:0.72rem;padding:0.45rem 0.8rem;height:auto}
-  .log-out-btn{font-size:0.72rem;padding:0.45rem 0.8rem;height:auto}
+  /* All 3 pills wrap onto their own 2 lines here (via pill-break, shown only
+     at this width) instead of staying single-line and forcing themselves
+     wide -- that's what was pushing the logo out of room. Narrower +
+     shorter-per-line means all 3 need less horizontal space as a group. */
+  .goals-toggle-btn,.log-out-btn,.end-chat-btn{
+    white-space:normal;height:auto;min-width:4.5rem;
+    padding:0.4rem 0.5rem;font-size:0.68rem;line-height:1.25;
+  }
+  .pill-break{display:inline}
   textarea{font-size:16px}
   .input-hint{display:none}
 }
@@ -557,7 +574,7 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
   <div class="nav-right">
     <div class="goals-dropdown-wrap">
       <button class="goals-toggle-btn" id="goalsToggleBtn" onclick="toggleGoalsDropdown(event)">
-        Learning Goals
+        Learning<br class="pill-break"> Goals
       </button>
       <div class="goals-dropdown" id="goalsDropdown">
         <div class="goals-card">
@@ -571,8 +588,8 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
         </div>
       </div>
     </div>
-    <button class="log-out-btn" id="logOutBtn" onclick="logOut()">Log out</button>
-    <button class="end-chat-btn" id="endChatBtn" onclick="endConversation()">End session</button>
+    <button class="log-out-btn" id="logOutBtn" onclick="logOut()">Log<br class="pill-break"> out</button>
+    <button class="end-chat-btn" id="endChatBtn" onclick="endConversation()">End<br class="pill-break"> session</button>
   </div>
 </nav>
 
