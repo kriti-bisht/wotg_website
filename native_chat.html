@@ -87,7 +87,7 @@ nav{
   background:transparent;border:1px solid rgba(58,181,74,0.35);border-radius:3px;
   color:var(--green);font-family:'Poppins',sans-serif;font-size:0.73rem;font-weight:500;
   letter-spacing:0.03em;padding:0 1rem;height:32px;
-  display:inline-flex;align-items:center;
+  display:inline-flex;align-items:center;white-space:nowrap;
   cursor:pointer;transition:background 0.2s,color 0.2s;
 }
 .goals-toggle-btn:hover,.goals-toggle-btn.active{background:var(--green);color:#fff}
@@ -557,12 +557,12 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
   <div class="nav-right">
     <div class="goals-dropdown-wrap">
       <button class="goals-toggle-btn" id="goalsToggleBtn" onclick="toggleGoalsDropdown(event)">
-        🎯 My Learning Goals
+        Learning Goals
       </button>
       <div class="goals-dropdown" id="goalsDropdown">
         <div class="goals-card">
           <div class="goals-header">
-            <span class="goals-title">🎯 Learning Goals</span>
+            <span class="goals-title">Learning Goals</span>
             <span class="goals-badge" id="goalsBadge">…</span>
           </div>
           <div class="goals-body" id="goalsBody">
@@ -812,17 +812,38 @@ async function handleBackendResult(result) {
   // short staggered dots-pause between them, so they read like separate
   // texts rather than one big dump.
   const messages = result.messages || [];
+
+  // Two specific back-to-back pairs -- Kriti's explicit call, 2026-08-13 --
+  // where jumping to the very bottom (the normal behavior, everywhere else
+  // left untouched) buries the start of the pair: the signpost message
+  // immediately followed by the disambiguation quiz (long enough that
+  // landing at its bottom only shows its last 2-3 options), and the
+  // trainer's closing message immediately followed by the feedback-link
+  // message. In both cases, land on the TOP of the first piece instead.
+  const isSignpostPlusQuiz = !!pendingForm;
+  const isTrainerClosingPlusFeedback = result.phase === 'complete' && messages.length === 2;
+  const holdScrollForPair = isSignpostPlusQuiz || isTrainerClosingPlusFeedback;
+  let firstPairEl = null;
+
   for (let i = 0; i < messages.length; i++) {
     if (i > 0) {
       showTyping(currentPhase);
       await sleep(800);
       removeTyping();
     }
-    if (messages[i]) appendMessage('ai', messages[i]);
+    if (messages[i]) {
+      const bubble = appendMessage('ai', messages[i], { suppressScroll: holdScrollForPair });
+      if (holdScrollForPair && !firstPairEl) firstPairEl = bubble.closest('.msg');
+    }
   }
 
   if (pendingForm) {
-    renderDriverDiagnosisForm(pendingForm);
+    const formRow = renderDriverDiagnosisForm(pendingForm, { suppressScroll: holdScrollForPair });
+    if (holdScrollForPair && !firstPairEl) firstPairEl = formRow;
+  }
+
+  if (holdScrollForPair && firstPairEl) {
+    firstPairEl.scrollIntoView({ block: 'start' });
   }
 
   // 'reflector_identification', 'driver_diagnosis_resolving', and
@@ -888,10 +909,11 @@ function lockConversationEnded() {
 // The one part of the conversation that's a form (0-4 questions shown
 // together), not free text -- per Kriti's explicit spec: all pending
 // questions at once, one Submit sends every answer together.
-function renderDriverDiagnosisForm(form) {
+function renderDriverDiagnosisForm(form, opts) {
   removeWelcome();
   const area = document.getElementById('messagesArea');
-  const shouldScroll = isNearBottom();
+  // Same suppressScroll convention as appendMessage -- see handleBackendResult.
+  const shouldScroll = !(opts && opts.suppressScroll) && isNearBottom();
 
   const wrap = document.createElement('div');
   wrap.className = 'msg';
@@ -961,6 +983,7 @@ function renderDriverDiagnosisForm(form) {
   wrap.appendChild(card);
   area.appendChild(wrap);
   if (shouldScroll) scrollMessagesToBottom();
+  return wrap;
 }
 
 async function submitDriverDiagnosisForm(answers) {
@@ -1097,10 +1120,14 @@ function scrollMessagesToBottom() {
   area.scrollTop = area.scrollHeight;
 }
 
-function appendMessage(role, text) {
+function appendMessage(role, text, opts) {
   removeWelcome();
   const area = document.getElementById('messagesArea');
-  const shouldScroll = isNearBottom();
+  // Callers holding scroll for a 2-piece pair (see handleBackendResult)
+  // pass suppressScroll so this individual message doesn't jump to the
+  // bottom on its own -- they do one combined scroll themselves once both
+  // pieces are on screen.
+  const shouldScroll = !(opts && opts.suppressScroll) && isNearBottom();
 
   const isUser = role === 'user';
   const msg = document.createElement('div');
@@ -1487,14 +1514,27 @@ if (window.visualViewport && navigator.maxTouchPoints > 0) {
     document.body.style.transform = vv.offsetTop ? `translateY(${vv.offsetTop}px)` : '';
   }
   syncViewportHeight();
+  // Debounced -- iOS fires visualViewport's resize repeatedly while actively
+  // typing (the QuickType/predictive-text bar changing height per keystroke),
+  // not just on a real keyboard open/close. Reacting to every single one of
+  // those re-shifted the whole page each time, which is what looked like the
+  // page "shaking" while typing but staying smooth while just reading.
+  // Waiting for the viewport to actually settle before applying anything
+  // keeps the real open/close behavior working while ignoring the in-between
+  // noise. Kriti's explicit call, 2026-08-13 -- best-effort, only this one
+  // listener touched, nothing else about viewport handling changed.
+  let viewportResizeDebounce;
   window.visualViewport.addEventListener('resize', function() {
     // Capture bottom-ness BEFORE the container shrinks — shrinking is what
     // pushes scrollTop away from the new bottom, so checking after would
     // punish the user for a resize they didn't cause, and skip re-snapping
     // exactly when it's needed most.
     const wasNearBottom = isNearBottom();
-    syncViewportHeight();
-    if (wasNearBottom) scrollMessagesToBottom();
+    clearTimeout(viewportResizeDebounce);
+    viewportResizeDebounce = setTimeout(function() {
+      syncViewportHeight();
+      if (wasNearBottom) scrollMessagesToBottom();
+    }, 120);
   });
 }
 
