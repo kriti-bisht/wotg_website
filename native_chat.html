@@ -897,7 +897,12 @@ async function handleBackendResult(result) {
   }
 
   if (result.session_complete || TERMINAL_PHASES.includes(currentPhase)) {
-    lockConversationEnded();
+    // suppressScroll: when this fires right after the Trainer-closing +
+    // feedback pair, don't let the banner's own scroll-to-bottom undo the
+    // scroll-to-top we just did for that pair -- confirmed real bug,
+    // 2026-08-14: lockConversationEnded()'s unconditional scroll was
+    // silently overriding it every time.
+    lockConversationEnded(holdScrollForPair);
   }
 }
 
@@ -907,7 +912,13 @@ async function handleBackendResult(result) {
 // them need to look and feel exactly the same to you, only the message
 // text leading up to it differs. doEndSession() below just calls this now,
 // so there's one single place this behavior is defined.
-function lockConversationEnded() {
+//
+// suppressScroll: optional -- when true, skips this function's own
+// scroll-to-bottom (used only by the Trainer-closing+feedback pair, which
+// already positioned the scroll itself and doesn't want it overridden).
+// Every other caller omits it, keeping the original scroll-to-reveal-the-
+// banner behavior unchanged.
+function lockConversationEnded(suppressScroll) {
   if (sessionEnded) return;
   sessionEnded = true;
 
@@ -939,7 +950,7 @@ function lockConversationEnded() {
   notice.appendChild(link);
 
   area.appendChild(notice);
-  scrollMessagesToBottom();
+  if (!suppressScroll) scrollMessagesToBottom();
 }
 
 // ─── DRIVER DIAGNOSIS FORM ──────────────────────────────────────────────────
