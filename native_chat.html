@@ -566,12 +566,187 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
 }
 /* fit "Kriti" in the small message avatar chip */
 .avatar-ai{font-size:0.52rem;letter-spacing:0.01em}
+
+/* ===== SIDE PANEL (Parking Lot / Conversation History / Learning Goals) =====
+   PREVIEW BUILD, 2026-08-17 -- points at a local-only reports API (see
+   REPORTS_BASE below), not deployed anywhere yet. Visual rebuild pass,
+   2026-08-17 -- matches the actual product demo's look instead of the
+   boxy-card style this started as: solid navy panel (no dimming overlay
+   behind it -- the live app stays visible), borderless list rows with a
+   small icon, not bordered cards. */
+.hamburger-btn{
+  background:transparent;border:none;
+  width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
+  gap:4px;flex-direction:column;cursor:pointer;flex-shrink:0;margin-right:0.9rem;
+  border-radius:4px;
+}
+.hamburger-btn span{display:block;width:18px;height:2px;background:var(--grey1);border-radius:2px}
+.hamburger-btn:hover span{background:var(--green)}
+.side-panel-backdrop{
+  /* Click-outside-to-close only -- deliberately no background color at
+     all, so the live app behind the panel stays fully visible, not dimmed.
+     top: starts below the real nav bar, set from JS (nav's height isn't a
+     fixed CSS value) -- see _positionSidePanel(). */
+  display:none;position:fixed;top:var(--nav-height, 64px);left:0;right:0;bottom:0;
+  background:transparent;z-index:29;
+}
+.side-panel-backdrop.open{display:block}
+.side-panel{
+  position:fixed;top:var(--nav-height, 64px);left:0;bottom:0;width:320px;max-width:85vw;
+  background:var(--night);
+  z-index:30;transform:translateX(-100%);transition:transform 0.25s ease;
+  display:flex;flex-direction:column;overflow-y:auto;
+  box-shadow:4px 0 24px rgba(0,0,0,0.35);
+}
+.side-panel.open{transform:translateX(0)}
+.side-panel-header{
+  /* Just the close button now -- the logo already lives in the real nav
+     bar right above this panel, showing it again here was redundant.
+     Kriti's explicit call, 2026-08-17. */
+  padding:0.6rem 1.2rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:flex-end;flex-shrink:0;
+}
+.side-panel-close{background:none;border:none;color:var(--grey2);font-size:1.3rem;cursor:pointer;line-height:1}
+.side-panel-close:hover{color:#fff}
+.side-section{border-bottom:1px solid var(--border)}
+.side-section-head{
+  width:100%;background:none;border:none;padding:1rem 1.2rem;
+  display:flex;align-items:center;gap:0.7rem;
+  color:var(--white);font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:700;
+  cursor:pointer;
+}
+.side-section-head .section-icon{color:var(--green);flex-shrink:0;width:22px;height:22px}
+.side-section-head .chevron{margin-left:auto;transition:transform 0.2s;color:var(--grey3)}
+.side-section.collapsed .chevron{transform:rotate(-90deg)}
+.side-section-body{padding:0 1.2rem 0.6rem;display:flex;flex-direction:column}
+.side-section.collapsed .side-section-body{display:none}
+.side-item{
+  display:flex;align-items:flex-start;gap:0.6rem;
+  padding:0.55rem 0.4rem;cursor:default;border-radius:6px;
+  transition:background 0.15s;
+}
+.side-item-clickable{cursor:pointer}
+.side-item-clickable:hover{background:rgba(255,255,255,0.06)}
+.side-item-icon{
+  flex-shrink:0;width:6px;height:6px;border-radius:50%;background:var(--green);
+  margin-top:0.55rem;
+}
+.side-item-text{min-width:0}
+.side-item-label{font-size:0.78rem;color:var(--grey1);line-height:1.4;overflow-wrap:break-word}
+.side-item-meta{font-size:0.65rem;color:var(--grey3);margin-top:0.2rem;text-transform:capitalize}
+.side-empty{font-size:0.75rem;color:var(--grey3);padding:0.4rem 0.4rem}
+.side-loading{font-size:0.75rem;color:var(--grey3);padding:0.4rem 0.4rem}
+
+/* Notification bell -- visual only, 2026-08-17. Backend/real data comes later. */
+.bell-btn{
+  position:relative;background:transparent;border:1px solid rgba(255,255,255,0.18);
+  border-radius:50%;width:36px;height:36px;flex-shrink:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:var(--grey1);cursor:pointer;
+}
+.bell-btn svg{width:17px;height:17px}
+.bell-btn:hover{border-color:var(--green);color:var(--green)}
+.bell-btn[data-tooltip]::after{
+  content:attr(data-tooltip);
+  position:absolute;top:calc(100% + 8px);right:0;
+  background:var(--night);color:var(--grey1);
+  font-size:0.7rem;font-family:'Poppins',sans-serif;white-space:nowrap;
+  padding:0.35rem 0.6rem;border-radius:6px;border:1px solid var(--border);
+  box-shadow:0 6px 16px rgba(0,0,0,0.35);
+  opacity:0;pointer-events:none;transition:opacity 0.15s;
+  z-index:25;
+}
+.bell-btn[data-tooltip]:hover::after{opacity:1}
+/* Real notification badge, 2026-08-17 -- lit only while a real
+   Application Notification is sitting unanswered for this user; cleared
+   the moment they pick Q1 (Yes/No/Not yet), not on merely opening it.
+   Upgraded from a plain dot to a red "!" badge + gentle pulse -- Kriti's
+   explicit call, the dot was too easy to miss. */
+.bell-btn .bell-dot{
+  position:absolute;top:-4px;right:-4px;width:17px;height:17px;border-radius:50%;
+  background:#e5484d;border:2px solid var(--night);display:none;
+  align-items:center;justify-content:center;
+  color:#fff;font-size:0.68rem;font-weight:800;font-family:'Poppins',sans-serif;line-height:1;
+}
+.bell-btn.has-notification .bell-dot{display:flex;animation:bellDotPulse 1.8s ease-in-out infinite}
+@keyframes bellDotPulse{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(229,72,77,0.55)}
+  50%{transform:scale(1.12);box-shadow:0 0 0 4px rgba(229,72,77,0)}
+}
+
+/* Notification overlay, 2026-08-17 -- Kriti's explicit call: whatever's
+   underneath (the welcome screen, or a real conversation in progress)
+   must be completely untouched, not have the notification injected into
+   it. This sits ON TOP, fully opaque, and the real chat-layout is never
+   hidden, edited, or scrolled -- just visually covered while this is
+   open. Removing this later reveals the exact same page state as before. */
+.notification-overlay{
+  position:fixed;top:var(--nav-height,64px);left:0;right:0;bottom:0;
+  background:var(--night);z-index:30;display:none;
+  flex-direction:column;align-items:center;   /* centers .notification-overlay-inner -- see below */
+}
+.notification-overlay.open{display:flex}
+/* Kriti's explicit call, 2026-08-17: the whole thing (header included)
+   sits in the SAME centered column her chat messages already live in --
+   not a full-width bar. The outer .notification-overlay is still
+   full-bleed/opaque (nothing behind it may show through at the edges);
+   only this inner wrapper is width-constrained. */
+.notification-overlay-inner{
+  max-width:860px;width:100%;flex:1;min-height:0;
+  display:flex;flex-direction:column;box-sizing:border-box;
+  /* One border around the WHOLE card -- Kriti's explicit call, 2026-08-17
+     -- not around each question individually (those keep only their own
+     button styling, no added box). */
+  border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  margin:1.5rem 0;
+}
+.notification-overlay-header{
+  display:flex;align-items:center;gap:0.6rem;flex-shrink:0;
+  background:var(--night);border-bottom:1px solid var(--border);
+  padding:0.9rem 1.5rem;
+}
+.notification-overlay-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;
+}
+.notification-overlay-title{
+  flex:1;color:var(--white);font-family:'Poppins',sans-serif;font-weight:600;font-size:0.95rem;
+}
+/* Fixed circle, identical size/centering whether or not it's blinking --
+   an SVG icon, not the &times; character, since font glyphs don't center
+   reliably inside a flex box (Kriti caught this -- the X visibly sat
+   off-center). Same box-model in both states, only the animation differs,
+   so there's no shift/jump when ready-to-close toggles on. */
+.notification-overlay-close{
+  background:transparent;border:none;color:var(--white);
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;padding:0;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.notification-overlay-close svg{width:16px;height:16px;display:block}
+/* No auto-vanish -- Kriti's explicit call, 2026-08-17. The user closes
+   this themselves. Once the closing message has actually been shown
+   (submitNotificationForm adds this class), the X pulses between the
+   brand gold and night-navy to signal "you're done, tap here" -- it does
+   NOT close on its own. */
+@keyframes notificationCloseBlink{
+  0%,100%{background:var(--gold);color:var(--night)}
+  50%{background:var(--night);color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+}
+.notification-overlay-close.ready-to-close{
+  animation:notificationCloseBlink 1.1s ease-in-out infinite;
+}
+.notification-overlay-scroll{
+  flex:1;min-height:0;overflow-y:auto;padding:2rem 1.5rem;
+  display:flex;flex-direction:column;gap:1.2rem;box-sizing:border-box;
+}
 </style>
 </head>
 <body>
 
 <nav>
   <div class="nav-left">
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidePanel()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <a href="index.html" class="logo-block">
       <div class="logo-text">
         <span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span>
@@ -584,26 +759,94 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
     </div>
   </div>
   <div class="nav-right">
-    <div class="goals-dropdown-wrap">
-      <button class="goals-toggle-btn" id="goalsToggleBtn" onclick="toggleGoalsDropdown(event)">
-        Learning<br class="pill-break"> Goals
-      </button>
-      <div class="goals-dropdown" id="goalsDropdown">
-        <div class="goals-card">
-          <div class="goals-header">
-            <span class="goals-title">Learning Goals</span>
-            <span class="goals-badge" id="goalsBadge">…</span>
-          </div>
-          <div class="goals-body" id="goalsBody">
-            <div class="goals-loading">Loading…</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- "Learning Goals" pill deleted 2026-08-17, Kriti's explicit call --
+         superseded by the side panel's own Learning Goals section. -->
+    <!-- Notification bell -- real data as of 2026-08-17, see NOTIFICATION_BASE
+         below (local preview only). Badge lights up when checkNotificationBadge()
+         finds a real Application Notification waiting; click opens it in the
+         main chat via openNotification(). -->
+    <button class="bell-btn" id="bellBtn" data-tooltip="Notifications" aria-label="Notifications" onclick="openNotification()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <span class="bell-dot">!</span>
+    </button>
     <button class="log-out-btn" id="logOutBtn" onclick="logOut()">Log<br class="pill-break"> out</button>
     <button class="end-chat-btn" id="endChatBtn" onclick="endConversation()">End<br class="pill-break"> session</button>
   </div>
 </nav>
+
+<!-- PREVIEW BUILD, 2026-08-17: side panel -- Learning Goals, Parking Lot,
+     Conversation History. Local-only for now, see REPORTS_BASE below. -->
+<div class="side-panel-backdrop" id="sidePanelBackdrop" onclick="toggleSidePanel()"></div>
+<div class="side-panel" id="sidePanel">
+  <div class="side-panel-header">
+    <button class="side-panel-close" onclick="toggleSidePanel()" aria-label="Close">&times;</button>
+  </div>
+
+  <div class="side-section" id="sideSectionParking">
+    <button class="side-section-head" onclick="toggleSideSection('sideSectionParking')">
+      <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="21" x2="4" y2="4"/>
+        <rect x="2.4" y="3" width="3.2" height="3.2" rx="0.5" fill="currentColor" stroke="none"/>
+        <path d="M6.5 18h13l-2-5a1.6 1.6 0 0 0-1.5-1h-6a1.6 1.6 0 0 0-1.5 1L6.5 18z"/>
+        <circle cx="10" cy="19" r="1.4"/>
+        <circle cx="16" cy="19" r="1.4"/>
+      </svg>
+      Parking Lot <span class="chevron">&#9662;</span>
+    </button>
+    <div class="side-section-body" id="sideParkingBody">
+      <div class="side-loading">Loading...</div>
+    </div>
+  </div>
+
+  <div class="side-section" id="sideSectionHistory">
+    <button class="side-section-head" onclick="toggleSideSection('sideSectionHistory')">
+      <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Conversation History <span class="chevron">&#9662;</span>
+    </button>
+    <div class="side-section-body" id="sideHistoryBody">
+      <div class="side-loading">Loading...</div>
+    </div>
+  </div>
+
+  <div class="side-section" id="sideSectionGoals">
+    <button class="side-section-head" onclick="toggleSideSection('sideSectionGoals')">
+      <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- goal frame in perspective -- exactly 4 legs (front-left, front-right, back-left, back-right), no net -->
+        <path d="M5 20V7"/>
+        <path d="M17 20V7"/>
+        <path d="M5 7h12"/>
+        <path d="M8 17V4" stroke-width="1.2" opacity="0.45"/>
+        <path d="M20 17V4" stroke-width="1.2" opacity="0.45"/>
+        <path d="M8 4h12" stroke-width="1.2" opacity="0.45"/>
+        <path d="M5 7 8 4" stroke-width="1.2" opacity="0.45"/>
+        <path d="M17 7 20 4" stroke-width="1.2" opacity="0.45"/>
+        <circle cx="10.5" cy="19" r="2.1" fill="currentColor" stroke="none"/>
+      </svg>
+      Learning Goals <span class="chevron">&#9662;</span>
+    </button>
+    <div class="side-section-body" id="sideGoalsBody">
+      <div class="side-loading">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification overlay -- sits on top of whatever's in chat-layout,
+     never touches it. See openNotification()/submitNotificationForm(). -->
+<div class="notification-overlay" id="notificationOverlay">
+  <div class="notification-overlay-inner">
+    <div class="notification-overlay-header">
+      <span class="notification-overlay-dot"></span>
+      <span class="notification-overlay-title" id="notificationOverlayTitle">Application Confirmation</span>
+      <button type="button" class="notification-overlay-close" id="notificationOverlayClose" onclick="closeNotificationOverlay()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="notification-overlay-scroll" id="notificationOverlayScroll"></div>
+  </div>
+</div>
 
 <div class="chat-layout">
   <div class="messages-area" id="messagesArea">
@@ -689,6 +932,13 @@ const API_BASE = 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewe
 // Accounts + skills live in their own App Service, separate from the
 // Opening-conversation backend above -- this is what /api/user-skills is on.
 const USER_MGMT_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
+const REPORTS_BASE = 'https://wotg-reports.azurewebsites.net';
+const NOTIFICATION_BASE = 'https://wotg-notifications.azurewebsites.net';
+// Every bubble inside the notification overlay (the opening message AND
+// the question card) uses this SAME fixed width -- Kriti's explicit call,
+// 2026-08-17: with only 1-2 messages in this overlay, mismatched widths
+// looked odd in a way it doesn't in the real, many-message chat.
+const NOTIFICATION_BUBBLE_WIDTH = '540px';
 
 let userId     = '';
 let sessionId  = '';   // empty until the backend hands us a real one
@@ -697,6 +947,7 @@ let isWaiting  = false;
 let sessionEnded = false;
 let userInitials = 'U';
 let pendingForm = null;
+let currentNotification = null;   // {session_id, opening_message, questions} or null -- set by checkNotificationBadge()
 let stopMicIfActive = function(){}; // replaced once voice input initializes below
 
 function computeInitials(name) {
@@ -704,7 +955,18 @@ function computeInitials(name) {
   return name.trim().split(/\s+/).map(function(w){ return w[0].toUpperCase(); }).join('');
 }
 
+// The side panel opens BELOW the real nav bar, not over it -- so the logo
+// never shows twice. Nav's height isn't a fixed CSS value (it sizes to its
+// own content), so it's measured here and re-measured on resize, written
+// into a CSS variable both the panel and its backdrop already read from.
+function _positionSidePanel() {
+  const nav = document.querySelector('nav');
+  if (nav) document.documentElement.style.setProperty('--nav-height', nav.offsetHeight + 'px');
+}
+window.addEventListener('resize', _positionSidePanel);
+
 function initSession() {
+  _positionSidePanel();
   // Each page load starts a fresh conversation -- resuming a half-finished
   // one across a reload isn't built yet, deliberately out of scope for
   // this first real wiring pass.
@@ -731,84 +993,202 @@ function initSession() {
       greetingEl.style.display = 'none';
     }
   }
-  loadLearningGoals();
+  loadSideGoals();
+  loadSidePreviousConversations();
+  checkNotificationBadge();
 }
 
-// ─── LEARNING GOALS DATA ────────────────────────────────────────────────────
-// Fetched once on page load (the dropdown itself opens/closes purely client-
-// side, no need to refetch on every click) -- shows however many skills this
-// person actually has assigned, no cap on the count per Kriti's explicit call.
-async function loadLearningGoals() {
-  const badge = document.getElementById('goalsBadge');
-  const body = document.getElementById('goalsBody');
+// ─── SIDE PANEL (Parking Lot / Conversation History / Learning Goals) ──────
+// PREVIEW BUILD, 2026-08-17. The old top-right "Learning Goals" pill (and
+// its own loadLearningGoals()/toggleGoalsDropdown() functions) is gone for
+// good, per Kriti's explicit call -- this panel is the only Learning Goals
+// UI now, not a second copy to compare against anymore.
+function toggleSidePanel() {
+  document.getElementById('sidePanel').classList.toggle('open');
+  document.getElementById('sidePanelBackdrop').classList.toggle('open');
+}
+
+function toggleSideSection(sectionId) {
+  document.getElementById(sectionId).classList.toggle('collapsed');
+}
+
+function _renderSideEmpty(container, message) {
+  container.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'side-empty';
+  el.textContent = message;
+  container.appendChild(el);
+}
+
+async function loadSideGoals() {
+  const body = document.getElementById('sideGoalsBody');
   try {
     const res = await fetch(`${USER_MGMT_BASE}/api/user-skills?user_id=${encodeURIComponent(userId)}`);
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Could not load learning goals.');
-
     const skills = data.skills || [];
-    badge.textContent = skills.length === 1 ? '1 Skill' : `${skills.length} Skills`;
-
     if (skills.length === 0) {
-      body.innerHTML = '';
-      const slot = document.createElement('div');
-      slot.className = 'goal-slot';
-      const icon = document.createElement('div');
-      icon.className = 'goal-slot-icon';
-      const label = document.createElement('span');
-      label.className = 'goal-slot-label';
-      label.textContent = 'No skills assigned yet';
-      slot.appendChild(icon);
-      slot.appendChild(label);
-      body.appendChild(slot);
+      _renderSideEmpty(body, 'No skills assigned yet.');
       return;
     }
-
     body.innerHTML = '';
     skills.forEach(function(skillName) {
       const item = document.createElement('div');
-      item.className = 'goal-item';
-      const icon = document.createElement('div');
-      icon.className = 'goal-item-icon';
-      icon.textContent = '✓';
-      const label = document.createElement('span');
-      label.className = 'goal-item-label';
+      item.className = 'side-item';
+      item.innerHTML = _SIDE_ITEM_ICON;
+      const label = document.createElement('div');
+      label.className = 'side-item-label';
       label.textContent = skillName;
-      item.appendChild(icon);
       item.appendChild(label);
       body.appendChild(item);
     });
   } catch (err) {
-    badge.textContent = '';
-    body.innerHTML = '';
-    const errEl = document.createElement('div');
-    errEl.className = 'goals-error';
-    errEl.textContent = 'Could not load learning goals.';
-    body.appendChild(errEl);
+    _renderSideEmpty(body, 'Could not load learning goals.');
   }
 }
 
-// ─── LEARNING GOALS DROPDOWN ────────────────────────────────────────────────
-// Button-triggered dropdown, not a permanent panel -- there's no screen
-// room to show goals AND the chat side by side once things get phone-narrow,
-// so this same open/close behavior is used at every screen size instead of
-// switching approaches on mobile.
-function toggleGoalsDropdown(event) {
-  event.stopPropagation();
-  const dropdown = document.getElementById('goalsDropdown');
-  const btn = document.getElementById('goalsToggleBtn');
-  dropdown.classList.toggle('open');
-  btn.classList.toggle('active');
-}
-document.addEventListener('click', function(event) {
-  const dropdown = document.getElementById('goalsDropdown');
-  const btn = document.getElementById('goalsToggleBtn');
-  if (!dropdown || !dropdown.classList.contains('open')) return;
-  if (!dropdown.contains(event.target) && event.target !== btn) {
-    dropdown.classList.remove('open');
-    btn.classList.remove('active');
+// Small line-icon, same on every row -- speech-bubble outline, matching
+// the product demo's look. One shared markup string, not a separate icon
+// per row (nothing about a session changes which icon it gets).
+// Just a small green bullet, not a repeated copy of the section header's
+// own icon -- Kriti's explicit call, 2026-08-17.
+const _SIDE_ITEM_ICON = '<span class="side-item-icon"></span>';
+
+function _renderSideSessionList(container, sessions, emptyMessage, kind) {
+  if (!sessions || sessions.length === 0) {
+    _renderSideEmpty(container, emptyMessage);
+    return;
   }
-});
+  container.innerHTML = '';
+  sessions.forEach(function(s) {
+    const item = document.createElement('div');
+    item.className = 'side-item' + (kind === 'parking' ? ' side-item-clickable' : '');
+    item.innerHTML = _SIDE_ITEM_ICON;
+    const textWrap = document.createElement('div');
+    textWrap.className = 'side-item-text';
+    const label = document.createElement('div');
+    label.className = 'side-item-label';
+    label.textContent = s.label;
+    const meta = document.createElement('div');
+    meta.className = 'side-item-meta';
+    const when = s.saved_at ? new Date(s.saved_at).toLocaleDateString() : '';
+    meta.textContent = [s.final_status.replace(/_/g, ' '), when].filter(Boolean).join(' · ');
+    textWrap.appendChild(label);
+    textWrap.appendChild(meta);
+    item.appendChild(textWrap);
+    if (kind === 'parking') {
+      item.addEventListener('click', function() { resumeParkedSession(s.session_id); });
+    } else {
+      item.addEventListener('click', function() { viewClosedConversation(s.session_id); });
+    }
+    container.appendChild(item);
+  });
+}
+
+// ─── RESUME (Parking Lot) / VIEW (Conversation History) ────────────────────
+function _renderPastMessages(messages) {
+  messages.forEach(function(m) {
+    appendMessage(m.sender === 'user' ? 'user' : 'ai', m.text);
+  });
+}
+
+async function resumeParkedSession(clickedSessionId) {
+  toggleSidePanel();
+  const email = await _getUserEmailForReports();
+  try {
+    const res = await fetch(
+      `${REPORTS_BASE}/api/reports/resume-session?session_id=${encodeURIComponent(clickedSessionId)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`,
+      { method: 'POST' },
+    );
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      appendError('Could not resume that conversation -- it may have already ended.');
+      return;
+    }
+    document.getElementById('messagesArea').innerHTML = '';
+    sessionEnded = false;
+    document.getElementById('inputArea').style.display = '';
+    sessionId = clickedSessionId;
+    currentPhase = data.phase;
+    _renderPastMessages(data.messages);
+
+    if (data.auto_continue) {
+      showTyping(currentPhase);
+      try {
+        const nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
+        removeTyping();
+        await handleBackendResult(nextResult);
+      } catch (err) {
+        removeTyping();
+        appendError(err.message || 'Something went wrong continuing the conversation.');
+      }
+    }
+  } catch (err) {
+    appendError('Could not reach the reports service to resume that conversation.');
+  }
+}
+
+async function viewClosedConversation(clickedSessionId) {
+  toggleSidePanel();
+  const email = await _getUserEmailForReports();
+  try {
+    const res = await fetch(
+      `${REPORTS_BASE}/api/reports/full-conversation?session_id=${encodeURIComponent(clickedSessionId)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`,
+    );
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      appendError('Could not load that conversation.');
+      return;
+    }
+    document.getElementById('messagesArea').innerHTML = '';
+    sessionId = clickedSessionId;
+    currentPhase = data.final_status;
+    _renderPastMessages(data.messages);
+    // Closed session, read-only -- reuses the same lock/banner every other
+    // ending already shows, so this doesn't need its own separate UI state.
+    sessionEnded = false;
+    lockConversationEnded();
+  } catch (err) {
+    appendError('Could not reach the reports service to load that conversation.');
+  }
+}
+
+async function _getUserEmailForReports() {
+  // PREVIEW-ONLY FALLBACK, 2026-08-17: accounts already logged in before
+  // today's login fix never got an email saved to localStorage. Rather than
+  // require a fresh log-out/log-in to see this preview, fall back once to
+  // the existing (already-live) admin lookup, then cache it so this only
+  // ever runs the one time. Real fresh logins from now on set user_email
+  // immediately and never hit this path at all.
+  const cached = localStorage.getItem('user_email');
+  if (cached) return cached;
+  try {
+    const res = await fetch(`${USER_MGMT_BASE}/api/admin/user-lookup?user_id=${encodeURIComponent(userId)}`);
+    const data = await res.json();
+    if (res.ok && data.email) {
+      localStorage.setItem('user_email', data.email);
+      return data.email;
+    }
+  } catch (err) { /* fall through to empty */ }
+  return '';
+}
+
+async function loadSidePreviousConversations() {
+  const parkingBody = document.getElementById('sideParkingBody');
+  const historyBody = document.getElementById('sideHistoryBody');
+  const email = await _getUserEmailForReports();
+  try {
+    const url = `${REPORTS_BASE}/api/reports/previous-conversations?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) throw new Error('Could not load previous conversations.');
+    _renderSideSessionList(parkingBody, data.parking_lot, 'Nothing parked right now.', 'parking');
+    _renderSideSessionList(historyBody, data.conversation_history, 'No completed conversations yet.', 'history');
+  } catch (err) {
+    _renderSideEmpty(parkingBody, 'Could not reach the reports service.');
+    _renderSideEmpty(historyBody, 'Could not reach the reports service.');
+  }
+}
 
 // ─── BACKEND CALLS ──────────────────────────────────────────────────────────
 async function apiPost(path, body) {
@@ -875,15 +1255,17 @@ async function handleBackendResult(result) {
     firstPairEl.scrollIntoView({ block: 'start' });
   }
 
-  // 'reflector_identification', 'driver_diagnosis_resolving', and
-  // 'content_creation' aren't phases that wait on the user -- each is just
-  // its own signpost message, shown on its own specifically so it appears
-  // BEFORE the real slow wait behind it (Identifier/Finalization/Disclosure,
-  // resolving each answered driver's verdict, or Content Writers/Training
-  // Coordinator/stitching), not bundled in after it. The instant any
-  // signpost is shown, automatically continue to get the real result --
-  // nothing for the user to do here.
-  if (currentPhase === 'reflector_identification' || currentPhase === 'driver_diagnosis_resolving' || currentPhase === 'content_creation') {
+  // 'reflector_identification', 'driver_diagnosis_resolving',
+  // 'content_creation', and 'rediagnosis' aren't phases that wait on the
+  // user -- each is just its own signpost message, shown on its own
+  // specifically so it appears BEFORE the real slow wait behind it
+  // (Identifier/Finalization/Disclosure, resolving each answered driver's
+  // verdict, Content Writers/Training Coordinator/stitching, or re-running
+  // Identifier after an objection), not bundled in after it. The instant
+  // any signpost is shown, automatically continue to get the real result --
+  // nothing for the user to do here. rediagnosis added 2026-08-17, same
+  // mechanism as the other 3, wired the same day the stub was fixed.
+  if (currentPhase === 'reflector_identification' || currentPhase === 'driver_diagnosis_resolving' || currentPhase === 'content_creation' || currentPhase === 'rediagnosis') {
     showTyping(currentPhase);
     try {
       const nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
@@ -1060,6 +1442,378 @@ async function submitDriverDiagnosisForm(answers) {
   }
 }
 
+// ─── APPLICATION NOTIFICATION (the bell) ────────────────────────────────────
+// PREVIEW BUILD, 2026-08-17. Real data now (NOTIFICATION_BASE, local-only --
+// see the constant above), no scheduler/Timer Trigger wired up yet, so
+// nothing appears here until a row is manually seeded for testing. Badge
+// clears the INSTANT Q1 is answered (Yes/No/Not yet) -- Kriti's explicit
+// call -- not when Q2-4 are filled in, not when Submit is clicked for the
+// Yes branch. Reuses renderDriverDiagnosisForm's exact visual language
+// (same button/card styling) rather than inventing a new one.
+
+async function checkNotificationBadge() {
+  const bell = document.getElementById('bellBtn');
+  try {
+    const email = await _getUserEmailForReports();
+    const res = await fetch(`${NOTIFICATION_BASE}/api/notifications/current?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+    if (data.has_notification) {
+      currentNotification = data;
+      bell.classList.add('has-notification');
+    } else {
+      currentNotification = null;
+      bell.classList.remove('has-notification');
+    }
+  } catch (err) {
+    // Local dev service not running, or offline -- fail quiet, same as
+    // every other side-panel fetch; no badge is better than a broken one.
+    currentNotification = null;
+    bell.classList.remove('has-notification');
+  }
+}
+
+function openNotification() {
+  if (!currentNotification) return;   // nothing waiting -- plain hover tooltip still works, no click behavior needed
+  if (document.getElementById('notificationOverlay').classList.contains('open')) return;   // already open
+
+  document.getElementById('sidePanel').classList.remove('open');
+  document.getElementById('sidePanelBackdrop').classList.remove('open');
+
+  document.getElementById('notificationOverlayTitle').textContent =
+    'Application Confirmation' + (currentNotification.hero_reflector ? ' — ' + currentNotification.hero_reflector : '');
+  document.getElementById('notificationOverlayClose').classList.remove('ready-to-close');   // reset from any previous round
+
+  const scroll = document.getElementById('notificationOverlayScroll');
+  scroll.innerHTML = '';
+  document.getElementById('notificationOverlay').classList.add('open');
+
+  _appendOverlayMessage(currentNotification.opening_message);
+  renderNotificationForm(currentNotification);
+}
+
+// Same bubble markup as appendMessage() -- deliberately a SEPARATE
+// function, not a reuse of it, because appendMessage() hardcodes
+// messagesArea and unconditionally calls removeWelcome(). Kriti's
+// explicit call, 2026-08-17: whatever's underneath (the welcome screen,
+// or a real conversation) must come back exactly as it was when this
+// overlay closes -- so nothing about this function may ever touch
+// messagesArea or removeWelcome() at all.
+function _appendOverlayMessage(text) {
+  const scroll = document.getElementById('notificationOverlayScroll');
+  const msg = document.createElement('div');
+  msg.className = 'msg';
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'native_chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+  const right = document.createElement('div');
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble bubble-ai';
+  // Fixed, not auto-hugging content -- Kriti's explicit call, 2026-08-17:
+  // every message inside this overlay (this one AND the question card
+  // below it, same NOTIFICATION_BUBBLE_WIDTH) should be the same width,
+  // since there are only ever 1-2 messages here, not a real back-and-forth
+  // conversation where each bubble naturally varies.
+  bubble.style.cssText = `width:${NOTIFICATION_BUBBLE_WIDTH};max-width:100%;box-sizing:border-box;`;
+  bubble.innerHTML = formatResponse(text);
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = formatTime();
+  right.appendChild(bubble);
+  right.appendChild(meta);
+  msg.appendChild(avatar);
+  msg.appendChild(right);
+  scroll.appendChild(msg);
+  scroll.scrollTop = scroll.scrollHeight;
+}
+
+function closeNotificationOverlay() {
+  document.getElementById('notificationOverlay').classList.remove('open');
+  document.getElementById('notificationOverlayScroll').innerHTML = '';
+  document.getElementById('notificationOverlayClose').classList.remove('ready-to-close');
+}
+
+// "Not yet" calendar constraint -- next 30 days from today (Kriti's
+// explicit revision, 2026-08-17, down from the original 3 months), same
+// window notification_response.py itself validates server-side. This is
+// just the UI convenience copy, not the enforcement point.
+//
+// _dateToISO() builds the yyyy-mm-dd string from the Date object's own
+// LOCAL year/month/day fields -- NOT .toISOString(), which converts to
+// UTC first and can silently shift "today" a day backward for anyone
+// west of UTC. Bug found and fixed 2026-08-17.
+function _dateToISO(d) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+function _maxRetriggerDateISO() {
+  const d = new Date();
+  d.setDate(d.getDate() + 30);
+  return _dateToISO(d);
+}
+function _todayISO() {
+  return _dateToISO(new Date());
+}
+// yyyy-mm-dd -> "17 Aug" style, built from the SAME local-date parsing
+// discipline as _dateToISO() -- new Date("yyyy-mm-dd") parses as UTC
+// midnight, which is exactly the bug _dateToISO() exists to avoid, so
+// this never uses that form either.
+function _isoToFriendlyDate(iso) {
+  const [yyyy, mm, dd] = iso.split('-').map(Number);
+  const d = new Date(yyyy, mm - 1, dd);
+  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+}
+
+function renderNotificationForm(notification) {
+  const area = document.getElementById('notificationOverlayScroll');   // NOT messagesArea -- see openNotification()'s comment
+
+  const wrap = document.createElement('div');
+  wrap.className = 'msg';
+  wrap.id = 'notificationFormRow';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'native_chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+
+  const card = document.createElement('div');
+  card.className = 'msg-bubble bubble-ai';
+  // Same fixed width as the opening-message bubble (NOTIFICATION_BUBBLE_WIDTH)
+  // -- Kriti's explicit call, 2026-08-17: every message in this overlay
+  // should match, not each auto-size to its own content. This is also what
+  // the buttons' own width:100% resolve against, so this one line controls
+  // the whole card (and everything appended into restArea below it, too).
+  card.style.cssText = `width:${NOTIFICATION_BUBBLE_WIDTH};max-width:100%;box-sizing:border-box;`;
+
+  const btnStyle = 'display:block;width:100%;text-align:left;margin-bottom:0.4rem;padding:0.55rem 0.8rem;' +
+    'background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;color:var(--grey1);' +
+    'font-family:Poppins,sans-serif;font-size:0.85rem;cursor:pointer;transition:border-color 0.2s,background 0.2s;';
+  const selectedStyle = { borderColor: 'rgba(58,181,74,0.6)', background: 'rgba(58,181,74,0.12)' };
+
+  const q1 = notification.questions[0];
+  const q1Block = document.createElement('div');
+  q1Block.style.marginBottom = '0.4rem';
+  const q1Text = document.createElement('div');
+  q1Text.style.marginBottom = '0.5rem';
+  q1Text.textContent = q1.text;
+  q1Block.appendChild(q1Text);
+
+  const restArea = document.createElement('div');   // Q2-4 (Yes) or the date picker (Not yet) render in here
+
+  q1.options.forEach(function(optText) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = optText;
+    btn.style.cssText = btnStyle;
+    btn.onclick = function() {
+      Array.from(q1Block.querySelectorAll('button')).forEach(function(b) {
+        b.style.borderColor = 'var(--border)';
+        b.style.background = 'rgba(255,255,255,0.05)';
+      });
+      btn.style.borderColor = selectedStyle.borderColor;
+      btn.style.background = selectedStyle.background;
+
+      // Badge clears the moment Q1 is answered -- Kriti's explicit rule --
+      // regardless of which of the 3 options, regardless of whether more
+      // questions still follow.
+      document.getElementById('bellBtn').classList.remove('has-notification');
+
+      restArea.innerHTML = '';
+      if (optText === 'No') {
+        submitNotificationForm(notification.session_id, { q1_answer: 'No' });
+      } else if (optText === 'Yes') {
+        _renderYesFollowup(restArea, notification, btnStyle);
+      } else {
+        _renderNotYetDatePicker(restArea, notification);
+      }
+    };
+    q1Block.appendChild(btn);
+  });
+
+  card.appendChild(q1Block);
+  card.appendChild(restArea);
+
+  wrap.appendChild(avatar);
+  wrap.appendChild(card);
+  area.appendChild(wrap);
+  area.scrollTop = area.scrollHeight;
+}
+
+function _renderYesFollowup(container, notification, btnStyle) {
+  const answers = { q1_answer: 'Yes' };
+  const q2 = notification.questions[1], q3 = notification.questions[2], q4 = notification.questions[3];
+
+  const q2Block = document.createElement('div');
+  q2Block.style.marginTop = '0.9rem';
+  q2Block.style.marginBottom = '0.9rem';
+  const q2Text = document.createElement('div');
+  q2Text.style.marginBottom = '0.5rem';
+  q2Text.textContent = q2.text;
+  q2Block.appendChild(q2Text);
+  q2.options.forEach(function(optText) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = optText;
+    btn.style.cssText = btnStyle;
+    btn.onclick = function() {
+      answers.q2_answer = optText;
+      Array.from(q2Block.querySelectorAll('button')).forEach(function(b) {
+        b.style.borderColor = 'var(--border)';
+        b.style.background = 'rgba(255,255,255,0.05)';
+      });
+      btn.style.borderColor = 'rgba(58,181,74,0.6)';
+      btn.style.background = 'rgba(58,181,74,0.12)';
+      updateSubmitState();
+    };
+    q2Block.appendChild(btn);
+  });
+
+  function makeTextQuestion(q, key) {
+    const block = document.createElement('div');
+    block.style.marginBottom = '0.9rem';
+    const label = document.createElement('div');
+    label.style.marginBottom = '0.4rem';
+    label.textContent = q.text;
+    const textarea = document.createElement('textarea');
+    textarea.rows = 2;
+    textarea.style.cssText = 'width:100%;box-sizing:border-box;padding:0.55rem 0.7rem;background:rgba(255,255,255,0.05);' +
+      'border:1px solid var(--border);border-radius:4px;color:var(--grey1);font-family:Poppins,sans-serif;font-size:0.85rem;resize:vertical;';
+    textarea.oninput = function() {
+      answers[key] = textarea.value.trim();
+      updateSubmitState();
+    };
+    block.appendChild(label);
+    block.appendChild(textarea);
+    return block;
+  }
+  const q3Block = makeTextQuestion(q3, 'q3_answer');
+  const q4Block = makeTextQuestion(q4, 'q4_answer');
+
+  const submitBtn = document.createElement('button');
+  submitBtn.type = 'button';
+  submitBtn.textContent = 'Submit';
+  submitBtn.disabled = true;
+  submitBtn.style.cssText = 'margin-top:0.3rem;padding:0.6rem 1.4rem;background:var(--green);border:none;' +
+    'border-radius:4px;color:#fff;font-family:Poppins,sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;opacity:0.5;';
+  submitBtn.onclick = function() { submitNotificationForm(notification.session_id, answers); };
+
+  function updateSubmitState() {
+    const ready = !!(answers.q2_answer && answers.q3_answer && answers.q4_answer);
+    submitBtn.disabled = !ready;
+    submitBtn.style.opacity = ready ? '1' : '0.5';
+  }
+
+  container.appendChild(q2Block);
+  container.appendChild(q3Block);
+  container.appendChild(q4Block);
+  container.appendChild(submitBtn);
+}
+
+function _renderNotYetDatePicker(container, notification) {
+  const block = document.createElement('div');
+  block.style.marginTop = '0.9rem';
+
+  const label = document.createElement('div');
+  label.style.marginBottom = '0.3rem';
+  label.textContent = 'When should I check back with you?';
+  block.appendChild(label);
+
+  const minISO = _todayISO();
+  const maxISO = _maxRetriggerDateISO();
+
+  // Always visible, not just an error after the fact -- Kriti's explicit
+  // call, 2026-08-17: "how will I know as a user?" Shown up front, in
+  // plain dates, before anyone has to guess or hit the error state at all.
+  const windowHint = document.createElement('div');
+  windowHint.style.cssText = 'margin-bottom:0.6rem;font-size:0.75rem;color:var(--grey3);';
+  windowHint.textContent = `Pick any date between ${_isoToFriendlyDate(minISO)} and ${_isoToFriendlyDate(maxISO)} (within the next 30 days).`;
+  block.appendChild(windowHint);
+
+  const dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  dateInput.min = minISO;
+  dateInput.max = maxISO;
+  dateInput.style.cssText = 'padding:0.5rem 0.7rem;background:rgba(255,255,255,0.05);border:1px solid var(--border);' +
+    'border-radius:4px;color:var(--grey1);font-family:Poppins,sans-serif;font-size:0.85rem;margin-right:0.6rem;';
+  block.appendChild(dateInput);
+
+  const confirmBtn = document.createElement('button');
+  confirmBtn.type = 'button';
+  confirmBtn.textContent = 'Confirm date';
+  confirmBtn.disabled = true;
+  confirmBtn.style.cssText = 'padding:0.5rem 1.1rem;background:var(--green);border:none;border-radius:4px;color:#fff;' +
+    'font-family:Poppins,sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;opacity:0.5;';
+  block.appendChild(confirmBtn);
+
+  const rangeNote = document.createElement('div');
+  rangeNote.style.cssText = 'margin-top:0.4rem;font-size:0.75rem;color:#e5484d;display:none;';
+  rangeNote.textContent = 'Please pick a date within the next 30 days.';
+  block.appendChild(rangeNote);
+
+  // Validates the ACTUAL current value against [min, max] every time --
+  // not just "is it non-empty" (the bug Kriti caught: typing a date
+  // outside the window, or an incomplete one, left the button either
+  // wrongly enabled or stuck disabled with no explanation). ISO
+  // yyyy-mm-dd strings compare correctly with plain <= />=, no Date
+  // parsing needed. Listens to BOTH 'input' and 'change' -- Safari does
+  // not reliably fire 'input' while typing each date segment by hand, so
+  // relying on only one event was part of why manual typing looked broken.
+  function validate() {
+    const v = dateInput.value;
+    const inRange = !!v && v >= minISO && v <= maxISO;
+    confirmBtn.disabled = !inRange;
+    confirmBtn.style.opacity = inRange ? '1' : '0.5';
+    rangeNote.style.display = (v && !inRange) ? 'block' : 'none';
+  }
+  dateInput.addEventListener('input', validate);
+  dateInput.addEventListener('change', validate);
+
+  confirmBtn.onclick = function() {
+    if (dateInput.value < minISO || dateInput.value > maxISO) return;   // belt-and-braces -- never submit an out-of-range date
+    submitNotificationForm(notification.session_id, { q1_answer: 'Not yet', selected_date: dateInput.value });
+  };
+  container.appendChild(block);
+}
+
+async function submitNotificationForm(sessionId, answers) {
+  const row = document.getElementById('notificationFormRow');
+  if (row) row.remove();
+  currentNotification = null;
+
+  // Note: if the POST below genuinely fails, the row server-side is still
+  // sitting at 'awaiting_response' (it was never actually updated) -- so
+  // even though the badge already cleared the moment Q1 was picked, the
+  // NEXT checkNotificationBadge() (next page load) will correctly find it
+  // unanswered and light the badge again. Self-healing, not a real gap.
+  try {
+    const email = await _getUserEmailForReports();
+    const res = await fetch(`${NOTIFICATION_BASE}/api/notifications/respond`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ user_id: userId, email: email, session_id: sessionId }, answers)),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      _appendOverlayMessage(data.closing_message);
+    } else {
+      _appendOverlayMessage('Sorry, something went wrong saving that -- please try again from the bell icon.');
+    }
+  } catch (err) {
+    _appendOverlayMessage('Could not reach the notification service.');
+  }
+
+  // No auto-vanish -- Kriti's explicit call, 2026-08-17. The X now pulses
+  // gold/night to signal it's done and ready to close; the user closes it
+  // themselves, whenever they're ready, via closeNotificationOverlay().
+  document.getElementById('notificationOverlayClose').classList.add('ready-to-close');
+}
+
 function endConversation() {
   if (isWaiting || sessionEnded) return;
   document.getElementById('endModal').classList.remove('hidden');
@@ -1123,6 +1877,7 @@ async function logOut() {
   localStorage.removeItem('user_id');
   localStorage.removeItem('remembered_user_id');
   localStorage.removeItem('remembered_name');
+  localStorage.removeItem('remembered_email');
   window.location.href = 'native_login.html';
 }
 
