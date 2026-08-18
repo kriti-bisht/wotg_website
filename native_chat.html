@@ -1122,6 +1122,14 @@ async function resumeParkedSession(clickedSessionId) {
   // or failure.
   removeWelcome();
   document.getElementById('messagesArea').innerHTML = '';
+  // The cover screen's input box starts pre-filled with "Hi Kriti" (see the
+  // <textarea> itself) -- resuming an old conversation never touched that
+  // box before, so it just sat there looking like it belonged to whatever
+  // got resumed. Kriti's explicit call, 2026-08-18. Same clear+resize
+  // pattern already used by useHint() elsewhere in this file.
+  const inputBox = document.getElementById('userInput');
+  inputBox.value = '';
+  autoResize(inputBox);
   appendMessage('ai', 'Loading conversation…');
   const email = await _getUserEmailForReports();
   try {
