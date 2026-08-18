@@ -747,7 +747,7 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
     <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidePanel()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
-    <a href="index.html" class="logo-block">
+    <a href="native_index.html" class="logo-block">
       <div class="logo-text">
         <span class="logo-w">W</span><span class="logo-mid">isdom on the </span><span class="logo-go">GO!</span>
       </div>
@@ -845,6 +845,25 @@ textarea:disabled{opacity:0.5;cursor:not-allowed}
       </button>
     </div>
     <div class="notification-overlay-scroll" id="notificationOverlayScroll"></div>
+  </div>
+</div>
+
+<!-- Conversation History overlay -- read-only, same non-destructive pattern
+     as the notification overlay above (never touches the real chat-layout
+     underneath). Kriti's explicit call, 2026-08-18: History is just
+     browsing, not ending anything, so it gets a plain close X instead of
+     forcing "Start a new conversation" -- that reload-only banner is for a
+     LIVE session that just ended, not for looking at an old one. -->
+<div class="notification-overlay" id="historyOverlay">
+  <div class="notification-overlay-inner">
+    <div class="notification-overlay-header">
+      <span class="notification-overlay-dot"></span>
+      <span class="notification-overlay-title" id="historyOverlayTitle">Conversation History</span>
+      <button type="button" class="notification-overlay-close" id="historyOverlayClose" onclick="closeHistoryOverlay()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="notification-overlay-scroll" id="historyOverlayScroll"></div>
   </div>
 </div>
 
@@ -1094,6 +1113,16 @@ function _renderPastMessages(messages) {
 
 async function resumeParkedSession(clickedSessionId) {
   toggleSidePanel();
+  // Clear the screen the MOMENT this is clicked, before the fetch even
+  // starts -- Kriti's explicit call, 2026-08-18. Previously this only
+  // cleared on success, so a failed resume left whatever was already on
+  // screen (an old or live conversation) sitting there with the error
+  // stacked on top of it, which read as two conversations' messages
+  // mixing together. Now every attempt starts from a clean slate, success
+  // or failure.
+  removeWelcome();
+  document.getElementById('messagesArea').innerHTML = '';
+  appendMessage('ai', 'Loading conversation…');
   const email = await _getUserEmailForReports();
   try {
     const res = await fetch(
@@ -1101,11 +1130,11 @@ async function resumeParkedSession(clickedSessionId) {
       { method: 'POST' },
     );
     const data = await res.json();
+    document.getElementById('messagesArea').innerHTML = '';
     if (!res.ok || !data.ok) {
       appendError('Could not resume that conversation -- it may have already ended.');
       return;
     }
-    document.getElementById('messagesArea').innerHTML = '';
     sessionEnded = false;
     document.getElementById('inputArea').style.display = '';
     sessionId = clickedSessionId;
@@ -1120,16 +1149,28 @@ async function resumeParkedSession(clickedSessionId) {
         await handleBackendResult(nextResult);
       } catch (err) {
         removeTyping();
-        appendError(err.message || 'Something went wrong continuing the conversation.');
+        appendError('Something went wrong continuing that conversation -- please try again.');
       }
     }
   } catch (err) {
+    document.getElementById('messagesArea').innerHTML = '';
     appendError('Could not reach the reports service to resume that conversation.');
   }
 }
 
+// Read-only, in its own overlay -- Kriti's explicit call, 2026-08-18. This
+// used to reuse lockConversationEnded()'s "Start a new conversation"
+// banner, which only made sense for a LIVE session that just ended -- for
+// browsing an old one, that forced a full reload just to get out. Same
+// non-destructive overlay pattern as the notification overlay: never
+// touches messagesArea/sessionId/currentPhase at all, so whatever's
+// underneath (welcome screen or a real conversation) is untouched and
+// still there the instant this closes.
 async function viewClosedConversation(clickedSessionId) {
   toggleSidePanel();
+  const scroll = document.getElementById('historyOverlayScroll');
+  scroll.innerHTML = '';
+  document.getElementById('historyOverlay').classList.add('open');
   const email = await _getUserEmailForReports();
   try {
     const res = await fetch(
@@ -1137,20 +1178,53 @@ async function viewClosedConversation(clickedSessionId) {
     );
     const data = await res.json();
     if (!res.ok || !data.ok) {
-      appendError('Could not load that conversation.');
+      _renderHistoryMessage('ai', 'Something went wrong loading that conversation -- please try again.');
       return;
     }
-    document.getElementById('messagesArea').innerHTML = '';
-    sessionId = clickedSessionId;
-    currentPhase = data.final_status;
-    _renderPastMessages(data.messages);
-    // Closed session, read-only -- reuses the same lock/banner every other
-    // ending already shows, so this doesn't need its own separate UI state.
-    sessionEnded = false;
-    lockConversationEnded();
+    (data.messages || []).forEach(function(m) {
+      _renderHistoryMessage(m.sender === 'user' ? 'user' : 'ai', m.text);
+    });
   } catch (err) {
-    appendError('Could not reach the reports service to load that conversation.');
+    _renderHistoryMessage('ai', 'Something went wrong loading that conversation -- please try again.');
   }
+}
+
+function closeHistoryOverlay() {
+  document.getElementById('historyOverlay').classList.remove('open');
+}
+
+// Same bubble markup as appendMessage(), deliberately a separate function
+// for the same reason _appendOverlayMessage() is: this must never touch
+// messagesArea or removeWelcome(), and unlike that function this one needs
+// BOTH sender types (a real conversation, not a single-sender form), at
+// natural width rather than the notification overlay's fixed one.
+function _renderHistoryMessage(role, text) {
+  const scroll = document.getElementById('historyOverlayScroll');
+  const isUser = role === 'user';
+  const msg = document.createElement('div');
+  msg.className = 'msg' + (isUser ? ' msg-user' : '');
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar ' + (isUser ? 'avatar-user' : 'avatar-ai');
+  if (isUser) {
+    avatar.textContent = userInitials;
+  } else {
+    const avatarImg = document.createElement('img');
+    avatarImg.src = 'native_chatphoto.png';
+    avatarImg.alt = 'Kriti';
+    avatar.appendChild(avatarImg);
+  }
+  const right = document.createElement('div');
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble ' + (isUser ? 'bubble-user' : 'bubble-ai');
+  bubble.innerHTML = formatResponse(text);
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = formatTime();
+  right.appendChild(bubble);
+  right.appendChild(meta);
+  msg.appendChild(avatar);
+  msg.appendChild(right);
+  scroll.appendChild(msg);
 }
 
 async function _getUserEmailForReports() {
@@ -1273,7 +1347,7 @@ async function handleBackendResult(result) {
       await handleBackendResult(nextResult);
     } catch (err) {
       removeTyping();
-      appendError(err.message || 'Something went wrong continuing the conversation.');
+      appendError('Something went wrong continuing the conversation -- please try again.');
     }
     return;
   }
@@ -1432,7 +1506,7 @@ async function submitDriverDiagnosisForm(answers) {
     await handleBackendResult(result);
   } catch (err) {
     removeTyping();
-    appendError(err.message || 'Something went wrong sending your answers.');
+    appendError('Something went wrong sending your answers -- please try again.');
   }
 
   isWaiting = false;
@@ -2181,7 +2255,7 @@ async function sendMessage() {
     }
   } catch (err) {
     removeTyping();
-    appendError(err.message || 'Something went wrong reaching the server.');
+    appendError('Something went wrong reaching the server -- please try again.');
   }
 
   isWaiting = false;
