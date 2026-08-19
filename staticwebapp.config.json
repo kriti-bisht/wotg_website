@@ -1,0 +1,9 @@
+{
+  "routes": [
+    { "route": "/", "rewrite": "/native_index.html" },
+    { "route": "/index.html", "rewrite": "/native_index.html" },
+    { "route": "/login.html", "rewrite": "/native_login.html" },
+    { "route": "/chat.html", "rewrite": "/native_chat.html" },
+    { "route": "/feedback.html", "rewrite": "/native_feedback.html" }
+  ]
+}
