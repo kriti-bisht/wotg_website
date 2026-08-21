@@ -497,10 +497,18 @@
       showState(authState);
     });
 
+    // Preserves the email's "take me straight to my pending notification"
+    // intent across a login detour -- ?next=notify on THIS page's own URL
+    // (set by native_chat.html when it bounces a logged-out visitor here)
+    // becomes ?notify=1 on the chat page once login succeeds. Any other
+    // (or missing) `next` value just goes to the plain chat page, same as
+    // before this existed.
+    const _nextParam = new URLSearchParams(window.location.search).get('next');
+
     function goToChat(userId, name) {
       localStorage.setItem('user_id', userId);
       localStorage.setItem('user_name', name);
-      window.location.href = 'native_chat.html';
+      window.location.href = _nextParam === 'notify' ? 'native_chat.html?notify=1' : 'native_chat.html';
     }
 
     // "Keep me signed in" -- prototype-level persistence, same trust model

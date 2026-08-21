@@ -953,6 +953,11 @@ const API_BASE = 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewe
 const USER_MGMT_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
 const REPORTS_BASE = 'https://wotg-reports.azurewebsites.net';
 const NOTIFICATION_BASE = 'https://wotg-notifications.azurewebsites.net';
+// learning_recommendations package (Learning Goals / Manager's Recommendation)
+// -- its own separate backend, same pattern as every other App Service above.
+// NOT DEPLOYED YET as of 2026-08-21 -- this URL is a placeholder matching the
+// naming convention every other service uses; it will 404 until Kriti says go.
+const LEARNING_RECS_BASE = 'https://wotg-learning-recommendations.azurewebsites.net';
 // Every bubble inside the notification overlay (the opening message AND
 // the question card) uses this SAME fixed width -- Kriti's explicit call,
 // 2026-08-17: with only 1-2 messages in this overlay, mismatched widths
@@ -964,6 +969,13 @@ let sessionId  = '';   // empty until the backend hands us a real one
 let currentPhase = 'opening';
 let isWaiting  = false;
 let sessionEnded = false;
+// 'voluntary_opening' (the default, main chat) or 'learning_recommendations'
+// (a Learning Goals conversation, started by clicking a skill in the side
+// panel) -- decides which backend sendMessage() talks to. Reset to
+// 'voluntary_opening' by logOut()/anything that starts a fresh main chat,
+// same as sessionId/currentPhase already are.
+let activeTrack = 'voluntary_opening';
+let activeSkillName = '';  // only meaningful while activeTrack is 'learning_recommendations'
 let userInitials = 'U';
 let pendingForm = null;
 let currentNotification = null;   // {session_id, opening_message, questions} or null -- set by checkNotificationBadge()
@@ -992,10 +1004,16 @@ function initSession() {
   userId = localStorage.getItem('user_id') || '';
   sessionId = '';
   currentPhase = 'opening';
+  activeTrack = 'voluntary_opening';
+  activeSkillName = '';
   if (!userId) {
     // No real login happened -- send them back rather than let the page
-    // try to talk to the backend with no user_id at all.
-    window.location.href = 'native_login.html';
+    // try to talk to the backend with no user_id at all. Carries the
+    // notification email's ?notify=1 through the login detour, as
+    // ?next=notify, so goToChat() in native_login.html can send them
+    // straight back here with the flag still set once they're in.
+    const cameFromNotifyLink = new URLSearchParams(window.location.search).get('notify') === '1';
+    window.location.href = cameFromNotifyLink ? 'native_login.html?next=notify' : 'native_login.html';
     return;
   }
   const userName = localStorage.getItem('user_name') || '';
@@ -1053,12 +1071,15 @@ async function loadSideGoals() {
     body.innerHTML = '';
     skills.forEach(function(skillName) {
       const item = document.createElement('div');
-      item.className = 'side-item';
+      // side-item-clickable: same class Parking Lot rows use -- gets the
+      // hover affordance for free, no separate CSS needed.
+      item.className = 'side-item side-item-clickable';
       item.innerHTML = _SIDE_ITEM_ICON;
       const label = document.createElement('div');
       label.className = 'side-item-label';
       label.textContent = skillName;
       item.appendChild(label);
+      item.addEventListener('click', function() { startLearningGoalSession(skillName); });
       body.appendChild(item);
     });
   } catch (err) {
@@ -1104,6 +1125,44 @@ function _renderSideSessionList(container, sessions, emptyMessage, kind) {
   });
 }
 
+// ─── LEARNING GOALS (Manager's Recommendation) ──────────────────────────────
+// Clicking a skill in the side panel -- always a brand-new session, never a
+// resume (unlike Parking Lot). Same clear-screen-immediately pattern as
+// resumeParkedSession below: whatever's on screen gets wiped the instant
+// this is clicked, success or failure, so nothing old ever sits mixed in
+// with the new conversation or a leftover error.
+async function startLearningGoalSession(skillName) {
+  toggleSidePanel();
+  removeWelcome();
+  document.getElementById('messagesArea').innerHTML = '';
+  const inputBox = document.getElementById('userInput');
+  inputBox.value = '';
+  autoResize(inputBox);
+  appendMessage('ai', 'Loading conversation…');
+  try {
+    const res = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, skill_name: skillName }),
+    });
+    const data = await res.json().catch(function(){ return {}; });
+    document.getElementById('messagesArea').innerHTML = '';
+    if (!res.ok) {
+      appendError('Could not start that conversation -- please try again.');
+      return;
+    }
+    sessionEnded = false;
+    document.getElementById('inputArea').style.display = '';
+    activeTrack = 'learning_recommendations';
+    activeSkillName = skillName;
+    sessionId = data.session_id;
+    await handleBackendResult(data);
+  } catch (err) {
+    document.getElementById('messagesArea').innerHTML = '';
+    appendError('Could not reach the server to start that conversation.');
+  }
+}
+
 // ─── RESUME (Parking Lot) / VIEW (Conversation History) ────────────────────
 function _renderPastMessages(messages) {
   messages.forEach(function(m) {
@@ -1145,6 +1204,7 @@ async function resumeParkedSession(clickedSessionId) {
     }
     sessionEnded = false;
     document.getElementById('inputArea').style.display = '';
+    activeTrack = 'voluntary_opening';  // a resumed session is always the main chat, never Learning Goals
     sessionId = clickedSessionId;
     currentPhase = data.phase;
     _renderPastMessages(data.messages);
@@ -1542,6 +1602,14 @@ async function checkNotificationBadge() {
     if (data.has_notification) {
       currentNotification = data;
       bell.classList.add('has-notification');
+      // Came straight from the notification email's link (?notify=1,
+      // possibly relayed through a login detour) -- open the popup
+      // immediately instead of making them find and click the bell.
+      // Guarded on has_notification being true: if it's ever false (already
+      // answered, or the link is stale), notify=1 alone does nothing.
+      if (new URLSearchParams(window.location.search).get('notify') === '1') {
+        openNotification();
+      }
     } else {
       currentNotification = null;
       bell.classList.remove('has-notification');
@@ -1855,6 +1923,20 @@ function _renderNotYetDatePicker(container, notification) {
   }
   dateInput.addEventListener('input', validate);
   dateInput.addEventListener('change', validate);
+  dateInput.addEventListener('keyup', validate);
+  dateInput.addEventListener('blur', validate);
+  // Belt-and-suspenders, Kriti's confirmed live catch, 2026-08-20: even
+  // 'input'/'change'/'keyup'/'blur' together still weren't reliable enough
+  // in Safari -- typing a full date by hand left Confirm greyed out even
+  // though the field showed the right value, only fixing itself once the
+  // native calendar picker was used instead. A short poll can't miss it,
+  // whatever Safari does or doesn't fire: it just re-checks the field's
+  // actual value on a timer. Self-clearing the moment this block leaves the
+  // page (form submitted, overlay closed) -- no separate cleanup call needed.
+  const _dateValidatePoll = setInterval(function() {
+    if (!document.body.contains(dateInput)) { clearInterval(_dateValidatePoll); return; }
+    validate();
+  }, 250);
 
   confirmBtn.onclick = function() {
     if (dateInput.value < minISO || dateInput.value > maxISO) return;   // belt-and-braces -- never submit an out-of-range date
@@ -2235,7 +2317,24 @@ async function sendMessage() {
   appendMessage('user', text);
 
   try {
-    if (currentPhase === 'opening') {
+    if (activeTrack === 'learning_recommendations') {
+      // Learning Goals -- a completely separate backend from the main
+      // chat below, same request/response shape though (messages/phase/
+      // session_complete), so handleBackendResult() works unchanged.
+      showTyping(currentPhase);
+      const res = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, session_id: sessionId, skill_name: activeSkillName, message: text }),
+      });
+      const result = await res.json().catch(function(){ return {}; });
+      removeTyping();
+      if (!res.ok) {
+        appendError('Something went wrong reaching the server -- please try again.');
+      } else {
+        await handleBackendResult(result);
+      }
+    } else if (currentPhase === 'opening') {
       const userName = localStorage.getItem('user_name') || '';
       // Dots go up BEFORE the real wait starts (the LLM call lives inside
       // this apiPost), not after -- otherwise they only ever flash for a
