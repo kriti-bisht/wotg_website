@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wisdom on the Go — User Management</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:   #041A40;
+  --night2:  #2A3C5D;
+  --night3:  #4F5F79;
+  --grey1:   #f0f2f5;
+  --grey2:   #b8c0cc;
+  --grey3:   #6b7685;
+  --white:   #ffffff;
+  --green:   #3ab54a;
+  --green2:  #2d9640;
+  --gold:    #E4CA0A;
+  --gold2:   #AB9808;
+  --amber:   #e8960a;
+  --amber2:  #c17d00;
+  --red:     #e0303a;
+  --teal:    #14B8A6;
+  --border:  rgba(255,255,255,0.09);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Poppins',sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(4,26,64,0.06), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(228,202,10,0.05), transparent 40%),
+    #fbfbfd;
+  min-height:100vh;
+  color:var(--night);
+}
+a { text-decoration:none; color:inherit; }
+
+/* ---- Layout ---- */
+.admin-shell { min-height:100vh; }
+
+/* ---- Sidebar ---- */
+/* A slide-out overlay, not a permanent rail -- matches native_chat.html's
+   own side panel exactly: hidden by default, opens below the topbar (not
+   over it), via the same --nav-height custom property native's own
+   _positionSidePanel() writes (measured from the real header, since its
+   height isn't a fixed CSS value). Kriti's explicit call, 2026-08-23: the
+   original permanent-rail version overlapped the topbar and didn't match
+   how the real app's panel behaves. */
+.admin-sidebar {
+  position:fixed; top:var(--nav-height, 64px); left:0; bottom:0; width:216px; max-width:85vw; z-index:100;
+  background:var(--night); color:#fff; display:flex; flex-direction:column;
+  transform:translateX(-100%); transition:transform 0.25s; box-shadow:4px 0 24px rgba(0,0,0,0.35);
+}
+.admin-sidebar.open { transform:translateX(0); }
+.admin-sidebar-backdrop {
+  display:none; position:fixed; top:var(--nav-height, 64px); left:0; right:0; bottom:0;
+  background:transparent; z-index:29;
+}
+.admin-sidebar-backdrop.open { display:block; }
+.admin-nav { flex:1; padding:1rem 0 0.6rem; overflow-y:auto; }
+.admin-nav-item {
+  display:flex; align-items:center; gap:0.65rem; width:100%; padding:0.7rem 1rem;
+  color:var(--grey1); font-size:0.82rem; font-family:'Poppins',sans-serif; font-weight:500;
+  border-left:3px solid transparent; background:none; border-top:none; border-right:none; border-bottom:none;
+  cursor:pointer; white-space:nowrap; transition:background 0.15s, border-color 0.15s; text-align:left;
+}
+.admin-nav-item svg { width:17px; height:17px; flex-shrink:0; }
+.admin-nav-item:hover { background:rgba(255,255,255,0.06); border-left-color:var(--green); }
+.admin-nav-item.active { background:rgba(255,255,255,0.08); border-left-color:var(--green); color:#fff; font-weight:600; }
+.admin-nav-tag {
+  font-size:0.58rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--gold);
+  background:rgba(228,202,10,0.14); border-radius:8px; padding:0.1rem 0.4rem; margin-left:auto; flex-shrink:0;
+}
+.admin-nav-divider { height:1px; background:rgba(255,255,255,0.1); margin:0.6rem 1rem; }
+
+/* ---- Header ---- */
+/* Content is always full-width now -- the sidebar is an overlay, not a
+   permanent rail taking up horizontal space (see above). */
+.admin-main { min-width:0; }
+/* Matches native_chat.html's own nav bar exactly (padding, hamburger,
+   logo, greeting typography) -- Kriti's explicit call, 2026-08-22: this
+   page's topbar looked "close but different" next to the real app's,
+   width and sizing included. Same classes/values, not just similar. */
+header.topbar { background:var(--night); }
+.header-inner { display:flex; align-items:center; padding:1rem 2.5rem; }
+.hamburger-btn {
+  background:transparent; border:none;
+  width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center;
+  gap:4px; flex-direction:column; cursor:pointer; flex-shrink:0; margin-right:0.9rem;
+  border-radius:4px;
+}
+.hamburger-btn span { display:block; width:18px; height:2px; background:var(--grey1); border-radius:2px; }
+.hamburger-btn:hover span { background:var(--green); }
+.topbar-logo { display:flex; flex-direction:column; gap:0; }
+.topbar-logo-text { font-size:1.5rem; color:var(--white); }
+.topbar-logo-w { font-weight:700; }
+.topbar-logo-mid { font-weight:400; }
+.topbar-logo-go { font-weight:700; color:var(--green); }
+.topbar-logo-sanskrit { font-size:0.62rem; font-weight:300; letter-spacing:0.16em; color:var(--white); opacity:0.75; padding-left:0.1rem; margin-top:-0.15rem; }
+.admin-greeting { margin-left:1.75rem; padding-left:1.75rem; border-left:1px solid var(--border); }
+.greeting-line1 { font-size:1.05rem; color:var(--white); }
+.greeting-line1 .name { color:var(--green); font-weight:600; }
+.greeting-line2 { font-size:0.85rem; color:var(--white); margin-top:0.15rem; }
+.header-spacer { flex:1; }
+
+/* ---- Content ---- */
+.admin-content { max-width:1500px; margin:0 auto; padding:1.6rem 2rem 3rem; }
+/* Real bug, caught by Kriti 2026-08-22: this rule was missing entirely,
+   so every tab-panel rendered at once as one continuous page instead of
+   switching. */
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+.page-head { margin-bottom:1.4rem; }
+.page-title { font-size:1.5rem; font-weight:700; color:var(--night); }
+.page-sub { font-size:0.85rem; color:var(--grey3); margin-top:0.2rem; }
+
+.card {
+  background:var(--white); border-radius:14px; padding:1.5rem; margin-bottom:1.25rem;
+  box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05);
+}
+.section-title { font-size:1rem; font-weight:700; color:var(--night); margin-bottom:0.9rem; }
+label { display:block; font-size:0.78rem; font-weight:600; color:var(--grey3); margin-bottom:0.35rem; }
+input[type="email"], input[type="text"], input[type="password"], input[type="file"],
+textarea, select {
+  width:100%; background:var(--grey1); border:1px solid rgba(4,26,64,0.1); border-radius:10px;
+  color:var(--night); font-family:inherit; font-size:0.88rem; padding:0.62rem 0.8rem;
+}
+input:focus, textarea:focus, select:focus { outline:2px solid var(--green); }
+textarea { resize:vertical; min-height:4.5rem; }
+.field { margin-bottom:1.1rem; }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
+.help-text { font-size:0.75rem; color:var(--grey3); margin-top:0.4rem; line-height:1.5; }
+
+/* ---- Buttons ---- */
+button {
+  font-family:'Poppins',sans-serif; font-size:0.85rem; font-weight:600; border-radius:20px;
+  border:1.5px solid rgba(4,26,64,0.14); background:var(--white); color:var(--night2);
+  padding:0.6rem 1.3rem; cursor:pointer; transition:border-color 0.15s, color 0.15s, background 0.15s, transform 0.15s;
+}
+button:hover { border-color:var(--night2); color:var(--night); }
+button.primary { background:var(--green); color:#fff; border-color:var(--green); box-shadow:0 6px 16px rgba(58,181,74,0.3); }
+button.primary:hover { background:var(--green2); border-color:var(--green2); transform:translateY(-1px); }
+button.small { padding:0.35rem 0.85rem; font-size:0.78rem; }
+button.danger { border-color:rgba(224,48,58,0.35); color:var(--red); background:var(--white); }
+button.danger:hover { background:rgba(224,48,58,0.08); border-color:var(--red); }
+
+.readonly-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem 1.25rem; margin-bottom:1.5rem; }
+.readonly-grid div span.k { display:block; font-size:0.7rem; color:var(--grey3); text-transform:uppercase; letter-spacing:0.03em; }
+.readonly-grid div span.v { display:block; font-size:0.9rem; color:var(--night); margin-top:0.15rem; word-break:break-word; font-weight:500; }
+.skill-row { display:flex; gap:0.5rem; margin-bottom:0.5rem; align-items:center; }
+.skill-row input { flex:1; }
+.skill-row span { color:var(--grey3); font-size:0.82rem; white-space:nowrap; }
+.status { font-size:0.85rem; margin-top:0.75rem; font-weight:500; }
+.status.ok { color:var(--green2); }
+.status.err { color:var(--red); }
+.hidden { display:none; }
+.save-row { display:flex; justify-content:flex-end; gap:0.6rem; margin-top:1.5rem; }
+
+/* ---- tables ---- */
+table { width:100%; border-collapse:collapse; font-size:0.83rem; }
+th {
+  text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--grey3);
+  font-weight:700; padding:0.85rem 0.9rem; border-bottom:1px solid rgba(4,26,64,0.08); white-space:nowrap;
+}
+td { padding:0.75rem 0.9rem; border-bottom:1px solid rgba(4,26,64,0.06); vertical-align:middle; color:var(--night2); }
+tbody tr:hover { background:var(--grey1); }
+tbody tr:last-child td { border-bottom:none; }
+.table-wrap { overflow-x:auto; max-height:60vh; overflow-y:auto; border-radius:10px; }
+/* Real bug, caught by Kriti 2026-08-23: this used to also set
+   overflow:hidden, which -- combined on the same element as .table-wrap,
+   same specificity, later in the stylesheet -- silently won and killed
+   .table-wrap's scroll. Invisible on short tables (a few single-line
+   rows fit under 60vh regardless), but the Glossary table's rows are tall
+   (long definition/glossary text), so one row alone could fill the
+   clipped box -- exactly "shows one skill, doesn't scroll". */
+.table-card { border-radius:14px; }
+.glossary-search { margin-bottom:1rem; }
+.checkbox-row { display:flex; align-items:center; gap:0.6rem; }
+.checkbox-row input[type="checkbox"] { width:auto; accent-color:var(--green); cursor:pointer; }
+.checklist-box { border:1px solid rgba(4,26,64,0.08); border-radius:10px; padding:0.75rem; background:var(--grey1); }
+
+/* ---- badges ---- */
+.badge { display:inline-flex; align-items:center; gap:0.35rem; font-size:0.68rem; font-weight:700; padding:0.24rem 0.68rem; border-radius:12px; white-space:nowrap; }
+.badge-user { background:var(--grey1); color:var(--night2); }
+.badge-manager { background:rgba(58,181,74,0.12); color:var(--green2); }
+.badge-LND { background:rgba(228,202,10,0.18); color:var(--gold2); }
+.badge-admin { background:rgba(20,184,166,0.14); color:#0d8f81; }
+.badge-super_admin { background:rgba(4,26,64,0.10); color:var(--night); }
+
+/* ---- Look Up & Edit table ---- */
+.lu-filter-bar { display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; margin-bottom:1.25rem; }
+.lu-search-wrap { position:relative; flex:1 1 260px; min-width:220px; }
+.lu-search-icon { position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--grey3); pointer-events:none; }
+.lu-search { padding-left:2.3rem; border-radius:20px; }
+.lu-filter-select { border-radius:20px; max-width:190px; }
+.lu-user-cell { display:flex; align-items:center; gap:0.65rem; }
+.avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.7rem; flex-shrink:0; background:var(--night2); color:#fff; }
+.lu-user-name { font-weight:600; color:var(--night); font-size:0.85rem; }
+.lu-user-email { font-size:0.73rem; color:var(--grey3); }
+.lu-edit-btn { padding:0.4rem 1rem; font-size:0.78rem; }
+.temp-tag { font-size:0.68rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; color:var(--gold2); background:rgba(228,202,10,0.18); border-radius:8px; padding:0.2rem 0.6rem; margin-left:0.6rem; vertical-align:middle; }
+</style>
+</head>
+<body>
+
+<div class="admin-shell">
+  <div class="admin-sidebar-backdrop" id="adminSidebarBackdrop" onclick="toggleSidePanel()"></div>
+  <nav class="admin-sidebar" id="adminSidebar">
+    <div class="admin-nav">
+      <button class="admin-nav-item tab-btn active" data-tab="lookup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Look Up &amp; Edit
+      </button>
+      <button class="admin-nav-item tab-btn" data-tab="create">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+        Create User
+      </button>
+      <button class="admin-nav-item tab-btn" data-tab="bulkupload">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M4 3h16"/></svg>
+        Bulk Upload
+      </button>
+      <button class="admin-nav-item tab-btn" data-tab="delete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+        Delete Users
+      </button>
+      <button class="admin-nav-item tab-btn" data-tab="skills">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg>
+        Skill Assignments
+        <span class="admin-nav-tag">Temp</span>
+      </button>
+      <button class="admin-nav-item tab-btn" data-tab="glossary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+        Reflector Glossary
+      </button>
+      <div class="admin-nav-divider"></div>
+    </div>
+  </nav>
+
+  <div class="admin-main">
+    <header class="topbar">
+      <div class="header-inner">
+        <button class="hamburger-btn" onclick="toggleSidePanel()" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-logo">
+          <div class="topbar-logo-text"><span class="topbar-logo-w">W</span><span class="topbar-logo-mid">isdom on the </span><span class="topbar-logo-go">GO!</span></div>
+          <div class="topbar-logo-sanskrit">Tat Tvam Asi</div>
+        </div>
+        <div class="admin-greeting">
+          <div class="greeting-line1">Hello <span class="name">Kriti</span>,</div>
+          <div class="greeting-line2" id="topbarSub">Internal admin tool -- not deployed anywhere public.</div>
+        </div>
+        <div class="header-spacer"></div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- ================= LOOK UP & EDIT ================= -->
+      <div class="tab-panel active" id="panel-lookup">
+        <div class="page-head">
+          <div class="page-title">Look Up &amp; Edit</div>
+          <div class="page-sub">Search all users, then edit their profile, access type, reporting lines and assigned skills.</div>
+        </div>
+
+        <div class="card">
+          <div class="lu-filter-bar">
+            <div class="lu-search-wrap">
+              <svg class="lu-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="lu_search" class="lu-search" placeholder="Search by name, email, company or department..." oninput="renderUserTable()" />
+            </div>
+            <select id="lu_accesstype_filter" class="lu-filter-select" onchange="renderUserTable()">
+              <option value="">All access types</option>
+              <option value="user">User</option>
+              <option value="manager">Manager</option>
+              <option value="LND">LND</option>
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
+          </div>
+          <div class="table-wrap table-card">
+            <table>
+              <thead>
+                <tr><th>User</th><th>Company</th><th>Department</th><th>Access Type</th><th>Manager</th><th></th></tr>
+              </thead>
+              <tbody id="lu_table_body"><tr><td colspan="6">Loading users...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="resultCard" class="card hidden">
+          <div class="section-title">Account (read-only)</div>
+          <div class="readonly-grid">
+            <div><span class="k">Name</span><span class="v" id="ro_name"></span></div>
+            <div><span class="k">Username</span><span class="v" id="ro_username"></span></div>
+            <div><span class="k">Email</span><span class="v" id="ro_email"></span></div>
+            <div><span class="k">Company</span><span class="v" id="ro_company"></span></div>
+          </div>
+
+          <div class="section-title">Editable</div>
+
+          <!-- department/country/designation made editable 2026-08-23,
+               Kriti's explicit call -- name/username/email/company stay
+               read-only above (account-identity fields, not this screen's
+               job to change). -->
+          <div class="field-row">
+            <div class="field"><label for="departmentInput">Department</label><input type="text" id="departmentInput" /></div>
+            <div class="field"><label for="designationInput">Designation</label><input type="text" id="designationInput" /></div>
+          </div>
+          <div class="field">
+            <label for="countryInput">Country</label>
+            <input type="text" id="countryInput" />
+          </div>
+
+          <div class="field">
+            <label for="jobDescInput">Job description</label>
+            <textarea id="jobDescInput"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="peopleManagerSelect">Is people manager</label>
+            <select id="peopleManagerSelect">
+              <option value="unset">Unset</option>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="notesInput">Additional notes</label>
+            <textarea id="notesInput"></textarea>
+          </div>
+
+          <div class="field">
+            <label>Skills assigned</label>
+            <div id="skillsList"></div>
+            <button class="small" onclick="addSkillRow('', '', '')">+ Add skill</button>
+          </div>
+
+          <div class="section-title" style="margin-top:1.5rem;">Access &amp; reporting lines</div>
+          <p class="help-text" style="margin-bottom:1rem;">All optional -- leave blank if unknown. None of this is ever read by the LLM actors.</p>
+          <div class="field">
+            <label for="accessTypeSelect">Access type</label>
+            <select id="accessTypeSelect">
+              <option value="user">User</option>
+              <option value="manager">Manager</option>
+              <option value="LND">LND</option>
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="managerNameInput">Manager name</label><input type="text" id="managerNameInput" /></div>
+            <div class="field"><label for="managerEmailInput">Manager email</label><input type="email" id="managerEmailInput" /></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="trainerNameInput">Trainer name</label><input type="text" id="trainerNameInput" /></div>
+            <div class="field"><label for="trainerEmailInput">Trainer email</label><input type="email" id="trainerEmailInput" /></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="lndNameInput">LND name</label><input type="text" id="lndNameInput" /></div>
+            <div class="field"><label for="lndEmailInput">LND email</label><input type="email" id="lndEmailInput" /></div>
+          </div>
+
+          <div class="save-row">
+            <button onclick="resultCard.classList.add('hidden'); currentUserId=null;">Cancel</button>
+            <button class="primary" onclick="saveChanges()">Save changes</button>
+          </div>
+          <div id="saveStatus" class="status hidden"></div>
+        </div>
+      </div>
+
+      <!-- ================= CREATE USER ================= -->
+      <div class="tab-panel" id="panel-create">
+        <div class="page-head">
+          <div class="page-title">Create User</div>
+          <div class="page-sub">Add one person. You set the username and password -- they always set their own on first login.</div>
+        </div>
+        <div class="card">
+          <div class="field-row">
+            <div class="field"><label for="c_name">Name</label><input type="text" id="c_name" /></div>
+            <div class="field"><label for="c_email">Email</label><input type="email" id="c_email" /></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="c_username">Username</label><input type="text" id="c_username" /></div>
+            <div class="field"><label for="c_password">Temporary password</label><input type="text" id="c_password" placeholder="At least 6 characters" /></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="c_designation">Designation</label><input type="text" id="c_designation" /></div>
+            <div class="field"><label for="c_department">Department</label><input type="text" id="c_department" /></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="c_company">Company</label><input type="text" id="c_company" /></div>
+            <div class="field"><label for="c_country">Country</label><input type="text" id="c_country" /></div>
+          </div>
+          <div class="field">
+            <label for="c_jobdesc">Job description</label>
+            <textarea id="c_jobdesc"></textarea>
+          </div>
+          <div class="field">
+            <label for="c_peoplemanager">Is people manager</label>
+            <select id="c_peoplemanager">
+              <option value="unset">Unset</option>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="c_notes">Additional notes</label>
+            <textarea id="c_notes"></textarea>
+          </div>
+
+          <div class="section-title" style="margin-top:1.5rem;">Access &amp; reporting lines</div>
+          <p class="help-text" style="margin-bottom:1rem;">All optional -- leave blank if unknown. None of this is ever read by the LLM actors.</p>
+          <div class="field">
+            <label for="c_accesstype">Access type</label>
+            <select id="c_accesstype">
+              <option value="user">User</option>
+              <option value="manager">Manager</option>
+              <option value="LND">LND</option>
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="c_managername">Manager name</label><input type="text" id="c_managername" /></div>
+            <div class="field"><label for="c_manageremail">Manager email</label><input type="email" id="c_manageremail" /></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="c_trainername">Trainer name</label><input type="text" id="c_trainername" /></div>
+            <div class="field"><label for="c_traineremail">Trainer email</label><input type="email" id="c_traineremail" /></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="c_lndname">LND name</label><input type="text" id="c_lndname" /></div>
+            <div class="field"><label for="c_lndemail">LND email</label><input type="email" id="c_lndemail" /></div>
+          </div>
+
+          <button class="primary" onclick="createUser()">Create User</button>
+          <div id="createStatus" class="status hidden"></div>
+        </div>
+      </div>
+
+      <!-- ================= BULK UPLOAD ================= -->
+      <div class="tab-panel" id="panel-bulkupload">
+        <div class="page-head">
+          <div class="page-title">Bulk Upload</div>
+          <div class="page-sub">Create many users at once from a CSV.</div>
+        </div>
+        <div class="card">
+          <div class="section-title">Bulk create users from a CSV</div>
+          <p class="help-text">
+            Columns: name, email, department, company, country, designation, username (optional -- auto-generated
+            if blank), password (optional -- auto-generated if blank), job_description, is_people_manager
+            (yes/no), additional_notes, skills_assigned (e.g. "Excel:Trainer A:Trainer|Public Speaking:Adam Kapoor:Manager"
+            -- the role segment is optional). Also optional: access_type (user/manager/LND/admin/super_admin,
+            defaults to user), manager_name, manager_email, trainer_name, trainer_email, lnd_name, lnd_email.
+            Every account created here forces a password change on first login.
+          </p>
+          <div class="field" style="margin-top:1rem;">
+            <input type="file" id="bulkUploadFile" accept=".csv" />
+          </div>
+          <button class="primary" onclick="bulkUpload()">Upload &amp; Create</button>
+          <div id="bulkUploadStatus" class="status hidden"></div>
+          <div id="bulkUploadResults" class="table-wrap table-card hidden" style="margin-top:1rem;"></div>
+        </div>
+      </div>
+
+      <!-- ================= DELETE USERS ================= -->
+      <div class="tab-panel" id="panel-delete">
+        <div class="page-head">
+          <div class="page-title">Delete Users</div>
+          <div class="page-sub">Remove one account, or many at once. This cannot be undone.</div>
+        </div>
+        <div class="card">
+          <div class="section-title">Delete one user</div>
+          <div class="field">
+            <label for="deleteOneSelect">User</label>
+            <select id="deleteOneSelect"><option value="">Loading users...</option></select>
+          </div>
+          <button class="danger" onclick="deleteOneUser()">Delete</button>
+          <div id="deleteOneStatus" class="status hidden"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Delete many users at once</div>
+          <label>Select users to delete</label>
+          <div id="deleteBulkList" class="table-wrap checklist-box" style="max-height:16rem; margin: 0.5rem 0 0.75rem;">Loading users...</div>
+          <button class="danger" onclick="deleteBulkUsers()">Delete Selected</button>
+          <div id="deleteBulkStatus" class="status hidden"></div>
+          <div id="deleteBulkResults" class="table-wrap table-card hidden" style="margin-top:1rem;"></div>
+        </div>
+      </div>
+
+      <!-- ================= SKILL ASSIGNMENTS ================= -->
+      <div class="tab-panel" id="panel-skills">
+        <div class="page-head">
+          <div class="page-title">Skill Assignments <span class="temp-tag">Temporary</span></div>
+          <div class="page-sub">Assign and remove skills, one person or many at a time. This tab is a stand-in until Learning Management gets its own package.</div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Single assign</div>
+          <div class="field">
+            <label for="s_user_select">User</label>
+            <select id="s_user_select"><option value="">Loading users...</option></select>
+          </div>
+          <div class="field">
+            <label for="s_skill_select">Skill (from the Reflector Glossary)</label>
+            <select id="s_skill_select" onchange="showSkillDetailsFor('s_skill_select', 'skillDetailsBox', 'sd')"><option value="">Loading skills...</option></select>
+          </div>
+          <div id="skillDetailsBox" class="hidden checklist-box" style="margin-bottom:1.1rem; font-size:0.82rem; line-height:1.6;">
+            <div><strong>Capability:</strong> <span id="sd_capability"></span></div>
+            <div style="margin-top:0.5rem;"><strong>Definition:</strong> <span id="sd_definition"></span></div>
+            <div style="margin-top:0.5rem;"><strong>Glossary:</strong> <span id="sd_glossary"></span></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="s_assignedby">Assigned by</label><input type="text" id="s_assignedby" /></div>
+            <div class="field">
+              <label for="s_assignorrole">Assignor role</label>
+              <select id="s_assignorrole" onchange="autoFillAssignedBy('s_user_select', 's_assignorrole', 's_assignedby')">
+                <option value="">Unspecified</option>
+                <option value="Manager">Manager</option>
+                <option value="Trainer">Trainer</option>
+              </select>
+            </div>
+          </div>
+          <p class="help-text">Adds to whatever skills this person already has -- doesn't remove any. Picking a role auto-fills "Assigned by" from that user's own Manager/Trainer name, if known -- still editable.</p>
+          <button class="primary" style="margin-top:0.7rem;" onclick="assignOneSkill()">Assign</button>
+          <div id="assignOneStatus" class="status hidden"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Bulk assign -- one skill to many people</div>
+          <div class="field">
+            <label for="bs_skill_select">Skill (from the Reflector Glossary)</label>
+            <select id="bs_skill_select" onchange="showSkillDetailsFor('bs_skill_select', 'bsSkillDetailsBox', 'bsd')"><option value="">Loading skills...</option></select>
+          </div>
+          <div id="bsSkillDetailsBox" class="hidden checklist-box" style="margin-bottom:1.1rem; font-size:0.82rem; line-height:1.6;">
+            <div><strong>Capability:</strong> <span id="bsd_capability"></span></div>
+            <div style="margin-top:0.5rem;"><strong>Definition:</strong> <span id="bsd_definition"></span></div>
+            <div style="margin-top:0.5rem;"><strong>Glossary:</strong> <span id="bsd_glossary"></span></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="bs_assignedby">Assigned by</label><input type="text" id="bs_assignedby" /></div>
+            <div class="field">
+              <label for="bs_assignorrole">Assignor role</label>
+              <select id="bs_assignorrole">
+                <option value="">Unspecified</option>
+                <option value="Manager">Manager</option>
+                <option value="Trainer">Trainer</option>
+              </select>
+            </div>
+          </div>
+          <label>Select people to assign it to</label>
+          <div id="bulkSkillsList" class="table-wrap checklist-box" style="max-height:16rem; margin: 0.5rem 0 0.75rem;">Loading users...</div>
+          <button class="primary" onclick="bulkAssignSkillToUsers()">Assign to Selected</button>
+          <div id="bulkAssignToUsersStatus" class="status hidden"></div>
+          <div id="bulkAssignToUsersResults" class="table-wrap table-card hidden" style="margin-top:1rem;"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Bulk assign from a CSV</div>
+          <p class="help-text">
+            Columns: email, skill, assigned_by, assignor_role (assigned_by and assignor_role both optional).
+            One row per (person, skill) pair -- list the same person on multiple rows to give them multiple
+            skills. Adds to existing skills, doesn't replace them.
+          </p>
+          <div class="field" style="margin-top:1rem;">
+            <input type="file" id="bulkSkillsFile" accept=".csv" />
+          </div>
+          <button class="primary" onclick="bulkAssignSkills()">Upload &amp; Assign</button>
+          <div id="bulkSkillsStatus" class="status hidden"></div>
+          <div id="bulkSkillsResults" class="table-wrap table-card hidden" style="margin-top:1rem;"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Single remove</div>
+          <div class="field">
+            <label for="rs_user_select">User</label>
+            <select id="rs_user_select" onchange="loadUserSkillsForRemoval()"><option value="">Loading users...</option></select>
+          </div>
+          <label>Their assigned skills</label>
+          <div id="rs_skills_list" class="checklist-box" style="margin-top:0.5rem;">Select a user above.</div>
+          <div id="removeOneStatus" class="status hidden"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Bulk remove -- one skill from many people</div>
+          <div class="field">
+            <label for="brs_skill_select">Skill (from the Reflector Glossary)</label>
+            <select id="brs_skill_select" onchange="showSkillDetailsFor('brs_skill_select', 'brsSkillDetailsBox', 'brsd')"><option value="">Loading skills...</option></select>
+          </div>
+          <div id="brsSkillDetailsBox" class="hidden checklist-box" style="margin-bottom:1.1rem; font-size:0.82rem; line-height:1.6;">
+            <div><strong>Capability:</strong> <span id="brsd_capability"></span></div>
+            <div style="margin-top:0.5rem;"><strong>Definition:</strong> <span id="brsd_definition"></span></div>
+            <div style="margin-top:0.5rem;"><strong>Glossary:</strong> <span id="brsd_glossary"></span></div>
+          </div>
+          <label>Select people to remove it from</label>
+          <div id="bulkRemoveSkillsList" class="table-wrap checklist-box" style="max-height:16rem; margin: 0.5rem 0 0.75rem;">Loading users...</div>
+          <button class="danger" onclick="bulkRemoveSkillFromUsers()">Remove from Selected</button>
+          <div id="bulkRemoveFromUsersStatus" class="status hidden"></div>
+          <div id="bulkRemoveFromUsersResults" class="table-wrap table-card hidden" style="margin-top:1rem;"></div>
+        </div>
+      </div>
+
+      <!-- ================= REFLECTOR GLOSSARY ================= -->
+      <div class="tab-panel" id="panel-glossary">
+        <div class="page-head">
+          <div class="page-title">Reflector Glossary <span style="color:var(--grey3); font-weight:400; font-size:0.85rem;">(read-only)</span></div>
+          <div class="page-sub">An independent reference copy -- not connected to the live conversation system. To update it, send updated data and it gets refreshed here as a backend change.</div>
+        </div>
+        <div class="card">
+          <input type="text" id="glossarySearch" class="glossary-search" placeholder="Filter by reflector or capability name..." oninput="renderGlossary()" />
+          <div id="glossaryStatus" class="status hidden"></div>
+          <div class="table-wrap table-card">
+            <table>
+              <thead>
+                <tr><th>Capability</th><th>Reflector</th><th>Definition</th><th>Glossary</th></tr>
+              </thead>
+              <tbody id="glossaryBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// Points at the real deployed wotg-user-management App Service. Now hosted
+// for real (2026-08-23, Kriti's explicit call -- "it has to be real") and
+// linked from native_chat.html's own "Admin view" button, gated on the
+// SAME login session, not a separate credential.
+const API_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
+const CURRENT_USER_ID = localStorage.getItem('user_id') || '';
+
+// Page-level guard -- if you're not logged in, or logged in as anything
+// other than admin/super_admin, you never even see this page render.
+// This is convenience, not the real security boundary: the actual gate is
+// server-side, in user_management_api.py's require_admin_caller, which
+// every /api/admin/* call below goes through via adminFetch()'s X-User-Id
+// header -- so even a bypass of this check gets nothing real done.
+(function () {
+  const accessType = localStorage.getItem('access_type') || 'user';
+  if (!CURRENT_USER_ID || (accessType !== 'admin' && accessType !== 'super_admin')) {
+    window.location.href = 'native_login.html';
+  }
+})();
+
+// Every /api/admin/* call goes through this instead of a bare fetch() --
+// adds the X-User-Id header require_admin_caller checks server-side.
+function adminFetch(url, options) {
+  options = options || {};
+  options.headers = Object.assign({ 'X-User-Id': CURRENT_USER_ID }, options.headers || {});
+  return fetch(url, options);
+}
+
+function toggleSidePanel() {
+  document.getElementById('adminSidebar').classList.toggle('open');
+  document.getElementById('adminSidebarBackdrop').classList.toggle('open');
+}
+
+// The topbar's height isn't a fixed CSS value (it sizes to its own
+// content), so it's measured here and re-measured on resize, written into
+// the --nav-height custom property the sidebar and its backdrop both read
+// from -- same pattern as native_chat.html's own _positionSidePanel().
+function _positionSidePanel() {
+  const nav = document.querySelector('header.topbar');
+  if (nav) document.documentElement.style.setProperty('--nav-height', nav.offsetHeight + 'px');
+}
+window.addEventListener('resize', _positionSidePanel);
+_positionSidePanel();
+
+// ---- TABS ----
+const TAB_SUBTITLES = {
+  lookup: "Search all users, then edit their profile, access type, reporting lines and assigned skills.",
+  create: "Add one person. You set the username and password -- they always set their own on first login.",
+  bulkupload: "Create many users at once from a CSV.",
+  delete: "Remove one account, or many at once. This cannot be undone.",
+  skills: "Assign and remove skills, one person or many at a time.",
+  glossary: "An independent, read-only reference copy of the Reflector Glossary.",
+};
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    document.getElementById('topbarSub').textContent = TAB_SUBTITLES[btn.dataset.tab] || '';
+    document.getElementById('adminSidebar').classList.remove('open');
+    document.getElementById('adminSidebarBackdrop').classList.remove('open');
+    if (btn.dataset.tab === 'lookup') { loadUsersIntoSelect(null); resetLookupResult(); }
+    if (btn.dataset.tab === 'glossary') loadGlossary();
+    if (btn.dataset.tab === 'skills') {
+      loadUsersIntoSelect('s_user_select'); loadUsersIntoSelect('rs_user_select');
+      loadSkillsIntoSelect('s_skill_select'); loadSkillsIntoSelect('bs_skill_select'); loadSkillsIntoSelect('brs_skill_select');
+      loadUsersChecklistInto('bulkSkillsList', 'skill-bulk-checkbox');
+      loadUsersChecklistInto('bulkRemoveSkillsList', 'skill-remove-bulk-checkbox');
+      document.getElementById('rs_skills_list').innerHTML = 'Select a user above.';
+    }
+    if (btn.dataset.tab === 'delete') { loadUsersIntoSelect('deleteOneSelect'); loadUsersChecklistInto('deleteBulkList', 'delete-bulk-checkbox'); }
+  });
+});
+
+// Look Up & Edit is the default active tab -- load its table on page load
+// too, not just on click (since clicking it never fires for the tab
+// you're already on).
+loadUsersIntoSelect(null);
+
+function resetLookupResult() {
+  document.getElementById('resultCard').classList.add('hidden');
+  currentUserId = null;
+}
+
+// ---- SHARED: USER LIST ----
+// Cached by user_id so autoFillAssignedBy() can look up someone's own
+// manager_name/trainer_name without a second round-trip, and so the Look
+// Up & Edit table can search/filter client-side without refetching.
+let allUsersCache = {};
+let allUsersList = [];
+
+async function fetchAllUsers() {
+  const res = await adminFetch(`${API_BASE}/api/admin/users`);
+  if (!res.ok) throw new Error('Could not load the user list.');
+  const data = await res.json();
+  allUsersCache = {};
+  data.users.forEach(u => { allUsersCache[u.user_id] = u; });
+  allUsersList = data.users;
+  return data.users;
+}
+
+// selectId === null means "just refresh the shared cache + the Look Up
+// table", used by the lookup tab which has no dropdown any more.
+async function loadUsersIntoSelect(selectId) {
+  const sel = selectId ? document.getElementById(selectId) : null;
+  if (sel) sel.innerHTML = '<option value="">Loading users...</option>';
+  try {
+    const users = await fetchAllUsers();
+    if (sel) {
+      sel.innerHTML = '<option value="">-- select a user --</option>' + users.map(u =>
+        `<option value="${u.user_id}">${u.name || '(no name)'} -- ${u.email || 'no email on file'}</option>`
+      ).join('');
+    }
+    renderUserTable();
+  } catch (e) {
+    if (sel) sel.innerHTML = '<option value="">Could not load users</option>';
+    document.getElementById('lu_table_body').innerHTML = '<tr><td colspan="6">Could not load users.</td></tr>';
+  }
+}
+
+function initialsFor(name) {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+}
+
+function accessBadge(accessType) {
+  const type = accessType || 'user';
+  const labels = { user: 'User', manager: 'Manager', LND: 'LND', admin: 'Admin', super_admin: 'Super Admin' };
+  return `<span class="badge badge-${type}">${labels[type] || type}</span>`;
+}
+
+// ---- Look Up & Edit table: client-side search + access-type filter over
+// the shared cache, no extra round-trip. ----
+function renderUserTable() {
+  const tbody = document.getElementById('lu_table_body');
+  if (!tbody) return;
+  const q = (document.getElementById('lu_search').value || '').trim().toLowerCase();
+  const accessFilter = document.getElementById('lu_accesstype_filter').value;
+  const rows = allUsersList.filter(u => {
+    if (accessFilter && (u.access_type || 'user') !== accessFilter) return false;
+    if (!q) return true;
+    return [u.name, u.email, u.company, u.department].some(v => (v || '').toLowerCase().includes(q));
+  });
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6">No users match.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(u => `
+    <tr>
+      <td><div class="lu-user-cell"><div class="avatar">${initialsFor(u.name)}</div><div><div class="lu-user-name">${u.name || '(no name)'}</div><div class="lu-user-email">${u.email || 'no email on file'}</div></div></div></td>
+      <td>${u.company || '—'}</td>
+      <td>${u.department || '—'}</td>
+      <td>${accessBadge(u.access_type)}</td>
+      <td>${u.manager_name || '—'}</td>
+      <td><button class="small lu-edit-btn" onclick="editUserRow('${u.user_id}')">Edit</button></td>
+    </tr>
+  `).join('');
+}
+
+async function loadUsersChecklistInto(containerId, checkboxClass) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = 'Loading users...';
+  try {
+    const users = await fetchAllUsers();
+    container.innerHTML = users.map(u => `
+      <div class="checkbox-row" style="margin-bottom:0.4rem;">
+        <input type="checkbox" class="${checkboxClass}" value="${u.user_id}" />
+        <span>${u.name || '(no name)'} -- ${u.email || 'no email on file'}</span>
+      </div>
+    `).join('');
+  } catch (e) {
+    container.innerHTML = 'Could not load users.';
+  }
+}
+
+// Picking a role on the single-assign card auto-fills "Assigned by"
+// from that ONE selected user's own Manager/Trainer name, if known --
+// still freely editable after. Only fires where there's a single
+// selected user to look up (the bulk-assign card has no one user to
+// pull from, so it has no auto-fill -- assigned_by is typed there).
+function autoFillAssignedBy(userSelectId, roleSelectId, assignedByInputId) {
+  const userId = document.getElementById(userSelectId).value;
+  const role = document.getElementById(roleSelectId).value;
+  if (!userId || !role) return;
+  const u = allUsersCache[userId];
+  if (!u) return;
+  const name = role === 'Manager' ? u.manager_name : (role === 'Trainer' ? u.trainer_name : '');
+  if (name) document.getElementById(assignedByInputId).value = name;
+}
+
+function showStatus(el, message, isError) {
+  el.classList.remove('hidden');
+  el.textContent = message;
+  el.className = 'status ' + (isError ? 'err' : 'ok');
+}
+
+// ================= LOOK UP & EDIT =================
+let currentUserId = null;
+
+function addSkillRow(skill, assignedBy, assignorRole) {
+  assignorRole = assignorRole || '';
+  const list = document.getElementById('skillsList');
+  const row = document.createElement('div');
+  row.className = 'skill-row';
+  row.innerHTML = `
+    <input type="text" class="skill-name" placeholder="Skill" value="${skill.replace(/"/g, '&quot;')}" />
+    <span>assigned by</span>
+    <input type="text" class="skill-assigned-by" placeholder="Who assigned it" value="${assignedBy.replace(/"/g, '&quot;')}" />
+    <select class="skill-assignor-role" style="max-width:8.5rem;">
+      <option value="" ${assignorRole === '' ? 'selected' : ''}>Unspecified</option>
+      <option value="Manager" ${assignorRole === 'Manager' ? 'selected' : ''}>Manager</option>
+      <option value="Trainer" ${assignorRole === 'Trainer' ? 'selected' : ''}>Trainer</option>
+    </select>
+    <button class="small danger" onclick="this.parentElement.remove()">Remove</button>
+  `;
+  list.appendChild(row);
+}
+
+function renderSkills(skills) {
+  document.getElementById('skillsList').innerHTML = '';
+  (skills || []).forEach(s => addSkillRow(s.skill || '', s.assigned_by || '', s.assignor_role || ''));
+}
+
+function collectSkills() {
+  return Array.from(document.querySelectorAll('#skillsList .skill-row')).map(row => ({
+    skill: row.querySelector('.skill-name').value.trim(),
+    assigned_by: row.querySelector('.skill-assigned-by').value.trim(),
+    assignor_role: row.querySelector('.skill-assignor-role').value,
+  })).filter(s => s.skill);
+}
+
+// Clicking "Edit" on a table row -- same lookup the old dropdown drove,
+// just triggered from a row button instead of a <select onchange>.
+async function editUserRow(userId) {
+  const resultCard = document.getElementById('resultCard');
+  resultCard.classList.add('hidden');
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/user-lookup?user_id=${encodeURIComponent(userId)}`);
+    if (!res.ok) { alert('Could not look that user up.'); return; }
+    const user = await res.json();
+    currentUserId = user.user_id;
+    document.getElementById('ro_name').textContent = user.name || '—';
+    document.getElementById('ro_username').textContent = user.username || '—';
+    document.getElementById('ro_email').textContent = user.email || '—';
+    document.getElementById('ro_company').textContent = user.company || '—';
+    document.getElementById('departmentInput').value = user.department || '';
+    document.getElementById('countryInput').value = user.country || '';
+    document.getElementById('designationInput').value = user.designation || '';
+    document.getElementById('jobDescInput').value = user.job_description || '';
+    document.getElementById('notesInput').value = user.additional_notes || '';
+    const sel = document.getElementById('peopleManagerSelect');
+    sel.value = user.is_people_manager === true ? 'true' : (user.is_people_manager === false ? 'false' : 'unset');
+    renderSkills(user.skills_assigned);
+    document.getElementById('accessTypeSelect').value = user.access_type || 'user';
+    document.getElementById('managerNameInput').value = user.manager_name || '';
+    document.getElementById('managerEmailInput').value = user.manager_email || '';
+    document.getElementById('trainerNameInput').value = user.trainer_name || '';
+    document.getElementById('trainerEmailInput').value = user.trainer_email || '';
+    document.getElementById('lndNameInput').value = user.lnd_name || '';
+    document.getElementById('lndEmailInput').value = user.lnd_email || '';
+    document.getElementById('saveStatus').classList.add('hidden');
+    resultCard.classList.remove('hidden');
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    alert('Could not reach the User Management service.');
+  }
+}
+
+async function saveChanges() {
+  const statusEl = document.getElementById('saveStatus');
+  showStatus(statusEl, 'Saving...', false);
+  const sel = document.getElementById('peopleManagerSelect').value;
+  const isPeopleManager = sel === 'unset' ? null : (sel === 'true');
+  const payload = {
+    user_id: currentUserId,
+    job_description: document.getElementById('jobDescInput').value.trim(),
+    is_people_manager: isPeopleManager,
+    additional_notes: document.getElementById('notesInput').value.trim(),
+    skills_assigned: collectSkills(),
+    access_type: document.getElementById('accessTypeSelect').value,
+    manager_name: document.getElementById('managerNameInput').value.trim(),
+    manager_email: document.getElementById('managerEmailInput').value.trim(),
+    trainer_name: document.getElementById('trainerNameInput').value.trim(),
+    trainer_email: document.getElementById('trainerEmailInput').value.trim(),
+    lnd_name: document.getElementById('lndNameInput').value.trim(),
+    lnd_email: document.getElementById('lndEmailInput').value.trim(),
+    department: document.getElementById('departmentInput').value.trim(),
+    country: document.getElementById('countryInput').value.trim(),
+    designation: document.getElementById('designationInput').value.trim(),
+  };
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/user-update`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showStatus(statusEl, data.detail || 'Save failed.', true); return; }
+    showStatus(statusEl, 'Saved.', false);
+    loadUsersIntoSelect(null); // refresh the table's row for this user
+  } catch (e) {
+    showStatus(statusEl, 'Could not reach the User Management service.', true);
+  }
+}
+
+// ================= CREATE USER =================
+async function createUser() {
+  const statusEl = document.getElementById('createStatus');
+  showStatus(statusEl, 'Creating...', false);
+  const sel = document.getElementById('c_peoplemanager').value;
+  const isPeopleManager = sel === 'unset' ? null : (sel === 'true');
+  const payload = {
+    name: document.getElementById('c_name').value.trim(),
+    email: document.getElementById('c_email').value.trim(),
+    username: document.getElementById('c_username').value.trim(),
+    password: document.getElementById('c_password').value,
+    designation: document.getElementById('c_designation').value.trim(),
+    department: document.getElementById('c_department').value.trim(),
+    company: document.getElementById('c_company').value.trim(),
+    country: document.getElementById('c_country').value.trim(),
+    job_description: document.getElementById('c_jobdesc').value.trim(),
+    is_people_manager: isPeopleManager,
+    additional_notes: document.getElementById('c_notes').value.trim(),
+    access_type: document.getElementById('c_accesstype').value,
+    manager_name: document.getElementById('c_managername').value.trim(),
+    manager_email: document.getElementById('c_manageremail').value.trim(),
+    trainer_name: document.getElementById('c_trainername').value.trim(),
+    trainer_email: document.getElementById('c_traineremail').value.trim(),
+    lnd_name: document.getElementById('c_lndname').value.trim(),
+    lnd_email: document.getElementById('c_lndemail').value.trim(),
+  };
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/create-user`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showStatus(statusEl, data.detail || 'Could not create user.', true); return; }
+    showStatus(statusEl, `Created ${data.name} (user_id: ${data.user_id}).`, false);
+    ['c_name','c_email','c_username','c_password','c_designation','c_department','c_company','c_country','c_jobdesc','c_notes',
+     'c_managername','c_manageremail','c_trainername','c_traineremail','c_lndname','c_lndemail']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('c_peoplemanager').value = 'unset';
+    document.getElementById('c_accesstype').value = 'user';
+  } catch (e) {
+    showStatus(statusEl, 'Could not reach the User Management service.', true);
+  }
+}
+
+// ================= BULK UPLOAD =================
+function renderResultsTable(containerEl, results, columns) {
+  let html = '<table><thead><tr>' + columns.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+  results.forEach(r => {
+    html += '<tr>' + columns.map(c => `<td>${(r[c.toLowerCase().replace(/ /g,'_')] ?? '')}</td>`).join('') + '</tr>';
+  });
+  html += '</tbody></table>';
+  containerEl.innerHTML = html;
+  containerEl.classList.remove('hidden');
+}
+
+async function bulkUpload() {
+  const statusEl = document.getElementById('bulkUploadStatus');
+  const fileInput = document.getElementById('bulkUploadFile');
+  if (!fileInput.files.length) { showStatus(statusEl, 'Choose a CSV file first.', true); return; }
+  showStatus(statusEl, 'Uploading...', false);
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/bulk-upload`, { method: 'POST', body: formData });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showStatus(statusEl, data.detail || 'Upload failed.', true); return; }
+    showStatus(statusEl, `Created ${data.created_count} of ${data.total_rows} rows.`, false);
+    renderResultsTable(document.getElementById('bulkUploadResults'), data.results,
+      ['Name','Email','Username','Password','Status']);
+  } catch (e) {
+    showStatus(statusEl, 'Could not reach the User Management service.', true);
+  }
+}
+
+// ================= DELETE USERS =================
+async function deleteOneUser() {
+  const statusEl = document.getElementById('deleteOneStatus');
+  const sel = document.getElementById('deleteOneSelect');
+  const userId = sel.value;
+  if (!userId) { showStatus(statusEl, 'Select a user first.', true); return; }
+  const label = sel.options[sel.selectedIndex].textContent;
+  if (!confirm(`Delete the account for ${label}? This cannot be undone.`)) return;
+  showStatus(statusEl, 'Deleting...', false);
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/delete-user`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: userId }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showStatus(statusEl, data.detail || 'Delete failed.', true); return; }
+    showStatus(statusEl, `Deleted ${label}.`, false);
+    loadUsersIntoSelect('deleteOneSelect');
+  } catch (e) {
+    showStatus(statusEl, 'Could not reach the User Management service.', true);
+  }
+}
+
+async function deleteBulkUsers() {
+  const statusEl = document.getElementById('deleteBulkStatus');
+  const checked = Array.from(document.querySelectorAll('.delete-bulk-checkbox:checked'));
+  if (!checked.length) { showStatus(statusEl, 'Select at least one user.', true); return; }
+  const labelByUserId = {};
+  checked.forEach(cb => { labelByUserId[cb.value] = cb.nextElementSibling.textContent; });
+  const userIds = checked.map(cb => cb.value);
+  if (!confirm(`Delete ${userIds.length} account(s)? This cannot be undone.`)) return;
+  showStatus(statusEl, 'Deleting...', false);
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/bulk-delete`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_ids: userIds }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showStatus(statusEl, data.detail || 'Bulk delete failed.', true); return; }
+    const deletedCount = data.results.filter(r => r.status === 'deleted').length;
+    showStatus(statusEl, `Deleted ${deletedCount} of ${userIds.length}.`, false);
+    const displayResults = data.results.map(r => ({ user: labelByUserId[r.user_id] || r.user_id, status: r.status }));
+    renderResultsTable(document.getElementById('deleteBulkResults'), displayResults, ['User','Status']);
+    loadUsersChecklistInto('deleteBulkList', 'delete-bulk-checkbox');
+  } catch (e) {
+    showStatus(statusEl, 'Could not reach the User Management service.', true);
+  }
+}
+
+// ================= SKILL ASSIGNMENTS =================
+// Kriti's explicit call, 2026-08-22: nowhere in this tab should require a
+// trip to the separate Reflector Glossary tab just to see what a skill
+// means -- every skill dropdown here (single assign, bulk assign, bulk
+// remove) gets its own inline definition box, same info the Glossary
+// tab shows, keyed off the shared glossaryData cache.
+const SKILL_DETAIL_BOX_BY_SELECT = {
+  s_skill_select: 'skillDetailsBox', bs_skill_select: 'bsSkillDetailsBox', brs_skill_select: 'brsSkillDetailsBox',
+};
+
+async function loadSkillsIntoSelect(selectId) {
+  const sel = document.getElementById(selectId);
+  sel.innerHTML = '<option value="">Loading skills...</option>';
+  const boxId = SKILL_DETAIL_BOX_BY_SELECT[selectId];
+  if (boxId) document.getElementById(boxId).classList.add('hidden'); // same stale-panel fix as Look Up & Edit
+  try {
+    const reflectors = await ensureGlossaryData();
+    sel.innerHTML = '<option value="">-- select a skill --</option>' + reflectors.map(r =>
+      `<option value="${r.reflector_name.replace(/"/g,'&quot;')}">${r.reflector_name} (${r.capability_name})</option>`
+    ).join('');
+  } catch (e) {
+    sel.innerHTML = '<option value="">Could not load skills</option>';
+  }
+}
+
+function showSkillDetailsFor(selectId, boxId, prefix) {
+  const name = document.getElementById(selectId).value;
+  const box = document.getElementById(boxId);
+  if (!name) { box.classList.add('hidden'); return; }
+  const r = glossaryData.find(x => x.reflector_name === name);
+  if (!r) { box.classList.add('hidden'); return; }
+  document.getElementById(prefix + '_capability').textContent = r.capability_name || '—';
+  document.getElementById(prefix + '_definition').textContent = r.reflector_definition || '—';
+  document.getElementById(prefix + '_glossary').textContent = r.glossary || '—';
+  box.classList.remove('hidden');
+}
+
+async function assignOneSkill() {
+  const statusEl = document.getElementById('assignOneStatus');
+  const sel = document.getElementById('s_user_select');
+  const userId = sel.value;
+  const skill = document.getElementById('s_skill_select').value;
+  const assignedBy = document.getElementById('s_assignedby').value.trim();
+  const assignorRole = document.getElementById('s_assignorrole').value;
+  if (!userId || !skill) { showStatus(statusEl, 'Select a user and a skill first.', true); return; }
+  const label = sel.options[sel.selectedIndex].textContent;
+  showStatus(statusEl, 'Assigning...', false);
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/assign-skills`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, skills: [{ skill, assigned_by: assignedBy, assignor_role: assignorRole }] }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showStatus(statusEl, data.detail || 'Could not assign skill.', true); return; }
+    showStatus(statusEl, `Assigned "${skill}" to ${label}.`, false);
+    document.getElementById('s_assignedby').value = '';
+    document.getElementById('s_assignorrole').value = '';
+  } catch (e) {
+    showStatus(statusEl, 'Could not reach the User Management service.', true);
+  }
+}
+
+// Bulk-assign ONE skill to a checked list of people -- e.g. the same
+// skill to 49 people in one action, no CSV needed. Same 'never fail
+// the whole batch over one bad id' convention as Delete Users.
+async function bulkAssignSkillToUsers() {
+  const statusEl = document.getElementById('bulkAssignToUsersStatus');
+  const skill = document.getElementById('bs_skill_select').value;
+  const assignedBy = document.getElementById('bs_assignedby').value.trim();
+  const assignorRole = document.getElementById('bs_assignorrole').value;
+  const checked = Array.from(document.querySelectorAll('.skill-bulk-checkbox:checked'));
+  if (!skill) { showStatus(statusEl, 'Select a skill first.', true); return; }
+  if (!checked.length) { showStatus(statusEl, 'Select at least one person.', true); return; }
+  const labelByUserId = {};
+  checked.forEach(cb => { labelByUserId[cb.value] = cb.nextElementSibling.textContent; });
+  const userIds = checked.map(cb => cb.value);
+  showStatus(statusEl, 'Assigning...', false);
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/bulk-assign-skill-to-users`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_ids: userIds, skill, assigned_by: assignedBy, assignor_role: assignorRole }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showStatus(statusEl, data.detail || 'Bulk assign failed.', true); return; }
+    const assignedCount = data.results.filter(r => r.status === 'assigned').length;
+    showStatus(statusEl, `Assigned "${skill}" to ${assignedCount} of ${userIds.length}.`, false);
+    const displayResults = data.results.map(r => ({ user: labelByUserId[r.user_id] || r.user_id, status: r.status }));
+    renderResultsTable(document.getElementById('bulkAssignToUsersResults'), displayResults, ['User','Status']);
+  } catch (e) {
+    showStatus(statusEl, 'Could not reach the User Management service.', true);
+  }
+}
+
+async function bulkAssignSkills() {
+  const statusEl = document.getElementById('bulkSkillsStatus');
+  const fileInput = document.getElementById('bulkSkillsFile');
+  if (!fileInput.files.length) { showStatus(statusEl, 'Choose a CSV file first.', true); return; }
+  showStatus(statusEl, 'Uploading...', false);
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/bulk-assign-skills`, { method: 'POST', body: formData });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showStatus(statusEl, data.detail || 'Upload failed.', true); return; }
+    showStatus(statusEl, `Assigned ${data.assigned_count} of ${data.total_rows} rows.`, false);
+    renderResultsTable(document.getElementById('bulkSkillsResults'), data.results,
+      ['Email','Skill','Assigned_by','Assignor_role','Status']);
+  } catch (e) {
+    showStatus(statusEl, 'Could not reach the User Management service.', true);
+  }
+}
+
+// ---- Single remove: pick a user, see their actual assigned skills (not
+// the whole glossary -- you can only remove what they actually have),
+// each with its own Remove button. ----
+async function loadUserSkillsForRemoval() {
+  const userId = document.getElementById('rs_user_select').value;
+  const container = document.getElementById('rs_skills_list');
+  document.getElementById('removeOneStatus').classList.add('hidden');
+  if (!userId) { container.innerHTML = 'Select a user above.'; return; }
+  container.innerHTML = 'Loading...';
+  try {
+    const [lookupRes] = await Promise.all([
+      fetch(`${API_BASE}/api/admin/user-lookup?user_id=${encodeURIComponent(userId)}`),
+      ensureGlossaryData().catch(() => []), // definitions are a nice-to-have here -- don't block the list on it
+    ]);
+    if (!lookupRes.ok) { container.innerHTML = 'Could not look that user up.'; return; }
+    const user = await lookupRes.json();
+    const skills = user.skills_assigned || [];
+    if (!skills.length) { container.innerHTML = 'This person has no skills assigned.'; return; }
+    container.innerHTML = skills.map(s => {
+      const r = glossaryData.find(x => x.reflector_name === s.skill);
+      const definition = r ? (r.reflector_definition || '') : '';
+      return `
+      <div style="margin-bottom:0.7rem; padding-bottom:0.7rem; border-bottom:1px solid rgba(4,26,64,0.06);">
+        <div class="checkbox-row" style="justify-content:space-between;">
+          <span><strong>${s.skill}</strong>${s.assigned_by ? ` -- assigned by ${s.assigned_by}${s.assignor_role ? ' (' + s.assignor_role + ')' : ''}` : ''}</span>
+          <button class="small danger" onclick="removeOneSkill('${userId}', '${s.skill.replace(/'/g, "\\'")}')">Remove</button>
+        </div>
+        ${definition ? `<div style="font-size:0.78rem; color:var(--grey3); margin-top:0.35rem;">${definition}</div>` : ''}
+      </div>
+    `;
+    }).join('');
+  } catch (e) {
+    container.innerHTML = 'Could not reach the User Management service.';
+  }
+}
+
+async function removeOneSkill(userId, skill) {
+  const statusEl = document.getElementById('removeOneStatus');
+  showStatus(statusEl, 'Removing...', false);
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/remove-skill`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, skill }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showStatus(statusEl, data.detail || 'Could not remove skill.', true); return; }
+    showStatus(statusEl, `Removed "${skill}".`, false);
+    loadUserSkillsForRemoval();
+  } catch (e) {
+    showStatus(statusEl, 'Could not reach the User Management service.', true);
+  }
+}
+
+// Bulk-remove ONE skill from a checked list of people -- the inverse of
+// bulkAssignSkillToUsers(), same 'never fail the whole batch' convention.
+async function bulkRemoveSkillFromUsers() {
+  const statusEl = document.getElementById('bulkRemoveFromUsersStatus');
+  const skill = document.getElementById('brs_skill_select').value;
+  const checked = Array.from(document.querySelectorAll('.skill-remove-bulk-checkbox:checked'));
+  if (!skill) { showStatus(statusEl, 'Select a skill first.', true); return; }
+  if (!checked.length) { showStatus(statusEl, 'Select at least one person.', true); return; }
+  const labelByUserId = {};
+  checked.forEach(cb => { labelByUserId[cb.value] = cb.nextElementSibling.textContent; });
+  const userIds = checked.map(cb => cb.value);
+  if (!confirm(`Remove "${skill}" from ${userIds.length} people?`)) return;
+  showStatus(statusEl, 'Removing...', false);
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/bulk-remove-skill-from-users`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_ids: userIds, skill }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showStatus(statusEl, data.detail || 'Bulk remove failed.', true); return; }
+    const removedCount = data.results.filter(r => r.status === 'removed').length;
+    showStatus(statusEl, `Removed "${skill}" from ${removedCount} of ${userIds.length}.`, false);
+    const displayResults = data.results.map(r => ({ user: labelByUserId[r.user_id] || r.user_id, status: r.status }));
+    renderResultsTable(document.getElementById('bulkRemoveFromUsersResults'), displayResults, ['User','Status']);
+  } catch (e) {
+    showStatus(statusEl, 'Could not reach the User Management service.', true);
+  }
+}
+
+// ================= REFLECTOR GLOSSARY =================
+let glossaryLoaded = false;
+let glossaryData = [];
+
+// Shared fetch-and-cache -- used by the Glossary tab AND the Skill
+// Assignments tab's skill dropdowns, so the reflector data is only ever
+// fetched once per page load.
+async function ensureGlossaryData() {
+  if (glossaryLoaded) return glossaryData;
+  const res = await adminFetch(`${API_BASE}/api/admin/reflector-glossary`);
+  if (!res.ok) throw new Error('Could not load the glossary.');
+  const data = await res.json();
+  glossaryData = data.reflectors;
+  glossaryLoaded = true;
+  return glossaryData;
+}
+
+async function loadGlossary() {
+  const statusEl = document.getElementById('glossaryStatus');
+  showStatus(statusEl, 'Loading...', false);
+  try {
+    await ensureGlossaryData();
+    statusEl.classList.add('hidden');
+    renderGlossary();
+  } catch (e) {
+    showStatus(statusEl, e.message || 'Could not reach the User Management service.', true);
+  }
+}
+
+function renderGlossary() {
+  const filter = document.getElementById('glossarySearch').value.trim().toLowerCase();
+  const rows = glossaryData.filter(r =>
+    !filter || r.reflector_name.toLowerCase().includes(filter) || r.capability_name.toLowerCase().includes(filter)
+  );
+  const tbody = document.getElementById('glossaryBody');
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.capability_name}</td>
+      <td>${r.reflector_name}</td>
+      <td>${(r.reflector_definition || '').replace(/\n/g, '<br>')}</td>
+      <td>${(r.glossary || '').replace(/\n/g, '<br>')}</td>
+    </tr>
+  `).join('');
+}
+</script>
+</body>
+</html>

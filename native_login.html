@@ -505,9 +505,14 @@
     // before this existed.
     const _nextParam = new URLSearchParams(window.location.search).get('next');
 
-    function goToChat(userId, name) {
+    // accessType added 2026-08-23, Kriti's explicit call -- the chat
+    // page's "switch to admin view" control needs this at load, not a
+    // second round-trip. Defaults to 'user' (signup never sets a different
+    // one, and the remembered-login path below falls back to it too).
+    function goToChat(userId, name, accessType) {
       localStorage.setItem('user_id', userId);
       localStorage.setItem('user_name', name);
+      localStorage.setItem('access_type', accessType || 'user');
       window.location.href = _nextParam === 'notify' ? 'native_chat.html?notify=1' : 'native_chat.html';
     }
 
@@ -517,13 +522,15 @@
     // already here, skip the form entirely.
     const rememberedUserId = localStorage.getItem('remembered_user_id');
     const rememberedName   = localStorage.getItem('remembered_name');
+    const rememberedAccessType = localStorage.getItem('remembered_access_type');
     if (rememberedUserId && rememberedName) {
-      goToChat(rememberedUserId, rememberedName);
+      goToChat(rememberedUserId, rememberedName, rememberedAccessType);
     }
 
     // ---- LOG IN ----
     let pendingForcedUserId = null;  // set only while forcedState is showing
     let pendingForcedName = null;
+    let pendingForcedAccessType = null;
     let pendingRemember = false;
 
     document.getElementById('loginForm').addEventListener('submit', async function (e) {
@@ -553,6 +560,7 @@
           // checked) is honored once they finish setting their real password.
           pendingForcedUserId = data.user_id;
           pendingForcedName = data.name;
+          pendingForcedAccessType = data.access_type;
           pendingRemember = remember;
           document.getElementById('forcedPassword').value = '';
           document.getElementById('forcedConfirmPassword').value = '';
@@ -566,8 +574,9 @@
         if (remember) {
           localStorage.setItem('remembered_user_id', data.user_id);
           localStorage.setItem('remembered_name', data.name);
+          localStorage.setItem('remembered_access_type', data.access_type || 'user');
         }
-        goToChat(data.user_id, data.name);
+        goToChat(data.user_id, data.name, data.access_type);
       } catch (err) {
         errorMsg.textContent = err.message || 'Incorrect username or password.';
         errorMsg.style.display = 'block';
@@ -614,7 +623,7 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'Could not create your account.');
 
-        goToChat(data.user_id, data.name);
+        goToChat(data.user_id, data.name, data.access_type);
       } catch (err) {
         errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
         errorMsg.style.display = 'block';
@@ -686,8 +695,9 @@
         if (pendingRemember) {
           localStorage.setItem('remembered_user_id', pendingForcedUserId);
           localStorage.setItem('remembered_name', pendingForcedName);
+          localStorage.setItem('remembered_access_type', pendingForcedAccessType || 'user');
         }
-        goToChat(pendingForcedUserId, pendingForcedName);
+        goToChat(pendingForcedUserId, pendingForcedName, pendingForcedAccessType);
       } catch (err) {
         errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
         errorMsg.style.display = 'block';
