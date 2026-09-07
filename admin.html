@@ -41,9 +41,9 @@ a { text-decoration:none; color:inherit; }
 .admin-shell { min-height:100vh; }
 
 /* ---- Sidebar ---- */
-/* A slide-out overlay, not a permanent rail -- matches native_chat.html's
+/* A slide-out overlay, not a permanent rail -- matches chat.html's
    own side panel exactly: hidden by default, opens below the topbar (not
-   over it), via the same --nav-height custom property native's own
+   over it), via the same --nav-height custom property chat.html's own
    _positionSidePanel() writes (measured from the real header, since its
    height isn't a fixed CSS value). Kriti's explicit call, 2026-08-23: the
    original permanent-rail version overlapped the topbar and didn't match
@@ -79,7 +79,7 @@ a { text-decoration:none; color:inherit; }
 /* Content is always full-width now -- the sidebar is an overlay, not a
    permanent rail taking up horizontal space (see above). */
 .admin-main { min-width:0; }
-/* Matches native_chat.html's own nav bar exactly (padding, hamburger,
+/* Matches chat.html's own nav bar exactly (padding, hamburger,
    logo, greeting typography) -- Kriti's explicit call, 2026-08-22: this
    page's topbar looked "close but different" next to the real app's,
    width and sizing included. Same classes/values, not just similar. */
@@ -106,7 +106,7 @@ header.topbar { background:var(--night); }
 .header-spacer { flex:1; }
 /* "Back to chat" -- real gap Kriti caught, 2026-08-27: users could get
    from the chat page TO admin view, but had no way back. Styled to match
-   native_chat.html's own log-out-btn/admin-view-btn convention. */
+   chat.html's own log-out-btn/admin-view-btn convention. */
 .back-to-chat-btn {
   background:transparent; border:1px solid rgba(255,255,255,0.25); border-radius:3px;
   color:var(--grey1); font-family:'Poppins',sans-serif; font-size:0.73rem;
@@ -212,6 +212,15 @@ tbody tr:last-child td { border-bottom:none; }
 .lu-user-email { font-size:0.73rem; color:var(--grey3); }
 .lu-edit-btn { padding:0.4rem 1rem; font-size:0.78rem; }
 .temp-tag { font-size:0.68rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; color:var(--gold2); background:rgba(228,202,10,0.18); border-radius:8px; padding:0.2rem 0.6rem; margin-left:0.6rem; vertical-align:middle; }
+
+/* ---- Mobile responsiveness, added 2026-09-07. This file was already in
+   reasonable shape (sidebar already self-caps at max-width:85vw, the table
+   already scrolls inside .table-wrap's own overflow-x, the filter bar
+   already flex-wraps) -- this only trims the page padding, which was the
+   one real gap on a narrow screen. Not visually tested in a real browser. */
+@media (max-width: 768px) {
+  .admin-content { padding:1.2rem 1rem 2rem; }
+}
 </style>
 </head>
 <body>
@@ -260,7 +269,7 @@ tbody tr:last-child td { border-bottom:none; }
           <div class="greeting-line2" id="topbarSub">Internal admin tool -- not deployed anywhere public.</div>
         </div>
         <div class="header-spacer"></div>
-        <button class="back-to-chat-btn" onclick="window.location.href='native_chat.html'">Back to chat</button>
+        <button class="back-to-chat-btn" onclick="window.location.href='chat.html'">Back to chat</button>
       </div>
     </header>
 
@@ -673,7 +682,7 @@ tbody tr:last-child td { border-bottom:none; }
 <script>
 // Points at the real deployed wotg-user-management App Service. Now hosted
 // for real (2026-08-23, Kriti's explicit call -- "it has to be real") and
-// linked from native_chat.html's own "Admin view" button, gated on the
+// linked from chat.html's own "Admin view" button, gated on the
 // SAME login session, not a separate credential.
 const API_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
 const CURRENT_USER_ID = localStorage.getItem('user_id') || '';
@@ -687,7 +696,7 @@ const CURRENT_USER_ID = localStorage.getItem('user_id') || '';
 (function () {
   const accessType = localStorage.getItem('access_type') || 'user';
   if (!CURRENT_USER_ID || (accessType !== 'admin' && accessType !== 'super_admin')) {
-    window.location.href = 'native_login.html';
+    window.location.href = 'login.html';
   }
 })();
 
@@ -707,7 +716,7 @@ function toggleSidePanel() {
 // The topbar's height isn't a fixed CSS value (it sizes to its own
 // content), so it's measured here and re-measured on resize, written into
 // the --nav-height custom property the sidebar and its backdrop both read
-// from -- same pattern as native_chat.html's own _positionSidePanel().
+// from -- same pattern as chat.html's own _positionSidePanel().
 function _positionSidePanel() {
   const nav = document.querySelector('header.topbar');
   if (nav) document.documentElement.style.setProperty('--nav-height', nav.offsetHeight + 'px');

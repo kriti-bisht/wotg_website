@@ -499,7 +499,7 @@
 
     // Preserves the email's "take me straight to my pending notification"
     // intent across a login detour -- ?next=notify on THIS page's own URL
-    // (set by native_chat.html when it bounces a logged-out visitor here)
+    // (set by chat.html when it bounces a logged-out visitor here)
     // becomes ?notify=1 on the chat page once login succeeds. Any other
     // (or missing) `next` value just goes to the plain chat page, same as
     // before this existed.
@@ -511,7 +511,7 @@
     // one, and the remembered-login path below falls back to it too).
     //
     // email added 2026-08-23 -- real bug Kriti caught live: without this,
-    // native_chat.html's _getUserEmailForReports() had to fall back to
+    // chat.html's _getUserEmailForReports() had to fall back to
     // looking itself up via /api/admin/user-lookup, which the same day's
     // admin-authorization work correctly locked down to admin/super_admin
     // callers -- breaking that fallback for everyone else (and for admins
@@ -523,7 +523,7 @@
       localStorage.setItem('user_name', name);
       localStorage.setItem('access_type', accessType || 'user');
       if (email) localStorage.setItem('user_email', email);
-      window.location.href = _nextParam === 'notify' ? 'native_chat.html?notify=1' : 'native_chat.html';
+      window.location.href = _nextParam === 'notify' ? 'chat.html?notify=1' : 'chat.html';
     }
 
     // "Keep me signed in" -- prototype-level persistence, same trust model

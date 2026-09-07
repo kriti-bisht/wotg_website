@@ -1,0 +1,2550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wisdom on the Go — Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --night:   #041A40;
+  --night2:  #2A3C5D;
+  --night3:  #4F5F79;
+  --grey1:   #f0f2f5;
+  --grey2:   #b8c0cc;
+  --grey3:   #6b7685;
+  --white:   #ffffff;
+  --green:   #3ab54a;
+  --green2:  #2d9640;
+  --gold:    #E4CA0A;
+  --gold2:   #AB9808;
+  --slant:   28px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Poppins',sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(4,26,64,0.06), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(228,202,10,0.05), transparent 40%),
+    #fbfbfd;
+  min-height:100vh;
+}
+.page { max-width:1600px; margin:0 auto; }
+
+/* ---- Header (full-bleed dark) ---- */
+header.topbar { background:var(--night); }
+.header-inner {
+  max-width:1600px; margin:0 auto;
+  display:flex; align-items:center;
+  padding:0.8rem 2rem;
+}
+.logo-block { text-decoration:none; display:flex; flex-direction:column; gap:0; }
+.logo { font-size:1.5rem; }
+.logo .w { font-weight:700; color:var(--white); }
+.logo .mid { font-weight:400; color:var(--white); }
+.logo .go { font-weight:700; color:var(--green); }
+.logo-sanskrit { font-size:0.62rem; font-weight:300; letter-spacing:0.16em; color:var(--white); opacity:0.75; padding-left:0.1rem; margin-top:-0.15rem; }
+
+.greeting { margin-left:2rem; }
+.greeting .hello { font-weight:600; font-size:1.1rem; color:var(--white); }
+.greeting .hello .name { color:var(--green); }
+.greeting .sub { color:var(--grey2); font-size:0.9rem; }
+.header-spacer { flex:1; }
+.header-icons { display:flex; gap:0.9rem; align-items:center; }
+.icon-item { position:relative; }
+.icon-item a.icon-btn {
+  width:38px; height:38px; border-radius:50%;
+  background:rgba(255,255,255,0.08);
+  display:flex; align-items:center; justify-content:center;
+  transition:background 0.15s; text-decoration:none;
+}
+.icon-item a.icon-btn:hover { background:rgba(255,255,255,0.16); }
+.icon-item.profile a.icon-btn { padding:0; overflow:hidden; background:transparent; border:2px solid rgba(255,255,255,0.3); }
+.icon-item.profile a.icon-btn img { width:100%; height:100%; object-fit:cover; }
+.header-icons svg { width:19px; height:19px; }
+
+.icon-tooltip {
+  position:absolute; top:48px; left:50%; transform:translateX(-50%);
+  background:rgba(0,0,0,0.85); color:#fff; font-size:0.68rem;
+  padding:0.3rem 0.6rem; border-radius:5px; white-space:nowrap;
+  opacity:0; pointer-events:none; transition:opacity 0.15s;
+}
+.icon-item:hover .icon-tooltip { opacity:1; }
+
+/* "Coming soon" capsule -- Kriti's explicit call, 2026-08-27: every card/
+   icon/nav item in the product demo that has no real backend behind it yet
+   keeps its exact pixel-for-pixel look, just gets this small tag added so
+   it's honest about not doing anything if clicked, rather than being
+   silently inert. */
+.coming-soon-tag {
+  display:inline-block; font-size:0.56rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
+  color:var(--gold2); background:rgba(228,202,10,0.16); border:1px solid rgba(228,202,10,0.4);
+  border-radius:10px; padding:0.12rem 0.5rem; margin-left:0.5rem; vertical-align:middle; white-space:nowrap;
+}
+.card-header .coming-soon-tag { color:#fff; background:rgba(255,255,255,0.22); border-color:rgba(255,255,255,0.4); flex-shrink:0; font-size:0.52rem; padding:0.1rem 0.4rem; }
+.insight-card h3 .coming-soon-tag { margin-left:0.4rem; }
+.card-body li.side-loading, .card-body li.side-empty { color:var(--grey3); font-style:italic; cursor:default; }
+.card-body li.side-loading:hover, .card-body li.side-empty:hover { color:var(--grey3); font-weight:400; }
+
+.notif-badge {
+  position:absolute; top:1px; right:1px; width:10px; height:10px;
+  background:#e14b4b; border:2px solid var(--night); border-radius:50%;
+}
+.icon-item.seen .notif-badge { display:none; }
+
+.notif-dropdown {
+  position:absolute; top:48px; right:0; width:300px; z-index:500;
+  background:var(--white); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.25);
+  padding:0.4rem; display:none;
+}
+.notif-dropdown.open { display:block; animation:notifSlide 0.2s ease; }
+@keyframes notifSlide { from{opacity:0; transform:translateY(-8px);} to{opacity:1; transform:translateY(0);} }
+.notif-row {
+  display:flex; gap:0.65rem; align-items:flex-start;
+  padding:0.7rem 0.7rem 0.7rem 0.6rem; margin-bottom:0.3rem; border-radius:6px;
+  border-left:4px solid transparent;
+}
+.notif-row:last-child { margin-bottom:0; }
+.notif-row.skill-row { background:rgba(58,181,74,0.06); border-left-color:var(--green); }
+.notif-row.skill-row:hover { background:rgba(58,181,74,0.12); }
+.notif-row.meeting-row { background:rgba(201,168,76,0.08); border-left-color:var(--gold); }
+.notif-row.meeting-row:hover { background:rgba(201,168,76,0.16); }
+.notif-row.urgent-row { background:rgba(224,48,58,0.08); border-left-color:#e0303a; cursor:pointer; }
+.notif-row.urgent-row:hover { background:rgba(224,48,58,0.16); }
+.notif-row.urgent-row .notif-text strong { color:#e0303a; }
+.notif-icon {
+  width:30px; height:30px; border-radius:8px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.notif-icon svg { width:16px; height:16px; }
+.notif-icon.skill { background:rgba(58,181,74,0.15); color:var(--green2); }
+.notif-icon.meeting { background:rgba(201,168,76,0.18); color:var(--gold2); }
+.notif-icon.urgent { background:rgba(224,48,58,0.16); color:#e0303a; font-weight:800; font-size:1rem; }
+.notif-text { font-size:0.82rem; color:var(--night2); line-height:1.45; text-align:left; }
+.notif-empty { padding:0.7rem 0.6rem; font-size:0.8rem; color:var(--grey3); text-align:center; }
+
+.notes-dropdown {
+  position:absolute; top:48px; right:0; width:260px; z-index:500;
+  background:var(--white); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.25);
+  padding:0.4rem; display:none;
+}
+.notes-dropdown.open { display:block; animation:notifSlide 0.2s ease; }
+.notes-row {
+  padding:0.65rem 0.8rem; border-radius:6px; text-align:left;
+  border-left:4px solid transparent; margin-bottom:0.15rem;
+}
+.notes-row:last-child { margin-bottom:0; }
+.notes-row-title { font-size:0.83rem; color:var(--grey3); font-weight:500; }
+.notes-row-date { font-size:0.7rem; color:var(--grey3); opacity:0.7; margin-top:0.1rem; }
+.notes-row.clickable { cursor:pointer; border-left-color:var(--green); background:rgba(58,181,74,0.06); }
+.notes-row.clickable .notes-row-title { color:var(--night); font-weight:600; }
+.notes-row.clickable .notes-row-date { color:var(--green2); opacity:1; }
+.notes-row.clickable:hover { background:rgba(58,181,74,0.13); }
+
+/* ---- Hero: avatar + cards ---- */
+.hero { display:flex; gap:0; padding:1.3rem 2rem 1rem; align-items:stretch; height:350px; }
+.avatar-wrap { flex-shrink:0; width:170px; overflow:hidden; margin-right:1.6rem; }
+.avatar-wrap img { height:100%; width:100%; object-fit:cover; object-position:top; display:block; }
+
+.card-group { flex:1; display:flex; box-shadow:0 20px 45px rgba(4,26,64,0.10); }
+.card { display:flex; flex-direction:column; background:var(--white); position:relative; transition:transform 0.2s ease, box-shadow 0.2s ease; }
+.card:hover { transform:translateY(-5px); z-index:10; box-shadow:0 16px 30px rgba(4,26,64,0.18); }
+.card:nth-child(1) { flex: 1 1 0; }
+.card:nth-child(2) { flex: 1 1 0; }
+.card:nth-child(3) { flex: 1 1 0; }
+
+.card:nth-child(1) { clip-path: polygon(0 0, 100% 0, calc(100% - var(--slant)) 100%, 0 100%); }
+.card:nth-child(2) { clip-path: polygon(var(--slant) 0, 100% 0, calc(100% - var(--slant)) 100%, 0 100%); margin-left: calc(-1 * var(--slant)); z-index:2; }
+.card:nth-child(3) { clip-path: polygon(var(--slant) 0, 100% 0, 100% 100%, 0 100%); margin-left: calc(-1 * var(--slant)); z-index:1; }
+
+.card-header {
+  padding:1.15rem 1.3rem; color:#fff; font-weight:600; font-size:1.08rem;
+  text-align:center;
+  display:flex; align-items:center; justify-content:center; flex-wrap:nowrap; gap:0.5rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 3px 6px rgba(0,0,0,0.15);
+}
+.card-header .card-header-title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.card:nth-child(1) .card-header { background:linear-gradient(180deg, var(--green) 0%, var(--green2) 100%); padding-right:calc(1.3rem + (var(--slant) / 2)); }
+.card:nth-child(2) .card-header { background:linear-gradient(180deg, var(--gold) 0%, var(--gold2) 100%); padding-left:calc(1.3rem + (var(--slant) / 2)); padding-right:calc(1.3rem + (var(--slant) / 2)); }
+.card:nth-child(3) .card-header { background:linear-gradient(180deg, var(--night2) 0%, var(--night) 100%); padding-left:calc(1.3rem + (var(--slant) / 2)); }
+
+.card-body { padding:1.2rem 1.3rem; flex:1; display:flex; flex-direction:column; }
+.card:nth-child(1) .card-body { padding-right:calc(1.3rem + (var(--slant) / 2)); }
+.card:nth-child(2) .card-body { padding-left:calc(1.3rem + (var(--slant) / 2)); padding-right:calc(1.3rem + (var(--slant) / 2)); }
+.card:nth-child(3) .card-body { padding-left:calc(1.3rem + (var(--slant) / 2)); }
+.card-body ul { list-style:none; }
+.card-body li {
+  padding:0.55rem 0; font-size:0.95rem; color:var(--night2);
+  border-bottom:1px solid rgba(0,0,0,0.05); text-align:left;
+}
+.card-body li:last-child { border-bottom:none; }
+.card-body li.hotspot { position:relative; cursor:pointer; transition:color 0.15s; }
+.card-body li.hotspot:hover { color:var(--green2); font-weight:500; }
+.card-body li.hotspot .li-tooltip { top:-32px; bottom:auto; left:0; right:auto; }
+.card-body li.hotspot:hover .li-tooltip { opacity:1; }
+
+/* ---- Live chat panel (replaces hero on send) ---- */
+.chat-panel {
+  display:none; flex-direction:column;
+  height:350px; margin:1.3rem 2rem 0;
+  background:var(--white); border-radius:12px;
+  box-shadow:0 6px 20px rgba(22,32,46,0.12);
+  overflow:hidden;
+}
+.chat-panel.active { display:flex; }
+.hero.chatting { display:none; }
+.chat-panel-head {
+  flex-shrink:0; padding:0.7rem 1.3rem; background:var(--night);
+  color:var(--white); font-size:0.85rem; font-weight:600;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.chat-panel-head .live-label { display:flex; align-items:center; gap:0.5rem; }
+.chat-panel-head .live-dot {
+  width:7px; height:7px; border-radius:50%; background:var(--green);
+  box-shadow:0 0 0 rgba(58,181,74,0.5); animation:liveDotPulse 1.6s ease-in-out infinite;
+}
+@keyframes liveDotPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.close-btn-wrap { position:relative; }
+.chat-panel-close {
+  background:none; border:none; color:#fff; cursor:pointer;
+  font-size:1.8rem; line-height:1; padding:0.1rem 0.6rem; border-radius:4px;
+  font-family:'Poppins',sans-serif;
+}
+.chat-panel-close:hover { background:rgba(255,255,255,0.15); }
+.close-tooltip { top:50%; right:48px; transform:translateY(-50%); }
+.close-btn-wrap.ready-to-close:hover .close-tooltip { opacity:1; }
+.close-btn-wrap.ready-to-close .chat-panel-close {
+  animation: closePulse 1.4s ease-in-out infinite;
+}
+@keyframes closePulse {
+  0%, 100% { background:rgba(255,255,255,0.12); }
+  50% { background:rgba(58,181,74,0.75); }
+}
+.chat-messages { flex:1; overflow-y:auto; padding:1rem 1.3rem; }
+.cmsg { display:flex; gap:0.65rem; align-items:flex-start; margin-bottom:0.9rem; animation:cmsgIn 0.3s ease; }
+.cmsg:last-child { margin-bottom:0; }
+@keyframes cmsgIn { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
+.cmsg.cmsg-user { flex-direction:row-reverse; }
+.cmsg-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; overflow:hidden; border:2px solid rgba(22,32,46,0.08); }
+.cmsg-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+.cmsg-body { max-width:72%; }
+.cmsg.cmsg-user .cmsg-body { text-align:right; }
+.cmsg-bubble {
+  display:inline-block; text-align:left; padding:0.7rem 1rem; border-radius:4px;
+  font-size:0.86rem; line-height:1.55; font-weight:400; position:relative;
+}
+.cmsg-ai .cmsg-bubble { background:var(--grey1); border:1px solid rgba(22,32,46,0.08); color:var(--night2); }
+.cmsg-user .cmsg-bubble { background:rgba(58,181,74,0.12); border:1px solid rgba(58,181,74,0.25); color:var(--night); }
+.cmsg-bubble p { margin:0 0 0.4rem; }
+.cmsg-bubble p:last-child { margin-bottom:0; }
+.cmsg-bubble p.emoji-line { padding-left:1.1rem; }
+.cmsg-bubble ul.italic-list { font-style:italic; }
+.cmsg-bubble strong { font-weight:700; color:var(--night); }
+.cmsg-bubble ul { margin:0.15rem 0 0.4rem 1.1rem; padding:0; }
+.cmsg-bubble li { margin-bottom:0.35rem; }
+.cmsg-bubble li:last-child { margin-bottom:0; }
+.cmsg-name { font-size:0.68rem; color:var(--grey3); margin-bottom:0.2rem; }
+.cmsg-user .cmsg-name { text-align:right; }
+.typing-row { display:flex; gap:0.65rem; align-items:center; }
+.typing-indicator { display:flex; align-items:center; gap:4px; padding:0.7rem 1rem; background:var(--grey1); border:1px solid rgba(22,32,46,0.08); border-radius:4px; }
+.typing-indicator span { width:6px; height:6px; background:var(--green); border-radius:50%; opacity:0.4; animation:typingDot 1.2s ease-in-out infinite; }
+.typing-indicator span:nth-child(2) { animation-delay:0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay:0.4s; }
+@keyframes typingDot { 0%,80%,100%{opacity:0.2; transform:scale(0.8)} 40%{opacity:1; transform:scale(1)} }
+
+/* Application Confirmation form */
+.app-form { background:var(--white); border:1px solid rgba(22,32,46,0.08); border-radius:8px; padding:1.1rem 1.2rem; margin-top:0.4rem; }
+.app-form-q { margin-bottom:1.1rem; }
+.app-form-q:last-of-type { margin-bottom:1rem; }
+.app-form-label { font-size:0.84rem; color:var(--night2); font-weight:500; margin-bottom:0.55rem; line-height:1.45; }
+.app-form-options { display:flex; gap:0.6rem; flex-wrap:wrap; }
+.app-form-chip {
+  font-family:'Poppins',sans-serif; font-size:0.8rem; color:var(--night2);
+  background:var(--grey1); border:1px solid rgba(22,32,46,0.1); border-radius:20px;
+  padding:0.45rem 1rem; cursor:pointer; transition:background 0.15s, border-color 0.15s, color 0.15s;
+}
+.app-form-chip:hover { border-color:var(--green); }
+.app-form-chip.selected { background:var(--green); border-color:var(--green); color:#fff; font-weight:600; }
+.app-form-textarea {
+  width:100%; min-height:64px; resize:vertical; font-family:'Poppins',sans-serif; font-size:0.83rem;
+  color:var(--night2); background:var(--grey1); border:1px solid rgba(22,32,46,0.1); border-radius:8px;
+  padding:0.65rem 0.8rem; outline:none;
+}
+.app-form-textarea:focus { border-color:var(--green); }
+.app-form-submit {
+  font-family:'Poppins',sans-serif; font-size:0.85rem; font-weight:600; color:#fff;
+  background:var(--green); border:none; border-radius:8px; padding:0.6rem 1.4rem; cursor:pointer;
+}
+.app-form-submit:hover { background:var(--green2); }
+
+/* ---- Chat / typing bar ---- */
+.chat-bar {
+  margin:0 2rem 1rem; padding:0.15rem 0.4rem 0.15rem 1.3rem;
+  background:var(--white); border:1px solid rgba(22,32,46,0.1);
+  border-radius:30px; display:flex; align-items:center; gap:0.8rem;
+  box-shadow:0 3px 10px rgba(22,32,46,0.06);
+}
+.chat-bar input, .chat-bar textarea {
+  flex:1; border:none; outline:none; background:transparent; resize:none;
+  font-family:'Poppins',sans-serif; font-size:0.92rem; color:var(--night2);
+  padding:0.85rem 0; max-height:120px; line-height:1.4;
+}
+.chat-bar input::placeholder, .chat-bar textarea::placeholder { color:var(--grey3); }
+.chat-bar textarea:disabled, .chat-bar button:disabled { opacity:0.5; cursor:not-allowed; }
+.chat-bar .chat-icon-btn {
+  width:38px; height:38px; border-radius:50%; flex-shrink:0; border:none; padding:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--green); cursor:pointer;
+}
+.chat-bar .chat-icon-btn svg { width:18px; height:18px; }
+.chat-icon-item { position:relative; }
+.chat-icon-tooltip {
+  position:absolute; bottom:52px; right:0; z-index:500;
+  background:rgba(0,0,0,0.85); color:#fff; font-size:0.68rem;
+  padding:0.3rem 0.6rem; border-radius:5px; white-space:nowrap;
+  opacity:0; pointer-events:none; transition:opacity 0.15s;
+}
+.chat-icon-item:hover .chat-icon-tooltip { opacity:1; }
+
+.charts-strip { padding:0 2rem 1.2rem; display:flex; gap:1.4rem; align-items:stretch; }
+.insight-card {
+  flex:1; background:var(--white); border-radius:12px; padding:0.65rem 1.1rem;
+  box-shadow:0 6px 20px rgba(22,32,46,0.1);
+  transition:transform 0.2s ease, box-shadow 0.2s ease;
+}
+.insight-card:hover { transform:translateY(-5px); box-shadow:0 14px 28px rgba(22,32,46,0.16); }
+.insight-card h3 { font-size:0.92rem; color:var(--night2); margin-bottom:0.45rem; white-space:nowrap; }
+.card-head-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem; }
+.card-head-row h3 { margin-bottom:0; }
+.period-toggle { display:flex; background:var(--grey1); border-radius:20px; padding:0.2rem; }
+.period-toggle span {
+  padding:0.28rem 0.65rem; font-size:0.68rem; color:var(--grey3); border-radius:16px; cursor:pointer;
+}
+.period-toggle span.active { background:var(--green); color:#fff; font-weight:600; }
+.period-toggle-bottom { display:inline-flex; margin-top:0.55rem; }
+.period-toggle-bottom span { padding:0.2rem 0.5rem; font-size:0.6rem; }
+
+/* Learning Momentum */
+.stat-tile { display:flex; align-items:center; gap:0.7rem; padding:0.28rem 0; border-bottom:1px solid rgba(0,0,0,0.05); }
+.stat-tile:last-child { border-bottom:none; }
+.stat-tile .stat-icon {
+  width:30px; height:30px; border-radius:8px; background:rgba(58,181,74,0.1);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.stat-tile .stat-icon svg { width:16px; height:16px; color:var(--green2); }
+.stat-tile .stat-text { flex:1; }
+.stat-tile .stat-value { font-weight:700; font-size:0.98rem; color:var(--night); }
+.stat-tile .stat-label { font-size:0.7rem; color:var(--grey3); }
+.stat-tile.streak .stat-icon { background:rgba(201,168,76,0.15); }
+.stat-tile.streak .stat-icon svg { color:var(--gold2); }
+.ring-wrap { position:relative; width:30px; height:30px; flex-shrink:0; }
+.ring-wrap svg { transform:rotate(-90deg); }
+.ring-wrap .ring-bg { fill:none; stroke:rgba(58,181,74,0.15); stroke-width:4; }
+.ring-wrap .ring-fg { fill:none; stroke:var(--green); stroke-width:4; stroke-linecap:round; }
+
+/* Star Collection */
+.star-item { padding:0.32rem 0; border-bottom:1px solid rgba(0,0,0,0.05); }
+.star-item:last-child { border-bottom:none; }
+.star-item .skill-name { font-size:0.82rem; color:var(--night2); margin-bottom:0.2rem; font-weight:500; }
+.star-item .stars svg { width:15px; height:15px; }
+.star-item .stars svg.filled { fill:url(#starShine); filter:drop-shadow(0 1px 1.5px rgba(168,121,31,0.45)); }
+.star-item .stars svg.empty { fill:#e2e2e2; }
+
+/* Annual Growth Map */
+.bar-row { margin-bottom:0.2rem; }
+.bar-row:last-child { margin-bottom:0; }
+.bar-row .bar-label { font-size:0.68rem; color:var(--night2); margin-bottom:0.14rem; }
+.bar-track { height:6px; background:#eef0f2; border-radius:4px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:4px; }
+.bar-fill.green { background:var(--green); }
+.bar-fill.gold { background:var(--gold); }
+.bar-fill.grey { background:#c7cdd6; }
+.bar-legend { display:flex; gap:0.9rem; margin-top:0.3rem; font-size:0.64rem; color:var(--grey3); }
+.bar-legend span { display:inline-flex; align-items:center; gap:0.3rem; }
+.bar-legend .swatch { width:8px; height:8px; border-radius:50%; }
+.bar-legend .swatch.green { background:var(--green); }
+.bar-legend .swatch.gold { background:var(--gold); }
+.bar-legend .swatch.grey { background:#c7cdd6; }
+
+/* ---- Burger + side panel ---- */
+.burger-btn {
+  width:38px; height:38px; border-radius:8px; background:rgba(255,255,255,0.08);
+  border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  margin-right:1.2rem; flex-shrink:0;
+}
+.burger-btn:hover { background:rgba(255,255,255,0.16); }
+.burger-btn span { display:block; width:18px; height:2px; background:#fff; border-radius:2px; }
+.burger-btn span + span { margin-top:4px; }
+
+.panel-overlay {
+  position:fixed; top:72px; left:0; right:0; bottom:0; background:rgba(0,0,0,0.45);
+  opacity:0; pointer-events:none; transition:opacity 0.25s; z-index:90;
+}
+.panel-overlay.open { opacity:1; pointer-events:auto; }
+
+.notes-lightbox {
+  position:fixed; inset:0; background:rgba(10,15,22,0.82); z-index:300;
+  display:flex; align-items:center; justify-content:center; padding:2.5rem;
+  opacity:0; pointer-events:none; transition:opacity 0.2s;
+}
+.notes-lightbox.open { opacity:1; pointer-events:auto; }
+.notes-lightbox-inner { position:relative; max-width:90vw; max-height:90vh; }
+.notes-lightbox-inner img {
+  display:block; max-width:90vw; max-height:90vh; border-radius:10px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.notes-lightbox-close {
+  position:absolute; top:-18px; right:-18px; width:36px; height:36px;
+  border-radius:50%; background:var(--night); color:#fff; border:2px solid var(--white);
+  font-size:1.4rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-family:'Poppins',sans-serif;
+}
+.notes-lightbox-close:hover { background:var(--green2); }
+
+/* ---- My Learning Progress: report hub + reports ---- */
+.progress-overlay {
+  position:fixed; inset:0; background:rgba(4,26,64,0.35); z-index:400;
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  display:flex; align-items:center; justify-content:center; padding:2rem;
+  opacity:0; pointer-events:none; transition:opacity 0.2s;
+}
+.progress-overlay.open { opacity:1; pointer-events:auto; }
+.progress-modal {
+  background:var(--white); border-radius:14px; width:min(1080px, 100%); height:min(86vh, 780px);
+  display:flex; flex-direction:column; box-shadow:0 24px 70px rgba(0,0,0,0.5); overflow:hidden;
+}
+.progress-modal-head {
+  flex-shrink:0; background:var(--night); color:#fff; padding:0.9rem 1.4rem;
+  display:flex; align-items:center; gap:1rem;
+}
+.progress-back {
+  background:none; border:none; color:var(--grey2); font-family:'Poppins',sans-serif;
+  font-size:0.8rem; cursor:pointer; padding:0.3rem 0.5rem; border-radius:5px; flex-shrink:0;
+}
+.progress-back:hover { color:#fff; background:rgba(255,255,255,0.1); }
+.progress-title { font-weight:600; font-size:1rem; flex:1; }
+.progress-close {
+  background:none; border:none; color:#fff; cursor:pointer; font-size:1.6rem; line-height:1;
+  padding:0.1rem 0.55rem; border-radius:4px; font-family:'Poppins',sans-serif; flex-shrink:0;
+}
+.progress-close:hover { background:rgba(255,255,255,0.15); }
+.progress-modal-body {
+  flex:1; overflow-y:auto; padding:1.6rem;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(4,26,64,0.06), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(228,202,10,0.05), transparent 40%),
+    #fbfbfd;
+}
+.report-panel { border:1px solid rgba(22,32,46,0.07); }
+
+/* Hub */
+.report-hub-wrap { display:flex; flex-direction:column; justify-content:center; min-height:100%; }
+.report-hub-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.1rem; }
+.report-card {
+  background:var(--white); border-radius:12px; padding:1.3rem; cursor:pointer;
+  box-shadow:0 4px 14px rgba(22,32,46,0.08); transition:transform 0.15s, box-shadow 0.15s;
+  border:1px solid rgba(22,32,46,0.06); border-left:6px solid transparent;
+}
+.report-card:hover { transform:translateY(-3px); box-shadow:0 10px 24px rgba(22,32,46,0.14); }
+.report-card-icon {
+  width:52px; height:52px; border-radius:13px; display:flex; align-items:center; justify-content:center;
+  margin-bottom:0.9rem; box-shadow:0 4px 10px rgba(0,0,0,0.12);
+}
+.report-card-icon svg { width:25px; height:25px; }
+.report-card h3 { font-size:1.02rem; color:var(--night); margin-bottom:0.4rem; }
+.report-card p { font-size:0.82rem; color:var(--grey3); line-height:1.5; }
+.report-card.c-green { border-left-color:var(--green); }
+.report-card.c-green h3 { color:var(--green2); }
+.report-card.c-green .report-card-icon { background:var(--green); color:#fff; }
+.report-card.c-gold { border-left-color:var(--gold); }
+.report-card.c-gold h3 { color:var(--gold2); }
+.report-card.c-gold .report-card-icon { background:var(--gold); color:#fff; }
+.report-card.c-amber { border-left-color:#e8960a; }
+.report-card.c-amber h3 { color:#c17d00; }
+.report-card.c-amber .report-card-icon { background:#e8960a; color:#fff; }
+.report-card.c-navy { border-left-color:var(--night); }
+.report-card.c-navy h3 { color:var(--night); }
+.report-card.c-navy .report-card-icon { background:var(--night2); color:#fff; }
+
+/* Assessment History tiles */
+.assess-tile { border-radius:12px; margin-bottom:1rem; overflow:hidden; box-shadow:0 4px 14px rgba(22,32,46,0.08); background:var(--white); border-left:6px solid transparent; }
+.assess-tile:last-child { margin-bottom:0; }
+.assess-tile-head { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.3rem; color:var(--night); }
+.assess-tile-title { font-size:0.98rem; font-weight:600; }
+.assess-tile-right { display:flex; align-items:center; gap:0.7rem; }
+.assess-tile-score {
+  font-size:0.95rem; font-weight:700; color:#fff; padding:0.35rem 0.85rem; border-radius:20px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+.assess-tile-chevron { width:14px; height:14px; transition:transform 0.2s; color:var(--grey3); }
+.assess-tile.expandable { cursor:pointer; }
+.assess-tile.expanded .assess-tile-chevron { transform:rotate(180deg); }
+.assess-tile-detail { max-height:0; overflow:hidden; transition:max-height 0.3s ease; background:var(--white); }
+.assess-tile.expanded .assess-tile-detail { max-height:400px; }
+.assess-tile-detail-inner { padding:1.1rem 1.3rem; }
+.assess-tile-detail-label { font-size:0.78rem; color:var(--grey3); margin-bottom:0.7rem; }
+.assess-skill-row { display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0; border-bottom:1px solid rgba(0,0,0,0.06); }
+.assess-skill-row:last-child { border-bottom:none; }
+.assess-skill-name { font-size:0.85rem; color:var(--night2); font-weight:500; }
+.assess-skill-meta { font-size:0.72rem; color:var(--grey3); margin-top:0.1rem; }
+.assess-skill-score { font-size:0.95rem; font-weight:700; }
+.assess-tile.assess-band-green { border-left-color:var(--green); }
+.assess-tile.assess-band-green .assess-tile-title { color:var(--green2); }
+.assess-tile.assess-band-green .assess-tile-score { background:linear-gradient(135deg, var(--green) 0%, var(--green2) 100%); }
+.assess-tile.assess-band-amber { border-left-color:#f5a623; }
+.assess-tile.assess-band-amber .assess-tile-title { color:#d97a00; }
+.assess-tile.assess-band-amber .assess-tile-score { background:linear-gradient(135deg, #f5a623 0%, #d97a00 100%); }
+.assess-tile.assess-band-red { border-left-color:#ea5a5a; }
+.assess-tile.assess-band-red .assess-tile-title { color:#c9302c; }
+.assess-tile.assess-band-red .assess-tile-score { background:linear-gradient(135deg, #ea5a5a 0%, #c9302c 100%); }
+
+/* Shared report chrome */
+.report-view-title { font-size:1.15rem; font-weight:600; color:var(--night); margin-bottom:0.3rem; }
+.report-view-sub { font-size:0.82rem; color:var(--grey3); margin-bottom:1.2rem; }
+.report-panel { background:var(--white); border-radius:12px; padding:1.3rem; box-shadow:0 4px 14px rgba(22,32,46,0.08); margin-bottom:1.1rem; }
+.report-panel h4 { font-size:0.9rem; color:var(--night2); margin-bottom:0.9rem; }
+
+.peer-callout {
+  background:rgba(58,181,74,0.09); border:1px solid rgba(58,181,74,0.25); border-radius:10px;
+  padding:0.8rem 1.1rem; font-size:0.86rem; color:var(--night2); margin-bottom:1.1rem;
+}
+.peer-callout strong { color:var(--green2); }
+
+.metric-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; }
+.metric-tile { text-align:left; }
+.metric-tile .metric-value { font-size:1.5rem; font-weight:700; color:var(--night); }
+.metric-tile .metric-label { font-size:0.76rem; color:var(--grey3); margin-top:0.15rem; }
+.metric-tile .metric-peer { font-size:0.7rem; color:var(--grey3); opacity:0.75; margin-top:0.3rem; }
+
+.time-filter { display:flex; background:var(--grey1); border-radius:20px; padding:0.2rem; width:fit-content; margin-bottom:1.2rem; }
+.time-filter span { padding:0.32rem 0.85rem; font-size:0.75rem; color:var(--grey3); border-radius:16px; cursor:pointer; }
+.time-filter span.active { background:var(--green); color:#fff; font-weight:600; }
+
+/* trend bars (horizontal, reused across reports) */
+.trend-row { margin-bottom:0.6rem; }
+.trend-row:last-child { margin-bottom:0; }
+.trend-row-top { display:flex; justify-content:space-between; font-size:0.78rem; color:var(--night2); margin-bottom:0.25rem; }
+.trend-track { height:9px; background:#eef0f2; border-radius:5px; overflow:hidden; }
+.trend-fill { height:100%; border-radius:5px; background:var(--green); }
+
+/* outcome distribution chips */
+.outcome-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; }
+.outcome-tile { text-align:center; border-radius:10px; padding:1rem 0.5rem; }
+.outcome-tile .outcome-value { font-size:1.4rem; font-weight:700; }
+.outcome-tile .outcome-label { font-size:0.74rem; margin-top:0.2rem; }
+.outcome-tile.worked { background:rgba(58,181,74,0.14); }
+.outcome-tile.worked .outcome-value { color:#249041; }
+.outcome-tile.neutral { background:rgba(245,166,35,0.18); }
+.outcome-tile.neutral .outcome-value { color:#d97a00; }
+.outcome-tile.notwork { background:rgba(224,48,58,0.13); }
+.outcome-tile.notwork .outcome-value { color:#e0303a; }
+.outcome-tile .outcome-label { color:var(--grey3); }
+
+/* mastery skill rows (clickable to expand quarterly trend) */
+.skill-mastery-row { border-bottom:1px solid rgba(0,0,0,0.06); padding:0.8rem 0; cursor:pointer; }
+.skill-mastery-row:last-child { border-bottom:none; }
+.skill-mastery-top { display:flex; align-items:center; justify-content:space-between; }
+.skill-mastery-name { font-size:0.86rem; color:var(--night2); font-weight:500; }
+.skill-mastery-right { display:flex; align-items:center; gap:0.6rem; }
+.skill-mastery-score { font-size:0.86rem; font-weight:700; color:var(--night); }
+.skill-trend-tag { font-size:0.68rem; padding:0.18rem 0.55rem; border-radius:12px; font-weight:600; }
+.skill-trend-tag.improving { background:rgba(58,181,74,0.18); color:#249041; }
+.skill-trend-tag.stable { background:rgba(107,118,133,0.16); color:var(--grey3); }
+.skill-trend-tag.declining { background:rgba(224,48,58,0.16); color:#e0303a; }
+.skill-mastery-chevron { width:12px; height:12px; color:var(--grey3); transition:transform 0.2s; }
+.skill-mastery-row.expanded .skill-mastery-chevron { transform:rotate(180deg); }
+.skill-mastery-detail { max-height:0; overflow:hidden; transition:max-height 0.25s ease; }
+.skill-mastery-row.expanded .skill-mastery-detail { max-height:220px; padding-top:0.8rem; }
+
+/* competency overview (report 4) */
+.competency-card {
+  background:var(--white); border-radius:10px; padding:1rem 1.2rem; margin-bottom:0.8rem; cursor:pointer;
+  border:1px solid rgba(22,32,46,0.06); transition:box-shadow 0.15s;
+}
+.competency-card:hover { box-shadow:0 6px 16px rgba(22,32,46,0.1); }
+.competency-card:last-child { margin-bottom:0; }
+.competency-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem; }
+.competency-name { font-size:0.92rem; font-weight:600; color:var(--night); }
+.competency-score-wrap { display:flex; align-items:center; gap:0.6rem; }
+.competency-score { font-size:1rem; font-weight:700; }
+.competency-level-tag { font-size:0.68rem; padding:0.2rem 0.6rem; border-radius:12px; font-weight:600; }
+.competency-level-tag.proficient { background:rgba(58,181,74,0.18); color:#249041; }
+.competency-level-tag.developing { background:rgba(245,166,35,0.2); color:#d97a00; }
+.competency-level-tag.emerging { background:rgba(224,48,58,0.16); color:#e0303a; }
+.competency-dist { display:flex; gap:1rem; font-size:0.74rem; color:var(--grey3); }
+.competency-dist span.dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:0.3rem; }
+.competency-dist .dot.green { background:#3ab54a; }
+.competency-dist .dot.amber { background:#f5a623; }
+.competency-dist .dot.red { background:#e0303a; }
+
+/* reflector drill-down (report 4 detail) */
+.reflector-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0.7rem 0; border-bottom:1px solid rgba(0,0,0,0.06);
+}
+.reflector-row:last-child { border-bottom:none; }
+.reflector-name { font-size:0.86rem; color:var(--night2); }
+.reflector-status { display:flex; align-items:center; gap:0.5rem; font-size:0.76rem; font-weight:600; }
+.reflector-status .dot { width:10px; height:10px; border-radius:50%; }
+.reflector-status.green { color:#249041; }
+.reflector-status.green .dot { background:#3ab54a; }
+.reflector-status.amber { color:#d97a00; }
+.reflector-status.amber .dot { background:#f5a623; }
+.reflector-status.red { color:#e0303a; }
+.reflector-status.red .dot { background:#e0303a; }
+
+.side-panel {
+  position:fixed; top:72px; left:0; height:calc(100vh - 72px); width:280px;
+  background:var(--night); color:#fff; z-index:100;
+  transform:translateX(-100%); transition:transform 0.25s;
+  display:flex; flex-direction:column;
+  box-shadow:4px 0 24px rgba(0,0,0,0.3);
+}
+.side-panel.open { transform:translateX(0); }
+
+.panel-nav { padding:1rem 0; flex:1; overflow-y:auto; }
+.nav-toggle {
+  width:100%; display:flex; align-items:center; gap:0.8rem; position:relative;
+  padding:0.75rem 1.4rem; color:var(--grey1); background:none; border:none;
+  font-family:'Poppins',sans-serif; font-size:0.92rem; border-left:3px solid transparent;
+  transition:background 0.15s, border-color 0.15s; cursor:pointer; text-align:left;
+}
+.nav-toggle:hover { background:rgba(255,255,255,0.06); border-left-color:var(--green); }
+.nav-toggle svg.item-icon { width:20px; height:20px; flex-shrink:0; }
+.nav-toggle span.label { flex:1; }
+.nav-toggle svg.chevron { width:14px; height:14px; flex-shrink:0; transition:transform 0.2s; color:var(--grey3); }
+.nav-section.expanded .nav-toggle svg.chevron { transform:rotate(180deg); }
+.nav-toggle-tooltip {
+  position:absolute; top:50%; left:100%; transform:translateY(-50%); margin-left:10px;
+  background:rgba(0,0,0,0.9); color:#fff; font-size:0.7rem; font-weight:400;
+  padding:0.4rem 0.7rem; border-radius:5px; white-space:normal; width:180px; line-height:1.35;
+  opacity:0; pointer-events:none; transition:opacity 0.15s; z-index:500;
+}
+.nav-toggle:hover .nav-toggle-tooltip { opacity:1; }
+
+.nav-submenu {
+  max-height:0; overflow:hidden; transition:max-height 0.25s ease;
+}
+/* Real Parking Lot / Conversation History rows carry 2 lines (label + a
+   small meta line: status/date), unlike the demo's single-line static
+   links -- a taller cap than the demo's own 300px so up to ~5 real rows
+   don't clip. Kriti's explicit call, 2026-08-27: same list, real data. */
+.nav-section.expanded .nav-submenu { max-height:420px; overflow-y:auto; }
+.nav-submenu a, .nav-submenu-row {
+  display:flex; align-items:center; gap:0.7rem;
+  padding:0.55rem 1.4rem 0.55rem 2.4rem; color:var(--grey2); text-decoration:none;
+  font-size:0.85rem; cursor:pointer;
+}
+.nav-submenu a:hover, .nav-submenu-row:hover { color:#fff; }
+.nav-submenu a svg { width:15px; height:15px; flex-shrink:0; opacity:0.7; }
+.nav-submenu-row .side-item-icon {
+  flex-shrink:0; width:6px; height:6px; border-radius:50%; background:var(--green); margin-top:0.4rem;
+}
+.nav-submenu-row .side-item-text { min-width:0; }
+.nav-submenu-row .side-item-label { font-size:0.85rem; color:var(--grey2); overflow-wrap:break-word; }
+.nav-submenu-row:hover .side-item-label { color:#fff; }
+.nav-submenu-row .side-item-meta { font-size:0.68rem; color:var(--grey3); margin-top:0.15rem; text-transform:capitalize; }
+.nav-submenu-loading, .nav-submenu-empty {
+  padding:0.55rem 1.4rem 0.7rem 2.4rem; color:var(--grey3); font-size:0.78rem;
+}
+.nav-submenu .show-more {
+  display:flex; align-items:center; gap:0.4rem;
+  padding:0.4rem 1.4rem 0.7rem 2.4rem; color:var(--grey3);
+  font-size:0.78rem; background:none; border:none; cursor:pointer; font-family:'Poppins',sans-serif;
+}
+.nav-submenu .show-more svg { width:11px; height:11px; }
+.nav-submenu a.nav-urgent { color:#ff8080; font-weight:600; }
+.nav-submenu a.nav-urgent:hover { color:#ffa3a3; }
+.nav-urgent-badge {
+  display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+  width:16px; height:16px; border-radius:50%; background:#e0303a; color:#fff;
+  font-size:0.65rem; font-weight:800;
+}
+
+.side-panel-footer {
+  padding:1.2rem 1.4rem; border-top:1px solid rgba(255,255,255,0.08);
+  font-size:0.7rem; color:var(--grey3);
+}
+.side-panel-footer .brand { color:var(--grey2); margin-bottom:0.2rem; }
+
+/* ---- Profile dropdown -- My Profile / Log out / Admin view ----
+   2026-08-27, Kriti's explicit call: the demo's profile icon had no
+   dropdown at all; this is the one piece of chrome added that isn't in
+   the mockup, because logging out and (for admins) switching to admin
+   view are real, necessary actions that have to live somewhere. Reuses
+   the exact same dropdown look as My Notes / Notifications, so it's not
+   a new visual pattern -- just a new use of one already in the page. */
+.profile-dropdown {
+  position:absolute; top:48px; right:0; width:200px; z-index:500;
+  background:var(--white); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.25);
+  padding:0.4rem; display:none;
+}
+.profile-dropdown.open { display:block; animation:notifSlide 0.2s ease; }
+.profile-dropdown a, .profile-dropdown button {
+  display:block; width:100%; text-align:left; background:none; border:none;
+  font-family:'Poppins',sans-serif; padding:0.65rem 0.8rem; border-radius:6px;
+  font-size:0.83rem; color:var(--night2); text-decoration:none; cursor:pointer;
+}
+.profile-dropdown a:hover, .profile-dropdown button:hover { background:rgba(58,181,74,0.08); color:var(--night); }
+.profile-dropdown .admin-row { color:var(--green2); font-weight:600; }
+.profile-dropdown .logout-row { color:#c9302c; }
+
+/* ---- Real Learning Nudge notification + Conversation History -- Kriti's
+   explicit call, 2026-08-27: must look like the SAME box as the live chat,
+   not a separate dark full-page takeover. Both now literally share the
+   .chat-panel/.chat-panel-head/.chat-messages classes (see HTML) -- this
+   is just the one rule needed to toggle them, since everything else about
+   their look already comes from those shared classes. */
+.notification-overlay.open { display:flex; }
+
+/* ---- Real message rendering (appendMessage/showTyping/notification form/
+   driver form), ported verbatim from the working page -- same class names,
+   same JS, only the colors below are new (light chat panel instead of a
+   dark full-page chat). Kriti's explicit call, 2026-08-27: never rename
+   what the real JS already depends on. ---- */
+.chat-messages .msg { display:flex; gap:0.65rem; align-items:flex-start; margin-bottom:0.9rem; animation:cmsgIn 0.3s ease; }
+.chat-messages .msg:last-child { margin-bottom:0; }
+.chat-messages .msg.msg-user { flex-direction:row-reverse; }
+.chat-messages .msg-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:700; color:#fff; background:var(--night2); }
+.chat-messages .msg-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+.chat-messages .msg > div { max-width:72%; }
+.chat-messages .msg.msg-user > div { text-align:right; }
+.chat-messages .msg-bubble { display:inline-block; text-align:left; padding:0.7rem 1rem; border-radius:4px; font-size:0.86rem; line-height:1.55; font-weight:400; position:relative; }
+.chat-messages .bubble-ai { background:var(--grey1); border:1px solid rgba(22,32,46,0.08); color:var(--night2); }
+.chat-messages .bubble-user { background:rgba(58,181,74,0.12); border:1px solid rgba(58,181,74,0.25); color:var(--night); }
+.chat-messages .bubble-error { background:rgba(224,48,58,0.1); border:1px solid rgba(224,48,58,0.3); color:#c9302c; }
+.chat-messages .msg-bubble p { margin:0 0 0.4rem; }
+.chat-messages .msg-bubble p:last-child { margin-bottom:0; }
+.chat-messages .msg-bubble strong { font-weight:700; color:var(--night); }
+.chat-messages .msg-bubble ul { margin:0.15rem 0 0.4rem 1.1rem; padding:0; }
+.chat-messages .msg-bubble li { margin-bottom:0.35rem; }
+.chat-messages .msg-meta { font-size:0.68rem; color:var(--grey3); margin-bottom:0.2rem; margin-top:0.2rem; }
+.chat-messages .msg.msg-user .msg-meta { text-align:right; }
+.chat-messages .typing-row { display:flex; gap:0.65rem; align-items:center; }
+.chat-messages .typing-indicator { display:flex; align-items:center; gap:4px; padding:0.7rem 1rem; background:var(--grey1); border:1px solid rgba(22,32,46,0.08); border-radius:4px; }
+.chat-messages .typing-indicator span { width:6px; height:6px; background:var(--green); border-radius:50%; opacity:0.4; animation:typingDot 1.2s ease-in-out infinite; }
+.chat-messages .typing-indicator span:nth-child(2) { animation-delay:0.2s; }
+.chat-messages .typing-indicator span:nth-child(3) { animation-delay:0.4s; }
+@keyframes typingDot { 0%,80%,100%{opacity:0.2; transform:scale(0.8)} 40%{opacity:1; transform:scale(1)} }
+
+/* Driver Diagnosis form -- ported verbatim, light theme */
+.driver-form { background:var(--white); border:1px solid rgba(22,32,46,0.08); border-radius:8px; padding:1.1rem 1.2rem; margin-top:0.4rem; max-width:72%; }
+.driver-form-q { margin-bottom:1.1rem; }
+.driver-form-q:last-of-type { margin-bottom:1rem; }
+.driver-form-label { font-size:0.84rem; color:var(--night2); font-weight:500; margin-bottom:0.55rem; line-height:1.45; }
+.driver-form-options { display:flex; gap:0.6rem; flex-wrap:wrap; }
+.driver-form-chip { font-family:'Poppins',sans-serif; font-size:0.8rem; color:var(--night2); background:var(--grey1); border:1px solid rgba(22,32,46,0.1); border-radius:20px; padding:0.45rem 1rem; cursor:pointer; transition:background 0.15s, border-color 0.15s, color 0.15s; }
+.driver-form-chip:hover { border-color:var(--green); }
+.driver-form-chip.selected { background:var(--green); border-color:var(--green); color:#fff; font-weight:600; }
+.driver-form-submit { font-family:'Poppins',sans-serif; font-size:0.85rem; font-weight:600; color:#fff; background:var(--green); border:none; border-radius:8px; padding:0.6rem 1.4rem; cursor:pointer; margin-top:0.4rem; }
+.driver-form-submit:hover { background:var(--green2); }
+.driver-form-submit:disabled { opacity:0.5; cursor:not-allowed; }
+
+/* End-session confirm modal -- ported verbatim, light theme */
+.modal-overlay { position:fixed; inset:0; background:rgba(4,26,64,0.5); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:700; }
+.modal-overlay.hidden { display:none; }
+.modal-card { background:var(--white); border-radius:10px; padding:2rem 2.2rem 1.8rem; max-width:400px; width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.4); }
+.modal-card-wide { max-width:440px; }
+.modal-title { font-size:1.05rem; font-weight:600; color:var(--night); margin-bottom:0.6rem; }
+.modal-desc { font-size:0.82rem; color:var(--grey3); line-height:1.6; margin-bottom:1.6rem; }
+.modal-actions { display:flex; gap:0.75rem; justify-content:center; }
+/* 3 choices instead of 2 -- Kriti's explicit call, 2026-08-27: ending a
+   conversation is a real, final action (writes ended_by_user -- it will
+   never show in Parking Lot again). Stacked vertically, the real "step
+   away without ending" option (Park it) made most prominent since that's
+   what most exits from a live conversation actually are. */
+.modal-actions-stacked { flex-direction:column; gap:0.6rem; }
+.modal-btn { padding:0.6rem 1.4rem; border-radius:20px; font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600; cursor:pointer; border:1px solid; transition:background 0.15s; }
+.modal-actions-stacked .modal-btn { width:100%; }
+.modal-btn-park { background:var(--green); border-color:var(--green); color:#fff; }
+.modal-btn-park:hover { background:var(--green2); }
+.modal-btn-cancel { background:transparent; border-color:rgba(22,32,46,0.15); color:var(--night2); }
+.modal-btn-cancel:hover { border-color:var(--night2); }
+.modal-btn-confirm { background:transparent; border-color:rgba(224,48,58,0.4); color:#e0303a; }
+.modal-btn-confirm:hover { background:rgba(224,48,58,0.08); border-color:#e0303a; }
+
+/* "Toast" for Coming-soon clicks -- tiny, auto-dismisses, never blocks anything. */
+.coming-soon-toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px);
+  background:var(--night); color:#fff; font-size:0.78rem; padding:0.6rem 1.1rem; border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:900; opacity:0; pointer-events:none; transition:opacity 0.2s, transform 0.2s;
+}
+.coming-soon-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Mic button real states -- ported from the working page, colors matched
+   to the demo's existing chat-icon-btn (already a green circle). */
+.chat-icon-btn svg.icon-stop { display:none; }
+.chat-icon-btn.listening svg.icon-mic { display:none; }
+.chat-icon-btn.listening svg.icon-stop { display:block; }
+.chat-icon-btn.listening { background:#e0303a; animation:micPulse 1.1s ease-in-out infinite; }
+@keyframes micPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
+.chat-icon-btn:disabled { opacity:0.35; cursor:not-allowed; }
+
+/* "Session ended" banner, rendered inside chat-messages -- ported verbatim */
+.session-ended-notice { text-align:center; padding:1.5rem 1rem; color:var(--grey3); font-size:0.85rem; }
+.start-new-link {
+  display:inline-block; margin-top:0.7rem; font-family:'Poppins',sans-serif; font-size:0.8rem; font-weight:600;
+  color:#fff; background:var(--green); border:none; border-radius:20px; padding:0.55rem 1.3rem; cursor:pointer;
+}
+.start-new-link:hover { background:var(--green2); }
+
+/* ---- Mobile responsiveness, added 2026-09-07 -- this file had zero media
+   queries before this. Targets every fixed-width block found: the hero's
+   avatar+3-card fan layout (which only makes visual sense side-by-side --
+   stacked instead, with the slant/clip-path fan effect turned off, since a
+   diagonal cut edge on a full-width stacked card just looks like a visual
+   bug, not a design choice), the charts strip, and the side panel/popover
+   widths that could otherwise exceed a narrow screen. Not visually tested
+   in a real browser -- check on an actual phone and flag anything still
+   off. */
+@media (max-width: 768px) {
+  .page, .header-inner { padding-left:1rem; padding-right:1rem; }
+
+  .hero { flex-direction:column; height:auto; padding:1rem; gap:1rem; }
+  .avatar-wrap { width:100%; height:160px; margin-right:0; border-radius:8px; }
+
+  .card-group { flex-direction:column; box-shadow:none; gap:0.9rem; }
+  .card-group .card {
+    clip-path:none !important; margin-left:0 !important; box-shadow:0 6px 18px rgba(4,26,64,0.10);
+    border-radius:8px;
+  }
+  .card:nth-child(1) .card-header, .card:nth-child(2) .card-header, .card:nth-child(3) .card-header {
+    padding-left:1.3rem; padding-right:1.3rem;
+  }
+  .card:nth-child(1) .card-body, .card:nth-child(2) .card-body, .card:nth-child(3) .card-body {
+    padding-left:1.3rem; padding-right:1.3rem;
+  }
+
+  .chat-panel { margin:1rem; height:auto; min-height:350px; }
+
+  .charts-strip { flex-direction:column; padding:0 1rem 1rem; }
+
+  .side-panel { width:min(280px, 85vw); }
+
+  /* Popovers/tooltips/dropdowns -- fixed widths (300/260/200/180px) could
+     exceed a narrow phone's viewport; cap without changing desktop sizing. */
+  .nav-toggle-tooltip, .li-tooltip, .chat-icon-tooltip { max-width:80vw; }
+}
+
+@media (max-width: 420px) {
+  .hero { padding:0.75rem; }
+  .avatar-wrap { height:130px; }
+  .chat-panel { margin:0.6rem; }
+  .charts-strip { padding:0 0.6rem 1rem; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="starShine" x1="20%" y1="10%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#fff3c4"/>
+      <stop offset="40%" stop-color="#e8c14a"/>
+      <stop offset="100%" stop-color="#a8791f"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="notes-lightbox" id="notesLightbox" onclick="closeNotesLightbox(event)">
+  <div class="notes-lightbox-inner">
+    <button class="notes-lightbox-close" onclick="closeNotesLightbox(event)">&times;</button>
+    <img src="assets/my_notes.jpg" alt="My Notes — Prioritizing Effectively" onclick="event.stopPropagation()">
+  </div>
+</div>
+
+<div class="progress-overlay" id="progressOverlay">
+  <div class="progress-modal">
+    <div class="progress-modal-head">
+      <button class="progress-back" id="progressBackBtn" onclick="showReportHub()" style="display:none">&larr; Back to Reports</button>
+      <div class="progress-title">My Learning Progress</div>
+      <button class="progress-close" onclick="closeProgressOverlay()">&times;</button>
+    </div>
+    <div class="progress-modal-body" id="progressBody"></div>
+  </div>
+</div>
+
+<div class="progress-overlay" id="assessOverlay">
+  <div class="progress-modal">
+    <div class="progress-modal-head">
+      <div class="progress-title">Assessment History</div>
+      <button class="progress-close" onclick="closeAssessOverlay()">&times;</button>
+    </div>
+    <div class="progress-modal-body" id="assessBody"></div>
+  </div>
+</div>
+
+<div class="panel-overlay" id="panelOverlay" onclick="toggleSidePanel()"></div>
+<nav class="side-panel" id="sidePanel">
+  <div class="panel-nav">
+    <div class="nav-section" id="parkingLotSection">
+      <button class="nav-toggle" onclick="toggleAccordion(this)">
+        <svg class="item-icon" viewBox="0 0 24 24" fill="none" stroke="#3ab54a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>
+        <span class="label">Parking Lot</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <span class="nav-toggle-tooltip">Ideas and topics you've parked to revisit later.</span>
+      </button>
+      <div class="nav-submenu" id="sideParkingBody">
+        <div class="nav-submenu-loading">Loading…</div>
+      </div>
+    </div>
+
+    <div class="nav-section" id="convHistorySection">
+      <button class="nav-toggle" onclick="toggleAccordion(this)">
+        <svg class="item-icon" viewBox="0 0 24 24" fill="none" stroke="#3ab54a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
+        <span class="label">Conversation History</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <span class="nav-toggle-tooltip">Past chats and learning sessions you've had with Kriti.</span>
+      </button>
+      <div class="nav-submenu" id="sideHistoryBody">
+        <div class="nav-submenu-loading">Loading…</div>
+      </div>
+    </div>
+    <div class="nav-section" id="analyzeNeedsSection">
+      <button class="nav-toggle" onclick="toggleAccordion(this)">
+        <svg class="item-icon" viewBox="0 0 24 24" fill="none" stroke="#3ab54a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><rect x="5" y="13" width="3" height="7"/><rect x="10.5" y="9" width="3" height="11"/><rect x="16" y="5" width="3" height="15"/><path d="m14.5 3.5 4-1.5 1.5 4"/></svg>
+        <span class="label">Analyze my Learning Needs <span class="coming-soon-tag">Coming soon</span></span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <span class="nav-toggle-tooltip">A breakdown of the skill gaps most relevant to you right now.</span>
+      </button>
+      <div class="nav-submenu">
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Social Presence</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Result Orientation</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Self Cultivation</a>
+      </div>
+    </div>
+
+    <div class="nav-section" id="focusHubSection">
+      <button class="nav-toggle" onclick="toggleAccordion(this)">
+        <svg class="item-icon" viewBox="0 0 24 24" fill="none" stroke="#3ab54a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="0.6" fill="#3ab54a"/></svg>
+        <span class="label">Focus Hub <span class="coming-soon-tag">Coming soon</span></span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <span class="nav-toggle-tooltip">Your current active goals, curated for focused practice.</span>
+      </button>
+      <div class="nav-submenu">
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Receiving Feedback</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Goal Setting</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Analyzing Progress</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Being Timely</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg> Taking Initiative</a>
+      </div>
+    </div>
+  </div>
+  <div class="side-panel-footer">
+    <div class="brand">Wisdom on the GO! @2026</div>
+    <div>Beta version 0.1</div>
+  </div>
+</nav>
+
+<div class="page">
+  <header class="topbar">
+    <div class="header-inner">
+      <button class="burger-btn" onclick="toggleSidePanel()">
+        <span></span><span></span><span></span>
+      </button>
+      <a class="logo-block" href="index.html">
+        <span class="logo"><span class="w">W</span><span class="mid">isdom on the </span><span class="go">GO!</span></span>
+        <span class="logo-sanskrit">Tat Tvam Asi</span>
+      </a>
+      <div class="greeting" id="greeting">
+        <div class="hello">Hello <span class="name" id="greetingName"></span>,</div>
+        <div class="sub">How can I help you today?</div>
+      </div>
+      <div class="header-spacer"></div>
+      <div class="header-icons">
+        <div class="icon-item" id="notesItem">
+          <a class="icon-btn" href="#" onclick="comingSoon(event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M12 12v6"/><path d="M9.5 15.5 12 18l2.5-2.5"/></svg>
+          </a>
+          <span class="icon-tooltip">My Notes · Coming soon</span>
+          <div class="notes-dropdown" id="notesDropdown">
+            <div class="notes-row clickable" onclick="openNotesLightbox(event)">
+              <div class="notes-row-title">Prioritizing Effectively</div>
+              <div class="notes-row-date">24 Jul 2026</div>
+            </div>
+            <div class="notes-row">
+              <div class="notes-row-title">Being Resilient</div>
+              <div class="notes-row-date">18 Jul 2026</div>
+            </div>
+            <div class="notes-row">
+              <div class="notes-row-title">Demonstrating Credibility</div>
+              <div class="notes-row-date">14 Jul 2026</div>
+            </div>
+            <div class="notes-row">
+              <div class="notes-row-title">Attuned Listening</div>
+              <div class="notes-row-date">9 Jul 2026</div>
+            </div>
+          </div>
+        </div>
+        <div class="icon-item" id="assessHistoryItem">
+          <a class="icon-btn" href="#" onclick="comingSoon(event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3"/><path d="M8.5 12.5 10.5 14.5 15.5 9.5"/></svg>
+          </a>
+          <span class="icon-tooltip">Assessment History · Coming soon</span>
+        </div>
+        <div class="icon-item" id="learningProgressItem">
+          <a class="icon-btn" href="#" onclick="comingSoon(event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12.5" y="8" width="3" height="10"/><rect x="18" y="5" width="3" height="13"/></svg>
+          </a>
+          <span class="icon-tooltip">My Learning Progress · Coming soon</span>
+        </div>
+        <div class="icon-item" id="notifItem">
+          <a class="icon-btn" id="bellBtn" href="#" onclick="toggleNotifications(event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 3.5 1 5.5 2 7H4c1-1.5 2-3.5 2-7Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
+            <span class="notif-badge" id="notifBadge" style="display:none"></span>
+          </a>
+          <span class="icon-tooltip">Notifications</span>
+          <div class="notif-dropdown" id="notifDropdown">
+            <!-- Real row only -- Kriti's explicit call, 2026-08-27: keep the
+                 urgent-row STYLE (that's real and stays), drop the 2 fake
+                 rows entirely, not just leave them untagged. -->
+            <div id="realNotifRow"></div>
+          </div>
+        </div>
+        <div class="icon-item profile" id="profileItem">
+          <a class="icon-btn" href="#" onclick="toggleProfileMenu(event)">
+            <img src="assets/profile_headshot.jpg" alt="Profile">
+          </a>
+          <span class="icon-tooltip">My Profile</span>
+          <div class="profile-dropdown" id="profileDropdown">
+            <a href="#">My Profile</a>
+            <button type="button" class="admin-row" id="adminViewRow" onclick="window.location.href='admin.html'" style="display:none">Admin view</button>
+            <button type="button" class="logout-row" onclick="logOut()">Log out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="hero" id="hero">
+    <div class="avatar-wrap">
+      <img src="assets/kriti_fullbody.png" alt="Kriti">
+    </div>
+    <div class="card-group">
+      <div class="card">
+        <div class="card-header" id="peerRecCard"><span class="card-header-title">Peer Recommendations</span> <span class="coming-soon-tag">Coming soon</span></div>
+        <div class="card-body">
+          <ul>
+            <li>Navigating Relational Dynamics</li>
+            <li>Structuring Messages Clearly</li>
+            <li>Building Healthy Habits</li>
+            <li>Applying Feedback</li>
+            <li>Taking Action</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header" id="managerRecCard">Learning Recommendations</div>
+        <div class="card-body">
+          <ul id="learningRecsList">
+            <li class="side-loading">Loading…</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header" id="strategicGoalsCard"><span class="card-header-title">Strategic Learning Goals</span> <span class="coming-soon-tag">Coming soon</span></div>
+        <div class="card-body">
+          <ul>
+            <li>Remote Work Integration</li>
+            <li>Digital Transformation</li>
+            <li>Market Expansion</li>
+            <li>Talent Retention</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-panel-head">
+      <div class="live-label"><span class="live-dot"></span> <span id="chatPanelLabel">Live conversation</span></div>
+      <div class="close-btn-wrap" id="closeBtnWrap">
+        <button class="chat-panel-close" onclick="endConversation()">&times;</button>
+        <span class="chat-icon-tooltip close-tooltip">Park or end this conversation</span>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+  </div>
+
+  <!-- Real Learning Nudge notification + Conversation History -- Kriti's
+       explicit call, 2026-08-27: must render in the EXACT same box as the
+       live chat (literally reuses .chat-panel/.chat-panel-head/.chat-messages),
+       not a separate full-page dark overlay that looks different. -->
+  <div class="chat-panel notification-overlay" id="notificationOverlay">
+    <div class="chat-panel-head">
+      <div class="live-label"><span class="live-dot"></span> <span id="notificationOverlayTitle">Application Confirmation</span></div>
+      <div class="close-btn-wrap" id="notificationCloseBtnWrap">
+        <button class="chat-panel-close" onclick="closeNotificationOverlay()">&times;</button>
+        <span class="chat-icon-tooltip close-tooltip">Click to close</span>
+      </div>
+    </div>
+    <div class="chat-messages" id="notificationOverlayScroll"></div>
+  </div>
+
+  <div class="chat-panel notification-overlay" id="historyOverlay">
+    <div class="chat-panel-head">
+      <div class="live-label"><span class="live-dot"></span> <span id="historyOverlayTitle">Conversation History</span></div>
+      <div class="close-btn-wrap">
+        <button class="chat-panel-close" onclick="closeHistoryOverlay()">&times;</button>
+        <span class="chat-icon-tooltip close-tooltip">Click to close</span>
+      </div>
+    </div>
+    <div class="chat-messages" id="historyOverlayScroll"></div>
+  </div>
+
+  <div class="chat-bar">
+    <textarea id="chatInput" placeholder="Describe your situation..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)">Hi Kriti</textarea>
+    <button type="button" class="chat-icon-btn" id="micBtn" title="Tap to talk">
+      <svg class="icon-mic" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 21v-4"/></svg>
+      <svg class="icon-stop" viewBox="0 0 24 24" fill="#fff" stroke="none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+    </button>
+    <div class="chat-icon-item">
+      <button type="button" class="chat-icon-btn send" id="sendBtn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg>
+      </button>
+      <span class="chat-icon-tooltip">Send</span>
+    </div>
+  </div>
+
+  <!-- END SESSION MODAL -->
+  <div class="modal-overlay hidden" id="endModal">
+    <div class="modal-card modal-card-wide">
+      <h3 class="modal-title">Leaving this conversation?</h3>
+      <p class="modal-desc">Park it to pick up right where you left off from Parking Lot later, or end it for good.</p>
+      <div class="modal-actions modal-actions-stacked">
+        <button class="modal-btn modal-btn-park" onclick="parkForLater()">Park it for now</button>
+        <button class="modal-btn modal-btn-cancel" onclick="cancelEnd()">No, keep chatting</button>
+        <button class="modal-btn modal-btn-confirm" onclick="confirmEnd()">Yes, end session</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-strip">
+
+    <div class="insight-card">
+      <h3>Learning Momentum <span class="coming-soon-tag">Coming soon</span></h3>
+      <div class="stat-tile streak">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2c.6 3.5-2.6 4.8-3.8 7.3C8.6 11.4 9 13 10.3 14c.8.6 1.9.4 2.4-.4.5-.8.3-1.6-.2-2.1 2.1.6 3.5 2.7 3.5 4.8 0 3.1-2.5 5.7-5.6 5.7S4.8 19.4 4.8 16.3c0-4.6 3.7-6.1 5.4-9.2 1-1.9 1.3-3.2.9-5.1 1 .5 2.1 1.3 2.4 0Z"/></svg></div>
+        <div class="stat-text"><div class="stat-value">2 days</div><div class="stat-label">Current Streak</div></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4.2"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/></svg></div>
+        <div class="stat-text"><div class="stat-value">7</div><div class="stat-label">Learning Atoms</div></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <div class="stat-text"><div class="stat-value">5</div><div class="stat-label">Skills Trained</div></div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+        <div class="stat-text"><div class="stat-value">19 min</div><div class="stat-label">Avg. Session</div></div>
+      </div>
+      <div class="stat-tile">
+        <div class="ring-wrap">
+          <svg width="30" height="30" viewBox="0 0 30 30">
+            <circle class="ring-bg" cx="15" cy="15" r="12.5"/>
+            <circle class="ring-fg" cx="15" cy="15" r="12.5" stroke-dasharray="78.5" stroke-dashoffset="3.14"/>
+          </svg>
+        </div>
+        <div class="stat-text"><div class="stat-value">96%</div><div class="stat-label">Completion Rate</div></div>
+      </div>
+      <div class="period-toggle period-toggle-bottom">
+        <span class="active">Month</span><span>Quarter</span><span>Year</span>
+      </div>
+    </div>
+
+    <div class="insight-card">
+      <h3>Annual Star Stock <span class="coming-soon-tag">Coming soon</span></h3>
+      <div class="star-item">
+        <div class="skill-name">Giving Feedback</div>
+        <div class="stars">
+          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        </div>
+      </div>
+      <div class="star-item">
+        <div class="skill-name">Influencing Others</div>
+        <div class="stars">
+          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        </div>
+      </div>
+      <div class="star-item">
+        <div class="skill-name">Demonstrating Reliability</div>
+        <div class="stars">
+          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        </div>
+      </div>
+      <div class="star-item">
+        <div class="skill-name">Being Resilient</div>
+        <div class="stars">
+          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        </div>
+      </div>
+      <div class="star-item">
+        <div class="skill-name">Being Fair</div>
+        <div class="stars">
+          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-card">
+      <h3>Annual Growth Map <span class="coming-soon-tag">Coming soon</span></h3>
+      <div class="bar-row"><div class="bar-label">Demonstrating Credibility</div><div class="bar-track"><div class="bar-fill green" style="width:90%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Attuned Listening</div><div class="bar-track"><div class="bar-fill green" style="width:85%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Taking Accountability</div><div class="bar-track"><div class="bar-fill green" style="width:82%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Being Amiable</div><div class="bar-track"><div class="bar-fill gold" style="width:62%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Structuring Messages Clearly</div><div class="bar-track"><div class="bar-fill gold" style="width:58%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Negotiating Effectively</div><div class="bar-track"><div class="bar-fill gold" style="width:54%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Being Inclusive</div><div class="bar-track"><div class="bar-fill grey" style="width:18%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Prioritizing Effectively</div><div class="bar-track"><div class="bar-fill grey" style="width:15%"></div></div></div>
+      <div class="bar-row"><div class="bar-label">Respecting Boundaries</div><div class="bar-track"><div class="bar-fill grey" style="width:12%"></div></div></div>
+      <div class="bar-legend">
+        <span><i class="swatch green"></i> Current Strengths</span>
+        <span><i class="swatch gold"></i> Biggest Improvements</span>
+        <span><i class="swatch grey"></i> Unexplored</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggleSidePanel() {
+  const panel = document.getElementById('sidePanel');
+  panel.classList.toggle('open');
+  document.getElementById('panelOverlay').classList.toggle('open');
+  document.body.style.overflow = panel.classList.contains('open') ? 'hidden' : '';
+}
+function toggleAccordion(btn) {
+  btn.parentElement.classList.toggle('expanded');
+}
+// ─── CONFIG ─────────────────────────────────────────────────────────────
+const API_BASE = 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewebsites.net';
+const USER_MGMT_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
+const REPORTS_BASE = 'https://wotg-reports.azurewebsites.net';
+const NOTIFICATION_BASE = 'https://wotg-notifications.azurewebsites.net';
+const LEARNING_RECS_BASE = 'https://wotg-learning-recommendations.azurewebsites.net';
+const NOTIFICATION_BUBBLE_WIDTH = '540px';
+
+let userId = '';
+let sessionId = '';
+let currentPhase = 'opening';
+let isWaiting = false;
+let sessionEnded = false;
+let activeTrack = 'voluntary_opening';
+let activeSkillName = '';
+let userInitials = 'U';
+let pendingForm = null;
+let currentNotification = null;
+let stopMicIfActive = function(){};
+let typingWordInterval = null;
+
+function computeInitials(name) {
+  if (!name) return 'U';
+  return name.trim().split(/\s+/).map(function(w){ return w[0].toUpperCase(); }).join('');
+}
+
+function initSession() {
+  userId = localStorage.getItem('user_id') || '';
+  sessionId = '';
+  currentPhase = 'opening';
+  activeTrack = 'voluntary_opening';
+  activeSkillName = '';
+  if (!userId) {
+    window.location.href = 'login.html';
+    return;
+  }
+  const userName = localStorage.getItem('user_name') || '';
+  userInitials = computeInitials(userName);
+  const greetingNameEl = document.getElementById('greetingName');
+  const firstName = userName.trim().split(/\s+/)[0] || '';
+  if (greetingNameEl) greetingNameEl.textContent = firstName || 'there';
+
+  const accessType = localStorage.getItem('access_type') || 'user';
+  const adminViewRow = document.getElementById('adminViewRow');
+  if (adminViewRow && (accessType === 'admin' || accessType === 'super_admin')) {
+    adminViewRow.style.display = 'block';
+  }
+
+  loadHeroLearningRecs();
+  loadSidePreviousConversations();
+  checkNotificationBadge();
+}
+
+// ─── PROFILE DROPDOWN / "COMING SOON" ──────────────────────────────────────
+function toggleNotifications(e) {
+  e.preventDefault(); e.stopPropagation();
+  document.getElementById('notifDropdown').classList.toggle('open');
+}
+function toggleProfileMenu(e) {
+  e.preventDefault(); e.stopPropagation();
+  document.getElementById('profileDropdown').classList.toggle('open');
+}
+let _comingSoonTimer = null;
+function comingSoon(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  let toast = document.getElementById('comingSoonToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'comingSoonToast';
+    toast.className = 'coming-soon-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = 'Coming soon';
+  toast.classList.add('show');
+  clearTimeout(_comingSoonTimer);
+  _comingSoonTimer = setTimeout(function(){ toast.classList.remove('show'); }, 1800);
+}
+document.addEventListener('click', function(e) {
+  const notifItem = document.getElementById('notifItem');
+  if (notifItem && !notifItem.contains(e.target)) {
+    document.getElementById('notifDropdown').classList.remove('open');
+  }
+  const profileItem = document.getElementById('profileItem');
+  if (profileItem && !profileItem.contains(e.target)) {
+    document.getElementById('profileDropdown').classList.remove('open');
+  }
+});
+
+// ─── HERO: LEARNING RECOMMENDATIONS (real assigned skills) ─────────────────
+function _renderHeroEmpty(message) {
+  document.getElementById('learningRecsList').innerHTML = '<li class="side-empty">' + message + '</li>';
+}
+async function loadHeroLearningRecs() {
+  try {
+    const res = await fetch(`${USER_MGMT_BASE}/api/user-skills?user_id=${encodeURIComponent(userId)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Could not load learning goals.');
+    const skills = data.skills || [];
+    const list = document.getElementById('learningRecsList');
+    if (skills.length === 0) { _renderHeroEmpty('No skills assigned yet.'); return; }
+    list.innerHTML = '';
+    skills.forEach(function(skillName) {
+      const li = document.createElement('li');
+      li.className = 'hotspot';
+      li.textContent = skillName;
+      const tip = document.createElement('span');
+      tip.className = 'chat-icon-tooltip li-tooltip';
+      tip.textContent = 'Click to explore this skill';
+      li.appendChild(tip);
+      li.addEventListener('click', function() { startLearningGoalSession(skillName); });
+      list.appendChild(li);
+    });
+  } catch (err) {
+    _renderHeroEmpty('Could not load learning goals.');
+  }
+}
+
+// ─── PARKING LOT / CONVERSATION HISTORY (real) ─────────────────────────────
+function _renderSideEmpty(container, message) {
+  container.innerHTML = '<div class="nav-submenu-empty">' + message + '</div>';
+}
+function _renderSideSessionList(container, sessions, emptyMessage, kind) {
+  if (!sessions || sessions.length === 0) { _renderSideEmpty(container, emptyMessage); return; }
+  container.innerHTML = '';
+  sessions.forEach(function(s) {
+    const item = document.createElement('div');
+    item.className = 'nav-submenu-row';
+    item.innerHTML = '<span class="side-item-icon"></span>';
+    const textWrap = document.createElement('div');
+    textWrap.className = 'side-item-text';
+    const label = document.createElement('div');
+    label.className = 'side-item-label';
+    label.textContent = s.label;
+    const meta = document.createElement('div');
+    meta.className = 'side-item-meta';
+    const when = s.saved_at ? new Date(s.saved_at).toLocaleDateString() : '';
+    meta.textContent = [s.final_status.replace(/_/g, ' '), when].filter(Boolean).join(' · ');
+    textWrap.appendChild(label);
+    textWrap.appendChild(meta);
+    item.appendChild(textWrap);
+    if (kind === 'parking') {
+      item.addEventListener('click', function() { resumeParkedSession(s.session_id); });
+    } else {
+      item.addEventListener('click', function() { viewClosedConversation(s.session_id); });
+    }
+    container.appendChild(item);
+  });
+}
+
+async function _getUserEmailForReports() {
+  const cached = localStorage.getItem('user_email');
+  if (cached) return cached;
+  try {
+    const res = await fetch(`${USER_MGMT_BASE}/api/admin/user-lookup?user_id=${encodeURIComponent(userId)}`);
+    const data = await res.json();
+    if (res.ok && data.email) { localStorage.setItem('user_email', data.email); return data.email; }
+  } catch (err) { /* fall through to empty */ }
+  return '';
+}
+
+async function loadSidePreviousConversations() {
+  const parkingBody = document.getElementById('sideParkingBody');
+  const historyBody = document.getElementById('sideHistoryBody');
+  const email = await _getUserEmailForReports();
+  try {
+    const url = `${REPORTS_BASE}/api/reports/previous-conversations?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) throw new Error('Could not load previous conversations.');
+    _renderSideSessionList(parkingBody, data.parking_lot, 'Nothing parked right now.', 'parking');
+    _renderSideSessionList(historyBody, data.conversation_history, 'No completed conversations yet.', 'history');
+  } catch (err) {
+    _renderSideEmpty(parkingBody, 'Could not reach the reports service.');
+    _renderSideEmpty(historyBody, 'Could not reach the reports service.');
+  }
+}
+
+// ─── LEARNING GOALS (Learning Recommendations) ─────────────────────────────
+async function startLearningGoalSession(skillName) {
+  if (document.getElementById('sidePanel').classList.contains('open')) toggleSidePanel();
+  removeWelcome();
+  document.getElementById('chatMessages').innerHTML = '';
+  const inputBox = document.getElementById('chatInput');
+  inputBox.value = '';
+  autoResize(inputBox);
+  document.getElementById('chatPanelLabel').textContent = 'Live conversation — ' + skillName;
+  showTyping('opening');
+  try {
+    const res = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, skill_name: skillName }),
+    });
+    const data = await res.json().catch(function(){ return {}; });
+    removeTyping();
+    if (!res.ok) {
+      appendError('Could not start that conversation -- please try again.');
+      return;
+    }
+    sessionEnded = false;
+    activeTrack = 'learning_recommendations';
+    activeSkillName = skillName;
+    sessionId = data.session_id;
+    await handleBackendResult(data);
+  } catch (err) {
+    removeTyping();
+    appendError('Could not reach the server to start that conversation.');
+  }
+}
+
+// ─── RESUME (Parking Lot) / VIEW (Conversation History) ────────────────────
+function _renderPastMessages(messages) {
+  messages.forEach(function(m) {
+    appendMessage(m.sender === 'user' ? 'user' : 'ai', m.text);
+  });
+}
+
+async function resumeParkedSession(clickedSessionId) {
+  if (document.getElementById('sidePanel').classList.contains('open')) toggleSidePanel();
+  removeWelcome();
+  document.getElementById('chatMessages').innerHTML = '';
+  const inputBox = document.getElementById('chatInput');
+  inputBox.value = '';
+  autoResize(inputBox);
+  document.getElementById('chatPanelLabel').textContent = 'Live conversation';
+  showTyping('opening');
+  const email = await _getUserEmailForReports();
+  try {
+    const res = await fetch(
+      `${REPORTS_BASE}/api/reports/resume-session?session_id=${encodeURIComponent(clickedSessionId)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`,
+      { method: 'POST' },
+    );
+    const data = await res.json();
+    removeTyping();
+    document.getElementById('chatMessages').innerHTML = '';
+    if (!res.ok || !data.ok) {
+      appendError('Could not resume that conversation -- it may have already ended.');
+      return;
+    }
+    sessionEnded = false;
+    activeTrack = 'voluntary_opening';
+    sessionId = clickedSessionId;
+    currentPhase = data.phase;
+    _renderPastMessages(data.messages);
+
+    if (data.auto_continue) {
+      showTyping(currentPhase);
+      try {
+        const nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
+        removeTyping();
+        await handleBackendResult(nextResult);
+      } catch (err) {
+        removeTyping();
+        appendError('Something went wrong continuing the conversation -- please try again.');
+      }
+    }
+  } catch (err) {
+    removeTyping();
+    appendError('Could not reach the server to resume that conversation.');
+  }
+}
+
+// Shows whichever box should actually be visible after an overlay closes --
+// the live chat panel if a real conversation is underway, otherwise the
+// hero. Also used going IN, so opening History/Notifications never leaves
+// two boxes stacked on top of each other.
+function _hideMainPanels() {
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('chatPanel').classList.remove('active');
+  document.getElementById('notificationOverlay').classList.remove('open');
+  document.getElementById('historyOverlay').classList.remove('open');
+}
+function _restoreMainPanel() {
+  document.getElementById('notificationOverlay').classList.remove('open');
+  document.getElementById('historyOverlay').classList.remove('open');
+  if (sessionId) {
+    document.getElementById('hero').style.display = 'none';
+    document.getElementById('chatPanel').classList.add('active');
+  } else {
+    document.getElementById('hero').style.display = '';
+    document.getElementById('chatPanel').classList.remove('active');
+  }
+}
+
+async function viewClosedConversation(clickedSessionId) {
+  if (document.getElementById('sidePanel').classList.contains('open')) toggleSidePanel();
+  const scroll = document.getElementById('historyOverlayScroll');
+  scroll.innerHTML = '';
+  _hideMainPanels();
+  document.getElementById('historyOverlay').classList.add('open');
+  const email = await _getUserEmailForReports();
+  try {
+    const res = await fetch(
+      `${REPORTS_BASE}/api/reports/full-conversation?session_id=${encodeURIComponent(clickedSessionId)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`,
+    );
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      _renderHistoryMessage('ai', 'Something went wrong loading that conversation -- please try again.');
+      return;
+    }
+    (data.messages || []).forEach(function(m) {
+      _renderHistoryMessage(m.sender === 'user' ? 'user' : 'ai', m.text);
+    });
+  } catch (err) {
+    _renderHistoryMessage('ai', 'Something went wrong loading that conversation -- please try again.');
+  }
+}
+
+function closeHistoryOverlay() {
+  _restoreMainPanel();
+}
+
+function _renderHistoryMessage(role, text) {
+  const scroll = document.getElementById('historyOverlayScroll');
+  const isUser = role === 'user';
+  const msg = document.createElement('div');
+  msg.className = 'msg' + (isUser ? ' msg-user' : '');
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar ' + (isUser ? 'avatar-user' : 'avatar-ai');
+  if (isUser) {
+    avatar.textContent = userInitials;
+  } else {
+    const avatarImg = document.createElement('img');
+    avatarImg.src = 'chatphoto.png';
+    avatarImg.alt = 'Kriti';
+    avatar.appendChild(avatarImg);
+  }
+  const right = document.createElement('div');
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble ' + (isUser ? 'bubble-user' : 'bubble-ai');
+  bubble.innerHTML = formatResponse(text);
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = formatTime();
+  right.appendChild(bubble);
+  right.appendChild(meta);
+  msg.appendChild(avatar);
+  msg.appendChild(right);
+  scroll.appendChild(msg);
+}
+
+// ─── BACKEND CALLS ──────────────────────────────────────────────────────────
+async function apiPost(path, body) {
+  const res = await fetch(API_BASE + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(function(){ return {}; });
+  if (!res.ok) {
+    throw new Error(data.detail || 'Something went wrong talking to the server.');
+  }
+  return data;
+}
+
+const TERMINAL_PHASES = ['complete', 'scope_session_end', 'objection_session_end'];
+
+async function handleBackendResult(result) {
+  currentPhase = result.phase;
+  pendingForm = result.form || null;
+
+  const messages = result.messages || [];
+  const isSignpostPlusQuiz = !!pendingForm;
+  const isTrainerClosingPlusFeedback = result.phase === 'complete' && messages.length === 2;
+  const holdScrollForPair = isSignpostPlusQuiz || isTrainerClosingPlusFeedback;
+  let firstPairEl = null;
+
+  for (let i = 0; i < messages.length; i++) {
+    if (i > 0) {
+      showTyping(currentPhase);
+      await sleep(800);
+      removeTyping();
+    }
+    if (messages[i]) {
+      const bubble = appendMessage('ai', messages[i], { suppressScroll: holdScrollForPair });
+      if (holdScrollForPair && !firstPairEl) firstPairEl = bubble.closest('.msg');
+    }
+  }
+
+  if (pendingForm) {
+    const formRow = renderDriverDiagnosisForm(pendingForm, { suppressScroll: holdScrollForPair });
+    if (holdScrollForPair && !firstPairEl) firstPairEl = formRow;
+  }
+
+  if (holdScrollForPair && firstPairEl) {
+    firstPairEl.scrollIntoView({ block: 'start' });
+  }
+
+  if (currentPhase === 'reflector_identification' || currentPhase === 'driver_diagnosis_resolving' || currentPhase === 'content_creation' || currentPhase === 'rediagnosis') {
+    showTyping(currentPhase);
+    try {
+      const nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
+      removeTyping();
+      await handleBackendResult(nextResult);
+    } catch (err) {
+      removeTyping();
+      appendError('Something went wrong continuing the conversation -- please try again.');
+    }
+    return;
+  }
+
+  if (result.session_complete || TERMINAL_PHASES.includes(currentPhase)) {
+    lockConversationEnded(holdScrollForPair);
+  }
+}
+
+function lockConversationEnded(suppressScroll) {
+  if (sessionEnded) return;
+  sessionEnded = true;
+
+  const input = document.getElementById('chatInput');
+  input.disabled = true;
+  input.placeholder = 'Conversation ended.';
+  document.getElementById('sendBtn').disabled = true;
+  const micBtn = document.getElementById('micBtn');
+  if (micBtn) micBtn.disabled = true;
+  const closeBtnWrap = document.getElementById('closeBtnWrap');
+  if (closeBtnWrap) closeBtnWrap.classList.add('ready-to-close');
+
+  removeWelcome();
+  const area = document.getElementById('chatMessages');
+  const notice = document.createElement('div');
+  notice.className = 'session-ended-notice';
+
+  const text = document.createElement('div');
+  text.textContent = 'This session has ended. Please start a new conversation to continue.';
+  notice.appendChild(text);
+
+  const link = document.createElement('button');
+  link.type = 'button';
+  link.className = 'start-new-link';
+  link.textContent = 'Start a new conversation';
+  link.onclick = function() { window.location.reload(); };
+  notice.appendChild(link);
+
+  area.appendChild(notice);
+  if (!suppressScroll) scrollMessagesToBottom();
+}
+
+// ─── DRIVER DIAGNOSIS FORM ──────────────────────────────────────────────────
+function renderDriverDiagnosisForm(form, opts) {
+  removeWelcome();
+  const area = document.getElementById('chatMessages');
+  const shouldScroll = !(opts && opts.suppressScroll) && isNearBottom();
+
+  const wrap = document.createElement('div');
+  wrap.className = 'msg';
+  wrap.id = 'driverFormRow';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+
+  const card = document.createElement('div');
+  card.className = 'msg-bubble bubble-ai';
+  card.style.maxWidth = '100%';
+
+  const answers = {};
+
+  form.forEach(function(q, qIndex) {
+    const qBlock = document.createElement('div');
+    qBlock.style.marginBottom = qIndex < form.length - 1 ? '1.1rem' : '0.4rem';
+
+    const qText = document.createElement('div');
+    qText.style.marginBottom = '0.5rem';
+    qText.textContent = q.question;
+    qBlock.appendChild(qText);
+
+    q.options.forEach(function(optText) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = optText;
+      btn.style.cssText = 'display:block;width:100%;text-align:left;margin-bottom:0.4rem;padding:0.55rem 0.8rem;' +
+        'background:var(--grey1);border:1px solid rgba(22,32,46,0.1);border-radius:4px;color:var(--night2);' +
+        'font-family:Poppins,sans-serif;font-size:0.85rem;cursor:pointer;transition:border-color 0.2s,background 0.2s;';
+      btn.onclick = function() {
+        answers[q.driver_name] = optText;
+        Array.from(qBlock.querySelectorAll('button')).forEach(function(b) {
+          b.style.borderColor = 'rgba(22,32,46,0.1)';
+          b.style.background = 'var(--grey1)';
+        });
+        btn.style.borderColor = 'rgba(58,181,74,0.6)';
+        btn.style.background = 'rgba(58,181,74,0.12)';
+        updateSubmitState();
+      };
+      qBlock.appendChild(btn);
+    });
+
+    card.appendChild(qBlock);
+  });
+
+  const submitBtn = document.createElement('button');
+  submitBtn.type = 'button';
+  submitBtn.textContent = 'Submit answers';
+  submitBtn.disabled = true;
+  submitBtn.style.cssText = 'margin-top:0.5rem;padding:0.6rem 1.4rem;background:var(--green);border:none;' +
+    'border-radius:20px;color:#fff;font-family:Poppins,sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;opacity:0.5;';
+  submitBtn.onclick = function() { submitDriverDiagnosisForm(answers); };
+  card.appendChild(submitBtn);
+
+  function updateSubmitState() {
+    submitBtn.disabled = Object.keys(answers).length < form.length;
+    submitBtn.style.opacity = submitBtn.disabled ? '0.5' : '1';
+  }
+
+  wrap.appendChild(avatar);
+  wrap.appendChild(card);
+  area.appendChild(wrap);
+  if (shouldScroll) scrollMessagesToBottom();
+  return wrap;
+}
+
+async function submitDriverDiagnosisForm(answers) {
+  const row = document.getElementById('driverFormRow');
+  if (row) row.remove();
+  pendingForm = null;
+
+  isWaiting = true;
+  document.getElementById('chatInput').disabled = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  showTyping(currentPhase);
+  try {
+    const result = await apiPost('/api/driver-diagnosis/submit', { user_id: userId, session_id: sessionId, answers: answers });
+    removeTyping();
+    await handleBackendResult(result);
+  } catch (err) {
+    removeTyping();
+    appendError('Something went wrong sending your answers -- please try again.');
+  }
+
+  isWaiting = false;
+  if (!sessionEnded) {
+    document.getElementById('chatInput').disabled = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+// ─── LEARNING NUDGE NOTIFICATION (the bell) -- real, ported as-is ──────────
+async function checkNotificationBadge() {
+  const badge = document.getElementById('notifBadge');
+  const realRow = document.getElementById('realNotifRow');
+  try {
+    const email = await _getUserEmailForReports();
+    const res = await fetch(`${NOTIFICATION_BASE}/api/notifications/current?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+    if (data.has_notification) {
+      currentNotification = data;
+      badge.style.display = 'block';
+      realRow.innerHTML = '<div class="notif-row urgent-row" onclick="openNotification()">' +
+        '<div class="notif-icon urgent">!</div>' +
+        '<div class="notif-text"><strong>' + (data.hero_reflector || 'Application Confirmation') + '</strong> — application confirmation pending. Confirm now?</div>' +
+        '</div>';
+      if (new URLSearchParams(window.location.search).get('notify') === '1') {
+        openNotification();
+      }
+    } else {
+      currentNotification = null;
+      badge.style.display = 'none';
+      realRow.innerHTML = '<div class="notif-empty">Nothing waiting on you right now.</div>';
+    }
+  } catch (err) {
+    currentNotification = null;
+    badge.style.display = 'none';
+    realRow.innerHTML = '<div class="notif-empty">Could not reach the notification service.</div>';
+  }
+}
+
+function openNotification() {
+  if (!currentNotification) return;
+  if (document.getElementById('notificationOverlay').classList.contains('open')) return;
+
+  document.getElementById('notifDropdown').classList.remove('open');
+  document.getElementById('sidePanel').classList.remove('open');
+  document.getElementById('panelOverlay').classList.remove('open');
+
+  document.getElementById('notificationOverlayTitle').textContent =
+    'Application Confirmation' + (currentNotification.hero_reflector ? ' — ' + currentNotification.hero_reflector : '');
+  document.getElementById('notificationCloseBtnWrap').classList.remove('ready-to-close');
+
+  const scroll = document.getElementById('notificationOverlayScroll');
+  scroll.innerHTML = '';
+  _hideMainPanels();
+  document.getElementById('notificationOverlay').classList.add('open');
+
+  _appendOverlayMessage(currentNotification.opening_message);
+  renderNotificationForm(currentNotification);
+}
+
+function _appendOverlayMessage(text) {
+  const scroll = document.getElementById('notificationOverlayScroll');
+  const msg = document.createElement('div');
+  msg.className = 'msg';
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+  const right = document.createElement('div');
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble bubble-ai';
+  bubble.style.cssText = `width:${NOTIFICATION_BUBBLE_WIDTH};max-width:100%;box-sizing:border-box;`;
+  bubble.innerHTML = formatResponse(text);
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = formatTime();
+  right.appendChild(bubble);
+  right.appendChild(meta);
+  msg.appendChild(avatar);
+  msg.appendChild(right);
+  scroll.appendChild(msg);
+  scroll.scrollTop = scroll.scrollHeight;
+}
+
+function closeNotificationOverlay() {
+  document.getElementById('notificationOverlayScroll').innerHTML = '';
+  document.getElementById('notificationCloseBtnWrap').classList.remove('ready-to-close');
+  _restoreMainPanel();
+}
+
+function _dateToISO(d) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+function _maxRetriggerDateISO() {
+  const d = new Date();
+  d.setDate(d.getDate() + 30);
+  return _dateToISO(d);
+}
+function _todayISO() {
+  return _dateToISO(new Date());
+}
+function _isoToFriendlyDate(iso) {
+  const [yyyy, mm, dd] = iso.split('-').map(Number);
+  const d = new Date(yyyy, mm - 1, dd);
+  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+}
+
+function renderNotificationForm(notification) {
+  const area = document.getElementById('notificationOverlayScroll');
+
+  const wrap = document.createElement('div');
+  wrap.className = 'msg';
+  wrap.id = 'notificationFormRow';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+
+  const card = document.createElement('div');
+  card.className = 'msg-bubble bubble-ai';
+  card.style.cssText = `width:${NOTIFICATION_BUBBLE_WIDTH};max-width:100%;box-sizing:border-box;`;
+
+  const btnStyle = 'display:block;width:100%;text-align:left;margin-bottom:0.4rem;padding:0.55rem 0.8rem;' +
+    'background:var(--grey1);border:1px solid rgba(22,32,46,0.1);border-radius:4px;color:var(--night2);' +
+    'font-family:Poppins,sans-serif;font-size:0.85rem;cursor:pointer;transition:border-color 0.2s,background 0.2s;';
+  const selectedStyle = { borderColor: 'rgba(58,181,74,0.6)', background: 'rgba(58,181,74,0.12)' };
+
+  const q1 = notification.questions[0];
+  const q1Block = document.createElement('div');
+  q1Block.style.marginBottom = '0.4rem';
+  const q1Text = document.createElement('div');
+  q1Text.style.marginBottom = '0.5rem';
+  q1Text.textContent = q1.text;
+  q1Block.appendChild(q1Text);
+
+  const restArea = document.createElement('div');
+
+  q1.options.forEach(function(optText) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = optText;
+    btn.style.cssText = btnStyle;
+    btn.onclick = function() {
+      Array.from(q1Block.querySelectorAll('button')).forEach(function(b) {
+        b.style.borderColor = 'rgba(22,32,46,0.1)';
+        b.style.background = 'var(--grey1)';
+      });
+      btn.style.borderColor = selectedStyle.borderColor;
+      btn.style.background = selectedStyle.background;
+
+      document.getElementById('notifBadge').style.display = 'none';
+
+      restArea.innerHTML = '';
+      if (optText === 'No') {
+        submitNotificationForm(notification.session_id, { q1_answer: 'No' });
+      } else if (optText === 'Yes') {
+        _renderYesFollowup(restArea, notification, btnStyle);
+      } else {
+        _renderNotYetDatePicker(restArea, notification);
+      }
+    };
+    q1Block.appendChild(btn);
+  });
+
+  card.appendChild(q1Block);
+  card.appendChild(restArea);
+
+  wrap.appendChild(avatar);
+  wrap.appendChild(card);
+  area.appendChild(wrap);
+  area.scrollTop = area.scrollHeight;
+}
+
+function _renderYesFollowup(container, notification, btnStyle) {
+  const answers = { q1_answer: 'Yes' };
+  const q2 = notification.questions[1], q3 = notification.questions[2], q4 = notification.questions[3];
+
+  const q2Block = document.createElement('div');
+  q2Block.style.marginTop = '0.9rem';
+  q2Block.style.marginBottom = '0.9rem';
+  const q2Text = document.createElement('div');
+  q2Text.style.marginBottom = '0.5rem';
+  q2Text.textContent = q2.text;
+  q2Block.appendChild(q2Text);
+  q2.options.forEach(function(optText) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = optText;
+    btn.style.cssText = btnStyle;
+    btn.onclick = function() {
+      answers.q2_answer = optText;
+      Array.from(q2Block.querySelectorAll('button')).forEach(function(b) {
+        b.style.borderColor = 'rgba(22,32,46,0.1)';
+        b.style.background = 'var(--grey1)';
+      });
+      btn.style.borderColor = 'rgba(58,181,74,0.6)';
+      btn.style.background = 'rgba(58,181,74,0.12)';
+      updateSubmitState();
+    };
+    q2Block.appendChild(btn);
+  });
+
+  function makeTextQuestion(q, key) {
+    const block = document.createElement('div');
+    block.style.marginBottom = '0.9rem';
+    const label = document.createElement('div');
+    label.style.marginBottom = '0.4rem';
+    label.textContent = q.text;
+    const textarea = document.createElement('textarea');
+    textarea.rows = 2;
+    textarea.style.cssText = 'width:100%;box-sizing:border-box;padding:0.55rem 0.7rem;background:var(--grey1);' +
+      'border:1px solid rgba(22,32,46,0.1);border-radius:4px;color:var(--night2);font-family:Poppins,sans-serif;font-size:0.85rem;resize:vertical;';
+    textarea.oninput = function() {
+      answers[key] = textarea.value.trim();
+      updateSubmitState();
+    };
+    block.appendChild(label);
+    block.appendChild(textarea);
+    return block;
+  }
+  const q3Block = makeTextQuestion(q3, 'q3_answer');
+  const q4Block = makeTextQuestion(q4, 'q4_answer');
+
+  const submitBtn = document.createElement('button');
+  submitBtn.type = 'button';
+  submitBtn.textContent = 'Submit';
+  submitBtn.disabled = true;
+  submitBtn.style.cssText = 'margin-top:0.3rem;padding:0.6rem 1.4rem;background:var(--green);border:none;' +
+    'border-radius:20px;color:#fff;font-family:Poppins,sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;opacity:0.5;';
+  submitBtn.onclick = function() { submitNotificationForm(notification.session_id, answers); };
+
+  function updateSubmitState() {
+    const ready = !!(answers.q2_answer && answers.q3_answer && answers.q4_answer);
+    submitBtn.disabled = !ready;
+    submitBtn.style.opacity = ready ? '1' : '0.5';
+  }
+
+  container.appendChild(q2Block);
+  container.appendChild(q3Block);
+  container.appendChild(q4Block);
+  container.appendChild(submitBtn);
+}
+
+function _renderNotYetDatePicker(container, notification) {
+  const block = document.createElement('div');
+  block.style.marginTop = '0.9rem';
+
+  const label = document.createElement('div');
+  label.style.marginBottom = '0.3rem';
+  label.textContent = 'When should I check back with you?';
+  block.appendChild(label);
+
+  const minISO = _todayISO();
+  const maxISO = _maxRetriggerDateISO();
+
+  const windowHint = document.createElement('div');
+  windowHint.style.cssText = 'margin-bottom:0.6rem;font-size:0.75rem;color:var(--grey3);';
+  windowHint.textContent = `Pick any date between ${_isoToFriendlyDate(minISO)} and ${_isoToFriendlyDate(maxISO)} (within the next 30 days).`;
+  block.appendChild(windowHint);
+
+  const dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  dateInput.min = minISO;
+  dateInput.max = maxISO;
+  dateInput.style.cssText = 'padding:0.5rem 0.7rem;background:var(--grey1);border:1px solid rgba(22,32,46,0.1);' +
+    'border-radius:4px;color:var(--night2);font-family:Poppins,sans-serif;font-size:0.85rem;margin-right:0.6rem;';
+  block.appendChild(dateInput);
+
+  const confirmBtn = document.createElement('button');
+  confirmBtn.type = 'button';
+  confirmBtn.textContent = 'Confirm date';
+  confirmBtn.disabled = true;
+  confirmBtn.style.cssText = 'padding:0.5rem 1.1rem;background:var(--green);border:none;border-radius:20px;color:#fff;' +
+    'font-family:Poppins,sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;opacity:0.5;';
+  block.appendChild(confirmBtn);
+
+  const rangeNote = document.createElement('div');
+  rangeNote.style.cssText = 'margin-top:0.4rem;font-size:0.75rem;color:#e5484d;display:none;';
+  rangeNote.textContent = 'Please pick a date within the next 30 days.';
+  block.appendChild(rangeNote);
+
+  function validate() {
+    const v = dateInput.value;
+    const inRange = !!v && v >= minISO && v <= maxISO;
+    confirmBtn.disabled = !inRange;
+    confirmBtn.style.opacity = inRange ? '1' : '0.5';
+    rangeNote.style.display = (v && !inRange) ? 'block' : 'none';
+  }
+  dateInput.addEventListener('input', validate);
+  dateInput.addEventListener('change', validate);
+  dateInput.addEventListener('keyup', validate);
+  dateInput.addEventListener('blur', validate);
+  const _dateValidatePoll = setInterval(function() {
+    if (!document.body.contains(dateInput)) { clearInterval(_dateValidatePoll); return; }
+    validate();
+  }, 250);
+
+  confirmBtn.onclick = function() {
+    if (dateInput.value < minISO || dateInput.value > maxISO) return;
+    submitNotificationForm(notification.session_id, { q1_answer: 'Not yet', selected_date: dateInput.value });
+  };
+  container.appendChild(block);
+}
+
+async function submitNotificationForm(sessionId, answers) {
+  const row = document.getElementById('notificationFormRow');
+  if (row) row.remove();
+  currentNotification = null;
+
+  try {
+    const email = await _getUserEmailForReports();
+    const res = await fetch(`${NOTIFICATION_BASE}/api/notifications/respond`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ user_id: userId, email: email, session_id: sessionId }, answers)),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      _appendOverlayMessage(data.closing_message);
+    } else {
+      _appendOverlayMessage('Sorry, something went wrong saving that -- please try again from the bell icon.');
+    }
+  } catch (err) {
+    _appendOverlayMessage('Could not reach the notification service.');
+  }
+
+  document.getElementById('notificationCloseBtnWrap').classList.add('ready-to-close');
+}
+
+// ─── END SESSION / LOG OUT ──────────────────────────────────────────────────
+function endConversation() {
+  if (isWaiting) return;
+  // Once the session has already ended (backend-driven, or a prior click),
+  // the pulsing "ready-to-close" state means "there's nothing left to do
+  // here" -- clicking it should still DO something, not silently no-op.
+  // Confirmed real bug, 2026-08-27: the close button pulsed and showed its
+  // tooltip but clicking it did nothing once sessionEnded was already true.
+  if (sessionEnded) { window.location.reload(); return; }
+  document.getElementById('endModal').classList.remove('hidden');
+}
+function cancelEnd() {
+  document.getElementById('endModal').classList.add('hidden');
+}
+function confirmEnd() {
+  document.getElementById('endModal').classList.add('hidden');
+  doEndSession();
+}
+
+// The real "step away without ending" path -- Kriti's explicit call,
+// 2026-08-27. Deliberately never calls notifyBackendSessionEnded(): the
+// session is already sitting at 'in_progress' server-side (nothing marks
+// it ended unless you explicitly choose to), so simply closing back to
+// the hero here is enough to leave it genuinely parked -- exactly the
+// same as if you'd navigated away or closed the tab. Local state resets
+// so a NEW conversation starts clean next time, instead of silently
+// continuing to send into the parked one.
+function parkForLater() {
+  document.getElementById('endModal').classList.add('hidden');
+  sessionId = '';
+  currentPhase = 'opening';
+  activeTrack = 'voluntary_opening';
+  activeSkillName = '';
+  document.getElementById('chatMessages').innerHTML = '';
+  const input = document.getElementById('chatInput');
+  input.value = 'Hi Kriti';
+  autoResize(input);
+  document.getElementById('chatPanel').classList.remove('active');
+  document.getElementById('hero').style.display = '';
+  loadSidePreviousConversations(); // refresh Parking Lot so it shows up immediately
+}
+
+// Routes to whichever backend actually owns this session -- Kriti's
+// explicit call, 2026-08-27: the old page always told Voluntary Opening's
+// table a session ended, even for a Learning Recommendations session,
+// which wrote a bad row under the wrong path. This is the frontend half of
+// that fix, built directly into the new page rather than patched into the
+// one being replaced.
+async function notifyBackendSessionEnded() {
+  if (!sessionId || sessionEnded) return;
+  try {
+    if (activeTrack === 'learning_recommendations') {
+      await fetch(`${LEARNING_RECS_BASE}/api/session/end`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, session_id: sessionId }),
+      });
+    } else {
+      await apiPost('/api/session/end', { user_id: userId, session_id: sessionId });
+    }
+  } catch (err) {
+    console.warn('Could not notify backend the session ended:', err.message);
+  }
+}
+
+function doEndSession() {
+  notifyBackendSessionEnded();
+  lockConversationEnded();
+}
+
+async function logOut() {
+  await notifyBackendSessionEnded();
+  localStorage.removeItem('user_name');
+  localStorage.removeItem('user_email');
+  localStorage.removeItem('user_company');
+  localStorage.removeItem('user_id');
+  localStorage.removeItem('access_type');
+  localStorage.removeItem('remembered_user_id');
+  localStorage.removeItem('remembered_name');
+  localStorage.removeItem('remembered_email');
+  localStorage.removeItem('remembered_access_type');
+  window.location.href = 'login.html';
+}
+
+// ─── UTILITIES ──────────────────────────────────────────────────────────────
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+function formatTime() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+// Replaces the demo's "hero card" cover state with the live chat panel --
+// same function name every message-rendering function already calls, so
+// no call site needed to change; only what it DOES changed.
+function removeWelcome() {
+  const hero = document.getElementById('hero');
+  const panel = document.getElementById('chatPanel');
+  if (hero) hero.style.display = 'none';
+  if (panel && !panel.classList.contains('active')) panel.classList.add('active');
+  // Guard against History/Notification ever being left open underneath a
+  // live conversation that just started.
+  document.getElementById('notificationOverlay').classList.remove('open');
+  document.getElementById('historyOverlay').classList.remove('open');
+}
+
+function isNearBottom() {
+  const area = document.getElementById('chatMessages');
+  const threshold = 150;
+  return (area.scrollTop + area.clientHeight) >= (area.scrollHeight - threshold);
+}
+function scrollMessagesToBottom() {
+  const area = document.getElementById('chatMessages');
+  area.scrollTop = area.scrollHeight;
+}
+
+function appendMessage(role, text, opts) {
+  removeWelcome();
+  const area = document.getElementById('chatMessages');
+  const shouldScroll = !(opts && opts.suppressScroll) && isNearBottom();
+
+  const isUser = role === 'user';
+  const msg = document.createElement('div');
+  msg.className = 'msg' + (isUser ? ' msg-user' : '');
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar ' + (isUser ? 'avatar-user' : 'avatar-ai');
+  if (isUser) {
+    avatar.textContent = userInitials;
+  } else {
+    const avatarImg = document.createElement('img');
+    avatarImg.src = 'chatphoto.png';
+    avatarImg.alt = 'Kriti';
+    avatar.appendChild(avatarImg);
+  }
+
+  const right = document.createElement('div');
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble ' + (isUser ? 'bubble-user' : 'bubble-ai');
+  bubble.innerHTML = formatResponse(text);
+
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = formatTime();
+
+  right.appendChild(bubble);
+  right.appendChild(meta);
+  msg.appendChild(avatar);
+  msg.appendChild(right);
+  area.appendChild(msg);
+  if (shouldScroll) scrollMessagesToBottom();
+  return bubble;
+}
+
+function appendError(text) {
+  removeWelcome();
+  const area = document.getElementById('chatMessages');
+  const shouldScroll = isNearBottom();
+  const msg = document.createElement('div');
+  msg.className = 'msg';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+
+  const right = document.createElement('div');
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble bubble-error';
+  bubble.textContent = text;
+
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = formatTime();
+
+  right.appendChild(bubble);
+  right.appendChild(meta);
+  msg.appendChild(avatar);
+  msg.appendChild(right);
+  area.appendChild(msg);
+  if (shouldScroll) scrollMessagesToBottom();
+}
+
+const PHASE_WORDS = {
+  diagnosis: [
+    'Interpreting…', 'Finding the clues…', 'Making notes…', 'Checking the signal…',
+    'Thinking that through…', 'Connecting the dots…', 'Weighing what matters…',
+    'Identifying patterns…', 'Reflecting…',
+  ],
+  reflector_identification: [
+    'Interpreting…', 'Finding the clues…', 'Making notes…', 'Checking the signal…',
+    'Thinking that through…', 'Connecting the dots…', 'Weighing what matters…',
+    'Identifying patterns…', 'Reflecting…',
+  ],
+  content_creation: [
+    'Building your Learning Atom…', 'Shaping your training…', 'Personalizing your Learning Atom…',
+    'Almost ready…', 'Working through the final bits…', 'Designing the content…',
+    'Making it crisp…', 'Rechecking relevance…',
+  ],
+};
+const WORD_CYCLE_MS = 1800;
+
+function showTyping(phase) {
+  removeWelcome();
+  const area = document.getElementById('chatMessages');
+  const shouldScroll = isNearBottom();
+  const row = document.createElement('div');
+  row.className = 'msg';
+  row.id = 'typingRow';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'typing-wrap';
+
+  const words = PHASE_WORDS[phase];
+  if (words) {
+    const wordEl = document.createElement('span');
+    wordEl.className = 'typing-word';
+    let i = Math.floor(Math.random() * words.length);
+    wordEl.textContent = words[i];
+    typingWordInterval = setInterval(function() {
+      i = (i + 1) % words.length;
+      wordEl.textContent = words[i];
+    }, WORD_CYCLE_MS);
+    wrap.appendChild(wordEl);
+  }
+
+  const indicator = document.createElement('div');
+  indicator.className = 'typing-indicator';
+  indicator.innerHTML = '<span></span><span></span><span></span>';
+  wrap.appendChild(indicator);
+
+  row.appendChild(avatar);
+  row.appendChild(wrap);
+  area.appendChild(row);
+  if (shouldScroll) scrollMessagesToBottom();
+}
+
+function removeTyping() {
+  if (typingWordInterval) {
+    clearInterval(typingWordInterval);
+    typingWordInterval = null;
+  }
+  const t = document.getElementById('typingRow');
+  if (t) t.remove();
+}
+
+function formatResponse(text) {
+  if (!text) return '';
+
+  function inlineFormat(s) {
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+      .replace(/(?<!["'=])(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em style="color:var(--green);font-style:normal">$1</em>');
+  }
+
+  const lines = text.split('\n');
+  let html = '';
+  let listItems = [];
+
+  function flushList() {
+    if (listItems.length) {
+      html += '<ul>' + listItems.map(li => `<li>${inlineFormat(li)}</li>`).join('') + '</ul>';
+      listItems = [];
+    }
+  }
+
+  for (const line of lines) {
+    const match = line.match(/^[-•]\s+(.*)$/);
+    if (match) {
+      listItems.push(match[1]);
+    } else {
+      flushList();
+      if (line.trim() !== '') {
+        html += `<p class="msg-line">${inlineFormat(line)}</p>`;
+      }
+    }
+  }
+  flushList();
+
+  return html;
+}
+
+// ─── SEND MESSAGE ───────────────────────────────────────────────────────────
+async function sendMessage() {
+  if (isWaiting || sessionEnded) return;
+  if (currentPhase === 'driver_diagnosis') return;
+  stopMicIfActive();
+
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  isWaiting = true;
+  input.value = '';
+  autoResize(input);
+  input.disabled = true;
+  document.getElementById('sendBtn').disabled = true;
+  const micBtn0 = document.getElementById('micBtn');
+  if (micBtn0) micBtn0.disabled = true;
+
+  appendMessage('user', text);
+
+  try {
+    if (activeTrack === 'learning_recommendations') {
+      showTyping(currentPhase);
+      const res = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, session_id: sessionId, skill_name: activeSkillName, message: text }),
+      });
+      const result = await res.json().catch(function(){ return {}; });
+      removeTyping();
+      if (!res.ok) {
+        appendError('Something went wrong reaching the server -- please try again.');
+      } else {
+        await handleBackendResult(result);
+      }
+    } else if (currentPhase === 'opening') {
+      const userName = localStorage.getItem('user_name') || '';
+      showTyping('opening');
+      const result = await apiPost('/api/opening/message', {
+        user_id: userId, name: userName, message: text,
+        session_id: sessionId || null,
+      });
+      removeTyping();
+      sessionId = result.session_id;
+
+      if (result.backend_tag === 'INITIAL_USER_INPUT') {
+        await handleBackendResult(result);
+      } else if (result.user_facing_response) {
+        appendMessage('ai', result.user_facing_response);
+      }
+    } else {
+      showTyping(currentPhase);
+      const result = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: text });
+      removeTyping();
+      await handleBackendResult(result);
+    }
+  } catch (err) {
+    removeTyping();
+    appendError('Something went wrong reaching the server -- please try again.');
+  }
+
+  isWaiting = false;
+  if (!sessionEnded) {
+    input.disabled = false;
+    document.getElementById('sendBtn').disabled = false;
+    const micBtn1 = document.getElementById('micBtn');
+    if (micBtn1) micBtn1.disabled = false;
+    input.focus();
+  }
+}
+
+function sleep(ms) {
+  return new Promise(function(resolve) { setTimeout(resolve, ms); });
+}
+
+window.addEventListener('beforeunload', function(e) {
+  if (!sessionEnded) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+initSession();
+
+// ─── VOICE INPUT (tap-to-record mic, Web Speech API) -- ported as-is ───────
+(function(){
+  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = document.getElementById('micBtn');
+  if (!micBtn) return;
+
+  if (!SpeechRecognitionAPI) {
+    micBtn.style.display = 'none';
+    return;
+  }
+
+  let recognition = null;
+  let listening = false;
+  let baseText = '';
+
+  function createRecognition() {
+    const r = new SpeechRecognitionAPI();
+    r.continuous = true;
+    r.interimResults = true;
+    r.lang = 'en-US';
+
+    r.onresult = function(event) {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      const input = document.getElementById('chatInput');
+      const separator = baseText && !baseText.endsWith(' ') ? ' ' : '';
+      input.value = baseText + separator + transcript;
+      autoResize(input);
+    };
+
+    r.onerror = function() {
+      stopListening();
+    };
+
+    r.onend = function() {
+      if (listening) {
+        recognition = createRecognition();
+        try { recognition.start(); } catch(e) {}
+      }
+    };
+
+    return r;
+  }
+
+  function startListening() {
+    if (listening || micBtn.disabled) return;
+    listening = true;
+    baseText = document.getElementById('chatInput').value;
+    micBtn.classList.add('listening');
+    micBtn.title = 'Tap to stop';
+    recognition = createRecognition();
+    try { recognition.start(); } catch(e) {}
+  }
+
+  function stopListening() {
+    if (!listening) return;
+    listening = false;
+    micBtn.classList.remove('listening');
+    micBtn.title = 'Tap to talk';
+    if (recognition) recognition.onresult = null;
+    try { recognition && recognition.stop(); } catch(e) {}
+  }
+
+  stopMicIfActive = stopListening;
+
+  micBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    if (listening) { stopListening(); } else { startListening(); }
+  });
+})();
+</script>
+</body>
+</html>
