@@ -401,6 +401,147 @@ header.topbar { background:var(--night); }
   font-family:'Poppins',sans-serif;
 }
 .notes-lightbox-close:hover { background:var(--green2); }
+/* 2-page viewer, added 2026-09-08 -- Learning Recall (page 1) + Application
+   Commitment (page 2), whenever both exist for a session. Hidden entirely
+   (via [hidden]) when there's only one page -- no arrows, no dots, nothing
+   suggesting a second page that isn't there. */
+.notes-lightbox-nav {
+  position:absolute; top:50%; transform:translateY(-50%); width:44px; height:44px;
+  border-radius:50%; background:rgba(10,15,22,0.55); color:#fff; border:none;
+  font-size:1.3rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.notes-lightbox-nav:hover { background:rgba(10,15,22,0.8); }
+.notes-lightbox-nav:disabled { opacity:0.3; cursor:default; }
+.notes-lightbox-nav.prev { left:-60px; }
+.notes-lightbox-nav.next { right:-60px; }
+/* Gentle nudge, Kriti's explicit call, 2026-09-08: "not ugly, but
+   visible... like how arrows move" -- a small, slow, occasional nod
+   toward where the extra page actually is, so it can't be mistaken for
+   just a static icon. Never nudges a disabled arrow (page 1 of 2's prev
+   arrow, for example) -- an arrow pointing at nothing shouldn't invite a
+   click. Long pause between nudges (2.6s cycle, motion only in the last
+   15%) so it reads as a hint, not a distraction. */
+@keyframes notesNavNudgeNext {
+  0%, 82%, 100% { transform:translateY(-50%) translateX(0); }
+  91% { transform:translateY(-50%) translateX(6px); }
+}
+@keyframes notesNavNudgePrev {
+  0%, 82%, 100% { transform:translateY(-50%) translateX(0); }
+  91% { transform:translateY(-50%) translateX(-6px); }
+}
+.notes-lightbox-nav.next:not(:disabled) { animation:notesNavNudgeNext 2.6s ease-in-out infinite; }
+.notes-lightbox-nav.prev:not(:disabled) { animation:notesNavNudgePrev 2.6s ease-in-out infinite; }
+.notes-lightbox-pages {
+  /* Sits just above the Download button's own row (that one's at
+     bottom:-52px) so the two never overlap. */
+  position:absolute; bottom:-86px; left:50%; transform:translateX(-50%);
+  color:#fff; font-family:'Poppins',sans-serif; font-size:0.8rem; opacity:0.85;
+}
+.notes-lightbox-download {
+  position:absolute; bottom:-52px; left:50%; transform:translateX(-50%);
+  padding:0.6rem 1.4rem; border-radius:20px; background:var(--green); color:#fff;
+  border:none; font-family:'Poppins',sans-serif; font-size:0.85rem; font-weight:600;
+  cursor:pointer;
+}
+.notes-lightbox-download:hover { background:var(--green2); }
+.notes-lightbox-download:disabled { opacity:0.6; cursor:default; }
+
+/* ---- My Profile -- ported from my_profile_preview.html, 2026-09-08,
+     "myprofile-" prefixed so nothing here can collide with any other
+     class in this file. Uses the SAME .progress-overlay/.progress-modal
+     shell as My Learning Progress/Assessment History below -- only the
+     inner content here is new. ---- */
+.myprofile-photo-row { display:flex; align-items:center; gap:1.3rem; margin-bottom:1.8rem; }
+.myprofile-photo-circle {
+  width:88px; height:88px; border-radius:50%; overflow:hidden; flex-shrink:0;
+  background:var(--grey1); border:3px solid var(--white); box-shadow:0 4px 14px rgba(4,26,64,0.18);
+  display:flex; align-items:center; justify-content:center; font-weight:600; color:var(--night3);
+}
+.myprofile-photo-circle img { width:100%; height:100%; object-fit:cover; display:none; }
+.myprofile-photo-circle img.has-photo { display:block; }
+.myprofile-photo-actions { display:flex; flex-direction:column; gap:0.35rem; }
+.myprofile-photo-btn {
+  align-self:flex-start; padding:0.45rem 1rem; border-radius:20px; border:1px solid rgba(22,32,46,0.14);
+  background:var(--white); color:var(--night2); font-family:'Poppins',sans-serif; font-size:0.8rem; font-weight:600; cursor:pointer;
+}
+.myprofile-photo-btn:hover { border-color:var(--green); color:var(--green2); }
+.myprofile-photo-btn:disabled { opacity:0.6; cursor:default; }
+.myprofile-photo-note { font-size:0.7rem; color:var(--grey3); }
+
+.myprofile-section { margin-bottom:1.7rem; }
+.myprofile-section-title {
+  font-size:0.72rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
+  color:var(--grey3); margin-bottom:0.7rem;
+}
+
+.myprofile-info-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:0.8rem; }
+.myprofile-info-cell { background:var(--grey1); border-radius:8px; padding:0.65rem 0.85rem; }
+.myprofile-info-label { font-size:0.68rem; color:var(--grey3); margin-bottom:0.15rem; }
+.myprofile-info-value { font-size:0.87rem; color:var(--night); font-weight:500; }
+
+.myprofile-optional-row { display:flex; gap:0.8rem; }
+.myprofile-optional-cell { flex:1; max-width:260px; }
+.myprofile-optional-cell label { display:block; font-size:0.72rem; color:var(--grey3); margin-bottom:0.35rem; }
+.myprofile-optional-cell input {
+  width:100%; padding:0.55rem 0.75rem; border-radius:8px; border:1px solid rgba(22,32,46,0.14);
+  font-family:'Poppins',sans-serif; font-size:0.85rem; color:var(--night); background:var(--white);
+}
+.myprofile-optional-cell input::placeholder { color:var(--grey2); }
+.myprofile-optional-tag {
+  display:inline-block; font-size:0.62rem; font-weight:600; color:var(--grey3);
+  background:var(--grey1); border-radius:10px; padding:0.1rem 0.5rem; margin-left:0.4rem;
+}
+
+.myprofile-question-box {
+  border:1px solid rgba(58,181,74,0.3); background:rgba(58,181,74,0.04);
+  border-radius:10px; padding:1rem 1.1rem;
+}
+.myprofile-question-box + .myprofile-question-box { margin-top:1rem; }
+.myprofile-admin-field-label { font-size:0.78rem; font-weight:600; color:var(--night2); margin-bottom:0.4rem; }
+.myprofile-admin-field-value {
+  font-size:0.83rem; color:var(--night3); background:var(--grey1); border-radius:8px;
+  padding:0.65rem 0.8rem; line-height:1.45; white-space:pre-wrap;
+}
+.myprofile-admin-field-hint { font-size:0.68rem; color:var(--grey3); margin-top:0.35rem; font-style:italic; }
+.myprofile-question-label { font-size:0.9rem; font-weight:600; color:var(--night); margin-bottom:0.15rem; }
+.myprofile-question-sub { font-size:0.78rem; color:var(--night3); margin-bottom:0.7rem; line-height:1.4; }
+.myprofile-question-box textarea {
+  width:100%; min-height:90px; resize:vertical; border:1px solid rgba(22,32,46,0.14); border-radius:8px;
+  padding:0.65rem 0.8rem; font-family:'Poppins',sans-serif; font-size:0.85rem; color:var(--night); background:var(--white);
+}
+.myprofile-word-count { text-align:right; font-size:0.7rem; color:var(--grey3); margin-top:0.35rem; }
+.myprofile-word-count.over { color:#c0392b; font-weight:600; }
+
+.myprofile-save-row { display:flex; justify-content:flex-end; align-items:center; gap:0.8rem; margin-top:1rem; }
+.myprofile-save-status { font-size:0.78rem; color:var(--night3); }
+.myprofile-save-status.error { color:#c0392b; }
+.myprofile-save-status.ok { color:var(--green2); font-weight:600; }
+.myprofile-save-btn {
+  padding:0.6rem 1.6rem; border-radius:20px; border:none; background:var(--green); color:#fff;
+  font-family:'Poppins',sans-serif; font-size:0.85rem; font-weight:600; cursor:pointer;
+}
+.myprofile-save-btn:hover { background:var(--green2); }
+.myprofile-save-btn:disabled { opacity:0.6; cursor:default; }
+
+.myprofile-assigned-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.myprofile-assigned-card { background:var(--grey1); border-radius:10px; padding:0.9rem 1rem; }
+.myprofile-assigned-card h3 {
+  font-size:0.78rem; font-weight:600; color:var(--night2); margin-bottom:0.55rem;
+  display:flex; align-items:center; gap:0.4rem;
+}
+.myprofile-assigned-card ul { list-style:none; }
+.myprofile-assigned-card li {
+  font-size:0.8rem; color:var(--night3); padding:0.35rem 0; border-bottom:1px solid rgba(22,32,46,0.06);
+}
+.myprofile-assigned-card li:last-child { border-bottom:none; }
+.myprofile-assigned-empty { font-size:0.78rem; color:var(--grey3); font-style:italic; }
+
+@media (max-width:640px) {
+  .myprofile-info-grid { grid-template-columns:1fr 1fr; }
+  .myprofile-assigned-grid { grid-template-columns:1fr; }
+  .myprofile-optional-row { flex-direction:column; }
+  .myprofile-optional-cell { max-width:none; }
+}
 
 /* ---- My Learning Progress: report hub + reports ---- */
 .progress-overlay {
@@ -849,7 +990,11 @@ header.topbar { background:var(--night); }
 <div class="notes-lightbox" id="notesLightbox" onclick="closeNotesLightbox(event)">
   <div class="notes-lightbox-inner">
     <button class="notes-lightbox-close" onclick="closeNotesLightbox(event)">&times;</button>
-    <img src="assets/my_notes.jpg" alt="My Notes — Prioritizing Effectively" onclick="event.stopPropagation()">
+    <button class="notes-lightbox-download" id="notesLightboxDownload" onclick="event.stopPropagation(); downloadCurrentPage();">Download</button>
+    <button class="notes-lightbox-nav prev" id="notesLightboxPrev" onclick="event.stopPropagation(); showLightboxPage(currentPageIndex - 1);" hidden>&larr;</button>
+    <button class="notes-lightbox-nav next" id="notesLightboxNext" onclick="event.stopPropagation(); showLightboxPage(currentPageIndex + 1);" hidden>&rarr;</button>
+    <img id="notesLightboxImg" src="" alt="" onclick="event.stopPropagation()">
+    <div class="notes-lightbox-pages" id="notesLightboxPages" hidden></div>
   </div>
 </div>
 
@@ -871,6 +1016,18 @@ header.topbar { background:var(--night); }
       <button class="progress-close" onclick="closeAssessOverlay()">&times;</button>
     </div>
     <div class="progress-modal-body" id="assessBody"></div>
+  </div>
+</div>
+
+<div class="progress-overlay" id="myProfileOverlay">
+  <div class="progress-modal">
+    <div class="progress-modal-head">
+      <div class="progress-title">My Profile</div>
+      <button class="progress-close" onclick="closeMyProfileOverlay()">&times;</button>
+    </div>
+    <div class="progress-modal-body" id="myProfileBody">
+      <div class="notif-empty">Loading…</div>
+    </div>
   </div>
 </div>
 
@@ -953,27 +1110,15 @@ header.topbar { background:var(--night); }
       <div class="header-spacer"></div>
       <div class="header-icons">
         <div class="icon-item" id="notesItem">
-          <a class="icon-btn" href="#" onclick="comingSoon(event)">
+          <a class="icon-btn" href="#" onclick="toggleNotesDropdown(event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M12 12v6"/><path d="M9.5 15.5 12 18l2.5-2.5"/></svg>
           </a>
-          <span class="icon-tooltip">My Notes · Coming soon</span>
+          <span class="icon-tooltip">My Notes</span>
           <div class="notes-dropdown" id="notesDropdown">
-            <div class="notes-row clickable" onclick="openNotesLightbox(event)">
-              <div class="notes-row-title">Prioritizing Effectively</div>
-              <div class="notes-row-date">24 Jul 2026</div>
-            </div>
-            <div class="notes-row">
-              <div class="notes-row-title">Being Resilient</div>
-              <div class="notes-row-date">18 Jul 2026</div>
-            </div>
-            <div class="notes-row">
-              <div class="notes-row-title">Demonstrating Credibility</div>
-              <div class="notes-row-date">14 Jul 2026</div>
-            </div>
-            <div class="notes-row">
-              <div class="notes-row-title">Attuned Listening</div>
-              <div class="notes-row-date">9 Jul 2026</div>
-            </div>
+            <!-- Real rows only -- Kriti's explicit call, 2026-09-08: one row
+                 per Learning Recall the user actually has, filled in by
+                 loadMyNotes() below. No fake/placeholder rows. -->
+            <div id="notesRows"><div class="notif-empty">Loading…</div></div>
           </div>
         </div>
         <div class="icon-item" id="assessHistoryItem">
@@ -1007,7 +1152,7 @@ header.topbar { background:var(--night); }
           </a>
           <span class="icon-tooltip">My Profile</span>
           <div class="profile-dropdown" id="profileDropdown">
-            <a href="#">My Profile</a>
+            <a href="#" onclick="openMyProfileOverlay(event)">My Profile</a>
             <button type="button" class="admin-row" id="adminViewRow" onclick="window.location.href='admin.html'" style="display:none">Admin view</button>
             <button type="button" class="logout-row" onclick="logOut()">Log out</button>
           </div>
@@ -1269,6 +1414,7 @@ function initSession() {
   loadHeroLearningRecs();
   loadSidePreviousConversations();
   checkNotificationBadge();
+  loadMyNotes();
 }
 
 // ─── PROFILE DROPDOWN / "COMING SOON" ──────────────────────────────────────
@@ -1279,6 +1425,249 @@ function toggleNotifications(e) {
 function toggleProfileMenu(e) {
   e.preventDefault(); e.stopPropagation();
   document.getElementById('profileDropdown').classList.toggle('open');
+}
+
+// ================= MY PROFILE =================
+// Wired 2026-09-08 -- real data from user_management's /api/my-profile*
+// endpoints, no placeholders. Same overlay shell (.progress-overlay/
+// .progress-modal) as My Learning Progress/Assessment History -- only
+// #myProfileBody's inner content is new, built fresh on every open so it
+// never shows stale data from a previous open.
+const MYPROFILE_WORD_LIMIT = 250;
+
+function openMyProfileOverlay(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  document.getElementById('profileDropdown').classList.remove('open');
+  document.getElementById('myProfileOverlay').classList.add('open');
+  loadMyProfileOverlay();
+}
+
+function closeMyProfileOverlay() {
+  document.getElementById('myProfileOverlay').classList.remove('open');
+}
+
+function _myProfileSkeletonHtml() {
+  return `
+    <div class="myprofile-photo-row">
+      <div class="myprofile-photo-circle" id="mpPhotoCircle"><span id="mpPhotoInitial"></span><img id="mpPhotoImg" alt="Profile photo"></div>
+      <div class="myprofile-photo-actions">
+        <button class="myprofile-photo-btn" type="button" id="mpPhotoBtn" onclick="document.getElementById('mpPhotoFile').click()">Change Photo</button>
+        <input type="file" id="mpPhotoFile" accept="image/png,image/jpeg" style="display:none" onchange="myProfilePhotoSelected(this)">
+        <div class="myprofile-photo-note">JPEG or PNG, up to 500KB. Automatically resized to a small square -- no need to crop it yourself.</div>
+      </div>
+    </div>
+
+    <div class="myprofile-section">
+      <div class="myprofile-section-title">Basic Info</div>
+      <div class="myprofile-info-grid">
+        <div class="myprofile-info-cell"><div class="myprofile-info-label">Name</div><div class="myprofile-info-value" id="mpName"></div></div>
+        <div class="myprofile-info-cell"><div class="myprofile-info-label">Designation</div><div class="myprofile-info-value" id="mpDesignation"></div></div>
+        <div class="myprofile-info-cell"><div class="myprofile-info-label">Department</div><div class="myprofile-info-value" id="mpDepartment"></div></div>
+        <div class="myprofile-info-cell"><div class="myprofile-info-label">Company</div><div class="myprofile-info-value" id="mpCompany"></div></div>
+        <div class="myprofile-info-cell"><div class="myprofile-info-label">Country</div><div class="myprofile-info-value" id="mpCountry"></div></div>
+        <div class="myprofile-info-cell"><div class="myprofile-info-label">Your Manager's Name</div><div class="myprofile-info-value" id="mpManager"></div></div>
+      </div>
+    </div>
+
+    <div class="myprofile-section">
+      <div class="myprofile-section-title">About You <span class="myprofile-optional-tag">Optional</span></div>
+      <div class="myprofile-optional-row">
+        <div class="myprofile-optional-cell">
+          <label>Pronouns</label>
+          <input type="text" id="mpPronouns" placeholder="e.g. she/her">
+        </div>
+      </div>
+    </div>
+
+    <div class="myprofile-section">
+      <div class="myprofile-section-title">Help Us Understand You Better</div>
+
+      <div class="myprofile-question-box">
+        <div class="myprofile-admin-field-label">Your Job Description <span class="myprofile-optional-tag">Set by your admin, read only</span></div>
+        <div class="myprofile-admin-field-value" id="mpAdminJobDescription"></div>
+        <div class="myprofile-admin-field-hint">If this looks wrong or out of date, reach out to your admin to have it corrected -- you can't edit it here.</div>
+
+        <div class="myprofile-question-label" style="margin-top:0.9rem;">About Me</div>
+        <div class="myprofile-question-sub">Tell us a little about your role, what you do, and anything that would help Wisdom on the Go understand your world better.</div>
+        <textarea id="mpAboutMe" data-limit="250" placeholder="Type here..." oninput="_myProfileUpdateWordCount('mpAboutMe','mpAboutMeCount')"></textarea>
+        <div class="myprofile-word-count" id="mpAboutMeCount">0 / 250 words</div>
+      </div>
+
+      <div class="myprofile-question-box">
+        <div class="myprofile-question-label">What are you currently trying to get better at at work?</div>
+        <div class="myprofile-question-sub">Tell us about a goal, challenge, new responsibility, or something you'd simply like to handle better.</div>
+        <textarea id="mpGrowthGoal" data-limit="250" placeholder="Type here..." oninput="_myProfileUpdateWordCount('mpGrowthGoal','mpGrowthGoalCount')"></textarea>
+        <div class="myprofile-word-count" id="mpGrowthGoalCount">0 / 250 words</div>
+      </div>
+
+      <div class="myprofile-save-row">
+        <span class="myprofile-save-status" id="mpSaveStatus"></span>
+        <button class="myprofile-save-btn" type="button" id="mpSaveBtn" onclick="saveMyProfileAnswers()">Save</button>
+      </div>
+    </div>
+
+    <div class="myprofile-section">
+      <div class="myprofile-section-title">Assigned to You <span class="myprofile-optional-tag">Read only</span></div>
+      <div class="myprofile-assigned-grid">
+        <div class="myprofile-assigned-card">
+          <h3>Skills / Reflectors Assigned</h3>
+          <ul id="mpSkillsList"></ul>
+        </div>
+        <div class="myprofile-assigned-card">
+          <h3>Strategic Learning Goals Assigned</h3>
+          <div class="myprofile-assigned-empty">Nothing assigned yet.</div>
+        </div>
+        <div class="myprofile-assigned-card">
+          <h3>Competencies Assigned</h3>
+          <div class="myprofile-assigned-empty">Nothing assigned yet.</div>
+        </div>
+        <div class="myprofile-assigned-card">
+          <h3>Learning Initiatives Assigned</h3>
+          <div class="myprofile-assigned-empty">Nothing assigned yet.</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function _myProfileUpdateWordCount(textareaId, counterId) {
+  const box = document.getElementById(textareaId);
+  const counter = document.getElementById(counterId);
+  const words = box.value.trim().split(/\s+/).filter(Boolean);
+  const count = words.length;
+  counter.textContent = count + ' / ' + MYPROFILE_WORD_LIMIT + ' words';
+  counter.classList.toggle('over', count > MYPROFILE_WORD_LIMIT);
+}
+
+async function loadMyProfileOverlay() {
+  const body = document.getElementById('myProfileBody');
+  body.innerHTML = '<div class="notif-empty">Loading…</div>';
+  try {
+    const res = await fetch(`${USER_MGMT_BASE}/api/my-profile?user_id=${encodeURIComponent(userId)}`);
+    if (!res.ok) throw new Error('Could not load profile');
+    const p = await res.json();
+
+    body.innerHTML = _myProfileSkeletonHtml();
+
+    document.getElementById('mpName').textContent = p.name || '';
+    document.getElementById('mpDesignation').textContent = p.designation || '--';
+    document.getElementById('mpDepartment').textContent = p.department || '--';
+    document.getElementById('mpCompany').textContent = p.company || '--';
+    document.getElementById('mpCountry').textContent = p.country || '--';
+    document.getElementById('mpManager').textContent = p.manager_name || '--';
+    document.getElementById('mpPronouns').value = p.pronouns || '';
+    document.getElementById('mpAdminJobDescription').textContent = p.admin_job_description || 'Not set yet -- reach out to your admin.';
+    document.getElementById('mpAboutMe').value = p.about_me || '';
+    document.getElementById('mpGrowthGoal').value = p.growth_goal || '';
+    _myProfileUpdateWordCount('mpAboutMe', 'mpAboutMeCount');
+    _myProfileUpdateWordCount('mpGrowthGoal', 'mpGrowthGoalCount');
+
+    const initial = document.getElementById('mpPhotoInitial');
+    const img = document.getElementById('mpPhotoImg');
+    if (p.photo_base64) {
+      img.src = 'data:image/jpeg;base64,' + p.photo_base64;
+      img.classList.add('has-photo');
+      initial.textContent = '';
+    } else {
+      img.classList.remove('has-photo');
+      initial.textContent = (p.name || '?').trim().charAt(0).toUpperCase();
+    }
+
+    const skillsList = document.getElementById('mpSkillsList');
+    const skills = p.skills_assigned || [];
+    if (skills.length === 0) {
+      const li = document.createElement('li');
+      li.className = 'myprofile-assigned-empty';
+      li.textContent = 'Nothing assigned yet.';
+      skillsList.appendChild(li);
+    } else {
+      skills.forEach(function(s) {
+        const li = document.createElement('li');
+        li.textContent = s.assigned_by ? `${s.skill} — assigned by ${s.assigned_by}` : s.skill;
+        skillsList.appendChild(li);
+      });
+    }
+  } catch (err) {
+    body.innerHTML = '<div class="notif-empty">Could not load your profile. Please try again.</div>';
+  }
+}
+
+async function saveMyProfileAnswers() {
+  const aboutMe = document.getElementById('mpAboutMe').value;
+  const growthGoal = document.getElementById('mpGrowthGoal').value;
+  const pronouns = document.getElementById('mpPronouns').value;
+  const statusEl = document.getElementById('mpSaveStatus');
+  const btn = document.getElementById('mpSaveBtn');
+
+  const aboutMeWords = aboutMe.trim().split(/\s+/).filter(Boolean).length;
+  const growthGoalWords = growthGoal.trim().split(/\s+/).filter(Boolean).length;
+  if (aboutMeWords > MYPROFILE_WORD_LIMIT || growthGoalWords > MYPROFILE_WORD_LIMIT) {
+    statusEl.textContent = `Please keep each answer to ${MYPROFILE_WORD_LIMIT} words or fewer.`;
+    statusEl.className = 'myprofile-save-status error';
+    return;
+  }
+
+  btn.disabled = true;
+  statusEl.textContent = 'Saving…';
+  statusEl.className = 'myprofile-save-status';
+  try {
+    const requests = [
+      fetch(`${USER_MGMT_BASE}/api/my-profile/about-me`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, about_me: aboutMe }),
+      }),
+      fetch(`${USER_MGMT_BASE}/api/my-profile/growth-goal`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, growth_goal: growthGoal }),
+      }),
+      fetch(`${USER_MGMT_BASE}/api/my-profile/pronouns`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, pronouns: pronouns }),
+      }),
+    ];
+    const responses = await Promise.all(requests);
+    const failed = responses.find(function(r) { return !r.ok; });
+    if (failed) throw new Error('Save failed');
+    statusEl.textContent = 'Saved';
+    statusEl.className = 'myprofile-save-status ok';
+  } catch (err) {
+    statusEl.textContent = 'Could not save -- please try again.';
+    statusEl.className = 'myprofile-save-status error';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function myProfilePhotoSelected(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (file.size > 500 * 1024) {
+    alert('That photo is too large -- please choose one under 500KB.');
+    input.value = '';
+    return;
+  }
+  const btn = document.getElementById('mpPhotoBtn');
+  btn.disabled = true;
+  btn.textContent = 'Uploading…';
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${USER_MGMT_BASE}/api/my-profile/photo?user_id=${encodeURIComponent(userId)}`, {
+      method: 'POST', body: formData,
+    });
+    if (!res.ok) throw new Error('Upload failed');
+    await loadMyProfileOverlay();
+  } catch (err) {
+    alert('Could not upload that photo -- please try again.');
+  } finally {
+    input.value = '';
+    const stillThere = document.getElementById('mpPhotoBtn');
+    if (stillThere) { stillThere.disabled = false; stillThere.textContent = 'Change Photo'; }
+  }
+}
+function toggleNotesDropdown(e) {
+  e.preventDefault(); e.stopPropagation();
+  document.getElementById('notesDropdown').classList.toggle('open');
 }
 let _comingSoonTimer = null;
 function comingSoon(e) {
@@ -1304,7 +1693,192 @@ document.addEventListener('click', function(e) {
   if (profileItem && !profileItem.contains(e.target)) {
     document.getElementById('profileDropdown').classList.remove('open');
   }
+  const notesItem = document.getElementById('notesItem');
+  if (notesItem && !notesItem.contains(e.target)) {
+    document.getElementById('notesDropdown').classList.remove('open');
+  }
 });
+
+// ─── MY NOTES: LEARNING RECALL DROPDOWN + LIGHTBOX -- added 2026-09-08 ─────
+// 2nd pass, 2026-09-08 -- "My Notes" now shows BOTH document types,
+// merged into one list (a session appears the moment EITHER is ready),
+// and clicking a row opens up to 2 connected pages: Learning Recall is
+// ALWAYS page 1, Application Commitment is ALWAYS page 2, whenever both
+// exist -- decided fresh from what's actually fetched each time this
+// opens, never from which one happened to load first. If only one
+// exists, that one shows alone, no arrows, no page count.
+//
+// currentPages holds whatever's showing in the lightbox right now (each
+// entry {blob, title}), so Download and the nav arrows reuse the already-
+// fetched images instead of asking the backend again.
+let currentPages = [];
+let currentPageIndex = 0;
+
+async function loadMyNotes() {
+  const rowsEl = document.getElementById('notesRows');
+  try {
+    const email = await _getUserEmailForReports();
+    const res = await fetch(`${NOTIFICATION_BASE}/api/my-notes/list?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+    const documents = data.documents || [];
+    if (documents.length === 0) {
+      rowsEl.innerHTML = '<div class="notif-empty">Nothing here yet.</div>';
+      return;
+    }
+    rowsEl.innerHTML = '';
+    documents.forEach(function(d) {
+      const row = document.createElement('div');
+      row.className = 'notes-row clickable';
+      const when = d.date ? new Date(d.date).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+      row.innerHTML = '<div class="notes-row-title"></div><div class="notes-row-date"></div>';
+      row.querySelector('.notes-row-title').textContent = d.title || 'Learning Atom';
+      row.querySelector('.notes-row-date').textContent = when;
+      row.onclick = function() { openNotesLightbox(d.session_id, d.title, d.has_recall, d.has_commitment); };
+      rowsEl.appendChild(row);
+    });
+  } catch (err) {
+    rowsEl.innerHTML = '<div class="notif-empty">Could not load your notes.</div>';
+  }
+}
+
+async function openNotesLightbox(sessionIdForDoc, title, hasRecall, hasCommitment) {
+  document.getElementById('notesDropdown').classList.remove('open');
+  const lightbox = document.getElementById('notesLightbox');
+  const img = document.getElementById('notesLightboxImg');
+  const downloadBtn = document.getElementById('notesLightboxDownload');
+  const prevBtn = document.getElementById('notesLightboxPrev');
+  const nextBtn = document.getElementById('notesLightboxNext');
+  const pagesEl = document.getElementById('notesLightboxPages');
+
+  _revokeCurrentPages();
+  currentPages = [];
+  currentPageIndex = 0;
+  img.src = '';
+  downloadBtn.disabled = true;
+  prevBtn.hidden = true;
+  nextBtn.hidden = true;
+  pagesEl.hidden = true;
+
+  if (!hasRecall && !hasCommitment) return;  // nothing to open at all
+  lightbox.classList.add('open');
+
+  const email = await _getUserEmailForReports();
+
+  // "recall" and "commitment" load and render COMPLETELY independently --
+  // rewritten 2026-09-09, Kriti's explicit, repeated correction: a session
+  // may genuinely never have a commitment page at all, and even when it
+  // does, Commitment is built fresh every time (real seconds-long work)
+  // while Recall is just a cached read (near-instant) -- the old version
+  // used Promise.all, which held BOTH back until the slower one finished,
+  // so a fast, ready Recall page sat hidden behind a slow Commitment
+  // build. Now: whichever settles first (with real content) shows
+  // immediately; if the other arrives later, it's added in place -- new
+  // page, nav arrow appears -- without disturbing what's already on
+  // screen. If one path was never requested (hasRecall/hasCommitment
+  // false) or comes back empty, nothing ever waits on it.
+  const slots = { recall: null, commitment: null };
+  const pending = { recall: hasRecall, commitment: hasCommitment };
+
+  function _rerenderLightbox(keepKind) {
+    currentPages = ['recall', 'commitment']
+      .map(function(k) { return slots[k]; })
+      .filter(function(p) { return p; });
+    if (currentPages.length === 0) {
+      if (!pending.recall && !pending.commitment) {
+        closeNotesLightbox();
+        appendError('Could not load that -- please try again.');
+      }
+      return;  // still waiting on at least one -- show nothing yet, don't error
+    }
+    let idx = 0;
+    if (keepKind) {
+      const found = currentPages.findIndex(function(p) { return p.kind === keepKind; });
+      if (found !== -1) idx = found;
+    }
+    showLightboxPage(idx);
+  }
+
+  function _settleLightboxSlot(kind, page) {
+    pending[kind] = false;
+    slots[kind] = page;
+    const currentKind = currentPages[currentPageIndex] ? currentPages[currentPageIndex].kind : null;
+    _rerenderLightbox(currentKind);
+  }
+
+  if (hasRecall) {
+    fetch(`${NOTIFICATION_BASE}/api/learning-recall/image?session_id=${encodeURIComponent(sessionIdForDoc)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`)
+      .then(function(res) { return res.ok ? res.blob() : null; })
+      .then(function(blob) { _settleLightboxSlot('recall', blob ? { blob: blob, title: title || 'Learning Recall', kind: 'recall' } : null); })
+      .catch(function() { _settleLightboxSlot('recall', null); });
+  }
+  if (hasCommitment) {
+    fetch(`${NOTIFICATION_BASE}/api/application-commitment/image?session_id=${encodeURIComponent(sessionIdForDoc)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`)
+      .then(function(res) { return res.ok ? res.blob() : null; })
+      .then(function(blob) { _settleLightboxSlot('commitment', blob ? { blob: blob, title: 'My Commitment', kind: 'commitment' } : null); })
+      .catch(function() { _settleLightboxSlot('commitment', null); });
+  }
+}
+
+function showLightboxPage(index) {
+  if (index < 0 || index >= currentPages.length) return;
+  currentPageIndex = index;
+  const page = currentPages[index];
+  const img = document.getElementById('notesLightboxImg');
+  const downloadBtn = document.getElementById('notesLightboxDownload');
+  const prevBtn = document.getElementById('notesLightboxPrev');
+  const nextBtn = document.getElementById('notesLightboxNext');
+  const pagesEl = document.getElementById('notesLightboxPages');
+
+  img.alt = page.title;
+  img.src = URL.createObjectURL(page.blob);
+  downloadBtn.disabled = false;
+
+  const multiPage = currentPages.length > 1;
+  prevBtn.hidden = !multiPage;
+  nextBtn.hidden = !multiPage;
+  pagesEl.hidden = !multiPage;
+  if (multiPage) {
+    prevBtn.disabled = index === 0;
+    nextBtn.disabled = index === currentPages.length - 1;
+    pagesEl.textContent = (index + 1) + ' / ' + currentPages.length;
+  }
+}
+
+function _revokeCurrentPages() {
+  // The lightbox <img> itself already holds one object URL at a time --
+  // this only needs to clean up when pages are discarded wholesale
+  // (closing, or opening a different document) so the browser doesn't
+  // slowly accumulate blob URLs across a long session.
+  const img = document.getElementById('notesLightboxImg');
+  if (img && img.src) { try { URL.revokeObjectURL(img.src); } catch (e) {} }
+}
+
+function closeNotesLightbox(e) {
+  if (e) e.preventDefault();
+  document.getElementById('notesLightbox').classList.remove('open');
+  _revokeCurrentPages();
+  document.getElementById('notesLightboxImg').src = '';
+  currentPages = [];
+  currentPageIndex = 0;
+}
+
+function downloadCurrentPage() {
+  const page = currentPages[currentPageIndex];
+  if (!page) return;
+  // Fetched as a blob rather than using a plain <a href download> on the
+  // backend's own URL -- the image comes from a different domain than this
+  // page, and cross-origin download links are unreliable across browsers.
+  // A blob object-URL downloads correctly regardless of origin.
+  const safeName = (page.title || 'wotg-document').replace(/[^a-zA-Z0-9-_]+/g, '-');
+  const blobUrl = URL.createObjectURL(page.blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = safeName + '.png';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(blobUrl);
+}
 
 // ─── HERO: LEARNING RECOMMENDATIONS (real assigned skills) ─────────────────
 function _renderHeroEmpty(message) {
@@ -1619,7 +2193,14 @@ async function handleBackendResult(result) {
     return;
   }
 
-  if (result.session_complete || TERMINAL_PHASES.includes(currentPhase)) {
+  if (isTrainerClosingPlusFeedback) {
+    // Added 2026-09-08: this pair is now [closing text, "So what, now
+    // what?" prompt] -- not the old [closing text, feedback link]. Render
+    // the commitment form instead of locking immediately; the real lock
+    // now happens inside submitApplicationCommitment, once the user
+    // actually answers it.
+    renderApplicationCommitmentForm({ suppressScroll: holdScrollForPair });
+  } else if (result.session_complete || TERMINAL_PHASES.includes(currentPhase)) {
     lockConversationEnded(holdScrollForPair);
   }
 }
@@ -1692,6 +2273,7 @@ function renderDriverDiagnosisForm(form, opts) {
     q.options.forEach(function(optText) {
       const btn = document.createElement('button');
       btn.type = 'button';
+      btn.className = 'driver-option-btn';
       btn.textContent = optText;
       btn.style.cssText = 'display:block;width:100%;text-align:left;margin-bottom:0.4rem;padding:0.55rem 0.8rem;' +
         'background:var(--grey1);border:1px solid rgba(22,32,46,0.1);border-radius:4px;color:var(--night2);' +
@@ -1714,6 +2296,7 @@ function renderDriverDiagnosisForm(form, opts) {
 
   const submitBtn = document.createElement('button');
   submitBtn.type = 'button';
+  submitBtn.id = 'driverSubmitBtn';
   submitBtn.textContent = 'Submit answers';
   submitBtn.disabled = true;
   submitBtn.style.cssText = 'margin-top:0.5rem;padding:0.6rem 1.4rem;background:var(--green);border:none;' +
@@ -1734,8 +2317,22 @@ function renderDriverDiagnosisForm(form, opts) {
 }
 
 async function submitDriverDiagnosisForm(answers) {
+  // Kriti's explicit call, 2026-09-08: the whole card used to vanish on
+  // submit (row.remove()), so there was no way to scroll back and see what
+  // was asked or what was answered. Now the questions + the selected
+  // answer stay in the chat history permanently -- only the Submit button
+  // disappears (re-submission/changing an answer is never allowed), and the
+  // option buttons are disabled in place so the highlighted selection is
+  // still visible but no longer clickable.
   const row = document.getElementById('driverFormRow');
-  if (row) row.remove();
+  const submitBtn = document.getElementById('driverSubmitBtn');
+  if (row) {
+    Array.from(row.querySelectorAll('.driver-option-btn')).forEach(function(b) {
+      b.disabled = true;
+      b.style.cursor = 'default';
+    });
+  }
+  if (submitBtn) submitBtn.remove();
   pendingForm = null;
 
   isWaiting = true;
@@ -1756,6 +2353,99 @@ async function submitDriverDiagnosisForm(answers) {
   if (!sessionEnded) {
     document.getElementById('chatInput').disabled = false;
     document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+// ─── "SO WHAT, NOW WHAT?" APPLICATION COMMITMENT -- added 2026-09-08 ───────
+// Shown the instant training completes, instead of the old auto-shown
+// feedback-link message (see backend's training_loop.py). Same
+// render-a-form-row-into-the-chat-stream pattern as
+// renderDriverDiagnosisForm above, deliberately NOT the main bottom chat
+// input -- the main input is about to get disabled by lockConversationEnded
+// once this form's own submission finishes, same as every other terminal
+// ending. The real feedback-link message only appears after Submit.
+function renderApplicationCommitmentForm(opts) {
+  removeWelcome();
+  const area = document.getElementById('chatMessages');
+  const shouldScroll = !(opts && opts.suppressScroll) && isNearBottom();
+
+  const wrap = document.createElement('div');
+  wrap.className = 'msg';
+  wrap.id = 'applicationCommitmentRow';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+
+  const card = document.createElement('div');
+  card.className = 'msg-bubble bubble-ai';
+  card.style.maxWidth = '100%';
+
+  const textarea = document.createElement('textarea');
+  textarea.rows = 3;
+  textarea.placeholder = 'Type your answer here...';
+  textarea.style.cssText = 'width:100%;box-sizing:border-box;margin-top:0.3rem;padding:0.55rem 0.7rem;' +
+    'background:var(--grey1);border:1px solid rgba(22,32,46,0.1);border-radius:4px;color:var(--night2);' +
+    'font-family:Poppins,sans-serif;font-size:0.85rem;resize:vertical;';
+
+  const submitBtn = document.createElement('button');
+  submitBtn.type = 'button';
+  submitBtn.textContent = 'Submit';
+  submitBtn.disabled = true;
+  submitBtn.style.cssText = 'display:block;margin-top:0.6rem;padding:0.6rem 1.4rem;background:var(--green);' +
+    'border:none;border-radius:20px;color:#fff;font-family:Poppins,sans-serif;font-size:0.85rem;' +
+    'font-weight:600;cursor:pointer;opacity:0.5;';
+
+  // Non-empty is the only bar, Kriti's explicit call -- gibberish is fine,
+  // it just can't be blank. Same rule enforced again server-side in
+  // training_loop.submit_application_commitment, not just trusted from here.
+  textarea.oninput = function() {
+    const hasText = textarea.value.trim().length > 0;
+    submitBtn.disabled = !hasText;
+    submitBtn.style.opacity = hasText ? '1' : '0.5';
+  };
+  submitBtn.onclick = function() { submitApplicationCommitment(textarea.value); };
+
+  card.appendChild(textarea);
+  card.appendChild(submitBtn);
+  wrap.appendChild(avatar);
+  wrap.appendChild(card);
+  area.appendChild(wrap);
+  if (shouldScroll) scrollMessagesToBottom();
+  return wrap;
+}
+
+async function submitApplicationCommitment(commitmentText) {
+  // Deliberately NOT removed until success (unlike submitDriverDiagnosisForm's
+  // row, which the FSM can recover from elsewhere) -- this is the one and
+  // only path to the real feedback link, so a failed request has to leave
+  // the form in place for a retry, not strand the user with nothing to click.
+  const row = document.getElementById('applicationCommitmentRow');
+  const textarea = row ? row.querySelector('textarea') : null;
+  const submitBtn = row ? row.querySelector('button') : null;
+  if (textarea) textarea.disabled = true;
+  if (submitBtn) submitBtn.disabled = true;
+
+  showTyping(currentPhase);
+  try {
+    const result = await apiPost('/api/training/commitment', {
+      user_id: userId, session_id: sessionId, commitment_text: commitmentText,
+    });
+    removeTyping();
+    if (row) row.remove();
+    const messages = result.messages || [];
+    if (messages[0]) appendMessage('ai', messages[0]);
+    // The real end of the conversation -- same lock every other terminal
+    // ending already uses, just deferred until this step actually succeeds.
+    lockConversationEnded(false);
+  } catch (err) {
+    removeTyping();
+    if (textarea) textarea.disabled = false;
+    if (submitBtn) submitBtn.disabled = false;
+    appendError('Something went wrong sending that -- please try again.');
   }
 }
 
