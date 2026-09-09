@@ -258,7 +258,29 @@ header.topbar { background:var(--night); }
 .cmsg-name { font-size:0.68rem; color:var(--grey3); margin-bottom:0.2rem; }
 .cmsg-user .cmsg-name { text-align:right; }
 .typing-row { display:flex; gap:0.65rem; align-items:center; }
-.typing-indicator { display:flex; align-items:center; gap:4px; padding:0.7rem 1rem; background:var(--grey1); border:1px solid rgba(22,32,46,0.08); border-radius:4px; }
+/* Fixed 2026-09-09, Kriti's explicit call ("the font on those thinking
+   words is so massive") -- this span had no CSS rule at all, so it was
+   just inheriting the page's default size instead of matching the
+   actual chat text. 0.86rem matches .msg-bubble's own font-size exactly,
+   so the "thinking" word reads as part of the same conversation, not a
+   stray oversized label. */
+/* Redone 2026-09-09, 2nd pass, Kriti's explicit call: still too large, and
+   the boxed/bordered background around the dots shouldn't be there at
+   all -- match the plain, minimal look of a CLI "thinking" indicator
+   instead (her reference: this same tool's own VSCode extension). Dots
+   now come first, the word underneath, no box. */
+/* 3rd pass, 2026-09-09, Kriti's explicit call: 0.43rem read as too small --
+   match the timestamp's own 0.68rem exactly (.msg-meta below) instead of
+   guessing at a size. */
+.typing-word { display:block; font-size:0.68rem; color:var(--grey3); margin-top:0.3rem; }
+/* The avatar thumbnail sits at .msg's own align-items:flex-start (top-
+   aligned, correct for a tall multi-line reply bubble) -- but the typing
+   row's own content (dots + word, stacked) is shorter than the avatar,
+   so top-aligning it made the dots sit noticeably above the avatar's
+   center. Scoped to #typingRow only, so real message bubbles keep their
+   own top alignment untouched. */
+#typingRow { align-items:center; }
+.typing-indicator { display:flex; align-items:center; gap:4px; }
 .typing-indicator span { width:6px; height:6px; background:var(--green); border-radius:50%; opacity:0.4; animation:typingDot 1.2s ease-in-out infinite; }
 .typing-indicator span:nth-child(2) { animation-delay:0.2s; }
 .typing-indicator span:nth-child(3) { animation-delay:0.4s; }
@@ -905,7 +927,7 @@ header.topbar { background:var(--night); }
 .chat-messages .msg-meta { font-size:0.68rem; color:var(--grey3); margin-bottom:0.2rem; margin-top:0.2rem; }
 .chat-messages .msg.msg-user .msg-meta { text-align:right; }
 .chat-messages .typing-row { display:flex; gap:0.65rem; align-items:center; }
-.chat-messages .typing-indicator { display:flex; align-items:center; gap:4px; padding:0.7rem 1rem; background:var(--grey1); border:1px solid rgba(22,32,46,0.08); border-radius:4px; }
+.chat-messages .typing-indicator { display:flex; align-items:center; gap:4px; }
 .chat-messages .typing-indicator span { width:6px; height:6px; background:var(--green); border-radius:50%; opacity:0.4; animation:typingDot 1.2s ease-in-out infinite; }
 .chat-messages .typing-indicator span:nth-child(2) { animation-delay:0.2s; }
 .chat-messages .typing-indicator span:nth-child(3) { animation-delay:0.4s; }
@@ -1429,7 +1451,16 @@ let typingWordInterval = null;
 
 function computeInitials(name) {
   if (!name) return 'U';
-  return name.trim().split(/\s+/).map(function(w){ return w[0].toUpperCase(); }).join('');
+  // Fixed 2026-09-09, Kriti's explicit call -- names carrying pronouns
+  // arrive here as "Kriti (She/Her)" style (same combined format used
+  // everywhere else). Without stripping the parenthetical first,
+  // splitting on whitespace treated "(She/Her)" as a second word and
+  // grabbed its own first character -- the literal "(" -- as the second
+  // initial, producing "K(" instead of "K". Same trailing-parenthetical
+  // strip as the backend's own _strip_pronouns().
+  const stripped = name.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  if (!stripped) return 'U';
+  return stripped.split(/\s+/).map(function(w){ return w[0].toUpperCase(); }).join('');
 }
 
 function initSession() {
@@ -3050,6 +3081,19 @@ function appendError(text) {
 }
 
 const PHASE_WORDS = {
+  // Added 2026-09-09, Kriti's explicit call: showTyping('opening') was
+  // already being called (see the /api/opening/message call site below),
+  // but with no 'opening' key here, the `if (words)` check in showTyping()
+  // silently skipped the word span entirely -- just the bare dots showed,
+  // for what can be a genuinely long wait (a handoff turn chains straight
+  // into Diagnosis/reflector actors, ~15-20+ real seconds). Same fix,
+  // just filling in the one phase that was missing it.
+  opening: [
+    'Getting to know you…', 'Understanding your world…', 'Picking up the context…',
+    'Getting the picture…', 'Connecting the dots…',
+    'Getting us started…', 'Thinking that through…', 'Comprehending…',
+    'Seeing your perspective…', 'Hearing you…', 'Following the signal…', 'Considering…',
+  ],
   diagnosis: [
     'Interpreting…', 'Finding the clues…', 'Making notes…', 'Checking the signal…',
     'Thinking that through…', 'Connecting the dots…', 'Weighing what matters…',
@@ -3086,6 +3130,14 @@ function showTyping(phase) {
   const wrap = document.createElement('div');
   wrap.className = 'typing-wrap';
 
+  // Dots first, word underneath -- reordered 2026-09-09, Kriti's explicit
+  // call (matches this same tool's own CLI "thinking" indicator: dots on
+  // top, small label below, no box around it).
+  const indicator = document.createElement('div');
+  indicator.className = 'typing-indicator';
+  indicator.innerHTML = '<span></span><span></span><span></span>';
+  wrap.appendChild(indicator);
+
   const words = PHASE_WORDS[phase];
   if (words) {
     const wordEl = document.createElement('span');
@@ -3098,11 +3150,6 @@ function showTyping(phase) {
     }, WORD_CYCLE_MS);
     wrap.appendChild(wordEl);
   }
-
-  const indicator = document.createElement('div');
-  indicator.className = 'typing-indicator';
-  indicator.innerHTML = '<span></span><span></span><span></span>';
-  wrap.appendChild(indicator);
 
   row.appendChild(avatar);
   row.appendChild(wrap);
