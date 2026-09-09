@@ -128,15 +128,26 @@ header.topbar { background:var(--night); }
   position:absolute; top:48px; right:0; width:260px; z-index:500;
   background:var(--white); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.25);
   padding:0.4rem; display:none;
+  /* Capped 2026-09-09, Kriti's explicit call: this list had no ceiling at
+     all, so with ~9-10 real documents it was running the full height of
+     her laptop screen. 66vh = 2/3 of the viewport height, whatever that
+     screen's height actually is (not a fixed px number, so it scales
+     correctly across screen sizes) -- height only, width untouched.
+     Scrolls internally once content exceeds that. */
+  max-height:66vh; overflow-y:auto;
 }
 .notes-dropdown.open { display:block; animation:notifSlide 0.2s ease; }
 .notes-row {
-  padding:0.65rem 0.8rem; border-radius:6px; text-align:left;
-  border-left:4px solid transparent; margin-bottom:0.15rem;
+  /* Shrunk 2026-09-09, Kriti's explicit call: with 9-10 real documents
+     the list was running off the bottom of her laptop screen -- vertical
+     padding/margins reduced only, horizontal untouched ("not the width,
+     just the height"). */
+  padding:0.35rem 0.8rem; border-radius:6px; text-align:left;
+  border-left:4px solid transparent; margin-bottom:0.08rem;
 }
 .notes-row:last-child { margin-bottom:0; }
-.notes-row-title { font-size:0.83rem; color:var(--grey3); font-weight:500; }
-.notes-row-date { font-size:0.7rem; color:var(--grey3); opacity:0.7; margin-top:0.1rem; }
+.notes-row-title { font-size:0.75rem; color:var(--grey3); font-weight:500; }
+.notes-row-date { font-size:0.62rem; color:var(--grey3); opacity:0.7; margin-top:0.05rem; }
 .notes-row.clickable { cursor:pointer; border-left-color:var(--green); background:rgba(58,181,74,0.06); }
 .notes-row.clickable .notes-row-title { color:var(--night); font-weight:600; }
 .notes-row.clickable .notes-row-date { color:var(--green2); opacity:1; }
@@ -410,6 +421,12 @@ header.topbar { background:var(--night); }
   border-radius:50%; background:rgba(10,15,22,0.55); color:#fff; border:none;
   font-size:1.3rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
 }
+/* Fix, 2026-09-09: the [hidden] attribute JS sets on this button was never
+   actually hiding it -- the browser's own default "[hidden] -> display:none"
+   is the lowest-priority rule it has, so the plain "display:flex" above
+   (an ordinary author rule, same specificity) silently won regardless of
+   [hidden]'s true/false state. This explicit rule forces it. */
+.notes-lightbox-nav[hidden] { display:none; }
 .notes-lightbox-nav:hover { background:rgba(10,15,22,0.8); }
 .notes-lightbox-nav:disabled { opacity:0.3; cursor:default; }
 .notes-lightbox-nav.prev { left:-60px; }
@@ -436,6 +453,24 @@ header.topbar { background:var(--night); }
      bottom:-52px) so the two never overlap. */
   position:absolute; bottom:-86px; left:50%; transform:translateX(-50%);
   color:#fff; font-family:'Poppins',sans-serif; font-size:0.8rem; opacity:0.85;
+}
+/* Added 2026-09-09, Kriti's explicit call -- a session's 2nd page (the
+   Commitment card) can take a real few seconds to build even once fast,
+   and there was nothing at all telling the viewer that a fetch was still
+   in flight -- a working-but-slow load looked identical to a broken
+   click. Same slot as .notes-lightbox-pages above (bottom:-86px) --
+   the two are mutually exclusive by construction: this only ever shows
+   while a 2nd page is still pending, and the page-count only ever shows
+   once BOTH pages have already settled, so they can never appear
+   together. */
+.notes-lightbox-loading-more {
+  position:absolute; bottom:-86px; left:50%; transform:translateX(-50%);
+  color:#fff; font-family:'Poppins',sans-serif; font-size:0.8rem; opacity:0.85;
+  animation:notesLoadingMorePulse 1.4s ease-in-out infinite;
+}
+@keyframes notesLoadingMorePulse {
+  0%, 100% { opacity:0.5; }
+  50% { opacity:0.95; }
 }
 .notes-lightbox-download {
   position:absolute; bottom:-52px; left:50%; transform:translateX(-50%);
@@ -822,14 +857,21 @@ header.topbar { background:var(--night); }
   padding:0.4rem; display:none;
 }
 .profile-dropdown.open { display:block; animation:notifSlide 0.2s ease; }
+/* Kriti's explicit call, 2026-09-09: match the same "colored accent box"
+   design My Notes already uses (border-left:4px + tinted background,
+   deeper tint on hover) -- gold/brand-gold instead of green, since this
+   is a different menu, not color-coded by row "importance" (Admin
+   view/Log out no longer get their own green/red -- every row is the
+   same gold now). */
 .profile-dropdown a, .profile-dropdown button {
-  display:block; width:100%; text-align:left; background:none; border:none;
+  display:block; width:100%; text-align:left; background:rgba(228,202,10,0.08);
+  border:none; border-left:4px solid var(--gold);
   font-family:'Poppins',sans-serif; padding:0.65rem 0.8rem; border-radius:6px;
   font-size:0.83rem; color:var(--night2); text-decoration:none; cursor:pointer;
+  margin-bottom:0.15rem;
 }
-.profile-dropdown a:hover, .profile-dropdown button:hover { background:rgba(58,181,74,0.08); color:var(--night); }
-.profile-dropdown .admin-row { color:var(--green2); font-weight:600; }
-.profile-dropdown .logout-row { color:#c9302c; }
+.profile-dropdown a:last-child, .profile-dropdown button:last-child { margin-bottom:0; }
+.profile-dropdown a:hover, .profile-dropdown button:hover { background:rgba(228,202,10,0.16); color:var(--night); }
 
 /* ---- Real Learning Nudge notification + Conversation History -- Kriti's
    explicit call, 2026-08-27: must look like the SAME box as the live chat,
@@ -995,6 +1037,7 @@ header.topbar { background:var(--night); }
     <button class="notes-lightbox-nav next" id="notesLightboxNext" onclick="event.stopPropagation(); showLightboxPage(currentPageIndex + 1);" hidden>&rarr;</button>
     <img id="notesLightboxImg" src="" alt="" onclick="event.stopPropagation()">
     <div class="notes-lightbox-pages" id="notesLightboxPages" hidden></div>
+    <div class="notes-lightbox-loading-more" id="notesLightboxLoadingMore" hidden>Loading page 2…</div>
   </div>
 </div>
 
@@ -1148,11 +1191,11 @@ header.topbar { background:var(--night); }
         </div>
         <div class="icon-item profile" id="profileItem">
           <a class="icon-btn" href="#" onclick="toggleProfileMenu(event)">
-            <img src="assets/profile_headshot.jpg" alt="Profile">
+            <img src="assets/profile_headshot.jpg" alt="Profile" id="headerProfilePhoto">
           </a>
           <span class="icon-tooltip">My Profile</span>
           <div class="profile-dropdown" id="profileDropdown">
-            <a href="#" onclick="openMyProfileOverlay(event)">My Profile</a>
+            <a href="#" onclick="openMyProfileOverlay(event)">View/Edit Profile</a>
             <button type="button" class="admin-row" id="adminViewRow" onclick="window.location.href='admin.html'" style="display:none">Admin view</button>
             <button type="button" class="logout-row" onclick="logOut()">Log out</button>
           </div>
@@ -1415,6 +1458,32 @@ function initSession() {
   loadSidePreviousConversations();
   checkNotificationBadge();
   loadMyNotes();
+  loadHeaderProfilePhoto();
+}
+
+// Fix, 2026-09-09: the header's own avatar (top-right icon) was a hardcoded
+// static image, never wired to the real uploaded photo at all -- only the
+// My Profile popup's own avatar was (see loadMyProfileOverlay). Kriti's
+// exact report: "it's showing in the profile pop up, but not on the main
+// page" -- confirmed, the header <img> had no id and nothing ever touched
+// it. Deliberately its own small, independent fetch (not a call into the
+// full loadMyProfileOverlay, which also rebuilds the whole popup body) --
+// same "keep components independent" pattern already used for My Notes.
+// Called once on page load, and again right after a successful upload
+// (see myProfilePhotoSelected) so the header updates immediately without
+// needing a refresh.
+async function loadHeaderProfilePhoto() {
+  const img = document.getElementById('headerProfilePhoto');
+  if (!img) return;
+  try {
+    const res = await fetch(`${USER_MGMT_BASE}/api/my-profile?user_id=${encodeURIComponent(userId)}`);
+    if (!res.ok) return;  // leave the static default in place
+    const p = await res.json();
+    if (p.photo_base64) img.src = 'data:image/jpeg;base64,' + p.photo_base64;
+  } catch (err) {
+    // leave the static default in place -- this is a header icon, not
+    // worth an error state of its own
+  }
 }
 
 // ─── PROFILE DROPDOWN / "COMING SOON" ──────────────────────────────────────
@@ -1749,6 +1818,7 @@ async function openNotesLightbox(sessionIdForDoc, title, hasRecall, hasCommitmen
   const prevBtn = document.getElementById('notesLightboxPrev');
   const nextBtn = document.getElementById('notesLightboxNext');
   const pagesEl = document.getElementById('notesLightboxPages');
+  const loadingMoreEl = document.getElementById('notesLightboxLoadingMore');
 
   _revokeCurrentPages();
   currentPages = [];
@@ -1758,6 +1828,7 @@ async function openNotesLightbox(sessionIdForDoc, title, hasRecall, hasCommitmen
   prevBtn.hidden = true;
   nextBtn.hidden = true;
   pagesEl.hidden = true;
+  loadingMoreEl.hidden = true;
 
   if (!hasRecall && !hasCommitment) return;  // nothing to open at all
   lightbox.classList.add('open');
@@ -1783,6 +1854,16 @@ async function openNotesLightbox(sessionIdForDoc, title, hasRecall, hasCommitmen
     currentPages = ['recall', 'commitment']
       .map(function(k) { return slots[k]; })
       .filter(function(p) { return p; });
+    // Real, visible "still working on it" state, added 2026-09-09, Kriti's
+    // explicit call: a working-but-slow 2nd-page fetch used to look
+    // identical to a broken one -- nothing on screen ever said a request
+    // was still in flight. Only shows once at least one page is already
+    // up (never before the lightbox has anything to show at all -- that
+    // case is the "Loading…" state the overlay markup itself already
+    // covers), and disappears the instant the other slot settles either
+    // way (success or failure) via the same currentPages/pending check.
+    const loadingMoreEl = document.getElementById('notesLightboxLoadingMore');
+    if (loadingMoreEl) loadingMoreEl.hidden = !((pending.recall || pending.commitment) && currentPages.length > 0);
     if (currentPages.length === 0) {
       if (!pending.recall && !pending.commitment) {
         closeNotesLightbox();
