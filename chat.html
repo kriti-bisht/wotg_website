@@ -2405,7 +2405,14 @@ async function handleBackendResult(result) {
     firstPairEl.scrollIntoView({ block: 'start' });
   }
 
-  if (currentPhase === 'reflector_identification' || currentPhase === 'driver_diagnosis_resolving' || currentPhase === 'content_creation' || currentPhase === 'rediagnosis') {
+  // Auto-continue is a Voluntary Opening mechanism only -- those phases run
+  // a "working on it" signpost then expect an empty follow-up call against
+  // API_BASE. The Learning Recommendations track has its own phase names
+  // ('real_situation_driver_diagnostics', 'scenario_driver_diagnostics',
+  // 'content_creation') where 'content_creation' is a terminal placeholder,
+  // NOT something to auto-continue -- and it would hit the wrong backend.
+  if (activeTrack === 'voluntary_opening' &&
+      (currentPhase === 'reflector_identification' || currentPhase === 'driver_diagnosis_resolving' || currentPhase === 'content_creation' || currentPhase === 'rediagnosis')) {
     showTyping(currentPhase);
     try {
       const nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
@@ -2575,7 +2582,22 @@ async function submitDriverDiagnosisForm(answers) {
 
   showTyping(currentPhase);
   try {
-    const result = await apiPost('/api/driver-diagnosis/submit', { user_id: userId, session_id: sessionId, answers: answers });
+    let result;
+    if (activeTrack === 'learning_recommendations') {
+      // Learning Recommendations track -- its own backend, its own
+      // endpoint, and it needs skill_name. One endpoint serves both the
+      // real-situation and scenario driver forms; the backend dispatches
+      // on the session's current phase.
+      const res = await fetch(`${LEARNING_RECS_BASE}/api/driver-diagnostics/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, session_id: sessionId, skill_name: activeSkillName, answers: answers }),
+      });
+      result = await res.json().catch(function(){ return {}; });
+      if (!res.ok) throw new Error(result.detail || 'Something went wrong sending your answers.');
+    } else {
+      result = await apiPost('/api/driver-diagnosis/submit', { user_id: userId, session_id: sessionId, answers: answers });
+    }
     removeTyping();
     await handleBackendResult(result);
   } catch (err) {
