@@ -2429,14 +2429,16 @@ function renderDriverDiagnosisForm(form, opts) {
       btn.type = 'button';
       btn.className = 'driver-option-btn';
       btn.textContent = optText;
+      // White, not --grey1 -- Kriti's call, 2026-09-10: grey options read as
+      // a dead/disabled box. Same fix as the nudge form + commitment box.
       btn.style.cssText = 'display:block;width:100%;text-align:left;margin-bottom:0.4rem;padding:0.55rem 0.8rem;' +
-        'background:var(--grey1);border:1px solid rgba(22,32,46,0.1);border-radius:4px;color:var(--night2);' +
+        'background:var(--white);border:1px solid rgba(22,32,46,0.15);border-radius:4px;color:var(--night2);' +
         'font-family:Poppins,sans-serif;font-size:0.85rem;cursor:pointer;transition:border-color 0.2s,background 0.2s;';
       btn.onclick = function() {
         answers[q.driver_name] = optText;
         Array.from(qBlock.querySelectorAll('button')).forEach(function(b) {
-          b.style.borderColor = 'rgba(22,32,46,0.1)';
-          b.style.background = 'var(--grey1)';
+          b.style.borderColor = 'rgba(22,32,46,0.15)';
+          b.style.background = 'var(--white)';
         });
         btn.style.borderColor = 'rgba(58,181,74,0.6)';
         btn.style.background = 'rgba(58,181,74,0.12)';
