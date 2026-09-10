@@ -2147,8 +2147,82 @@ async function startLearningGoalSession(skillName) {
 // ─── RESUME (Parking Lot) / VIEW (Conversation History) ────────────────────
 function _renderPastMessages(messages) {
   messages.forEach(function(m) {
+    if (m && m.type === 'driver_form') {
+      _renderReadOnlyDriverForm(m, document.getElementById('chatMessages'));
+      return;
+    }
     appendMessage(m.sender === 'user' ? 'user' : 'ai', m.text);
   });
+}
+
+// The driver-diagnosis quiz, rebuilt from a past session as the READ-ONLY
+// form it originally was -- every option shown, the picked one highlighted,
+// nothing clickable, no Submit. Kriti's explicit call, 2026-09-10: the old
+// flattened "question as an AI bubble, answer as a user bubble" rendering
+// hid the options she didn't choose and didn't read as a form at all. Used
+// by both Parking Lot resume (into #chatMessages) and Conversation History
+// (into #historyOverlayScroll) -- same DOM shape as appendMessage /
+// _renderHistoryMessage so it sits inline with the other bubbles. Backend
+// entry shape: { type:'driver_form', questions:[{ question,
+// options:[{ text, chosen }] }] } (see reports/transcript_format.py).
+function _renderReadOnlyDriverForm(formMsg, area) {
+  if (!area) return;
+  const msg = document.createElement('div');
+  msg.className = 'msg';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+
+  const right = document.createElement('div');
+  const card = document.createElement('div');
+  card.className = 'msg-bubble bubble-ai';
+  card.style.maxWidth = '100%';
+
+  const questions = (formMsg && formMsg.questions) || [];
+  if (!questions.length) {
+    // Fallback: no structured questions came through -- show the plain text
+    // the backend always includes so nothing is blank.
+    card.innerHTML = formatResponse((formMsg && formMsg.text) || '');
+  }
+  questions.forEach(function(q, qi) {
+    const qBlock = document.createElement('div');
+    qBlock.style.marginBottom = qi < questions.length - 1 ? '1.1rem' : '0.4rem';
+
+    const qText = document.createElement('div');
+    qText.style.marginBottom = '0.5rem';
+    qText.style.fontWeight = '600';
+    qText.textContent = q.question || '';
+    qBlock.appendChild(qText);
+
+    (q.options || []).forEach(function(opt) {
+      const line = document.createElement('div');
+      line.textContent = (opt && opt.text) || '';
+      const base = 'display:block;width:100%;text-align:left;margin-bottom:0.4rem;padding:0.55rem 0.8rem;' +
+        'border-radius:4px;font-family:Poppins,sans-serif;font-size:0.85rem;color:var(--night2);';
+      if (opt && opt.chosen) {
+        line.style.cssText = base + 'font-weight:600;background:rgba(58,181,74,0.12);border:1px solid rgba(58,181,74,0.6);';
+      } else {
+        line.style.cssText = base + 'opacity:0.6;background:var(--white);border:1px solid rgba(22,32,46,0.15);';
+      }
+      qBlock.appendChild(line);
+    });
+
+    card.appendChild(qBlock);
+  });
+
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = formatTime();
+
+  right.appendChild(card);
+  right.appendChild(meta);
+  msg.appendChild(avatar);
+  msg.appendChild(right);
+  area.appendChild(msg);
 }
 
 async function resumeParkedSession(clickedSessionId) {
@@ -2235,6 +2309,10 @@ async function viewClosedConversation(clickedSessionId) {
       return;
     }
     (data.messages || []).forEach(function(m) {
+      if (m && m.type === 'driver_form') {
+        _renderReadOnlyDriverForm(m, document.getElementById('historyOverlayScroll'));
+        return;
+      }
       _renderHistoryMessage(m.sender === 'user' ? 'user' : 'ai', m.text);
     });
   } catch (err) {
