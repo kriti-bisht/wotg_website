@@ -1434,7 +1434,7 @@ const USER_MGMT_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacent
 const REPORTS_BASE = 'https://wotg-reports.azurewebsites.net';
 const NOTIFICATION_BASE = 'https://wotg-notifications.azurewebsites.net';
 const LEARNING_RECS_BASE = 'https://wotg-learning-recommendations.azurewebsites.net';
-const NOTIFICATION_BUBBLE_WIDTH = '540px';
+const NOTIFICATION_BUBBLE_WIDTH = '675px';  // +25% over the old 540px -- Kriti's call, 2026-09-10: 540 looked too narrow sitting in the full chat panel. max-width:100% on the card keeps it responsive on mobile.
 
 let userId = '';
 let sessionId = '';
@@ -1444,6 +1444,11 @@ let sessionEnded = false;
 let activeTrack = 'voluntary_opening';
 let activeSkillName = '';
 let userInitials = 'U';
+// Shared cache of the user's uploaded profile photo (base64, no data: prefix),
+// filled by loadHeaderProfilePhoto(). null until it loads / if none uploaded.
+// Read by every place that draws the user's own avatar -- header AND every
+// chat message bubble -- so there's one fetch, one source of truth.
+let userPhotoBase64 = null;
 let pendingForm = null;
 let currentNotification = null;
 let stopMicIfActive = function(){};
@@ -1461,6 +1466,22 @@ function computeInitials(name) {
   const stripped = name.replace(/\s*\([^)]*\)\s*$/, '').trim();
   if (!stripped) return 'U';
   return stripped.split(/\s+/).map(function(w){ return w[0].toUpperCase(); }).join('');
+}
+
+// Draws the user's own avatar into a .msg-avatar element: the real uploaded
+// photo when we have one cached (see userPhotoBase64), otherwise the same
+// initials circle as before. Used by every place a user message bubble gets
+// built, so the chat itself matches Kriti's avatar behavior -- her photo
+// shows on every message she sends, not just the header/profile popup.
+function _renderUserAvatar(avatar) {
+  if (userPhotoBase64) {
+    const img = document.createElement('img');
+    img.src = 'data:image/jpeg;base64,' + userPhotoBase64;
+    img.alt = userInitials;
+    avatar.appendChild(img);
+  } else {
+    avatar.textContent = userInitials;
+  }
 }
 
 function initSession() {
@@ -1504,13 +1525,18 @@ function initSession() {
 // (see myProfilePhotoSelected) so the header updates immediately without
 // needing a refresh.
 async function loadHeaderProfilePhoto() {
-  const img = document.getElementById('headerProfilePhoto');
-  if (!img) return;
   try {
     const res = await fetch(`${USER_MGMT_BASE}/api/my-profile?user_id=${encodeURIComponent(userId)}`);
     if (!res.ok) return;  // leave the static default in place
     const p = await res.json();
-    if (p.photo_base64) img.src = 'data:image/jpeg;base64,' + p.photo_base64;
+    if (p.photo_base64) {
+      // Cached here, not just applied to the header <img> -- every chat
+      // message bubble's own avatar (_renderUserAvatar) reads this same
+      // cache, so the header fetch is the one source of truth for both.
+      userPhotoBase64 = p.photo_base64;
+      const img = document.getElementById('headerProfilePhoto');
+      if (img) img.src = 'data:image/jpeg;base64,' + p.photo_base64;
+    }
   } catch (err) {
     // leave the static default in place -- this is a header icon, not
     // worth an error state of its own
@@ -1757,6 +1783,10 @@ async function myProfilePhotoSelected(input) {
     });
     if (!res.ok) throw new Error('Upload failed');
     await loadMyProfileOverlay();
+    // Also refresh the header + message-avatar photo cache -- otherwise the
+    // popup shows the new photo but the header and next chat bubble you
+    // send would keep showing the old one/initials until a page reload.
+    await loadHeaderProfilePhoto();
   } catch (err) {
     alert('Could not upload that photo -- please try again.');
   } finally {
@@ -2224,7 +2254,7 @@ function _renderHistoryMessage(role, text) {
   const avatar = document.createElement('div');
   avatar.className = 'msg-avatar ' + (isUser ? 'avatar-user' : 'avatar-ai');
   if (isUser) {
-    avatar.textContent = userInitials;
+    _renderUserAvatar(avatar);
   } else {
     const avatarImg = document.createElement('img');
     avatarImg.src = 'chatphoto.png';
@@ -2272,6 +2302,11 @@ async function handleBackendResult(result) {
   let firstPairEl = null;
 
   for (let i = 0; i < messages.length; i++) {
+    // The pair's 2nd message ("So what, now what?") is rendered inside the
+    // commitment form's own card below instead -- Kriti's explicit call,
+    // 2026-09-09: the question and its answer box need to be ONE bubble,
+    // not two.
+    if (isTrainerClosingPlusFeedback && i === 1) continue;
     if (i > 0) {
       showTyping(currentPhase);
       await sleep(800);
@@ -2311,7 +2346,14 @@ async function handleBackendResult(result) {
     // the commitment form instead of locking immediately; the real lock
     // now happens inside submitApplicationCommitment, once the user
     // actually answers it.
-    renderApplicationCommitmentForm({ suppressScroll: holdScrollForPair });
+    // Same typing pause that used to happen between the two separate
+    // bubbles (see the loop above) -- kept here, 2026-09-09, so the pacing
+    // is unchanged even though the question now renders inside the form
+    // card instead of its own bubble.
+    showTyping(currentPhase);
+    await sleep(800);
+    removeTyping();
+    renderApplicationCommitmentForm(messages[1], { suppressScroll: holdScrollForPair });
   } else if (result.session_complete || TERMINAL_PHASES.includes(currentPhase)) {
     lockConversationEnded(holdScrollForPair);
   }
@@ -2476,7 +2518,7 @@ async function submitDriverDiagnosisForm(answers) {
 // input -- the main input is about to get disabled by lockConversationEnded
 // once this form's own submission finishes, same as every other terminal
 // ending. The real feedback-link message only appears after Submit.
-function renderApplicationCommitmentForm(opts) {
+function renderApplicationCommitmentForm(question, opts) {
   removeWelcome();
   const area = document.getElementById('chatMessages');
   const shouldScroll = !(opts && opts.suppressScroll) && isNearBottom();
@@ -2494,13 +2536,34 @@ function renderApplicationCommitmentForm(opts) {
 
   const card = document.createElement('div');
   card.className = 'msg-bubble bubble-ai';
-  card.style.maxWidth = '100%';
+  // width:100%, but deliberately NO inline max-width override -- Kriti's
+  // explicit call, 2026-09-09: this card used to hold only the
+  // textarea/button, so with no wide content of its own it shrank to fit
+  // (.msg-bubble is display:inline-block by default). width:100% makes it
+  // reach the real cap instead of shrinking, and leaving max-width alone
+  // lets the existing stylesheet rule (.chat-messages .msg > div, 72%)
+  // apply exactly as it already does to every other AI bubble -- an inline
+  // max-width:100% here would have OVERRIDDEN that rule (inline styles
+  // always beat a stylesheet) and made this card wider than the very
+  // "So what, now what?" bubble it's meant to match, not equal to it.
+  card.style.cssText = 'width:100%;box-sizing:border-box;';
+
+  if (question) {
+    const qText = document.createElement('div');
+    qText.style.marginBottom = '0.5rem';
+    qText.innerHTML = formatResponse(question);
+    card.appendChild(qText);
+  }
 
   const textarea = document.createElement('textarea');
   textarea.rows = 3;
   textarea.placeholder = 'Type your answer here...';
+  // White, not --grey1 -- Kriti's explicit call, 2026-09-09: grey read as a
+  // disabled/dead field. This is the one live, typeable control in this
+  // card, so it gets a real white background, distinct from the grey used
+  // for non-interactive surfaces elsewhere.
   textarea.style.cssText = 'width:100%;box-sizing:border-box;margin-top:0.3rem;padding:0.55rem 0.7rem;' +
-    'background:var(--grey1);border:1px solid rgba(22,32,46,0.1);border-radius:4px;color:var(--night2);' +
+    'background:var(--white);border:1px solid rgba(22,32,46,0.15);border-radius:4px;color:var(--night2);' +
     'font-family:Poppins,sans-serif;font-size:0.85rem;resize:vertical;';
 
   const submitBtn = document.createElement('button');
@@ -2531,10 +2594,14 @@ function renderApplicationCommitmentForm(opts) {
 }
 
 async function submitApplicationCommitment(commitmentText) {
-  // Deliberately NOT removed until success (unlike submitDriverDiagnosisForm's
-  // row, which the FSM can recover from elsewhere) -- this is the one and
-  // only path to the real feedback link, so a failed request has to leave
-  // the form in place for a retry, not strand the user with nothing to click.
+  // Row itself is never removed (failure OR success) -- Kriti's explicit
+  // call, 2026-09-09: matches submitDriverDiagnosisForm's pattern exactly.
+  // The question + your typed commitment stay visible in the chat (and in
+  // Historical Conversations) permanently. On success, only the Submit
+  // button disappears; the textarea is disabled in place so the typed
+  // answer stays readable but isn't editable. On failure, both re-enable
+  // so the same row can be retried -- nothing strands the user with
+  // nothing to click.
   const row = document.getElementById('applicationCommitmentRow');
   const textarea = row ? row.querySelector('textarea') : null;
   const submitBtn = row ? row.querySelector('button') : null;
@@ -2547,7 +2614,7 @@ async function submitApplicationCommitment(commitmentText) {
       user_id: userId, session_id: sessionId, commitment_text: commitmentText,
     });
     removeTyping();
-    if (row) row.remove();
+    if (submitBtn) submitBtn.remove();
     const messages = result.messages || [];
     if (messages[0]) appendMessage('ai', messages[0]);
     // The real end of the conversation -- same lock every other terminal
@@ -2682,8 +2749,10 @@ function renderNotificationForm(notification) {
   card.className = 'msg-bubble bubble-ai';
   card.style.cssText = `width:${NOTIFICATION_BUBBLE_WIDTH};max-width:100%;box-sizing:border-box;`;
 
+  // White, not --grey1 -- Kriti's call, 2026-09-10: grey options read as a
+  // dead/disabled box in the chat panel. Same fix as the commitment box.
   const btnStyle = 'display:block;width:100%;text-align:left;margin-bottom:0.4rem;padding:0.55rem 0.8rem;' +
-    'background:var(--grey1);border:1px solid rgba(22,32,46,0.1);border-radius:4px;color:var(--night2);' +
+    'background:var(--white);border:1px solid rgba(22,32,46,0.15);border-radius:4px;color:var(--night2);' +
     'font-family:Poppins,sans-serif;font-size:0.85rem;cursor:pointer;transition:border-color 0.2s,background 0.2s;';
   const selectedStyle = { borderColor: 'rgba(58,181,74,0.6)', background: 'rgba(58,181,74,0.12)' };
 
@@ -2704,8 +2773,8 @@ function renderNotificationForm(notification) {
     btn.style.cssText = btnStyle;
     btn.onclick = function() {
       Array.from(q1Block.querySelectorAll('button')).forEach(function(b) {
-        b.style.borderColor = 'rgba(22,32,46,0.1)';
-        b.style.background = 'var(--grey1)';
+        b.style.borderColor = 'rgba(22,32,46,0.15)';
+        b.style.background = 'var(--white)';
       });
       btn.style.borderColor = selectedStyle.borderColor;
       btn.style.background = selectedStyle.background;
@@ -2752,8 +2821,8 @@ function _renderYesFollowup(container, notification, btnStyle) {
     btn.onclick = function() {
       answers.q2_answer = optText;
       Array.from(q2Block.querySelectorAll('button')).forEach(function(b) {
-        b.style.borderColor = 'rgba(22,32,46,0.1)';
-        b.style.background = 'var(--grey1)';
+        b.style.borderColor = 'rgba(22,32,46,0.15)';
+        b.style.background = 'var(--white)';
       });
       btn.style.borderColor = 'rgba(58,181,74,0.6)';
       btn.style.background = 'rgba(58,181,74,0.12)';
@@ -2770,8 +2839,8 @@ function _renderYesFollowup(container, notification, btnStyle) {
     label.textContent = q.text;
     const textarea = document.createElement('textarea');
     textarea.rows = 2;
-    textarea.style.cssText = 'width:100%;box-sizing:border-box;padding:0.55rem 0.7rem;background:var(--grey1);' +
-      'border:1px solid rgba(22,32,46,0.1);border-radius:4px;color:var(--night2);font-family:Poppins,sans-serif;font-size:0.85rem;resize:vertical;';
+    textarea.style.cssText = 'width:100%;box-sizing:border-box;padding:0.55rem 0.7rem;background:var(--white);' +
+      'border:1px solid rgba(22,32,46,0.15);border-radius:4px;color:var(--night2);font-family:Poppins,sans-serif;font-size:0.85rem;resize:vertical;';
     textarea.oninput = function() {
       answers[key] = textarea.value.trim();
       updateSubmitState();
@@ -2824,7 +2893,7 @@ function _renderNotYetDatePicker(container, notification) {
   dateInput.type = 'date';
   dateInput.min = minISO;
   dateInput.max = maxISO;
-  dateInput.style.cssText = 'padding:0.5rem 0.7rem;background:var(--grey1);border:1px solid rgba(22,32,46,0.1);' +
+  dateInput.style.cssText = 'padding:0.5rem 0.7rem;background:var(--white);border:1px solid rgba(22,32,46,0.15);' +
     'border-radius:4px;color:var(--night2);font-family:Poppins,sans-serif;font-size:0.85rem;margin-right:0.6rem;';
   block.appendChild(dateInput);
 
@@ -3023,7 +3092,7 @@ function appendMessage(role, text, opts) {
   const avatar = document.createElement('div');
   avatar.className = 'msg-avatar ' + (isUser ? 'avatar-user' : 'avatar-ai');
   if (isUser) {
-    avatar.textContent = userInitials;
+    _renderUserAvatar(avatar);
   } else {
     const avatarImg = document.createElement('img');
     avatarImg.src = 'chatphoto.png';
