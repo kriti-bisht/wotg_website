@@ -946,6 +946,15 @@ header.topbar { background:var(--night); }
 .driver-form-submit:hover { background:var(--green2); }
 .driver-form-submit:disabled { opacity:0.5; cursor:not-allowed; }
 
+/* Gross Incongruence reject-path buttons -- mockup approved 2026-09-14,
+   same pill shape/colors as .modal-btn's park/cancel pair. */
+.next-step-btn { font-family:'Poppins',sans-serif; font-size:0.83rem; font-weight:600; padding:0.65rem 1.2rem; border-radius:20px; cursor:pointer; border:1px solid; text-align:center; transition:background 0.15s, border-color 0.15s, opacity 0.15s; }
+.next-step-btn-primary { background:var(--green); border-color:var(--green); color:#fff; }
+.next-step-btn-primary:hover:not(:disabled) { background:var(--green2); }
+.next-step-btn-secondary { background:transparent; border-color:rgba(22,32,46,0.18); color:var(--night2); }
+.next-step-btn-secondary:hover:not(:disabled) { border-color:var(--night2); }
+.next-step-btn:disabled { cursor:default; }
+
 /* End-session confirm modal -- ported verbatim, light theme */
 .modal-overlay { position:fixed; inset:0; background:rgba(4,26,64,0.5); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:700; }
 .modal-overlay.hidden { display:none; }
@@ -2449,6 +2458,16 @@ async function handleBackendResult(result) {
     await sleep(800);
     removeTyping();
     renderApplicationCommitmentForm(messages[1], { suppressScroll: holdScrollForPair });
+  } else if (result.show_next_step_buttons) {
+    // Kriti's explicit call, 2026-09-14: this check has to come BEFORE the
+    // session_complete check below -- the Gross Incongruence reject
+    // response sets session_complete: true (correctly -- the LLM turn is
+    // over), but that used to fall straight into lockConversationEnded()
+    // below, which shows "This session has ended" and disables everything.
+    // That is exactly the bug Kriti reported: the backend has fully
+    // supported these two buttons since 2026-08-21/22, nothing here ever
+    // rendered them.
+    renderNextStepButtons(holdScrollForPair);
   } else if (result.session_complete || TERMINAL_PHASES.includes(currentPhase)) {
     lockConversationEnded(holdScrollForPair);
   }
@@ -2565,6 +2584,100 @@ function renderDriverDiagnosisForm(form, opts) {
   area.appendChild(wrap);
   if (shouldScroll) scrollMessagesToBottom();
   return wrap;
+}
+
+// ─── GROSS INCONGRUENCE REJECT-PATH BUTTONS ─────────────────────────────────
+// Shown when the backend returns show_next_step_buttons: true. The backend
+// endpoint (/api/skill-introduction/next-step) and both choices have been
+// fully built since 2026-08-21/22 -- nothing in this file ever rendered the
+// buttons themselves, and handleBackendResult's session_complete check
+// (correctly true on a reject) was routing straight into
+// lockConversationEnded() instead, showing "This session has ended" with no
+// buttons at all. Fixed 2026-09-14, Kriti's explicit call, mockup approved
+// same session. Same "stays in the chat history, only the buttons disable"
+// pattern as renderDriverDiagnosisForm/submitDriverDiagnosisForm above.
+function renderNextStepButtons(suppressScroll) {
+  removeWelcome();
+  const area = document.getElementById('chatMessages');
+  const shouldScroll = !suppressScroll && isNearBottom();
+
+  const wrap = document.createElement('div');
+  wrap.className = 'msg';
+  wrap.id = 'nextStepButtonsRow';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+
+  // Buttons only, no bubble chrome around them -- the rejection message
+  // right above already carries the bubble styling; wrapping the buttons
+  // in a second grey box would read as a second, separate message.
+  const card = document.createElement('div');
+  card.style.cssText = 'display:flex;flex-direction:column;gap:0.6rem;max-width:88%;';
+
+  const retryBtn = document.createElement('button');
+  retryBtn.type = 'button';
+  retryBtn.className = 'next-step-btn next-step-btn-primary';
+  retryBtn.textContent = 'Share a different situation';
+  retryBtn.onclick = function() { submitNextStepChoice('situation_retry', wrap); };
+
+  const scenarioBtn = document.createElement('button');
+  scenarioBtn.type = 'button';
+  scenarioBtn.className = 'next-step-btn next-step-btn-secondary';
+  scenarioBtn.textContent = 'Build a scenario together';
+  scenarioBtn.onclick = function() { submitNextStepChoice('scenario_entry', wrap); };
+
+  card.appendChild(retryBtn);
+  card.appendChild(scenarioBtn);
+  wrap.appendChild(avatar);
+  wrap.appendChild(card);
+  area.appendChild(wrap);
+  if (shouldScroll) scrollMessagesToBottom();
+
+  // Free text isn't a valid reply at this point -- same as the driver
+  // diagnosis form's own input-lock while its card is live.
+  document.getElementById('chatInput').disabled = true;
+  document.getElementById('sendBtn').disabled = true;
+  return wrap;
+}
+
+async function submitNextStepChoice(choice, row) {
+  const buttons = row ? Array.from(row.querySelectorAll('.next-step-btn')) : [];
+  const chosenLabel = choice === 'situation_retry' ? 'Share a different situation' : 'Build a scenario together';
+  buttons.forEach(function(b) {
+    b.disabled = true;
+    b.style.cursor = 'default';
+    if (b.textContent !== chosenLabel) b.style.opacity = '0.4';
+  });
+
+  isWaiting = true;
+  showTyping(currentPhase);
+  try {
+    const res = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/next-step`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, session_id: sessionId, skill_name: activeSkillName, choice: choice }),
+    });
+    const result = await res.json().catch(function(){ return {}; });
+    removeTyping();
+    if (!res.ok) {
+      appendError('Something went wrong -- please try again.');
+    } else {
+      await handleBackendResult(result);
+    }
+  } catch (err) {
+    removeTyping();
+    appendError('Could not reach the server -- please try again.');
+  }
+
+  isWaiting = false;
+  if (!sessionEnded) {
+    document.getElementById('chatInput').disabled = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
 }
 
 async function submitDriverDiagnosisForm(answers) {
