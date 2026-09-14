@@ -2120,7 +2120,16 @@ async function startLearningGoalSession(skillName) {
   inputBox.value = '';
   autoResize(inputBox);
   document.getElementById('chatPanelLabel').textContent = 'Live conversation — ' + skillName;
-  showTyping('opening');
+  // Kriti's explicit call, 2026-09-14: activeTrack has to flip to
+  // 'learning_recommendations' BEFORE this first showTyping() call, not
+  // after the fetch resolves (as it used to) -- otherwise showTyping()
+  // still sees whichever track was active before this session started and
+  // reads the wrong word list for this very first wait. previousTrack is
+  // restored on failure below so a failed LR start never leaves an
+  // in-progress VO session misrouted.
+  const previousTrack = activeTrack;
+  activeTrack = 'learning_recommendations';
+  showTyping('skill_introduction');
   try {
     const res = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/start`, {
       method: 'POST',
@@ -2130,16 +2139,17 @@ async function startLearningGoalSession(skillName) {
     const data = await res.json().catch(function(){ return {}; });
     removeTyping();
     if (!res.ok) {
+      activeTrack = previousTrack;
       appendError('Could not start that conversation -- please try again.');
       return;
     }
     sessionEnded = false;
-    activeTrack = 'learning_recommendations';
     activeSkillName = skillName;
     sessionId = data.session_id;
     await handleBackendResult(data);
   } catch (err) {
     removeTyping();
+    activeTrack = previousTrack;
     appendError('Could not reach the server to start that conversation.');
   }
 }
@@ -3281,6 +3291,41 @@ const PHASE_WORDS = {
     'Making it crisp…', 'Rechecking relevance…',
   ],
 };
+
+// Learning Recommendations' own word lists, per phase -- Kriti's explicit
+// call, 2026-09-14: LR gets its own thinking words, separate from
+// Voluntary Opening's (PHASE_WORDS above, left untouched). content_creation
+// and training deliberately have NO entry here -- Kriti's explicit call,
+// neither phase is built in the LR backend yet, and when they are, they
+// should keep reusing PHASE_WORDS' own content_creation/training words
+// rather than getting LR-specific ones -- see the fallback in showTyping().
+const LR_PHASE_WORDS = {
+  skill_introduction: [
+    'Getting us started…', 'Making this relevant…', 'Setting the context…',
+    'Bringing this to life…', 'Thinking about your world…',
+    'Finding a good place to start…', 'Getting the conversation going…',
+  ],
+  user_situation_detailing: [
+    'Getting the full picture…', 'Connecting the dots…', 'Looking a little closer…',
+    'Filling in the picture…', 'Following the thread…',
+    'Understanding what\'s happening…', 'Putting the pieces together…',
+  ],
+  scenario_construction: [
+    'Building this out…', 'Making it feel real…', 'Shaping the situation…',
+    'Adding the right detail…', 'Bringing the scenario to life…',
+    'Putting the pieces together…', 'Making this relevant to you…',
+  ],
+  real_situation_driver_diagnostics: [
+    'Looking beneath the surface…', 'Reading the signals…', 'Looking for clues…',
+    'Connecting the dots…', 'Thinking this through…', 'Digging a little deeper…',
+    'Working out what\'s getting in the way…',
+  ],
+  scenario_driver_diagnostics: [
+    'Putting you in the situation…', 'Thinking through how this might play out…',
+    'Looking beneath the surface…', 'Testing the possibilities…',
+    'Exploring what might get in the way…', 'Looking for clues…', 'Digging a little deeper…',
+  ],
+};
 const WORD_CYCLE_MS = 1800;
 
 function showTyping(phase) {
@@ -3309,7 +3354,12 @@ function showTyping(phase) {
   indicator.innerHTML = '<span></span><span></span><span></span>';
   wrap.appendChild(indicator);
 
-  const words = PHASE_WORDS[phase];
+  // LR phases look themselves up in LR_PHASE_WORDS first; content_creation
+  // and training (not yet built for LR) deliberately have no entry there,
+  // so they fall through to PHASE_WORDS' own words -- Kriti's explicit
+  // call. VO is untouched: activeTrack !== 'learning_recommendations' skips
+  // straight to PHASE_WORDS, exactly as before this change.
+  const words = (activeTrack === 'learning_recommendations' ? LR_PHASE_WORDS[phase] : null) || PHASE_WORDS[phase];
   if (words) {
     const wordEl = document.createElement('span');
     wordEl.className = 'typing-word';
