@@ -2084,9 +2084,15 @@ function _renderSideSessionList(container, sessions, emptyMessage, kind) {
     textWrap.appendChild(meta);
     item.appendChild(textWrap);
     if (kind === 'parking') {
-      item.addEventListener('click', function() { resumeParkedSession(s.session_id); });
+      // s.path/s.hero_reflector come straight from previous_conversations.py's
+      // own per-path adapters -- for an LR session, hero_reflector IS the
+      // skill_name (see _learning_recommendations_sessions() in that file).
+      // Added 2026-09-16, Kriti's explicit call to fix Parking Lot resume
+      // for LR: this used to just be s.session_id, which is why LR sessions
+      // showed up fine in the list but broke the instant you clicked one.
+      item.addEventListener('click', function() { resumeParkedSession(s.session_id, s.path, s.hero_reflector); });
     } else {
-      item.addEventListener('click', function() { viewClosedConversation(s.session_id); });
+      item.addEventListener('click', function() { viewClosedConversation(s.session_id, s.path); });
     }
     container.appendChild(item);
   });
@@ -2244,7 +2250,15 @@ function _renderReadOnlyDriverForm(formMsg, area) {
   area.appendChild(msg);
 }
 
-async function resumeParkedSession(clickedSessionId) {
+async function resumeParkedSession(clickedSessionId, path, skillName) {
+  // path/skillName added 2026-09-16, Kriti's explicit call -- this used to
+  // unconditionally set activeTrack = 'voluntary_opening' and auto-continue
+  // via VO's own /api/message no matter which track the session actually
+  // belonged to, which is exactly why LR sessions showed up fine in Parking
+  // Lot but broke the moment you clicked one (wrong backend, wrong endpoint
+  // shape, no skill_name). path defaults to VO so an old link/cache without
+  // it keeps behaving exactly as before.
+  const isLR = path === 'learning_recommendations';
   if (document.getElementById('sidePanel').classList.contains('open')) toggleSidePanel();
   removeWelcome();
   document.getElementById('chatMessages').innerHTML = '';
@@ -2252,11 +2266,11 @@ async function resumeParkedSession(clickedSessionId) {
   inputBox.value = '';
   autoResize(inputBox);
   document.getElementById('chatPanelLabel').textContent = 'Live conversation';
-  showTyping('opening');
+  showTyping(isLR ? 'skill_introduction' : 'opening');
   const email = await _getUserEmailForReports();
   try {
     const res = await fetch(
-      `${REPORTS_BASE}/api/reports/resume-session?session_id=${encodeURIComponent(clickedSessionId)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`,
+      `${REPORTS_BASE}/api/reports/resume-session?session_id=${encodeURIComponent(clickedSessionId)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}&path=${encodeURIComponent(path || 'voluntary_opening')}`,
       { method: 'POST' },
     );
     const data = await res.json();
@@ -2267,7 +2281,8 @@ async function resumeParkedSession(clickedSessionId) {
       return;
     }
     sessionEnded = false;
-    activeTrack = 'voluntary_opening';
+    activeTrack = isLR ? 'learning_recommendations' : 'voluntary_opening';
+    if (isLR) activeSkillName = data.skill_name || skillName || '';
     sessionId = clickedSessionId;
     currentPhase = data.phase;
     _renderPastMessages(data.messages);
@@ -2275,7 +2290,18 @@ async function resumeParkedSession(clickedSessionId) {
     if (data.auto_continue) {
       showTyping(currentPhase);
       try {
-        const nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
+        let nextResult;
+        if (isLR) {
+          const res2 = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, session_id: sessionId, skill_name: activeSkillName, message: '' }),
+          });
+          nextResult = await res2.json().catch(function(){ return {}; });
+          if (!res2.ok) throw new Error(nextResult.detail || 'Something went wrong continuing the conversation.');
+        } else {
+          nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
+        }
         removeTyping();
         await handleBackendResult(nextResult);
       } catch (err) {
@@ -2311,7 +2337,12 @@ function _restoreMainPanel() {
   }
 }
 
-async function viewClosedConversation(clickedSessionId) {
+async function viewClosedConversation(clickedSessionId, path) {
+  // path added 2026-09-16, same reasoning as resumeParkedSession()'s own --
+  // this endpoint is read-only so there's no wrong-backend risk the way
+  // resume had, but full_conversation.py still needs to know which table
+  // to read the session off (session_summary vs manager_recommendation_
+  // session_summary).
   if (document.getElementById('sidePanel').classList.contains('open')) toggleSidePanel();
   const scroll = document.getElementById('historyOverlayScroll');
   scroll.innerHTML = '';
@@ -2320,7 +2351,7 @@ async function viewClosedConversation(clickedSessionId) {
   const email = await _getUserEmailForReports();
   try {
     const res = await fetch(
-      `${REPORTS_BASE}/api/reports/full-conversation?session_id=${encodeURIComponent(clickedSessionId)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`,
+      `${REPORTS_BASE}/api/reports/full-conversation?session_id=${encodeURIComponent(clickedSessionId)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}&path=${encodeURIComponent(path || 'voluntary_opening')}`,
     );
     const data = await res.json();
     if (!res.ok || !data.ok) {

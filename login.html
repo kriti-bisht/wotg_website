@@ -155,6 +155,23 @@
     input::placeholder { color: var(--grey3); }
     input:focus { border-color: rgba(58,181,74,0.5); }
 
+    select {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.7rem 1rem;
+      color: var(--white);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.94rem;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    select:focus { border-color: rgba(58,181,74,0.5); }
+    select:disabled { opacity: 0.5; cursor: not-allowed; }
+    select option { background: #1a1a1a; color: var(--white); }
+
     /* PASSWORD VISIBILITY TOGGLE -- Kriti's explicit call, 2026-08-14:
        no way to see what you typed on any of the 5 password fields. */
     .password-field { position: relative; }
@@ -346,12 +363,16 @@
               <input type="text" id="designation" placeholder="e.g. Product Manager" required />
             </div>
             <div class="form-group">
-              <label for="department">Department</label>
-              <input type="text" id="department" placeholder="e.g. Product" required />
+              <label for="company">Company / Organisation</label>
+              <select id="company" required>
+                <option value="">Loading companies…</option>
+              </select>
             </div>
             <div class="form-group">
-              <label for="company">Company / Organisation</label>
-              <input type="text" id="company" placeholder="e.g. Acme Corp" required />
+              <label for="department">Department</label>
+              <select id="department" required disabled>
+                <option value="">Select a company first</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="country">Country of Location</label>
@@ -441,6 +462,73 @@
     // reset) live in their own App Service now, separate from the
     // Opening-conversation backend. Change this if the service ever moves.
     const API_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
+
+    // COMPANY/DEPARTMENT DROPDOWNS -- Kriti's explicit call, 2026-09-15:
+    // nobody signs up by typing their company or department anymore, only
+    // by picking from what's registered in company_department_store.py.
+    // Department is cascading -- disabled and empty until a company is
+    // picked, then repopulated to just that company's own departments.
+    // Both dropdowns show full names only, never the short codes -- the
+    // codes are a backend concern, picked automatically off whichever full
+    // name gets submitted.
+    function titleCase(s) {
+      return s.replace(/\w\S*/g, t => t[0].toUpperCase() + t.slice(1));
+    }
+
+    const companySelect = document.getElementById('company');
+    const departmentSelect = document.getElementById('department');
+
+    async function loadCompanies() {
+      try {
+        const res = await fetch(`${API_BASE}/api/companies`);
+        const data = await res.json();
+        companySelect.innerHTML = '<option value="">Select your company</option>';
+        (data.companies || []).forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.company_name;
+          opt.dataset.code = c.company_code;
+          opt.textContent = c.company_name;
+          companySelect.appendChild(opt);
+        });
+      } catch (e) {
+        companySelect.innerHTML = '<option value="">Could not load companies -- please refresh</option>';
+      }
+    }
+
+    async function loadDepartmentsFor(companyCode) {
+      departmentSelect.disabled = true;
+      departmentSelect.innerHTML = '<option value="">Loading departments…</option>';
+      try {
+        const res = await fetch(`${API_BASE}/api/companies/${encodeURIComponent(companyCode)}/departments`);
+        const data = await res.json();
+        const depts = data.departments || [];
+        departmentSelect.innerHTML = depts.length
+          ? '<option value="">Select your department</option>'
+          : '<option value="">No departments listed for this company yet</option>';
+        depts.forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d.department_name;  // stored lowercased -- exact match for the session-start lookup later
+          opt.textContent = titleCase(d.department_name);
+          departmentSelect.appendChild(opt);
+        });
+        departmentSelect.disabled = depts.length === 0;
+      } catch (e) {
+        departmentSelect.innerHTML = '<option value="">Could not load departments -- please refresh</option>';
+      }
+    }
+
+    companySelect.addEventListener('change', () => {
+      const chosen = companySelect.selectedOptions[0];
+      const code = chosen ? chosen.dataset.code : null;
+      if (code) {
+        loadDepartmentsFor(code);
+      } else {
+        departmentSelect.disabled = true;
+        departmentSelect.innerHTML = '<option value="">Select a company first</option>';
+      }
+    });
+
+    loadCompanies();
 
     // PASSWORD VISIBILITY TOGGLE -- Kriti's explicit call, 2026-08-14.
     // Two small inline icons (no external dependency), swapped on click.

@@ -143,6 +143,8 @@ textarea { resize:vertical; min-height:4.5rem; }
 .field { margin-bottom:1.1rem; }
 .field-row { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
 .help-text { font-size:0.75rem; color:var(--grey3); margin-top:0.4rem; line-height:1.5; }
+.word-count { font-size:0.75rem; color:var(--grey3); margin-top:0.3rem; text-align:right; }
+.word-count.over { color:var(--red); font-weight:600; }
 
 /* ---- Buttons ---- */
 button {
@@ -334,6 +336,12 @@ tbody tr:last-child td { border-bottom:none; }
           </div>
 
           <div class="field">
+            <label for="companyContextInput">About the organization <span style="font-weight:400; color:var(--grey3);">(max 200 words -- gives the LLM actors context about what this person's employer does)</span></label>
+            <textarea id="companyContextInput" oninput="_updateWordCount('companyContextInput','companyContextCount',200)"></textarea>
+            <div class="word-count" id="companyContextCount">0 / 200 words</div>
+          </div>
+
+          <div class="field">
             <label for="jobDescInput">Job description</label>
             <textarea id="jobDescInput"></textarea>
           </div>
@@ -413,6 +421,11 @@ tbody tr:last-child td { border-bottom:none; }
           <div class="field-row">
             <div class="field"><label for="c_company">Company</label><input type="text" id="c_company" /></div>
             <div class="field"><label for="c_country">Country</label><input type="text" id="c_country" /></div>
+          </div>
+          <div class="field">
+            <label for="c_companycontext">About the organization <span style="font-weight:400; color:var(--grey3);">(max 200 words)</span></label>
+            <textarea id="c_companycontext" oninput="_updateWordCount('c_companycontext','c_companyContextCount',200)"></textarea>
+            <div class="word-count" id="c_companyContextCount">0 / 200 words</div>
           </div>
           <div class="field">
             <label for="c_jobdesc">Job description</label>
@@ -999,6 +1012,18 @@ function collectSkills() {
   })).filter(s => s.skill);
 }
 
+// Live word counter for the "About the organization" box (both Look Up &
+// Edit and Create User) -- word_limit is passed explicitly rather than
+// read off a data-attribute so this one function serves both forms.
+function _updateWordCount(textareaId, counterId, wordLimit) {
+  const box = document.getElementById(textareaId);
+  const counter = document.getElementById(counterId);
+  const words = box.value.trim().split(/\s+/).filter(Boolean);
+  const count = words.length;
+  counter.textContent = count + ' / ' + wordLimit + ' words';
+  counter.classList.toggle('over', count > wordLimit);
+}
+
 // Clicking "Edit" on a table row -- same lookup the old dropdown drove,
 // just triggered from a row button instead of a <select onchange>.
 async function editUserRow(userId) {
@@ -1017,6 +1042,8 @@ async function editUserRow(userId) {
     document.getElementById('countryInput').value = user.country || '';
     document.getElementById('designationInput').value = user.designation || '';
     document.getElementById('jobDescInput').value = user.job_description || '';
+    document.getElementById('companyContextInput').value = user.company_context || '';
+    _updateWordCount('companyContextInput', 'companyContextCount', 200);
     document.getElementById('notesInput').value = user.additional_notes || '';
     const sel = document.getElementById('peopleManagerSelect');
     sel.value = user.is_people_manager === true ? 'true' : (user.is_people_manager === false ? 'false' : 'unset');
@@ -1044,6 +1071,7 @@ async function saveChanges() {
   const payload = {
     user_id: currentUserId,
     job_description: document.getElementById('jobDescInput').value.trim(),
+    company_context: document.getElementById('companyContextInput').value.trim(),
     is_people_manager: isPeopleManager,
     additional_notes: document.getElementById('notesInput').value.trim(),
     skills_assigned: collectSkills(),
@@ -1087,6 +1115,7 @@ async function createUser() {
     company: document.getElementById('c_company').value.trim(),
     country: document.getElementById('c_country').value.trim(),
     job_description: document.getElementById('c_jobdesc').value.trim(),
+    company_context: document.getElementById('c_companycontext').value.trim(),
     is_people_manager: isPeopleManager,
     additional_notes: document.getElementById('c_notes').value.trim(),
     access_type: document.getElementById('c_accesstype').value,
@@ -1104,9 +1133,10 @@ async function createUser() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) { showStatus(statusEl, data.detail || 'Could not create user.', true); return; }
     showStatus(statusEl, `Created ${data.name} (user_id: ${data.user_id}).`, false);
-    ['c_name','c_email','c_username','c_password','c_designation','c_department','c_company','c_country','c_jobdesc','c_notes',
+    ['c_name','c_email','c_username','c_password','c_designation','c_department','c_company','c_country','c_jobdesc','c_companycontext','c_notes',
      'c_managername','c_manageremail','c_trainername','c_traineremail','c_lndname','c_lndemail']
       .forEach(id => document.getElementById(id).value = '');
+    _updateWordCount('c_companycontext', 'c_companyContextCount', 200);
     document.getElementById('c_peoplemanager').value = 'unset';
     document.getElementById('c_accesstype').value = 'user';
   } catch (e) {

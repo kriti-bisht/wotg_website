@@ -140,6 +140,60 @@ textarea.feedback-textarea {
 textarea.feedback-textarea::placeholder { color: var(--grey3); }
 textarea.feedback-textarea:focus { border-color: rgba(58,181,74,0.5); }
 
+/* Q10 -- horizontal 1-10 likelihood scale, both tracks. Added 2026-09-16. */
+.scale-caption {
+  font-size: 0.78rem;
+  color: var(--grey3);
+  margin-bottom: 0.85rem;
+}
+.scale-caption b { color: var(--green); font-weight: 500; }
+.scale-row {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: space-between;
+  margin-bottom: 0.55rem;
+}
+.scale-item { flex: 1; }
+.scale-item input[type="radio"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.scale-item label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.05);
+  color: var(--grey2);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+  font-variant-numeric: tabular-nums;
+}
+.scale-item label:hover { border-color: rgba(58,181,74,0.5); color: var(--white); }
+.scale-item input:checked + label {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--white);
+  transform: scale(1.08);
+}
+.scale-item.highest label {
+  border-color: rgba(58,181,74,0.55);
+  box-shadow: 0 0 0 1px rgba(58,181,74,0.25) inset;
+}
+.scale-endlabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.74rem;
+  color: var(--grey3);
+}
+.scale-endlabels .end-highest { color: var(--green); font-weight: 500; text-align: right; }
+@media (max-width: 480px) {
+  .scale-row { gap: 0.28rem; }
+  .scale-item label { font-size: 0.72rem; }
+}
+
 /* BUTTON */
 .btn {
   width: 100%;
@@ -204,18 +258,58 @@ textarea.feedback-textarea:focus { border-color: rgba(58,181,74,0.5); }
 
         <form id="feedbackForm">
 
-          <div class="question">
+          <div class="question" id="q1-vo">
             <label class="question-label"><span class="q-num">1.</span>How well did the identified skill fit your situation?</label>
             <div class="options">
-              <label class="option"><input type="radio" name="skill_fit" value="Perfect fit" required> Perfect fit</label>
+              <label class="option"><input type="radio" name="skill_fit" value="Perfect fit"> Perfect fit</label>
               <label class="option"><input type="radio" name="skill_fit" value="Mostly fit"> Mostly fit</label>
               <label class="option"><input type="radio" name="skill_fit" value="Somewhat fit"> Somewhat fit</label>
               <label class="option"><input type="radio" name="skill_fit" value="Didn't fit"> Didn't fit</label>
             </div>
           </div>
 
+          <div class="question" id="q1-mr" hidden>
+            <label class="question-label"><span class="q-num">1.</span>When WOTG introduced the skill assigned to you, did the explanation help you understand why this skill was relevant to you and your work?</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="relevance_clarity" value="Yes — it made the relevance very clear"> Yes — it made the relevance very clear</label>
+              <label class="option"><input type="radio" name="relevance_clarity" value="Mostly — I could see why it was relevant"> Mostly — I could see why it was relevant</label>
+              <label class="option"><input type="radio" name="relevance_clarity" value="Somewhat — I could see some connection"> Somewhat — I could see some connection</label>
+              <label class="option"><input type="radio" name="relevance_clarity" value="No — I still wasn't clear why this skill was relevant to me"> No — I still wasn't clear why this skill was relevant to me</label>
+            </div>
+          </div>
+
+          <div class="question" id="q2-vo">
+            <label class="question-label"><span class="q-num">2.</span>To begin, WOTG asked you a few questions to identify the right human skill for your situation and build a personalized Learning Atom. These questions felt:</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="question_volume" value="Worth it—the personalization made them worthwhile"> Worth it—the personalization made them worthwhile</label>
+              <label class="option"><input type="radio" name="question_volume" value="Slightly too many"> Slightly too many</label>
+              <label class="option"><input type="radio" name="question_volume" value="Far too many"> Far too many</label>
+              <label class="option"><input type="radio" name="question_volume" value="Too few—I wanted WOTG to understand my situation better"> Too few—I wanted WOTG to understand my situation better</label>
+            </div>
+          </div>
+
+          <div class="question" id="q2-mr-realsit" hidden>
+            <label class="question-label"><span class="q-num">2.</span>To begin, WOTG asked you a few questions to explore the situation you had in mind. These questions felt:</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="question_volume" value="Worth it—the personalization made them worthwhile"> Worth it—the personalization made them worthwhile</label>
+              <label class="option"><input type="radio" name="question_volume" value="Slightly too many"> Slightly too many</label>
+              <label class="option"><input type="radio" name="question_volume" value="Far too many"> Far too many</label>
+              <label class="option"><input type="radio" name="question_volume" value="Too few—I wanted WOTG to understand my situation better"> Too few—I wanted WOTG to understand my situation better</label>
+            </div>
+          </div>
+
+          <div class="question" id="q2-mr-scenario" hidden>
+            <label class="question-label"><span class="q-num">2.</span>As you didn't have a specific work situation in mind, WOTG created a scenario with you to personalize your Learning Atom. The scenario felt:</label>
+            <div class="options">
+              <label class="option"><input type="radio" name="scenario_relevance" value="Very relevant — it felt like a situation I could realistically face"> Very relevant — it felt like a situation I could realistically face</label>
+              <label class="option"><input type="radio" name="scenario_relevance" value="Mostly relevant — close enough to my work to make the learning useful"> Mostly relevant — close enough to my work to make the learning useful</label>
+              <label class="option"><input type="radio" name="scenario_relevance" value="Somewhat relevant — I could relate to parts of it"> Somewhat relevant — I could relate to parts of it</label>
+              <label class="option"><input type="radio" name="scenario_relevance" value="Not relevant — it didn't really reflect my work or likely situations"> Not relevant — it didn't really reflect my work or likely situations</label>
+            </div>
+          </div>
+
           <div class="question">
-            <label class="question-label"><span class="q-num">2.</span>How personalized did your Learning Atom feel?</label>
+            <label class="question-label"><span class="q-num">3.</span>How personalized did your Learning Atom feel?</label>
             <div class="options">
               <label class="option"><input type="radio" name="personalization" value="It felt like it was written specifically for me." required> It felt like it was written specifically for me.</label>
               <label class="option"><input type="radio" name="personalization" value="Mostly personalized."> Mostly personalized.</label>
@@ -225,7 +319,7 @@ textarea.feedback-textarea:focus { border-color: rgba(58,181,74,0.5); }
           </div>
 
           <div class="question">
-            <label class="question-label"><span class="q-num">3.</span>Did the session give you a new way of thinking about or handling your situation?</label>
+            <label class="question-label"><span class="q-num">4.</span>Did the session give you a new way of thinking about or handling your situation?</label>
             <div class="options">
               <label class="option"><input type="radio" name="new_thinking" value="Yes, definitely" required> Yes, definitely</label>
               <label class="option"><input type="radio" name="new_thinking" value="A little"> A little</label>
@@ -235,22 +329,12 @@ textarea.feedback-textarea:focus { border-color: rgba(58,181,74,0.5); }
           </div>
 
           <div class="question">
-            <label class="question-label"><span class="q-num">4.</span>At any point during the session, did you feel misunderstood?</label>
+            <label class="question-label"><span class="q-num">5.</span>At any point during the session, did you feel misunderstood?</label>
             <div class="options">
               <label class="option"><input type="radio" name="felt_misunderstood" value="No, not at all" required> No, not at all</label>
               <label class="option"><input type="radio" name="felt_misunderstood" value="Once or twice"> Once or twice</label>
               <label class="option"><input type="radio" name="felt_misunderstood" value="Quite a few times"> Quite a few times</label>
               <label class="option"><input type="radio" name="felt_misunderstood" value="Yes, throughout"> Yes, throughout</label>
-            </div>
-          </div>
-
-          <div class="question">
-            <label class="question-label"><span class="q-num">5.</span>To begin, WOTG asked you a few questions to identify the right human skill for your situation and build a personalized Learning Atom. These questions felt:</label>
-            <div class="options">
-              <label class="option"><input type="radio" name="question_volume" value="Worth it—the personalization made them worthwhile" required> Worth it—the personalization made them worthwhile</label>
-              <label class="option"><input type="radio" name="question_volume" value="Slightly too many"> Slightly too many</label>
-              <label class="option"><input type="radio" name="question_volume" value="Far too many"> Far too many</label>
-              <label class="option"><input type="radio" name="question_volume" value="Too few—I wanted WOTG to understand my situation better"> Too few—I wanted WOTG to understand my situation better</label>
             </div>
           </div>
 
@@ -285,13 +369,23 @@ textarea.feedback-textarea:focus { border-color: rgba(58,181,74,0.5); }
           </div>
 
           <div class="question">
-            <label class="question-label"><span class="q-num">10.</span>Would you use Wisdom On The GO! again for another work situation?</label>
-            <div class="options">
-              <label class="option"><input type="radio" name="would_use_again" value="Definitely" required> Definitely</label>
-              <label class="option"><input type="radio" name="would_use_again" value="Probably"> Probably</label>
-              <label class="option"><input type="radio" name="would_use_again" value="Maybe"> Maybe</label>
-              <label class="option"><input type="radio" name="would_use_again" value="Probably not"> Probably not</label>
-              <label class="option"><input type="radio" name="would_use_again" value="No"> No</label>
+            <label class="question-label"><span class="q-num">10.</span>On a scale of 1–10, how likely are you to use WOTG again?</label>
+            <p class="scale-caption"><b>10</b> is the highest — meaning extremely likely.</p>
+            <div class="scale-row">
+              <div class="scale-item"><input type="radio" id="ls1" name="likelihood_score" value="1" required><label for="ls1">1</label></div>
+              <div class="scale-item"><input type="radio" id="ls2" name="likelihood_score" value="2"><label for="ls2">2</label></div>
+              <div class="scale-item"><input type="radio" id="ls3" name="likelihood_score" value="3"><label for="ls3">3</label></div>
+              <div class="scale-item"><input type="radio" id="ls4" name="likelihood_score" value="4"><label for="ls4">4</label></div>
+              <div class="scale-item"><input type="radio" id="ls5" name="likelihood_score" value="5"><label for="ls5">5</label></div>
+              <div class="scale-item"><input type="radio" id="ls6" name="likelihood_score" value="6"><label for="ls6">6</label></div>
+              <div class="scale-item"><input type="radio" id="ls7" name="likelihood_score" value="7"><label for="ls7">7</label></div>
+              <div class="scale-item"><input type="radio" id="ls8" name="likelihood_score" value="8"><label for="ls8">8</label></div>
+              <div class="scale-item"><input type="radio" id="ls9" name="likelihood_score" value="9"><label for="ls9">9</label></div>
+              <div class="scale-item highest"><input type="radio" id="ls10" name="likelihood_score" value="10"><label for="ls10">10</label></div>
+            </div>
+            <div class="scale-endlabels">
+              <span>1 = Not likely</span>
+              <span class="end-highest">10 = Extremely likely (highest)</span>
             </div>
           </div>
 
@@ -311,13 +405,51 @@ textarea.feedback-textarea:focus { border-color: rgba(58,181,74,0.5); }
   </div>
 
   <script>
-    // Wired to the real backend now -- writes straight into a real
-    // Postgres table (session_feedback), tied to whichever session_id/
-    // user_id the link this page was opened from carried along.
-    const API_BASE = 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewebsites.net';
+    // Wired to the real backend -- writes straight into a real Postgres
+    // table, tied to whichever session_id/user_id the link this page was
+    // opened from carried along.
+    //
+    // API_BASE branches by track, fixed 2026-09-16 -- this used to be
+    // hardcoded to wotg-backend (VO's own App Service) no matter which
+    // track the link came from, so an MR session's feedback link
+    // (track=MR) was silently POSTing into VO's /api/feedback/submit ->
+    // vo_feedback, never reaching MR's own backend/tables at all. MR isn't
+    // deployed yet so this never fired in production, but it would have
+    // the moment it was.
+    const VO_API_BASE = 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewebsites.net';
+    const MR_API_BASE = 'https://wotg-learning-recommendations.azurewebsites.net';
 
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id') || '';
+    const track = urlParams.get('track') || 'VO';
+    const isMR = track === 'MR';
+    const API_BASE = isMR ? MR_API_BASE : VO_API_BASE;
+    // subtrack only matters for MR (real-situation vs scenario) -- always
+    // present on a real MR link (session_complete_message.py, wired
+    // 2026-09-16); defaults to realsit so an old/malformed link never
+    // shows a blank or broken Q2.
+    const subtrack = urlParams.get('subtrack') || 'realsit';
+
+    // Q1/Q10 are 2-way (VO vs MR); Q2 is 3-way (VO / MR-realsit /
+    // MR-scenario, since scenario's Q2 is a genuinely different question,
+    // not just different wording -- see mr_feedback_store.py, 2026-09-16).
+    // Only the visible variant's radios get [required] -- a hidden
+    // required radio group blocks native form submission entirely.
+    function showOnly(showId, allIds) {
+      allIds.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (id === showId) {
+          el.hidden = false;
+          el.querySelectorAll('input[type="radio"]').forEach(function(r) { r.required = true; });
+        } else {
+          el.hidden = true;
+          el.querySelectorAll('input[required]').forEach(function(r) { r.required = false; });
+        }
+      });
+    }
+    showOnly(isMR ? 'q1-mr' : 'q1-vo', ['q1-vo', 'q1-mr']);
+    const q2Id = !isMR ? 'q2-vo' : (subtrack === 'scenario' ? 'q2-mr-scenario' : 'q2-mr-realsit');
+    showOnly(q2Id, ['q2-vo', 'q2-mr-realsit', 'q2-mr-scenario']);
     const userId = urlParams.get('user_id') || '';
 
     document.getElementById('feedbackForm').addEventListener('submit', function(e) {
