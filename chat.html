@@ -1164,6 +1164,14 @@ header.topbar { background:var(--night); }
 
   .chat-panel { margin:1rem; height:auto; min-height:350px; }
 
+  /* The composer pill was keeping its desktop margin (0 2rem), which on
+     top of .page's own 1rem padding insets it ~48px each side -- visibly
+     narrower than the cards and the live conversation panel above it,
+     both of which only end up inset ~32px (their own 1rem padding/margin
+     stacked on .page's 1rem). Matching that 1rem here lines all three up.
+     Kriti's explicit call, 2026-09-17. */
+  .chat-bar { margin:0 1rem 1rem; }
+
   .charts-strip { flex-direction:column; padding:0 1rem 1rem; }
 
   /* The panel/overlay's real top offset is set from JS (see
