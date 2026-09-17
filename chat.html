@@ -1099,20 +1099,43 @@ header.topbar { background:var(--night); }
 @media (max-width: 768px) {
   .page, .header-inner { padding-left:1rem; padding-right:1rem; }
 
-  /* Phone-only layout: Kriti's photo, this reorder, and the collapsed
-     cards below are all scoped inside this media query -- nothing here
-     runs above 768px, so the laptop layout is untouched. 2026-09-17. */
-  .page { display:flex; flex-direction:column; }
-  header.topbar { order:1; }
-  .chat-bar { order:2; }
-  .hero, .chat-panel { order:3; }
-  .charts-strip { order:5; }
+  /* Phone-only header, Kriti's explicit call, 2026-09-17 -- "Wisdom on the
+     GO!" was wrapping across 3 lines because it was squeezed into the same
+     row as the greeting, Start Tour and all 5 header icons on a 390px
+     screen. Logo now gets row 1 to itself; the (already-empty) .header-
+     spacer is repurposed as a forced flex line-break via order + flex-
+     basis:100% -- no HTML change needed -- which pushes greeting + icons
+     onto row 2. Start Tour and the "How can I help you today?" subtext are
+     dropped entirely on phone: no guided tour for phone users. */
+  .header-inner { flex-wrap:wrap; padding-top:0.6rem; padding-bottom:0.55rem; row-gap:0.4rem; }
+  .tour-start-btn { display:none; }
+  .greeting { margin-left:0; order:4; }
+  .greeting .sub { display:none; }
+  .burger-btn { order:1; }
+  .logo-block { order:2; }
+  .header-spacer { flex-basis:100%; height:0; order:3; }
+  /* The 5 icon circles at their full desktop size (38px + 0.9rem gaps)
+     don't fit a 390px screen -- that overflow was quietly widening the
+     WHOLE page, which is why cards and other content looked clipped at
+     the right edge in every phone screenshot, not just the header itself.
+     Shrinking them here is what actually fixes that page-wide cutoff. */
+  .header-icons { order:5; margin-left:auto; gap:0.5rem; }
+  .header-icons .icon-item a.icon-btn { width:34px; height:34px; }
+  .header-icons svg { width:17px; height:17px; }
 
   .logo { font-size:1.15rem; }
   .logo-sanskrit { font-size:0.54rem; }
-  .greeting { margin-left:0.9rem; }
   .greeting .hello { font-size:0.85rem; }
-  .greeting .sub { font-size:0.72rem; }
+
+  /* Card banners + chat composer stay in their normal DOM order below the
+     header (cards first, chat bar under them, exactly like desktop) --
+     an earlier pass reordered the chat bar ABOVE the cards via flex+order,
+     which also silently reordered the live conversation panel behind the
+     composer (message thread rendering below the input you just typed
+     into). Reverted, Kriti's explicit call, 2026-09-17: "the chat box
+     should be below that [the cards], because the minute I chat these
+     three banners vanish and the chat box appears -- that's exactly how
+     it works on the laptop right now." */
 
   .hero { flex-direction:column; height:auto; padding:1rem; gap:1rem; }
   .avatar-wrap { display:none; }
@@ -1143,7 +1166,14 @@ header.topbar { background:var(--night); }
 
   .charts-strip { flex-direction:column; padding:0 1rem 1rem; }
 
-  .side-panel { width:min(280px, 85vw); }
+  /* The panel/overlay's real top offset is set from JS (see
+     _syncMobileHeaderHeight()) to match the header's actual rendered
+     height -- Kriti's explicit call, 2026-09-17: the header's height now
+     varies (one line vs. two, depending on content), so the desktop
+     rule's fixed top:72px left the panel starting mid-header or with a
+     gap below it. 72px is only the pre-JS fallback. */
+  .side-panel { width:min(280px, 85vw); top:var(--mobile-header-h, 72px); height:calc(100vh - var(--mobile-header-h, 72px)); }
+  .panel-overlay { top:var(--mobile-header-h, 72px); }
 
   /* Popovers/tooltips/dropdowns -- fixed widths (300/260/200/180px) could
      exceed a narrow phone's viewport; cap without changing desktop sizing. */
@@ -1739,6 +1769,7 @@ function initSession() {
   loadLearningMomentum(learningMomentumPeriod);
   loadStarStock(starStockPeriod);
   _syncStarStockHeight();
+  _syncMobileHeaderHeight();
 }
 
 // Star Stock's visible list height is set to match Learning Momentum's own
@@ -1755,6 +1786,17 @@ function _syncStarStockHeight() {
   starList.style.maxHeight = statList.offsetHeight + 'px';
 }
 window.addEventListener('resize', _syncStarStockHeight);
+
+// Phone header's real height (see the mobile media query's .side-panel/
+// .panel-overlay rules) varies with content, so it's measured here rather
+// than guessed in CSS. No-ops harmlessly above 768px, where those rules
+// don't apply. Kriti's explicit call, 2026-09-17.
+function _syncMobileHeaderHeight() {
+  const header = document.querySelector('header.topbar');
+  if (!header) return;
+  document.documentElement.style.setProperty('--mobile-header-h', header.offsetHeight + 'px');
+}
+window.addEventListener('resize', _syncMobileHeaderHeight);
 
 // ─── STAR STOCK CARD ─────────────────────────────────────────────────────
 // Built 2026-09-17, Kriti's own design. Own independent load function,
