@@ -1162,7 +1162,15 @@ header.topbar { background:var(--night); }
     padding-left:1.3rem; padding-right:1.3rem;
   }
 
-  .chat-panel { margin:1rem; height:auto; min-height:350px; }
+  /* height:auto with no ceiling meant a long conversation just kept
+     growing the WHOLE panel (and page) taller instead of scrolling its
+     own message thread -- .chat-messages's own overflow-y:auto never got
+     a chance to engage because its flex parent was never height-
+     constrained. max-height caps it (same idea as desktop's fixed 350px,
+     just viewport-relative for different phone heights); .chat-messages
+     scrolls internally beyond that, same as desktop. Kriti's explicit
+     call, 2026-09-17. */
+  .chat-panel { margin:1rem; height:auto; max-height:70vh; min-height:350px; }
 
   /* The composer pill was keeping its desktop margin (0 2rem), which on
      top of .page's own 1rem padding insets it ~48px each side -- visibly
@@ -1574,11 +1582,36 @@ header.topbar { background:var(--night); }
 </div>
 
 <script>
+// `overflow:hidden` alone locks scroll on desktop (mouse wheel respects
+// it) but iOS Safari ignores it for a touch-drag -- the background page
+// still pans underneath a supposedly-locked panel. Kriti's explicit call,
+// 2026-09-17, confirmed live on her phone. Pinning body to position:fixed
+// at its current scroll offset is the standard fix: a fixed element can't
+// be touch-scrolled at all, on any platform. Used by the side panel and
+// the guided tour, both of which want the background frozen while open.
+let _scrollLockY = 0;
+function _lockBodyScroll() {
+  _scrollLockY = window.scrollY || document.documentElement.scrollTop || 0;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${_scrollLockY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.overflow = 'hidden';
+}
+function _unlockBodyScroll() {
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.overflow = '';
+  window.scrollTo(0, _scrollLockY);
+}
+
 function toggleSidePanel() {
   const panel = document.getElementById('sidePanel');
   panel.classList.toggle('open');
   document.getElementById('panelOverlay').classList.toggle('open');
-  document.body.style.overflow = panel.classList.contains('open') ? 'hidden' : '';
+  if (panel.classList.contains('open')) _lockBodyScroll(); else _unlockBodyScroll();
 }
 function toggleAccordion(btn) {
   btn.parentElement.classList.toggle('expanded');
@@ -1657,7 +1690,7 @@ function positionAndShowTourStep(step, i) {
   // scroll for the duration of the tour is the fix, same pattern this
   // page already uses for the side panel overlay. Kriti's explicit call,
   // 2026-09-15, confirmed live via screenshot.
-  document.body.style.overflow = 'hidden';
+  _lockBodyScroll();
 
   const margin = 14;
   const vw = window.innerWidth, vh = window.innerHeight;
@@ -1696,14 +1729,14 @@ function finishTour() {
   document.getElementById('tourPopup').classList.remove('visible');
   const panel = document.getElementById('sidePanel');
   if (panel.classList.contains('open')) toggleSidePanel();
-  document.body.style.overflow = '';
+  _unlockBodyScroll();
 }
 function dismissTour() {
   document.getElementById('tourPopup').classList.remove('visible');
   tourStepIndex = TOUR_STEPS.length;
   const panel = document.getElementById('sidePanel');
   if (panel.classList.contains('open')) toggleSidePanel();
-  document.body.style.overflow = '';
+  _unlockBodyScroll();
 }
 
 // ─── CONFIG ─────────────────────────────────────────────────────────────
