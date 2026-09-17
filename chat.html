@@ -131,10 +131,15 @@ header.topbar { background:var(--night); }
 .tour-btn-dismiss:hover { color:var(--night); }
 
 .notif-badge {
-  position:absolute; top:1px; right:1px; width:10px; height:10px;
+  position:absolute; top:-2px; right:-2px; width:14px; height:14px; box-sizing:border-box;
   background:#e14b4b; border:2px solid var(--night); border-radius:50%;
+  color:#fff; font-family:'Poppins',sans-serif; font-size:9px; font-weight:800;
+  line-height:10px; text-align:center;
 }
 .icon-item.seen .notif-badge { display:none; }
+/* My Notes gets its own color -- green, not red -- Kriti's explicit call,
+   2026-09-17: red is reserved for the Notifications bell specifically. */
+#notesBadge { background:var(--green); }
 
 .notif-dropdown {
   position:absolute; top:48px; right:0; width:300px; z-index:500;
@@ -195,6 +200,12 @@ header.topbar { background:var(--night); }
 .notes-row.clickable .notes-row-title { color:var(--night); font-weight:600; }
 .notes-row.clickable .notes-row-date { color:var(--green2); opacity:1; }
 .notes-row.clickable:hover { background:rgba(58,181,74,0.13); }
+/* Seen/unseen distinction, Kriti's explicit call, 2026-09-17 -- every row
+   rendered bold regardless of whether she'd already opened it, so there
+   was no way to tell new from already-viewed at a glance. Bold now means
+   "never opened"; opening a row once drops it to normal weight, in this
+   browser, going forward (see _markNoteSeen()/loadMyNotes() below). */
+.notes-row.clickable.seen .notes-row-title { font-weight:500; color:var(--grey3); }
 
 /* ---- Hero: avatar + cards ---- */
 .hero { display:flex; gap:0; padding:1.3rem 2rem 1rem; align-items:stretch; height:350px; }
@@ -390,15 +401,27 @@ header.topbar { background:var(--night); }
   transition:transform 0.2s ease, box-shadow 0.2s ease;
 }
 .insight-card:hover { transform:translateY(-5px); box-shadow:0 14px 28px rgba(22,32,46,0.16); }
-.insight-card h3 { font-size:0.92rem; color:var(--night2); margin-bottom:0.45rem; white-space:nowrap; }
+.insight-card h3 { font-size:0.96rem; color:var(--night2); margin-bottom:0.8rem; white-space:nowrap; }
 .card-head-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem; }
 .card-head-row h3 { margin-bottom:0; }
-.period-toggle { display:flex; background:var(--grey1); border-radius:20px; padding:0.2rem; }
-.period-toggle span {
-  padding:0.28rem 0.65rem; font-size:0.68rem; color:var(--grey3); border-radius:16px; cursor:pointer;
+.period-toggle {
+  display:flex; align-items:center; background:var(--night); border-radius:20px; padding:0.2rem;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,0.35);
 }
-.period-toggle span.active { background:var(--green); color:#fff; font-weight:600; }
-.period-toggle-bottom { display:inline-flex; margin-top:0.55rem; }
+.period-toggle span {
+  display:flex; align-items:center; justify-content:center; line-height:1; transform:translateY(-1.2px);
+  padding:0.28rem 0.65rem; font-size:0.68rem; color:rgba(255,255,255,0.55); border-radius:16px; cursor:pointer;
+  transition:background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+/* Raised/3D "knob" look, Kriti's explicit call, 2026-09-17: a flat fill
+   read as a static label, not something you could slide -- the gradient +
+   drop shadow + inner highlight is what sells "this lifts off the track,
+   it moves." */
+.period-toggle span.active {
+  background:linear-gradient(180deg, #4cc95e, #2d9640); color:#fff; font-weight:600;
+  box-shadow:0 2px 4px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.35);
+}
+.period-toggle-bottom { display:inline-flex; margin-top:0.65rem; }
 .period-toggle-bottom span { padding:0.2rem 0.5rem; font-size:0.6rem; }
 
 /* Learning Momentum */
@@ -410,22 +433,40 @@ header.topbar { background:var(--night); }
 }
 .stat-tile .stat-icon svg { width:16px; height:16px; color:var(--green2); }
 .stat-tile .stat-text { flex:1; }
-.stat-tile .stat-value { font-weight:700; font-size:0.98rem; color:var(--night); }
+.stat-tile .stat-value { font-weight:700; font-size:0.90rem; color:var(--night); transition:opacity 0.15s; }
 .stat-tile .stat-label { font-size:0.7rem; color:var(--grey3); }
 .stat-tile.streak .stat-icon { background:rgba(201,168,76,0.15); }
 .stat-tile.streak .stat-icon svg { color:var(--gold2); }
-.ring-wrap { position:relative; width:30px; height:30px; flex-shrink:0; }
+/* Loading dim, Kriti's explicit call, 2026-09-17 -- toggling the period
+   used to give no visible sign anything was happening during the fetch,
+   so a slow response looked identical to a broken click. */
+#learningMomentumCard.lm-loading .stat-value,
+#learningMomentumCard.lm-loading .ring-wrap { opacity:0.35; }
+.stat-tile-split .stat-text-split { flex:1; display:flex; align-items:center; }
+.stat-tile-split .stat-text-half { flex:1; }
+.stat-tile-split .stat-divider { width:1px; align-self:stretch; background:rgba(0,0,0,0.12); margin:0 0.7rem; }
+.ring-wrap { position:relative; width:30px; height:30px; flex-shrink:0; transition:opacity 0.15s; }
 .ring-wrap svg { transform:rotate(-90deg); }
 .ring-wrap .ring-bg { fill:none; stroke:rgba(58,181,74,0.15); stroke-width:4; }
 .ring-wrap .ring-fg { fill:none; stroke:var(--green); stroke-width:4; stroke-linecap:round; }
 
 /* Star Collection */
+/* Height is set from JS (see _syncStarStockHeight()) to match .stat-list's
+   own real rendered height exactly, row for row -- Kriti's explicit call,
+   2026-09-17: the two cards' bottom dividing lines have to land at the
+   same pixel, and guessing a rem value here drifted, showing a 6th row
+   half-cut instead of a clean 5. 17rem is only the pre-JS fallback. */
+.star-list { max-height:17rem; overflow-y:auto; }
 .star-item { padding:0.32rem 0; border-bottom:1px solid rgba(0,0,0,0.05); }
 .star-item:last-child { border-bottom:none; }
-.star-item .skill-name { font-size:0.82rem; color:var(--night2); margin-bottom:0.2rem; font-weight:500; }
-.star-item .stars svg { width:15px; height:15px; }
+.star-item .skill-name { font-size:0.78rem; color:var(--night2); margin-bottom:0.12rem; font-weight:500; }
+.star-item .stars { display:flex; gap:5px; width:126px; }
+.star-item .stars svg { width:21px; height:21px; }
 .star-item .stars svg.filled { fill:url(#starShine); filter:drop-shadow(0 1px 1.5px rgba(168,121,31,0.45)); }
-.star-item .stars svg.empty { fill:#e2e2e2; }
+.star-item .stars svg.empty { fill:#dfe2e6; }
+.star-item .stars .star-slot { position:relative; display:inline-block; width:21px; height:21px; }
+.star-item .stars .star-slot svg { position:absolute; top:0; left:0; }
+.star-item .stars .star-slot svg.half { fill:url(#starShine); filter:drop-shadow(0 1px 1.5px rgba(168,121,31,0.45)); clip-path:inset(0 50% 0 0); }
 
 /* Annual Growth Map */
 .bar-row { margin-bottom:0.2rem; }
@@ -1058,17 +1099,42 @@ header.topbar { background:var(--night); }
 @media (max-width: 768px) {
   .page, .header-inner { padding-left:1rem; padding-right:1rem; }
 
+  /* Phone-only layout: Kriti's photo, this reorder, and the collapsed
+     cards below are all scoped inside this media query -- nothing here
+     runs above 768px, so the laptop layout is untouched. 2026-09-17. */
+  .page { display:flex; flex-direction:column; }
+  header.topbar { order:1; }
+  .chat-bar { order:2; }
+  .hero, .chat-panel { order:3; }
+  .charts-strip { order:5; }
+
+  .logo { font-size:1.15rem; }
+  .logo-sanskrit { font-size:0.54rem; }
+  .greeting { margin-left:0.9rem; }
+  .greeting .hello { font-size:0.85rem; }
+  .greeting .sub { font-size:0.72rem; }
+
   .hero { flex-direction:column; height:auto; padding:1rem; gap:1rem; }
-  .avatar-wrap { width:100%; height:160px; margin-right:0; border-radius:8px; }
+  .avatar-wrap { display:none; }
 
   .card-group { flex-direction:column; box-shadow:none; gap:0.9rem; }
   .card-group .card {
     clip-path:none !important; margin-left:0 !important; box-shadow:0 6px 18px rgba(4,26,64,0.10);
     border-radius:8px;
   }
+  /* Collapsed banner cards, Kriti's explicit call, 2026-09-17: headers stay
+     visible, bodies hide until tapped -- reuses the same toggleAccordion()/
+     .expanded pattern already used for the side-panel nav. */
   .card:nth-child(1) .card-header, .card:nth-child(2) .card-header, .card:nth-child(3) .card-header {
-    padding-left:1.3rem; padding-right:1.3rem;
+    padding-left:1.3rem; padding-right:2.6rem; position:relative; cursor:pointer;
   }
+  .card:nth-child(1) .card-header::after, .card:nth-child(2) .card-header::after, .card:nth-child(3) .card-header::after {
+    content:'\25BE'; position:absolute; right:1.1rem; top:50%; color:#fff;
+    transform:translateY(-50%) rotate(-90deg); font-size:0.8rem; transition:transform 0.2s ease;
+  }
+  .card-group .card.expanded .card-header::after { transform:translateY(-50%) rotate(0deg); }
+  .card-group .card .card-body { display:none; }
+  .card-group .card.expanded .card-body { display:flex; }
   .card:nth-child(1) .card-body, .card:nth-child(2) .card-body, .card:nth-child(3) .card-body {
     padding-left:1.3rem; padding-right:1.3rem;
   }
@@ -1086,7 +1152,6 @@ header.topbar { background:var(--night); }
 
 @media (max-width: 420px) {
   .hero { padding:0.75rem; }
-  .avatar-wrap { height:130px; }
   .chat-panel { margin:0.6rem; }
   .charts-strip { padding:0 0.6rem 1rem; }
 }
@@ -1233,6 +1298,7 @@ header.topbar { background:var(--night); }
         <div class="icon-item" id="notesItem">
           <a class="icon-btn" href="#" onclick="toggleNotesDropdown(event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M12 12v6"/><path d="M9.5 15.5 12 18l2.5-2.5"/></svg>
+            <span class="notif-badge" id="notesBadge" style="display:none">!</span>
           </a>
           <span class="icon-tooltip">My Notes</span>
           <div class="notes-dropdown" id="notesDropdown">
@@ -1257,7 +1323,7 @@ header.topbar { background:var(--night); }
         <div class="icon-item" id="notifItem">
           <a class="icon-btn" id="bellBtn" href="#" onclick="toggleNotifications(event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 3.5 1 5.5 2 7H4c1-1.5 2-3.5 2-7Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
-            <span class="notif-badge" id="notifBadge" style="display:none"></span>
+            <span class="notif-badge" id="notifBadge" style="display:none">!</span>
           </a>
           <span class="icon-tooltip">Notifications</span>
           <div class="notif-dropdown" id="notifDropdown">
@@ -1288,7 +1354,7 @@ header.topbar { background:var(--night); }
     </div>
     <div class="card-group">
       <div class="card">
-        <div class="card-header" id="peerRecCard"><span class="card-header-title">Peer Recommendations</span> <span class="coming-soon-tag">Coming soon</span></div>
+        <div class="card-header" id="peerRecCard" onclick="toggleAccordion(this)"><span class="card-header-title">Peer Recommendations</span> <span class="coming-soon-tag">Coming soon</span></div>
         <div class="card-body">
           <ul>
             <li>Navigating Relational Dynamics</li>
@@ -1300,7 +1366,7 @@ header.topbar { background:var(--night); }
         </div>
       </div>
       <div class="card">
-        <div class="card-header" id="managerRecCard">Learning Recommendations</div>
+        <div class="card-header" id="managerRecCard" onclick="toggleAccordion(this)">Learning Recommendations</div>
         <div class="card-body">
           <ul id="learningRecsList">
             <li class="side-loading">Loading…</li>
@@ -1308,7 +1374,7 @@ header.topbar { background:var(--night); }
         </div>
       </div>
       <div class="card">
-        <div class="card-header" id="strategicGoalsCard"><span class="card-header-title">Strategic Learning Goals</span> <span class="coming-soon-tag">Coming soon</span></div>
+        <div class="card-header" id="strategicGoalsCard" onclick="toggleAccordion(this)"><span class="card-header-title">Strategic Learning Goals</span> <span class="coming-soon-tag">Coming soon</span></div>
         <div class="card-body">
           <ul>
             <li>Remote Work Integration</li>
@@ -1387,69 +1453,49 @@ header.topbar { background:var(--night); }
 
   <div class="charts-strip">
 
-    <div class="insight-card">
-      <h3>Learning Momentum <span class="coming-soon-tag">Coming soon</span></h3>
+    <div class="insight-card" id="learningMomentumCard">
+      <h3>Learning Momentum</h3>
+      <div class="stat-list" id="statList">
       <div class="stat-tile streak">
         <div class="stat-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2c.6 3.5-2.6 4.8-3.8 7.3C8.6 11.4 9 13 10.3 14c.8.6 1.9.4 2.4-.4.5-.8.3-1.6-.2-2.1 2.1.6 3.5 2.7 3.5 4.8 0 3.1-2.5 5.7-5.6 5.7S4.8 19.4 4.8 16.3c0-4.6 3.7-6.1 5.4-9.2 1-1.9 1.3-3.2.9-5.1 1 .5 2.1 1.3 2.4 0Z"/></svg></div>
-        <div class="stat-text"><div class="stat-value">2 days</div><div class="stat-label">Current Streak</div></div>
+        <div class="stat-text"><div class="stat-value" id="lmStreak">--</div><div class="stat-label">Current Streak</div></div>
       </div>
       <div class="stat-tile">
         <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4.2"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/></svg></div>
-        <div class="stat-text"><div class="stat-value">7</div><div class="stat-label">Learning Atoms</div></div>
+        <div class="stat-text"><div class="stat-value" id="lmAtoms">--</div><div class="stat-label">Learning Atoms</div></div>
       </div>
       <div class="stat-tile">
         <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6Z"/><path d="m9 12 2 2 4-4"/></svg></div>
-        <div class="stat-text"><div class="stat-value">5</div><div class="stat-label">Skills Trained</div></div>
+        <div class="stat-text"><div class="stat-value" id="lmSkills">--</div><div class="stat-label">Skills Trained</div></div>
       </div>
-      <div class="stat-tile">
+      <div class="stat-tile stat-tile-split">
         <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
-        <div class="stat-text"><div class="stat-value">19 min</div><div class="stat-label">Avg. Session</div></div>
+        <div class="stat-text-split">
+          <div class="stat-text-half"><div class="stat-value" id="lmAvgCompleted">--</div><div class="stat-label">Avg. Session (Completed)</div></div>
+          <div class="stat-divider"></div>
+          <div class="stat-text-half"><div class="stat-value" id="lmAvgOther">--</div><div class="stat-label">Avg. Session (Other)</div></div>
+        </div>
       </div>
       <div class="stat-tile">
         <div class="ring-wrap">
           <svg width="30" height="30" viewBox="0 0 30 30">
             <circle class="ring-bg" cx="15" cy="15" r="12.5"/>
-            <circle class="ring-fg" cx="15" cy="15" r="12.5" stroke-dasharray="78.5" stroke-dashoffset="3.14"/>
+            <circle class="ring-fg" id="lmCompletionRing" cx="15" cy="15" r="12.5" stroke-dasharray="78.5" stroke-dashoffset="78.5"/>
           </svg>
         </div>
-        <div class="stat-text"><div class="stat-value">96%</div><div class="stat-label">Completion Rate</div></div>
+        <div class="stat-text"><div class="stat-value" id="lmCompletionRate">--</div><div class="stat-label">Completion Rate</div></div>
       </div>
-      <div class="period-toggle period-toggle-bottom">
-        <span class="active">Month</span><span>Quarter</span><span>Year</span>
+      </div>
+      <div class="period-toggle period-toggle-bottom" id="learningMomentumToggle">
+        <span class="active" data-period="month" onclick="setLearningMomentumPeriod('month')">Month</span><span data-period="quarter" onclick="setLearningMomentumPeriod('quarter')">Quarter</span><span data-period="year" onclick="setLearningMomentumPeriod('year')">Year</span>
       </div>
     </div>
 
-    <div class="insight-card">
-      <h3>Annual Star Stock <span class="coming-soon-tag">Coming soon</span></h3>
-      <div class="star-item">
-        <div class="skill-name">Giving Feedback</div>
-        <div class="stars">
-          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
-        </div>
-      </div>
-      <div class="star-item">
-        <div class="skill-name">Influencing Others</div>
-        <div class="stars">
-          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
-        </div>
-      </div>
-      <div class="star-item">
-        <div class="skill-name">Demonstrating Reliability</div>
-        <div class="stars">
-          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
-        </div>
-      </div>
-      <div class="star-item">
-        <div class="skill-name">Being Resilient</div>
-        <div class="stars">
-          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
-        </div>
-      </div>
-      <div class="star-item">
-        <div class="skill-name">Being Fair</div>
-        <div class="stars">
-          <svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="filled" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg><svg class="empty" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
-        </div>
+    <div class="insight-card" id="starStockCard">
+      <h3>Star Stock</h3>
+      <div class="star-list" id="starStockList"></div>
+      <div class="period-toggle period-toggle-bottom" id="starStockToggle">
+        <span class="active" data-period="month" onclick="setStarStockPeriod('month')">Month</span><span data-period="quarter" onclick="setStarStockPeriod('quarter')">Quarter</span><span data-period="year" onclick="setStarStockPeriod('year')">Year</span>
       </div>
     </div>
 
@@ -1507,6 +1553,8 @@ const TOUR_STEPS = [
   { anchor:'#profileItem', side:false, section:TOUR_SECTION, num:5, title:'Your Profile', body:"Update your ‘About Me’ info, your current growth goal, and your profile photo any time from here." },
   { anchor:'#parkingLotSection', side:true, section:TOUR_SECTION, num:6, title:'Parking Lot', body:'Left a conversation unfinished? Pick it back up exactly where you stopped.' },
   { anchor:'#convHistorySection', side:true, section:TOUR_SECTION, num:7, title:'Conversation History', body:"Revisit your past conversations and everything you've already learned." },
+  { anchor:'#learningMomentumCard', side:false, section:TOUR_SECTION, num:8, title:'Learning Momentum', body:"A quick pulse on how you're doing overall — your streak, how much you're learning, and how consistently you're keeping it up." },
+  { anchor:'#starStockCard', side:false, section:TOUR_SECTION, num:9, title:'Star Stock', body:"The most reliable way to build a human skill is to apply it. Every time you learn something and put it into practice, you earn a star — half for learning it, half for applying it." },
 ];
 let tourStepIndex = -1;
 
@@ -1534,6 +1582,16 @@ function positionAndShowTourStep(step, i) {
   const anchor = document.querySelector(step.anchor);
   const popup = document.getElementById('tourPopup');
   if (!anchor) { advanceTour(); return; }
+
+  // Learning Momentum/Star Stock sit lower on the page, below the fold on
+  // load -- scroll them into view BEFORE locking body scroll below, so
+  // the popup positions against their real on-screen spot instead of an
+  // off-screen rect. A no-op for every earlier step, which is already in
+  // view. 2026-09-17.
+  const preRect = anchor.getBoundingClientRect();
+  if (preRect.top < 0 || preRect.bottom > window.innerHeight) {
+    anchor.scrollIntoView({ block: 'center' });
+  }
 
   document.getElementById('tourPopupStep').textContent = step.section;
   document.getElementById('tourPopupTitle').textContent = `${step.num}. ${step.title}`;
@@ -1678,6 +1736,145 @@ function initSession() {
   checkNotificationBadge();
   loadMyNotes();
   loadHeaderProfilePhoto();
+  loadLearningMomentum(learningMomentumPeriod);
+  loadStarStock(starStockPeriod);
+  _syncStarStockHeight();
+}
+
+// Star Stock's visible list height is set to match Learning Momentum's own
+// .stat-list height exactly, in JS -- Kriti's explicit call, 2026-09-17:
+// a guessed CSS max-height let a 6th star row show half-cut, and the two
+// cards' bottom dividing lines didn't land at the same pixel. .stat-list's
+// height doesn't depend on real data loading (the "--" placeholders take
+// the same space as real numbers), so this can run immediately; also
+// re-run on resize since text can wrap differently at narrower widths.
+function _syncStarStockHeight() {
+  const statList = document.getElementById('statList');
+  const starList = document.getElementById('starStockList');
+  if (!statList || !starList) return;
+  starList.style.maxHeight = statList.offsetHeight + 'px';
+}
+window.addEventListener('resize', _syncStarStockHeight);
+
+// ─── STAR STOCK CARD ─────────────────────────────────────────────────────
+// Built 2026-09-17, Kriti's own design. Own independent load function,
+// same pattern as loadLearningMomentum above. No fixed 5-star ceiling --
+// every skill renders exactly as many stars as it's actually earned, in
+// half-star steps; there's no grey "placeholder" star for an unreached
+// max, since there is no max.
+let starStockPeriod = 'month';
+
+function _renderStarIcons(container, starCount) {
+  // Silver background, 5 slots, ONE row only -- Kriti's final call,
+  // 2026-09-17, after seeing 10 slots wrap the Month/Quarter/Year toggle
+  // onto 2 lines: a skill row never shows more than 5 stars, no matter the
+  // real total; the skill LIST itself scrolls for anything beyond what
+  // fits (see .star-list's own overflow-y:auto), not the star row. Purely
+  // a display cap -- the real number backing it is still whatever
+  // data_intake.py computed, just not all shown on this one line.
+  const STAR_PATH = 'm12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z';
+  const displayCount = Math.min(starCount, 5);
+  const whole = Math.floor(displayCount);
+  const hasHalf = (displayCount - whole) >= 0.5 - 1e-9;
+  const totalSlots = 5;
+  let html = '';
+  for (let i = 0; i < totalSlots; i++) {
+    if (i < whole) {
+      html += `<svg class="filled" viewBox="0 0 24 24"><path d="${STAR_PATH}"/></svg>`;
+    } else if (i === whole && hasHalf) {
+      html += `<span class="star-slot"><svg class="empty" viewBox="0 0 24 24"><path d="${STAR_PATH}"/></svg><svg class="half" viewBox="0 0 24 24"><path d="${STAR_PATH}"/></svg></span>`;
+    } else {
+      html += `<svg class="empty" viewBox="0 0 24 24"><path d="${STAR_PATH}"/></svg>`;
+    }
+  }
+  container.innerHTML = html;
+}
+
+async function loadStarStock(period) {
+  starStockPeriod = period || starStockPeriod;
+  const email = await _getUserEmailForReports();
+  try {
+    const res = await fetch(
+      `${REPORTS_BASE}/api/reports/star-stock?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}&period=${encodeURIComponent(starStockPeriod)}`,
+    );
+    const data = await res.json();
+    if (!res.ok || !data.ok) return;
+
+    const list = document.getElementById('starStockList');
+    list.innerHTML = '';
+    (data.skills || []).forEach(function(s) {
+      const item = document.createElement('div');
+      item.className = 'star-item';
+      const name = document.createElement('div');
+      name.className = 'skill-name';
+      name.textContent = s.skill;
+      const stars = document.createElement('div');
+      stars.className = 'stars';
+      _renderStarIcons(stars, s.stars);
+      item.appendChild(name);
+      item.appendChild(stars);
+      list.appendChild(item);
+    });
+  } catch (err) {
+    // leave whatever was already showing -- non-critical card
+  }
+}
+
+function setStarStockPeriod(period) {
+  document.querySelectorAll('#starStockToggle span').forEach(function(s) {
+    s.classList.toggle('active', s.dataset.period === period);
+  });
+  loadStarStock(period);
+}
+
+// ─── LEARNING MOMENTUM CARD ─────────────────────────────────────────────
+// Built 2026-09-17, Kriti's own design. Own independent load function,
+// same "keep components independent" pattern as loadMyNotes/loadHeader
+// ProfilePhoto above -- a failure here never blocks the rest of the
+// dashboard, it just leaves the card showing its last-known values (or the
+// "--" placeholders on first load).
+let learningMomentumPeriod = 'month';
+
+async function loadLearningMomentum(period) {
+  learningMomentumPeriod = period || learningMomentumPeriod;
+  const card = document.getElementById('learningMomentumCard');
+  if (card) card.classList.add('lm-loading');
+  const email = await _getUserEmailForReports();
+  try {
+    const res = await fetch(
+      `${REPORTS_BASE}/api/reports/learning-momentum?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}&period=${encodeURIComponent(learningMomentumPeriod)}`,
+    );
+    const data = await res.json();
+    if (!res.ok || !data.ok) return;
+
+    document.getElementById('lmStreak').textContent = data.streak_days + (data.streak_days === 1 ? ' day' : ' days');
+    document.getElementById('lmAtoms').textContent = data.learning_atoms_completed + ' / ' + data.learning_atoms_total;
+    document.getElementById('lmSkills').textContent = data.skills_trained;
+    document.getElementById('lmAvgCompleted').textContent = data.avg_session_duration_minutes_completed + ' min';
+    document.getElementById('lmAvgOther').textContent = data.avg_session_duration_minutes_other + ' min';
+    document.getElementById('lmCompletionRate').textContent = data.completion_rate_percent + '%';
+
+    // Ring circumference is 2*pi*12.5 = 78.5 (the stroke-dasharray value
+    // already on this circle) -- offset it by however much of that isn't
+    // "filled" yet, same math the original hardcoded 96%/3.14 example used.
+    const ring = document.getElementById('lmCompletionRing');
+    if (ring) {
+      const circumference = 78.5;
+      const offset = circumference * (1 - data.completion_rate_percent / 100);
+      ring.setAttribute('stroke-dashoffset', offset.toFixed(2));
+    }
+  } catch (err) {
+    // leave whatever the card was already showing -- non-critical card
+  } finally {
+    if (card) card.classList.remove('lm-loading');
+  }
+}
+
+function setLearningMomentumPeriod(period) {
+  document.querySelectorAll('#learningMomentumToggle span').forEach(function(s) {
+    s.classList.toggle('active', s.dataset.period === period);
+  });
+  loadLearningMomentum(period);
 }
 
 // Fix, 2026-09-09: the header's own avatar (top-right icon) was a hardcoded
@@ -2011,6 +2208,41 @@ document.addEventListener('click', function(e) {
 let currentPages = [];
 let currentPageIndex = 0;
 
+// Seen tracking, Kriti's explicit call, 2026-09-17: bold in the My Notes
+// dropdown should mean "never opened", not just "exists" -- and the icon
+// itself should show a badge whenever anything in the list hasn't been
+// opened yet, same visual language as the Notifications bell. There's no
+// backend "viewed" flag for these documents (Learning Recall/Application
+// Commitment) at all, so this is deliberately a per-browser localStorage
+// record, not a synced-across-devices one -- opening a note on one device
+// won't unbold it on another. Good enough for "have I looked at this
+// before", not meant to be a durable read receipt.
+function _getSeenNoteIds() {
+  try {
+    return JSON.parse(localStorage.getItem('wotg_seen_notes') || '[]');
+  } catch (err) {
+    return [];
+  }
+}
+function _markNoteSeen(sessionId) {
+  try {
+    const seen = _getSeenNoteIds();
+    if (!seen.includes(sessionId)) {
+      seen.push(sessionId);
+      localStorage.setItem('wotg_seen_notes', JSON.stringify(seen));
+    }
+  } catch (err) {
+    // localStorage unavailable -- badge/bold state just won't persist, not fatal
+  }
+}
+function _updateNotesBadge(documents) {
+  const badge = document.getElementById('notesBadge');
+  if (!badge) return;
+  const seen = _getSeenNoteIds();
+  const hasUnseen = (documents || []).some(function(d) { return !seen.includes(d.session_id); });
+  badge.style.display = hasUnseen ? 'block' : 'none';
+}
+
 async function loadMyNotes() {
   const rowsEl = document.getElementById('notesRows');
   try {
@@ -2018,19 +2250,26 @@ async function loadMyNotes() {
     const res = await fetch(`${NOTIFICATION_BASE}/api/my-notes/list?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`);
     const data = await res.json();
     const documents = data.documents || [];
+    _updateNotesBadge(documents);
     if (documents.length === 0) {
       rowsEl.innerHTML = '<div class="notif-empty">Nothing here yet.</div>';
       return;
     }
+    const seenIds = _getSeenNoteIds();
     rowsEl.innerHTML = '';
     documents.forEach(function(d) {
       const row = document.createElement('div');
-      row.className = 'notes-row clickable';
+      row.className = 'notes-row clickable' + (seenIds.includes(d.session_id) ? ' seen' : '');
       const when = d.date ? new Date(d.date).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' }) : '';
       row.innerHTML = '<div class="notes-row-title"></div><div class="notes-row-date"></div>';
       row.querySelector('.notes-row-title').textContent = d.title || 'Learning Atom';
       row.querySelector('.notes-row-date').textContent = when;
-      row.onclick = function() { openNotesLightbox(d.session_id, d.title, d.has_recall, d.has_commitment); };
+      row.onclick = function() {
+        _markNoteSeen(d.session_id);
+        row.classList.add('seen');
+        _updateNotesBadge(documents);
+        openNotesLightbox(d.session_id, d.title, d.has_recall, d.has_commitment);
+      };
       rowsEl.appendChild(row);
     });
   } catch (err) {
@@ -2383,7 +2622,7 @@ function _renderReadOnlyDriverForm(formMsg, area) {
 
     (q.options || []).forEach(function(opt) {
       const line = document.createElement('div');
-      line.textContent = (opt && opt.text) || '';
+      line.textContent = _stripWrappingQuotes((opt && opt.text) || '');
       const base = 'display:block;width:100%;text-align:left;margin-bottom:0.4rem;padding:0.55rem 0.8rem;' +
         'border-radius:4px;font-family:Poppins,sans-serif;font-size:0.85rem;color:var(--night2);';
       if (opt && opt.chosen) {
@@ -2423,7 +2662,21 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
   const inputBox = document.getElementById('chatInput');
   inputBox.value = '';
   autoResize(inputBox);
-  document.getElementById('chatPanelLabel').textContent = 'Live conversation';
+  // The bar shows the reflector/skill name on resume, for BOTH tracks, if
+  // it's already known -- Kriti's explicit call, 2026-09-16. skillName here
+  // is s.hero_reflector from the Parking Lot row that was clicked (see the
+  // resumeParkedSession(...) call site above), which previous_conversations.py
+  // already resolves per track: LR's own adapter always has it (skill_name
+  // is picked before the session even starts); VO's own adapter reads
+  // session_summary's hero_reflector column, which is genuinely still empty
+  // for a session parked before the Reflector Identifier ever ran -- so a
+  // VO session abandoned early correctly shows no name here (nothing to
+  // show), while one abandoned after identification shows it, exactly
+  // mirroring what the Parking Lot row itself already displayed. A fresh
+  // conversation (startLearningGoalSession(), or VO's own hero click) never
+  // goes through this function at all, so it's untouched -- neither track
+  // ever shows a name before one is actually known.
+  document.getElementById('chatPanelLabel').textContent = skillName ? 'Live conversation — ' + skillName : 'Live conversation';
   showTyping(isLR ? 'skill_introduction' : 'opening');
   const email = await _getUserEmailForReports();
   try {
@@ -2440,10 +2693,33 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
     }
     sessionEnded = false;
     activeTrack = isLR ? 'learning_recommendations' : 'voluntary_opening';
-    if (isLR) activeSkillName = data.skill_name || skillName || '';
+    if (isLR) {
+      activeSkillName = data.skill_name || skillName || '';
+      if (activeSkillName) document.getElementById('chatPanelLabel').textContent = 'Live conversation — ' + activeSkillName;
+    }
     sessionId = clickedSessionId;
     currentPhase = data.phase;
-    _renderPastMessages(data.messages);
+
+    // A session parked mid-driver-diagnostics never auto-continues (it's
+    // genuinely waiting on a real answer, not on the system) -- resume_
+    // session.py rebuilds the same quiz it originally sent as pending_form,
+    // for BOTH tracks (VO's own _build_vo_pending_form() added 2026-09-17,
+    // mirroring LR's _build_lr_pending_form() from 2026-09-16 -- same bug,
+    // found first in LR, then confirmed live in VO too: the resumed
+    // session showed its history fine but never gave the user anything to
+    // actually click). The transcript's own read-only 'driver_form' entry
+    // (reports/transcript_format.py's driver_diagnosis_messages() for VO,
+    // lr_driver_diagnosis_messages() for LR -- both reconstruct this exact
+    // same still-unanswered form for history views) is dropped here so it
+    // doesn't render twice -- the plain signpost text right before it in
+    // the same transcript stays, then the live clickable version below
+    // takes over where that read-only entry would have gone.
+    const hasPendingForm = data.pending_form && data.pending_form.length;
+    _renderPastMessages(hasPendingForm ? data.messages.filter(function(m) { return !(m && m.type === 'driver_form'); }) : data.messages);
+    if (hasPendingForm) {
+      pendingForm = data.pending_form;
+      renderDriverDiagnosisForm(pendingForm);
+    }
 
     if (data.auto_continue) {
       showTyping(currentPhase);
@@ -2504,8 +2780,28 @@ async function viewClosedConversation(clickedSessionId, path) {
   if (document.getElementById('sidePanel').classList.contains('open')) toggleSidePanel();
   const scroll = document.getElementById('historyOverlayScroll');
   scroll.innerHTML = '';
+  // Reset every time this overlay opens -- otherwise a previous session's
+  // name would still be showing while this one's own data is still loading,
+  // or forever if this fetch fails below.
+  document.getElementById('historyOverlayTitle').textContent = 'Conversation History';
   _hideMainPanels();
   document.getElementById('historyOverlay').classList.add('open');
+  // The chat input bar is a permanent sibling of every overlay (see
+  // index.html's markup), never part of #historyOverlay itself -- this
+  // function never touched it before, so it just stayed exactly as
+  // enabled/disabled as it happened to be from whatever session was last
+  // live in this tab. Confirmed live bug, 2026-09-16: a session that had
+  // never been live-ended in THIS browser tab (e.g. ended by the Scope
+  // Checker in a background thread, or resumed and left) still had a
+  // fully working input underneath its History view -- sending a message
+  // there posted into whatever session_id was still sitting in memory,
+  // not nothing. History is read-only by definition, so lock it
+  // unconditionally the instant it opens; closeHistoryOverlay() below
+  // restores the correct state for whatever's actually still live.
+  document.getElementById('chatInput').disabled = true;
+  document.getElementById('sendBtn').disabled = true;
+  const micBtnLock = document.getElementById('micBtn');
+  if (micBtnLock) micBtnLock.disabled = true;
   const email = await _getUserEmailForReports();
   try {
     const res = await fetch(
@@ -2515,6 +2811,17 @@ async function viewClosedConversation(clickedSessionId, path) {
     if (!res.ok || !data.ok) {
       _renderHistoryMessage('ai', 'Something went wrong loading that conversation -- please try again.');
       return;
+    }
+    // Same fix as resumeParkedSession()'s own bar, applied here too --
+    // Kriti's explicit call, 2026-09-16: the reflector/skill name should
+    // show whenever it's known, same rule, both tracks. full-conversation.py's
+    // response already carries it as 'hero_reflector' for both VO and LR
+    // (see full_conversation.py's own 2 return dicts) -- read straight off
+    // the response instead of threading it through from the list row like
+    // resume does, since this session is closed and this value is now
+    // permanent, never going to change again.
+    if (data.hero_reflector) {
+      document.getElementById('historyOverlayTitle').textContent = 'Conversation History — ' + data.hero_reflector;
     }
     (data.messages || []).forEach(function(m) {
       if (m && m.type === 'driver_form') {
@@ -2530,6 +2837,21 @@ async function viewClosedConversation(clickedSessionId, path) {
 
 function closeHistoryOverlay() {
   _restoreMainPanel();
+  // Restore the shared input bar to whatever's actually true of the live
+  // session underneath (if any) -- sessionEnded already tracks this
+  // correctly for the live panel itself (see lockConversationEnded()), so
+  // read it rather than re-deriving anything. Covers all 3 real cases:
+  // still genuinely in progress (re-enables it), already ended live in
+  // this tab (stays disabled, matches lockConversationEnded()'s own
+  // placeholder), or no session ever started (sessionEnded's own default,
+  // false -- re-enables, same as a fresh page load).
+  const input = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const micBtn = document.getElementById('micBtn');
+  input.disabled = sessionEnded;
+  sendBtn.disabled = sessionEnded;
+  if (micBtn) micBtn.disabled = sessionEnded;
+  input.placeholder = sessionEnded ? 'Conversation ended.' : 'Describe your situation...';
 }
 
 function _renderHistoryMessage(role, text) {
@@ -2613,17 +2935,44 @@ async function handleBackendResult(result) {
     firstPairEl.scrollIntoView({ block: 'start' });
   }
 
-  // Auto-continue is a Voluntary Opening mechanism only -- those phases run
-  // a "working on it" signpost then expect an empty follow-up call against
-  // API_BASE. The Learning Recommendations track has its own phase names
-  // ('real_situation_driver_diagnostics', 'scenario_driver_diagnostics',
-  // 'content_creation') where 'content_creation' is a terminal placeholder,
-  // NOT something to auto-continue -- and it would hit the wrong backend.
+  // Auto-continue: both tracks show a "working on it" signpost then expect
+  // an empty follow-up call, each against its own backend. VO's own 4
+  // phases below were always like this. LR's 2 content_creation phases
+  // (real_situation_content_creation / scenario_content_creation) work the
+  // exact same way -- confirmed live bug, 2026-09-16: this block was never
+  // updated when Training Coordinator + Trainer were built (2026-09-15),
+  // so those 2 phases fell through to nothing. Content Writers dispatch as
+  // background threads and return the placeholder fast (see enter_real_
+  // situation_content_creation() / enter_scenario_content_creation()), but
+  // nothing ever fetches the actual training content that follows --
+  // dots vanished, chat input stayed enabled, and the only way anything
+  // happened was the user sending a real message by hand, which
+  // backend_api.py's phase routing happens to accept (it ignores the text
+  // for this phase) and treats as the missing follow-up.
   if (activeTrack === 'voluntary_opening' &&
       (currentPhase === 'reflector_identification' || currentPhase === 'driver_diagnosis_resolving' || currentPhase === 'content_creation' || currentPhase === 'rediagnosis')) {
     showTyping(currentPhase);
     try {
       const nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
+      removeTyping();
+      await handleBackendResult(nextResult);
+    } catch (err) {
+      removeTyping();
+      appendError('Something went wrong continuing the conversation -- please try again.');
+    }
+    return;
+  }
+  if (activeTrack === 'learning_recommendations' &&
+      (currentPhase === 'real_situation_content_creation' || currentPhase === 'scenario_content_creation')) {
+    showTyping(currentPhase);
+    try {
+      const res = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, session_id: sessionId, skill_name: activeSkillName, message: '' }),
+      });
+      const nextResult = await res.json().catch(function(){ return {}; });
+      if (!res.ok) throw new Error(nextResult.detail || 'Something went wrong continuing the conversation.');
       removeTyping();
       await handleBackendResult(nextResult);
     } catch (err) {
@@ -2696,6 +3045,26 @@ function lockConversationEnded(suppressScroll) {
 }
 
 // ─── DRIVER DIAGNOSIS FORM ──────────────────────────────────────────────────
+// Some drivers' LLMs wrap an option's whole sentence in literal quote marks
+// (it reads as an inner "thought"), others don't -- inconsistent between
+// drivers, not something worth fixing prompt-side. Stripped for display only,
+// here and in the read-only history re-render below -- Kriti's explicit
+// call, 2026-09-16. NEVER applied to the value actually submitted on click
+// (see renderDriverDiagnosisForm's btn.onclick) -- the backend matches a
+// submitted answer against the option's stored text by exact string, so the
+// submitted value has to stay byte-for-byte what the LLM produced.
+function _stripWrappingQuotes(text) {
+  if (!text) return text;
+  const t = text.trim();
+  const pairs = [['"', '"'], ['“', '”'], ["'", "'"]];
+  for (const [open, close] of pairs) {
+    if (t.startsWith(open) && t.endsWith(close) && t.length > open.length + close.length) {
+      return t.slice(open.length, t.length - close.length).trim();
+    }
+  }
+  return t;
+}
+
 function renderDriverDiagnosisForm(form, opts) {
   removeWelcome();
   const area = document.getElementById('chatMessages');
@@ -2731,14 +3100,14 @@ function renderDriverDiagnosisForm(form, opts) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'driver-option-btn';
-      btn.textContent = optText;
+      btn.textContent = _stripWrappingQuotes(optText);
       // White, not --grey1 -- Kriti's call, 2026-09-10: grey options read as
       // a dead/disabled box. Same fix as the nudge form + commitment box.
       btn.style.cssText = 'display:block;width:100%;text-align:left;margin-bottom:0.4rem;padding:0.55rem 0.8rem;' +
         'background:var(--white);border:1px solid rgba(22,32,46,0.15);border-radius:4px;color:var(--night2);' +
         'font-family:Poppins,sans-serif;font-size:0.85rem;cursor:pointer;transition:border-color 0.2s,background 0.2s;';
       btn.onclick = function() {
-        answers[q.driver_name] = optText;
+        answers[q.driver_name] = optText;  // raw text, unstripped -- must match backend's stored option text exactly
         Array.from(qBlock.querySelectorAll('button')).forEach(function(b) {
           b.style.borderColor = 'rgba(22,32,46,0.15)';
           b.style.background = 'var(--white)';
@@ -3024,9 +3393,30 @@ async function submitApplicationCommitment(commitmentText) {
 
   showTyping(currentPhase);
   try {
-    const result = await apiPost('/api/training/commitment', {
-      user_id: userId, session_id: sessionId, commitment_text: commitmentText,
-    });
+    // apiPost() is hardcoded to API_BASE (Voluntary Opening's own backend)
+    // -- confirmed live bug, 2026-09-16: an LR commitment was silently
+    // posted there instead of LEARNING_RECS_BASE. VO's own backend does
+    // have an identical /api/training/commitment route (this feature was
+    // lifted FROM it), so the request still came back 200 OK -- it just ran
+    // an UPDATE ... WHERE session_id = '<LR session id>' against VO's own
+    // session_summary table, matched zero rows, and silently did nothing.
+    // No error, no sign anything was wrong, right up until the value was
+    // checked directly in the database. Same branch-by-track fix
+    // submitDriverDiagnosisForm() already has.
+    let result;
+    if (activeTrack === 'learning_recommendations') {
+      const res = await fetch(`${LEARNING_RECS_BASE}/api/training/commitment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, session_id: sessionId, commitment_text: commitmentText }),
+      });
+      result = await res.json().catch(function(){ return {}; });
+      if (!res.ok) throw new Error(result.detail || 'Something went wrong sending that.');
+    } else {
+      result = await apiPost('/api/training/commitment', {
+        user_id: userId, session_id: sessionId, commitment_text: commitmentText,
+      });
+    }
     removeTyping();
     if (submitBtn) submitBtn.remove();
     const messages = result.messages || [];
@@ -3596,18 +3986,31 @@ const PHASE_WORDS = {
 
 // Learning Recommendations' own word lists, per phase -- Kriti's explicit
 // call, 2026-09-14: LR gets its own thinking words, separate from
-// Voluntary Opening's (PHASE_WORDS above, left untouched). content_creation
-// and training deliberately have NO entry here -- Kriti's explicit call,
-// neither phase is built in the LR backend yet, and when they are, they
-// should keep reusing PHASE_WORDS' own content_creation/training words
-// rather than getting LR-specific ones -- see the fallback in showTyping().
+// Voluntary Opening's (PHASE_WORDS above, left untouched).
+//
+// Audited against every real phase string the LR backend actually returns
+// (grepped every PHASE = "..." / "phase": "..." across learning_recommendations/,
+// 2026-09-16) after Kriti caught the training phase showing bare dots with
+// no word underneath -- 4 real gaps found, all fixed here:
+//   - real_situation_detailing (the Detective) was keyed as the stale name
+//     'user_situation_detailing' -- never matched, so it silently fell all
+//     the way through to nothing.
+//   - real_situation_training / scenario_training had no entry at all.
+//   - real_situation_content_creation / scenario_content_creation had no
+//     entry either -- the old comment here said they'd fall back to
+//     PHASE_WORDS.content_creation, but that fallback only ever checks the
+//     bare key 'content_creation', which stopped matching the moment both
+//     phases were renamed to their track-prefixed versions (2026-09-15).
+//     That fallback assumption was already stale by the time it was
+//     written down. Given LR words instead of relying on a fallback that
+//     can't work.
 const LR_PHASE_WORDS = {
   skill_introduction: [
     'Getting us started…', 'Making this relevant…', 'Setting the context…',
     'Bringing this to life…', 'Thinking about your world…',
     'Finding a good place to start…', 'Getting the conversation going…',
   ],
-  user_situation_detailing: [
+  real_situation_detailing: [
     'Getting the full picture…', 'Connecting the dots…', 'Looking a little closer…',
     'Filling in the picture…', 'Following the thread…',
     'Understanding what\'s happening…', 'Putting the pieces together…',
@@ -3626,6 +4029,26 @@ const LR_PHASE_WORDS = {
     'Putting you in the situation…', 'Thinking through how this might play out…',
     'Looking beneath the surface…', 'Testing the possibilities…',
     'Exploring what might get in the way…', 'Looking for clues…', 'Digging a little deeper…',
+  ],
+  real_situation_content_creation: [
+    'Building your Learning Atom…', 'Shaping your training…', 'Personalizing your Learning Atom…',
+    'Almost ready…', 'Working through the final bits…', 'Designing the content…',
+    'Making it crisp…', 'Rechecking relevance…',
+  ],
+  scenario_content_creation: [
+    'Building your Learning Atom…', 'Shaping your training…', 'Personalizing your Learning Atom…',
+    'Almost ready…', 'Working through the final bits…', 'Designing the content…',
+    'Making it crisp…', 'Rechecking relevance…',
+  ],
+  real_situation_training: [
+    'Thinking through your response…', 'Weighing what would help most…',
+    'Considering the next step…', 'Working through this with you…',
+    'Reflecting on what you shared…', 'Following your train of thought…',
+  ],
+  scenario_training: [
+    'Thinking through your response…', 'Weighing what would help most…',
+    'Considering the next step…', 'Working through this with you…',
+    'Reflecting on what you shared…', 'Following your train of thought…',
   ],
 };
 const WORD_CYCLE_MS = 1800;
