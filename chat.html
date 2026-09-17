@@ -1175,9 +1175,24 @@ header.topbar { background:var(--night); }
   .side-panel { width:min(280px, 85vw); top:var(--mobile-header-h, 72px); height:calc(100vh - var(--mobile-header-h, 72px)); }
   .panel-overlay { top:var(--mobile-header-h, 72px); }
 
-  /* Popovers/tooltips/dropdowns -- fixed widths (300/260/200/180px) could
-     exceed a narrow phone's viewport; cap without changing desktop sizing. */
-  .nav-toggle-tooltip, .li-tooltip, .chat-icon-tooltip { max-width:80vw; }
+  /* Hover tooltips don't really exist on touch -- a tap triggers :hover
+     and it often sticks visible until some other tap clears it, which is
+     exactly what looked like a stray leftover label. Kriti's explicit
+     call, 2026-09-17: just hide all of them on phone. */
+  .icon-tooltip, .nav-toggle-tooltip, .li-tooltip, .chat-icon-tooltip { display:none !important; }
+
+  /* Notes/Notifications/Profile dropdowns are normally anchored to their
+     own trigger icon (right:0, extending N px left from it) -- fine on
+     desktop, but notesItem now sits near the LEFT edge of the icon
+     cluster on phone (see .header-icons above), so its 260px-wide
+     dropdown ran off the left edge of the screen entirely. Anchoring to
+     the viewport instead of the icon sidesteps that math no matter which
+     icon triggered it or how the cluster gets reordered later. Kriti's
+     explicit call, 2026-09-17. */
+  .notes-dropdown, .notif-dropdown, .profile-dropdown {
+    position:fixed; left:1rem; right:1rem; width:auto;
+    top:calc(var(--mobile-header-h, 72px) + 0.5rem);
+  }
 }
 
 @media (max-width: 420px) {
@@ -3818,9 +3833,29 @@ function endConversation() {
 function cancelEnd() {
   document.getElementById('endModal').classList.add('hidden');
 }
+// Used to leave the panel open showing a "session ended, click X again to
+// leave" notice via doEndSession()/lockConversationEnded() -- Kriti's
+// explicit call, 2026-09-17: confirming "Yes, end session" in the modal
+// IS her decision to leave, so the panel should close right then, the
+// same single click as "Park it for now" already does, not require a
+// second X click afterward. lockConversationEnded() itself is untouched
+// -- it's still exactly right for the OTHER two cases where a session
+// ends while she's actively watching the panel (the backend concluding a
+// live conversation, or resuming one that had already ended).
 function confirmEnd() {
   document.getElementById('endModal').classList.add('hidden');
-  doEndSession();
+  notifyBackendSessionEnded();
+  sessionId = '';
+  currentPhase = 'opening';
+  activeTrack = 'voluntary_opening';
+  activeSkillName = '';
+  document.getElementById('chatMessages').innerHTML = '';
+  const input = document.getElementById('chatInput');
+  input.value = 'Hi Kriti';
+  autoResize(input);
+  document.getElementById('chatPanel').classList.remove('active');
+  document.getElementById('hero').style.display = '';
+  loadSidePreviousConversations();
 }
 
 // The real "step away without ending" path -- Kriti's explicit call,
@@ -3866,11 +3901,6 @@ async function notifyBackendSessionEnded() {
   } catch (err) {
     console.warn('Could not notify backend the session ended:', err.message);
   }
-}
-
-function doEndSession() {
-  notifyBackendSessionEnded();
-  lockConversationEnded();
 }
 
 async function logOut() {
