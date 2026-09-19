@@ -1840,6 +1840,11 @@ function _syncStarStockHeight() {
   const starList = document.getElementById('starStockList');
   if (!statList || !starList) return;
   starList.style.maxHeight = statList.offsetHeight + 'px';
+  // Fixed height, not just a max -- an empty (or 1-2 row) list used to
+  // collapse and drag the Month/Quarter/Year toggle up to the top of the
+  // card. Kriti's explicit call, 2026-09-19: the toggle always stays at
+  // the bottom.
+  if (statList.offsetHeight > 0) starList.style.height = statList.offsetHeight + 'px';
 }
 window.addEventListener('resize', _syncStarStockHeight);
 
@@ -1898,9 +1903,34 @@ async function loadStarStock(period) {
     const data = await res.json();
     if (!res.ok || !data.ok) return;
 
+    // Kriti's explicit call, 2026-09-19: every skill ASSIGNED to this user
+    // (same /api/user-skills list the Learning Recommendations box uses)
+    // also shows here, with 0 stars (all grey), so a brand-new user's card
+    // isn't empty. Skills that already have stars keep their normal
+    // highest-first order on top; an assigned skill with the same name as
+    // one already listed (ignoring case/extra spaces) is never shown twice.
+    // Best-effort -- if the skills call fails, the card just shows earned
+    // stars only, exactly as before.
+    let assignedSkills = [];
+    try {
+      const skillsRes = await fetch(`${USER_MGMT_BASE}/api/user-skills?user_id=${encodeURIComponent(userId)}`);
+      const skillsData = await skillsRes.json();
+      if (skillsRes.ok) assignedSkills = skillsData.skills || [];
+    } catch (skillsErr) { /* earned stars still show */ }
+
+    const _skillKey = function(n) { return String(n || '').trim().replace(/\s+/g, ' ').toLowerCase(); };
+    const starSkills = (data.skills || []).slice();
+    const seenSkills = new Set(starSkills.map(function(s) { return _skillKey(s.skill); }));
+    assignedSkills.forEach(function(skillName) {
+      const key = _skillKey(skillName);
+      if (!key || seenSkills.has(key)) return;
+      seenSkills.add(key);
+      starSkills.push({ skill: skillName, stars: 0 });
+    });
+
     const list = document.getElementById('starStockList');
     list.innerHTML = '';
-    (data.skills || []).forEach(function(s) {
+    starSkills.forEach(function(s) {
       const item = document.createElement('div');
       item.className = 'star-item';
       const name = document.createElement('div');
