@@ -423,6 +423,17 @@ tbody tr:last-child td { border-bottom:none; }
             <div class="field"><label for="c_country">Country</label><input type="text" id="c_country" /></div>
           </div>
           <div class="field">
+            <label for="c_pronouns">Pronouns <span style="font-weight:400; color:var(--grey3);">(required)</span></label>
+            <select id="c_pronouns" onchange="togglePronounOther('c_pronouns')">
+              <option value="">Choose…</option>
+              <option value="she/her">she/her</option>
+              <option value="he/him">he/him</option>
+              <option value="they/them">they/them</option>
+              <option value="__other__">Other (type their own)</option>
+            </select>
+            <input type="text" id="c_pronounsOther" placeholder="e.g. ze/zir" maxlength="40" style="display:none; margin-top:0.5rem;" />
+          </div>
+          <div class="field">
             <label for="c_companycontext">About the organization <span style="font-weight:400; color:var(--grey3);">(max 200 words)</span></label>
             <textarea id="c_companycontext" oninput="_updateWordCount('c_companycontext','c_companyContextCount',200)"></textarea>
             <div class="word-count" id="c_companyContextCount">0 / 200 words</div>
@@ -480,7 +491,8 @@ tbody tr:last-child td { border-bottom:none; }
         <div class="card">
           <div class="section-title">Bulk create users from a CSV</div>
           <p class="help-text">
-            Columns: name, email, department, company, country, designation, username (optional -- auto-generated
+            Columns: name, email, department, company, country, designation, pronouns (required -- she/her, he/him,
+            they/them, or the person's own wording; a row without it is skipped), username (optional -- auto-generated
             if blank), password (optional -- auto-generated if blank), job_description, is_people_manager
             (yes/no), additional_notes, skills_assigned (e.g. "Excel:Trainer A:Trainer|Public Speaking:Adam Kapoor:Manager"
             -- the role segment is optional). Also optional: access_type (user/manager/LND/admin/super_admin,
@@ -493,6 +505,24 @@ tbody tr:last-child td { border-bottom:none; }
           <button class="primary" onclick="bulkUpload()">Upload &amp; Create</button>
           <div id="bulkUploadStatus" class="status hidden"></div>
           <div id="bulkUploadResults" class="table-wrap table-card hidden" style="margin-top:1rem;"></div>
+        </div>
+
+        <!-- One-off backfill, 2026-09-30, Kriti's explicit call: pronouns
+             became mandatory, so accounts created before that need them
+             filled in. Keyed by email, like the bulk skill upload. -->
+        <div class="card">
+          <div class="section-title">Update pronouns for existing users (CSV)</div>
+          <p class="help-text">
+            Columns: email, pronouns (she/her, he/him, they/them, or the person's own wording). One row per person.
+            Only their pronouns change -- nothing else on the account is touched. Anyone still without pronouns
+            is asked to choose them the next time they open the app.
+          </p>
+          <div class="field" style="margin-top:1rem;">
+            <input type="file" id="bulkPronounsFile" accept=".csv" />
+          </div>
+          <button class="primary" onclick="bulkUpdatePronouns()">Upload &amp; Update</button>
+          <div id="bulkPronounsStatus" class="status hidden"></div>
+          <div id="bulkPronounsResults" class="table-wrap table-card hidden" style="margin-top:1rem;"></div>
         </div>
       </div>
 
@@ -1099,9 +1129,25 @@ async function saveChanges() {
   }
 }
 
+// ================= PRONOUNS PICKER (mandatory since 2026-09-30) =================
+// Dropdown of the three standard forms plus "Other", which reveals a
+// free-text box. The backend (user_accounts.normalize_pronouns) is the real
+// gate; this gives a readable message before the round trip.
+function togglePronounOther(id) {
+  const show = document.getElementById(id).value === '__other__';
+  const other = document.getElementById(id + 'Other');
+  other.style.display = show ? 'block' : 'none';
+  if (show) other.focus();
+}
+function readPronouns(id) {
+  const v = document.getElementById(id).value;
+  return v === '__other__' ? document.getElementById(id + 'Other').value.trim() : v;
+}
+
 // ================= CREATE USER =================
 async function createUser() {
   const statusEl = document.getElementById('createStatus');
+  if (!readPronouns('c_pronouns')) { showStatus(statusEl, 'Choose the person\'s pronouns first.', true); return; }
   showStatus(statusEl, 'Creating...', false);
   const sel = document.getElementById('c_peoplemanager').value;
   const isPeopleManager = sel === 'unset' ? null : (sel === 'true');
@@ -1114,6 +1160,7 @@ async function createUser() {
     department: document.getElementById('c_department').value.trim(),
     company: document.getElementById('c_company').value.trim(),
     country: document.getElementById('c_country').value.trim(),
+    pronouns: readPronouns('c_pronouns'),
     job_description: document.getElementById('c_jobdesc').value.trim(),
     company_context: document.getElementById('c_companycontext').value.trim(),
     is_people_manager: isPeopleManager,
@@ -1139,6 +1186,9 @@ async function createUser() {
     _updateWordCount('c_companycontext', 'c_companyContextCount', 200);
     document.getElementById('c_peoplemanager').value = 'unset';
     document.getElementById('c_accesstype').value = 'user';
+    document.getElementById('c_pronouns').value = '';
+    document.getElementById('c_pronounsOther').value = '';
+    togglePronounOther('c_pronouns');
   } catch (e) {
     showStatus(statusEl, 'Could not reach the User Management service.', true);
   }
@@ -1169,6 +1219,24 @@ async function bulkUpload() {
     showStatus(statusEl, `Created ${data.created_count} of ${data.total_rows} rows.`, false);
     renderResultsTable(document.getElementById('bulkUploadResults'), data.results,
       ['Name','Email','Username','Password','Status']);
+  } catch (e) {
+    showStatus(statusEl, 'Could not reach the User Management service.', true);
+  }
+}
+
+async function bulkUpdatePronouns() {
+  const statusEl = document.getElementById('bulkPronounsStatus');
+  const fileInput = document.getElementById('bulkPronounsFile');
+  if (!fileInput.files.length) { showStatus(statusEl, 'Choose a CSV file first.', true); return; }
+  showStatus(statusEl, 'Uploading...', false);
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  try {
+    const res = await adminFetch(`${API_BASE}/api/admin/bulk-update-pronouns`, { method: 'POST', body: formData });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showStatus(statusEl, data.detail || 'Upload failed.', true); return; }
+    showStatus(statusEl, `Updated ${data.updated_count} of ${data.total_rows} rows.`, false);
+    renderResultsTable(document.getElementById('bulkPronounsResults'), data.results, ['Email','Pronouns','Status']);
   } catch (e) {
     showStatus(statusEl, 'Could not reach the User Management service.', true);
   }

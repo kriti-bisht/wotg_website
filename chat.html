@@ -623,8 +623,9 @@ header.topbar { background:var(--night); }
 .myprofile-optional-row { display:flex; gap:0.8rem; }
 .myprofile-optional-cell { flex:1; max-width:260px; }
 .myprofile-optional-cell label { display:block; font-size:0.72rem; color:var(--grey3); margin-bottom:0.35rem; }
-.myprofile-optional-cell input {
-  width:100%; padding:0.55rem 0.75rem; border-radius:8px; border:1px solid rgba(22,32,46,0.14);
+.myprofile-optional-cell input,
+.myprofile-optional-cell select {
+  width:100%; height:2.6rem; box-sizing:border-box; padding:0.55rem 0.75rem; border-radius:8px; border:1px solid rgba(22,32,46,0.14);
   font-family:'Poppins',sans-serif; font-size:0.85rem; color:var(--night); background:var(--white);
 }
 .myprofile-optional-cell input::placeholder { color:var(--grey2); }
@@ -999,14 +1000,14 @@ header.topbar { background:var(--night); }
 .chat-messages .msg-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
 .chat-messages .msg > div { max-width:72%; }
 .chat-messages .msg.msg-user > div { text-align:right; }
-.chat-messages .msg-bubble { display:inline-block; text-align:left; padding:0.7rem 1rem; border-radius:4px; font-size:0.86rem; line-height:1.55; font-weight:400; position:relative; }
+.chat-messages .msg-bubble { display:inline-block; text-align:start; padding:0.7rem 1rem; border-radius:4px; font-size:0.86rem; line-height:1.55; font-weight:400; position:relative; }
 .chat-messages .bubble-ai { background:var(--grey1); border:1px solid rgba(22,32,46,0.08); color:var(--night2); }
 .chat-messages .bubble-user { background:rgba(58,181,74,0.12); border:1px solid rgba(58,181,74,0.25); color:var(--night); }
 .chat-messages .bubble-error { background:rgba(224,48,58,0.1); border:1px solid rgba(224,48,58,0.3); color:#c9302c; }
 .chat-messages .msg-bubble p { margin:0 0 0.4rem; }
 .chat-messages .msg-bubble p:last-child { margin-bottom:0; }
 .chat-messages .msg-bubble strong { font-weight:700; color:var(--night); }
-.chat-messages .msg-bubble ul { margin:0.15rem 0 0.4rem 1.1rem; padding:0; }
+.chat-messages .msg-bubble ul { margin:0.15rem 0 0.4rem; margin-inline-start:1.1rem; padding:0; }
 .chat-messages .msg-bubble li { margin-bottom:0.35rem; }
 .chat-messages .msg-meta { font-size:0.68rem; color:var(--grey3); margin-bottom:0.2rem; margin-top:0.2rem; }
 .chat-messages .msg.msg-user .msg-meta { text-align:right; }
@@ -1270,6 +1271,34 @@ header.topbar { background:var(--night); }
     </div>
     <div class="progress-modal-body" id="myProfileBody">
       <div class="notif-empty">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- One-time, non-dismissible "choose your pronouns" prompt. Shown on load
+     for any account that has none saved (accounts created before pronouns
+     became mandatory, 2026-09-30, Kriti's explicit call). Same overlay
+     styling as My Profile, deliberately with no close button. -->
+<div class="progress-overlay" id="pronounsGateOverlay">
+  <div class="progress-modal">
+    <div class="progress-modal-head">
+      <div class="progress-title">One quick thing</div>
+    </div>
+    <div class="progress-modal-body">
+      <p style="font-size:0.88rem; color:var(--night); line-height:1.5; margin:0 0 1rem;">Please choose your pronouns. In languages where words change with gender, Wisdom on the GO! uses them so it speaks to you correctly.</p>
+      <div class="myprofile-optional-cell" style="max-width:none;">
+        <label for="gatePronouns">Pronouns</label>
+        <select id="gatePronouns" onchange="togglePronounOther('gatePronouns')">
+            <option value="">Choose…</option>
+            <option value="she/her">she/her</option>
+            <option value="he/him">he/him</option>
+            <option value="they/them">they/them</option>
+            <option value="__other__">Other (type your own)</option>
+        </select>
+        <input type="text" id="gatePronounsOther" placeholder="e.g. ze/zir" maxlength="40" style="display:none; margin-top:0.5rem;">
+      </div>
+      <button class="myprofile-photo-btn" type="button" id="gatePronounsBtn" style="margin-top:1rem;" onclick="saveGatePronouns()">Save</button>
+      <div class="myprofile-save-status" id="gatePronounsStatus" style="margin-top:0.6rem;"></div>
     </div>
   </div>
 </div>
@@ -1636,7 +1665,7 @@ const TOUR_STEPS = [
   { anchor:'#managerRecCard', side:false, section:TOUR_SECTION, num:2, title:'Your Assigned Learning Goals', body:'Skills your manager or trainer has assigned you show up here. Click any one to start a conversation built around why it was assigned to you.' },
   { anchor:'#notesItem', side:false, section:TOUR_SECTION, num:3, title:'My Notes', body:"A quick recap of everything you've learned. For each topic you get a one-page summary of what it covered, plus a reminder of the commitment you made for how you'd apply it." },
   { anchor:'#notifItem', side:false, section:TOUR_SECTION, num:4, title:'Notifications', body:"You'll get a reminder here when it's time to confirm whether you've applied what you learned in your daily work." },
-  { anchor:'#profileItem', side:false, section:TOUR_SECTION, num:5, title:'Your Profile', body:"Update your ‘About Me’ info, your current growth goal, and your profile photo any time from here." },
+  { anchor:'#profileItem', side:false, section:TOUR_SECTION, num:5, title:'Your Profile', body:"Update your ‘About Me’ info, your current growth goal, and your profile photo any time from here. <strong>Choose your language preference right here too.</strong>" },
   { anchor:'#parkingLotSection', side:true, section:TOUR_SECTION, num:6, title:'Parking Lot', body:'Left a conversation unfinished? Pick it back up exactly where you stopped.' },
   { anchor:'#convHistorySection', side:true, section:TOUR_SECTION, num:7, title:'Conversation History', body:"Revisit your past conversations and everything you've already learned." },
   { anchor:'#learningMomentumCard', side:false, section:TOUR_SECTION, num:8, title:'Learning Momentum', body:"A quick pulse on how you're doing overall — your streak, how much you're learning, and how consistently you're keeping it up." },
@@ -1681,7 +1710,7 @@ function positionAndShowTourStep(step, i) {
 
   document.getElementById('tourPopupStep').textContent = step.section;
   document.getElementById('tourPopupTitle').textContent = `${step.num}. ${step.title}`;
-  document.getElementById('tourPopupBody').textContent = step.body;
+  document.getElementById('tourPopupBody').innerHTML = step.body;
   popup.classList.add('visible');
   // Popup position is a one-time snapshot (getBoundingClientRect at show
   // time), not re-computed on scroll -- so if the page scrolls while a
@@ -1822,6 +1851,7 @@ function initSession() {
   checkNotificationBadge();
   loadMyNotes();
   loadHeaderProfilePhoto();
+  checkPronounsGate();
   loadLearningMomentum(learningMomentumPeriod);
   loadStarStock(starStockPeriod);
   _syncStarStockHeight();
@@ -2088,11 +2118,22 @@ function _myProfileSkeletonHtml() {
     </div>
 
     <div class="myprofile-section">
-      <div class="myprofile-section-title">About You <span class="myprofile-optional-tag">Optional</span></div>
+      <div class="myprofile-section-title">About You <span class="myprofile-optional-tag">Pronouns required</span></div>
       <div class="myprofile-optional-row">
         <div class="myprofile-optional-cell">
           <label>Pronouns</label>
-          <input type="text" id="mpPronouns" placeholder="e.g. she/her">
+          <select id="mpPronouns" onchange="togglePronounOther('mpPronouns')">
+            <option value="">Choose…</option>
+            <option value="she/her">she/her</option>
+            <option value="he/him">he/him</option>
+            <option value="they/them">they/them</option>
+            <option value="__other__">Other (type your own)</option>
+          </select>
+          <input type="text" id="mpPronounsOther" placeholder="e.g. ze/zir" maxlength="40" style="display:none; margin-top:0.5rem;">
+        </div>
+        <div class="myprofile-optional-cell">
+          <label>Preferred Language</label>
+          <select id="mpPreferredLanguage"></select>
         </div>
       </div>
     </div>
@@ -2157,6 +2198,74 @@ function _myProfileUpdateWordCount(textareaId, counterId) {
   counter.classList.toggle('over', count > MYPROFILE_WORD_LIMIT);
 }
 
+// ---- Pronouns picker (mandatory since 2026-09-30, Kriti's explicit call) ----
+// A dropdown of the three standard forms plus "Other", which reveals a
+// free-text box. The backend (user_accounts.normalize_pronouns) is the real
+// gate; this gives a readable message before the round trip. Shared by the
+// My Profile field and the one-time prompt below.
+function togglePronounOther(id) {
+  const show = document.getElementById(id).value === '__other__';
+  const other = document.getElementById(id + 'Other');
+  other.style.display = show ? 'block' : 'none';
+  if (show) other.focus();
+}
+function readPronouns(id) {
+  const v = document.getElementById(id).value;
+  return v === '__other__' ? document.getElementById(id + 'Other').value.trim() : v;
+}
+function setPronounsPicker(id, value) {
+  const sel = document.getElementById(id);
+  // Match the standard options case-insensitively -- values saved before
+  // 2026-09-30 can be "She/Her" (the backend now stores them lower-case).
+  const canonical = (value || '').trim().toLowerCase().replace(/\s*\/\s*/g, '/');
+  const standard = Array.from(sel.options).some(function(o) { return o.value === canonical && canonical !== '__other__'; });
+  if (!value) { sel.value = ''; }
+  else if (standard) { sel.value = canonical; }
+  else { sel.value = '__other__'; document.getElementById(id + 'Other').value = value; }
+  togglePronounOther(id);
+}
+
+// One-time prompt for accounts with no pronouns saved. Never blocks the app
+// if the check itself fails -- only a confirmed "empty" shows it.
+async function checkPronounsGate() {
+  try {
+    const res = await fetch(`${USER_MGMT_BASE}/api/my-profile?user_id=${encodeURIComponent(userId)}`);
+    if (!res.ok) return;
+    const p = await res.json();
+    if (!(p.pronouns || '').trim()) document.getElementById('pronounsGateOverlay').classList.add('open');
+  } catch (err) { /* non-fatal */ }
+}
+
+async function saveGatePronouns() {
+  const statusEl = document.getElementById('gatePronounsStatus');
+  const btn = document.getElementById('gatePronounsBtn');
+  const pronouns = readPronouns('gatePronouns');
+  if (!pronouns) {
+    statusEl.textContent = 'Please choose your pronouns.';
+    statusEl.className = 'myprofile-save-status error';
+    return;
+  }
+  btn.disabled = true;
+  statusEl.textContent = 'Saving…';
+  statusEl.className = 'myprofile-save-status';
+  try {
+    const res = await fetch(`${USER_MGMT_BASE}/api/my-profile/pronouns`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, pronouns: pronouns }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(function() { return {}; });
+      throw new Error(data.detail || 'Save failed');
+    }
+    document.getElementById('pronounsGateOverlay').classList.remove('open');
+  } catch (err) {
+    statusEl.textContent = err.message || 'Could not save -- please try again.';
+    statusEl.className = 'myprofile-save-status error';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 async function loadMyProfileOverlay() {
   const body = document.getElementById('myProfileBody');
   body.innerHTML = '<div class="notif-empty">Loading…</div>';
@@ -2173,7 +2282,34 @@ async function loadMyProfileOverlay() {
     document.getElementById('mpCompany').textContent = p.company || '--';
     document.getElementById('mpCountry').textContent = p.country || '--';
     document.getElementById('mpManager').textContent = p.manager_name || '--';
-    document.getElementById('mpPronouns').value = p.pronouns || '';
+    setPronounsPicker('mpPronouns', p.pronouns || '');
+
+    // Preferred Language -- deliberately loaded via its own separate calls,
+    // not part of `p` above. `p` comes from GET /api/my-profile, which is
+    // powered by user_accounts.get_own_profile(); preferred language is
+    // intentionally kept out of that path entirely (see language_preference.py's
+    // own docstring) so it stays invisible to everything that already reads
+    // a user's profile. Kriti's explicit call, 2026-09-29.
+    try {
+      const [optionsRes, currentRes] = await Promise.all([
+        fetch(`${USER_MGMT_BASE}/api/my-profile/language-options`),
+        fetch(`${USER_MGMT_BASE}/api/my-profile/language?user_id=${encodeURIComponent(userId)}`),
+      ]);
+      const optionsData = await optionsRes.json();
+      const currentData = await currentRes.json();
+      const langSelect = document.getElementById('mpPreferredLanguage');
+      langSelect.innerHTML = '';
+      (optionsData.languages || []).forEach(function(lang) {
+        const opt = document.createElement('option');
+        opt.value = lang;
+        opt.textContent = lang;
+        langSelect.appendChild(opt);
+      });
+      langSelect.value = currentData.preferred_language || optionsData.default || 'English';
+    } catch (err) {
+      // Non-fatal -- the rest of My Profile still works if this one call fails.
+    }
+
     document.getElementById('mpAdminJobDescription').textContent = p.admin_job_description || 'Not set yet -- reach out to your admin.';
     document.getElementById('mpAboutMe').value = p.about_me || '';
     document.getElementById('mpGrowthGoal').value = p.growth_goal || '';
@@ -2213,9 +2349,16 @@ async function loadMyProfileOverlay() {
 async function saveMyProfileAnswers() {
   const aboutMe = document.getElementById('mpAboutMe').value;
   const growthGoal = document.getElementById('mpGrowthGoal').value;
-  const pronouns = document.getElementById('mpPronouns').value;
+  const pronouns = readPronouns('mpPronouns');
+  const preferredLanguage = document.getElementById('mpPreferredLanguage').value;
   const statusEl = document.getElementById('mpSaveStatus');
   const btn = document.getElementById('mpSaveBtn');
+
+  if (!pronouns) {
+    statusEl.textContent = 'Please choose your pronouns.';
+    statusEl.className = 'myprofile-save-status error';
+    return;
+  }
 
   const aboutMeWords = aboutMe.trim().split(/\s+/).filter(Boolean).length;
   const growthGoalWords = growthGoal.trim().split(/\s+/).filter(Boolean).length;
@@ -2241,6 +2384,10 @@ async function saveMyProfileAnswers() {
       fetch(`${USER_MGMT_BASE}/api/my-profile/pronouns`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, pronouns: pronouns }),
+      }),
+      fetch(`${USER_MGMT_BASE}/api/my-profile/language`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, preferred_language: preferredLanguage }),
       }),
     ];
     const responses = await Promise.all(requests);
@@ -3000,6 +3147,7 @@ function _renderHistoryMessage(role, text) {
   const right = document.createElement('div');
   const bubble = document.createElement('div');
   bubble.className = 'msg-bubble ' + (isUser ? 'bubble-user' : 'bubble-ai');
+  bubble.setAttribute('dir', 'auto');  // Arabic (right-to-left) support; no effect on left-to-right text
   bubble.innerHTML = formatResponse(text);
   const meta = document.createElement('div');
   meta.className = 'msg-meta';
@@ -3624,6 +3772,7 @@ function _appendOverlayMessage(text) {
   const right = document.createElement('div');
   const bubble = document.createElement('div');
   bubble.className = 'msg-bubble bubble-ai';
+  bubble.setAttribute('dir', 'auto');  // Arabic (right-to-left) support; no effect on left-to-right text
   bubble.style.cssText = `width:${NOTIFICATION_BUBBLE_WIDTH};max-width:100%;box-sizing:border-box;`;
   bubble.innerHTML = formatResponse(text);
   const meta = document.createElement('div');
@@ -4050,6 +4199,7 @@ function appendMessage(role, text, opts) {
   const right = document.createElement('div');
   const bubble = document.createElement('div');
   bubble.className = 'msg-bubble ' + (isUser ? 'bubble-user' : 'bubble-ai');
+  bubble.setAttribute('dir', 'auto');  // Arabic (right-to-left) support; no effect on left-to-right text
   bubble.innerHTML = formatResponse(text);
 
   const meta = document.createElement('div');

@@ -355,6 +355,17 @@
               <input type="text" id="name" placeholder="e.g. Jane" required />
             </div>
             <div class="form-group">
+              <label for="signupPronouns">Pronouns</label>
+              <select id="signupPronouns" required onchange="togglePronounOther('signupPronouns')">
+                <option value="">Choose…</option>
+                <option value="she/her">she/her</option>
+                <option value="he/him">he/him</option>
+                <option value="they/them">they/them</option>
+                <option value="__other__">Other (type your own)</option>
+              </select>
+              <input type="text" id="signupPronounsOther" placeholder="e.g. ze/zir" maxlength="40" style="display:none; margin-top:0.5rem;" />
+            </div>
+            <div class="form-group">
               <label for="signupEmail">Email</label>
               <input type="email" id="signupEmail" placeholder="e.g. jane@company.com" required autocomplete="email" />
             </div>
@@ -545,6 +556,23 @@
     // Start every toggle button showing the "eye" icon (password hidden, click to reveal).
     document.querySelectorAll('.password-toggle-btn').forEach(btn => { btn.innerHTML = EYE_ICON; });
 
+
+    // Pronouns picker -- mandatory since 2026-09-30, Kriti's explicit call
+    // (every LLM actor now uses them to inflect gendered languages). A
+    // dropdown of the three standard forms plus "Other", which reveals a
+    // free-text box. The backend (user_accounts.normalize_pronouns) is the
+    // real gate; this just gives a readable message before the round trip.
+    function togglePronounOther(id) {
+      const show = document.getElementById(id).value === '__other__';
+      const other = document.getElementById(id + 'Other');
+      other.style.display = show ? 'block' : 'none';
+      if (show) other.focus();
+    }
+    function readPronouns(id) {
+      const v = document.getElementById(id).value;
+      return v === '__other__' ? document.getElementById(id + 'Other').value.trim() : v;
+    }
+
     const tabLogin  = document.getElementById('tabLogin');
     const tabSignup = document.getElementById('tabSignup');
     const panelLogin  = document.getElementById('panelLogin');
@@ -702,6 +730,12 @@
         return;
       }
 
+      if (!readPronouns('signupPronouns')) {
+        errorMsg.textContent = 'Please choose your pronouns.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
       btn.disabled = true;
       btn.textContent = 'Creating account...';
 
@@ -710,6 +744,7 @@
         email: document.getElementById('signupEmail').value.trim(),
         password: password,
         name: document.getElementById('name').value.trim().replace(/\b\w/g, c => c.toUpperCase()),
+        pronouns: readPronouns('signupPronouns'),
         designation: document.getElementById('designation').value.trim(),
         department: document.getElementById('department').value.trim(),
         company: document.getElementById('company').value.trim(),
