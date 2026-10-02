@@ -1772,6 +1772,31 @@ function dismissTour() {
 const API_BASE = 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewebsites.net';
 const USER_MGMT_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
 const REPORTS_BASE = 'https://wotg-reports.azurewebsites.net';
+
+// The login keycard (2026-10-02): login.html stores the token the server handed out; every call to the reports
+// service carries it as "Authorization: Bearer <token>". A 401 means the card is missing, wrong, or has gone quiet
+// for too long (2 hours of no activity, or 30 days if "Keep me signed in" was ticked) -- the person is sent back to
+// the login page. Everything is cleared first, "remembered" login included, or the login page would just forward
+// them straight back here (a loop).
+function _loginToken() {
+  try { return localStorage.getItem('login_token') || ''; } catch (e) { return ''; }
+}
+function _clearLoginStorage() {
+  ['user_name', 'user_email', 'user_company', 'user_id', 'access_type', 'login_token',
+   'remembered_user_id', 'remembered_name', 'remembered_email', 'remembered_access_type', 'remembered_token']
+    .forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+}
+async function reportsFetch(url, options) {
+  const opts = Object.assign({}, options || {});
+  const token = _loginToken();
+  if (token) opts.headers = Object.assign({}, opts.headers || {}, { 'Authorization': 'Bearer ' + token });
+  const res = await fetch(url, opts);
+  if (res.status === 401) {
+    _clearLoginStorage();
+    window.location.href = 'login.html?expired=1';
+  }
+  return res;
+}
 const NOTIFICATION_BASE = 'https://wotg-notifications.azurewebsites.net';
 const LEARNING_RECS_BASE = 'https://wotg-learning-recommendations.azurewebsites.net';
 const NOTIFICATION_BUBBLE_WIDTH = '675px';  // +25% over the old 540px -- Kriti's call, 2026-09-10: 540 looked too narrow sitting in the full chat panel. max-width:100% on the card keeps it responsive on mobile.
@@ -1842,7 +1867,7 @@ function initSession() {
 
   const accessType = localStorage.getItem('access_type') || 'user';
   const adminViewRow = document.getElementById('adminViewRow');
-  if (adminViewRow && (accessType === 'admin' || accessType === 'super_admin')) {
+  if (adminViewRow && (accessType === 'admin' || accessType === 'company_admin' || accessType === 'super_admin')) {
     adminViewRow.style.display = 'block';
   }
 
@@ -1927,7 +1952,7 @@ async function loadStarStock(period) {
   starStockPeriod = period || starStockPeriod;
   const email = await _getUserEmailForReports();
   try {
-    const res = await fetch(
+    const res = await reportsFetch(
       `${REPORTS_BASE}/api/reports/star-stock?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}&period=${encodeURIComponent(starStockPeriod)}`,
     );
     const data = await res.json();
@@ -1999,7 +2024,7 @@ async function loadLearningMomentum(period) {
   if (card) card.classList.add('lm-loading');
   const email = await _getUserEmailForReports();
   try {
-    const res = await fetch(
+    const res = await reportsFetch(
       `${REPORTS_BASE}/api/reports/learning-momentum?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}&period=${encodeURIComponent(learningMomentumPeriod)}`,
     );
     const data = await res.json();
@@ -2787,7 +2812,7 @@ async function loadSidePreviousConversations() {
   const email = await _getUserEmailForReports();
   try {
     const url = `${REPORTS_BASE}/api/reports/previous-conversations?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`;
-    const res = await fetch(url);
+    const res = await reportsFetch(url);
     const data = await res.json();
     if (!res.ok) throw new Error('Could not load previous conversations.');
     _renderSideSessionList(parkingBody, data.parking_lot, 'Nothing parked right now.', 'parking');
@@ -2955,7 +2980,7 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
   showTyping(isLR ? 'skill_introduction' : 'opening');
   const email = await _getUserEmailForReports();
   try {
-    const res = await fetch(
+    const res = await reportsFetch(
       `${REPORTS_BASE}/api/reports/resume-session?session_id=${encodeURIComponent(clickedSessionId)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}&path=${encodeURIComponent(path || 'voluntary_opening')}`,
       { method: 'POST' },
     );
@@ -3079,7 +3104,7 @@ async function viewClosedConversation(clickedSessionId, path) {
   if (micBtnLock) micBtnLock.disabled = true;
   const email = await _getUserEmailForReports();
   try {
-    const res = await fetch(
+    const res = await reportsFetch(
       `${REPORTS_BASE}/api/reports/full-conversation?session_id=${encodeURIComponent(clickedSessionId)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}&path=${encodeURIComponent(path || 'voluntary_opening')}`,
     );
     const data = await res.json();
@@ -4125,15 +4150,12 @@ async function notifyBackendSessionEnded() {
 
 async function logOut() {
   await notifyBackendSessionEnded();
-  localStorage.removeItem('user_name');
-  localStorage.removeItem('user_email');
-  localStorage.removeItem('user_company');
-  localStorage.removeItem('user_id');
-  localStorage.removeItem('access_type');
-  localStorage.removeItem('remembered_user_id');
-  localStorage.removeItem('remembered_name');
-  localStorage.removeItem('remembered_email');
-  localStorage.removeItem('remembered_access_type');
+  // Kill the keycard on the server first (best effort -- logging out must never get stuck on a network error).
+  const token = _loginToken();
+  if (token) {
+    try { await fetch(`${USER_MGMT_BASE}/api/logout`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }); } catch (e) {}
+  }
+  _clearLoginStorage();
   window.location.href = 'login.html';
 }
 

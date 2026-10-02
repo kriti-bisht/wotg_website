@@ -172,6 +172,17 @@
     select:disabled { opacity: 0.5; cursor: not-allowed; }
     select option { background: #1a1a1a; color: var(--white); }
 
+    /* City picker + yes/no (added 2026-10-01) */
+    .combo { position: relative; }
+    .combo-list { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 50; background: #1a1a1a; border: 1px solid var(--border); border-radius: 4px; max-height: 220px; overflow: auto; box-shadow: 0 12px 30px rgba(0,0,0,0.5); }
+    .combo-item { padding: 0.55rem 0.9rem; font-size: 0.9rem; font-weight: 300; color: var(--white); cursor: pointer; }
+    .combo-item:hover { background: rgba(255,255,255,0.08); }
+    .combo-item.free { color: #3ab54a; border-top: 1px solid var(--border); }
+    .combo-empty { padding: 0.6rem 0.9rem; font-size: 0.85rem; color: var(--grey3); }
+    .radio-row { display: flex; gap: 1.6rem; padding: 0.3rem 0; }
+    .radio-row label { display: flex; align-items: center; gap: 0.45rem; margin: 0; text-transform: none; letter-spacing: 0; font-size: 0.94rem; font-weight: 300; color: var(--white); cursor: pointer; }
+    .radio-row input { width: auto; }
+
     /* PASSWORD VISIBILITY TOGGLE -- Kriti's explicit call, 2026-08-14:
        no way to see what you typed on any of the 5 password fields. */
     .password-field { position: relative; }
@@ -328,7 +339,7 @@
           <form id="loginForm">
             <div class="form-group">
               <label for="loginUsername">Username</label>
-              <input type="text" id="loginUsername" placeholder="e.g. jane.doe" required autocomplete="username" />
+              <input type="text" id="loginUsername" placeholder="Your email address" required autocomplete="username" />
             </div>
             <div class="form-group">
               <label for="loginPassword">Password</label>
@@ -352,7 +363,7 @@
           <form id="signupForm">
             <div class="form-group">
               <label for="name">Your Name</label>
-              <input type="text" id="name" placeholder="e.g. Jane" required />
+              <input type="text" id="name" maxlength="100" placeholder="e.g. Jane" required />
             </div>
             <div class="form-group">
               <label for="signupPronouns">Pronouns</label>
@@ -367,11 +378,24 @@
             </div>
             <div class="form-group">
               <label for="signupEmail">Email</label>
-              <input type="email" id="signupEmail" placeholder="e.g. jane@company.com" required autocomplete="email" />
+              <input type="email" id="signupEmail" maxlength="254" placeholder="e.g. jane@company.com" required autocomplete="email" />
             </div>
             <div class="form-group">
               <label for="designation">Designation</label>
-              <input type="text" id="designation" placeholder="e.g. Product Manager" required />
+              <input type="text" id="designation" maxlength="100" placeholder="e.g. Product Manager" required />
+            </div>
+            <div class="form-group">
+              <label>Are you a people manager?</label>
+              <div class="radio-row"><label><input type="radio" name="peopleManager" value="yes" /> Yes</label><label><input type="radio" name="peopleManager" value="no" /> No</label></div>
+            </div>
+            <div class="form-group">
+              <label for="managerName">Your manager's name</label>
+              <input type="text" id="managerName" maxlength="100" placeholder="Who you report to" required />
+              <div style="font-size:0.74rem;opacity:0.7;margin-top:0.25rem;">If nobody is above you, enter your own name and email.</div>
+            </div>
+            <div class="form-group">
+              <label for="managerEmail">Your manager's email</label>
+              <input type="email" id="managerEmail" maxlength="254" placeholder="manager@company.com" required />
             </div>
             <div class="form-group">
               <label for="company">Company / Organisation</label>
@@ -387,11 +411,19 @@
             </div>
             <div class="form-group">
               <label for="country">Country of Location</label>
-              <input type="text" id="country" placeholder="e.g. India" required />
+              <select id="country" required><option value="">Select your country</option></select>
             </div>
             <div class="form-group">
-              <label for="signupUsername">Choose a Username</label>
-              <input type="text" id="signupUsername" placeholder="e.g. jane.doe" required autocomplete="username" />
+              <label for="city">City</label>
+              <div class="combo">
+                <input type="text" id="city" placeholder="Choose a country first" autocomplete="off" disabled />
+                <div class="combo-list" id="cityList" style="display:none;"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="signupUsername">Your Username</label>
+              <input type="text" id="signupUsername" placeholder="Same as your email" readonly tabindex="-1" autocomplete="username" style="opacity:0.75;cursor:not-allowed;" />
+              <div style="font-size:0.74rem;opacity:0.7;margin-top:0.25rem;">Your username is always your email address. It can't be changed.</div>
             </div>
             <div class="form-group">
               <label for="signupPassword">Choose a Password</label>
@@ -472,6 +504,8 @@
     // Points at user_management_api.py -- accounts (signup/login/password
     // reset) live in their own App Service now, separate from the
     // Opening-conversation backend. Change this if the service ever moves.
+    (() => { const lower = id => { const el = document.getElementById(id); if (el) el.addEventListener('input', () => { if (el.value !== el.value.toLowerCase()) { const a = el.selectionStart, b = el.selectionEnd; el.value = el.value.toLowerCase(); try { el.setSelectionRange(a, b); } catch (_) {} } }); }; lower('signupEmail'); lower('managerEmail'); })();
+    (() => { const wire = () => { const e = document.getElementById('signupEmail'), u = document.getElementById('signupUsername'); if (e && u) { const m = () => { u.value = e.value.trim(); }; e.addEventListener('input', m); e.addEventListener('change', m); m(); } }; if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire(); })();
     const API_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
 
     // COMPANY/DEPARTMENT DROPDOWNS -- Kriti's explicit call, 2026-09-15:
@@ -540,6 +574,57 @@
     });
 
     loadCompanies();
+
+    // ---- LOCATION: country first, then a searchable list of that country's cities ----
+    // Data: GeoNames (CC BY 4.0), shipped as a static file -- no outside calls. Free typing is
+    // allowed through the "my city isn't listed" choice. (Kriti, 2026-10-01)
+    const countrySelect = document.getElementById('country');
+    const cityInput = document.getElementById('city');
+    const cityList = document.getElementById('cityList');
+    let worldCountries = [];
+    let countryCities = [];
+    let cityChosen = false;
+
+    async function loadWorld() {
+      const urls = ['assets/world_locations.json'];
+      for (const u of urls) {
+        try {
+          const r = await fetch(u);
+          if (r.ok) { const j = await r.json(); worldCountries = j.countries.map(c => ({ code: c[0], name: c[1], cities: c[2] })); break; }
+        } catch (e) {}
+      }
+      countrySelect.innerHTML = '<option value="">Select your country</option>' +
+        worldCountries.map(c => '<option value="' + c.code + '">' + c.name.replace(/&/g, '&amp;') + '</option>').join('');
+    }
+    function renderCities() {
+      const v = cityInput.value.trim().toLowerCase();
+      const starts = countryCities.filter(c => c.toLowerCase().startsWith(v));
+      const has = v ? countryCities.filter(c => !c.toLowerCase().startsWith(v) && c.toLowerCase().includes(v)) : [];
+      const shown = starts.concat(has).slice(0, 60);
+      const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+      let html = shown.map(c => '<div class="combo-item" data-v="' + esc(c) + '">' + esc(c) + '</div>').join('');
+      if (!shown.length) html = '<div class="combo-empty">' + (countryCities.length ? 'No match in the list.' : 'No city list for this country — just type your city.') + '</div>';
+      if (v && !countryCities.some(c => c.toLowerCase() === v)) html += '<div class="combo-item free" data-free="1">My city isn\'t listed — use “' + esc(cityInput.value.trim()) + '”</div>';
+      cityList.innerHTML = html;
+      cityList.style.display = 'block';
+    }
+    countrySelect.addEventListener('change', () => {
+      const c = worldCountries.find(x => x.code === countrySelect.value);
+      countryCities = c ? c.cities : [];
+      cityInput.value = ''; cityChosen = false;
+      cityInput.disabled = !c;
+      cityInput.placeholder = !c ? 'Choose a country first' : (countryCities.length ? 'Start typing your city…' : 'Type your city');
+    });
+    cityInput.addEventListener('input', () => { cityChosen = !countryCities.length && cityInput.value.trim() !== ''; renderCities(); });
+    cityInput.addEventListener('focus', () => { if (!cityInput.disabled && countryCities.length) renderCities(); });
+    cityInput.addEventListener('blur', () => setTimeout(() => { cityList.style.display = 'none'; }, 120));
+    cityList.addEventListener('mousedown', e => {
+      const it = e.target.closest('.combo-item'); if (!it) return;
+      e.preventDefault();
+      if (!it.dataset.free) cityInput.value = it.dataset.v;
+      cityChosen = true; cityList.style.display = 'none';
+    });
+    loadWorld();
 
     // PASSWORD VISIBILITY TOGGLE -- Kriti's explicit call, 2026-08-14.
     // Two small inline icons (no external dependency), swapped on click.
@@ -634,7 +719,9 @@
     // too, since the fallback's own fetch never sent the new required
     // header). Storing the real email straight from the login response
     // means the fallback never has to fire again for a fresh login.
-    function goToChat(userId, name, accessType, email) {
+    function goToChat(userId, name, accessType, email, token) {
+      // The login keycard (2026-10-02): chat.html sends it on every call to the reports service.
+      if (token) localStorage.setItem('login_token', token); else localStorage.removeItem('login_token');
       localStorage.setItem('user_id', userId);
       localStorage.setItem('user_name', name);
       localStorage.setItem('access_type', accessType || 'user');
@@ -650,8 +737,16 @@
     const rememberedName   = localStorage.getItem('remembered_name');
     const rememberedAccessType = localStorage.getItem('remembered_access_type');
     const rememberedEmail  = localStorage.getItem('remembered_email');
+    const rememberedToken  = localStorage.getItem('remembered_token');
     if (rememberedUserId && rememberedName) {
-      goToChat(rememberedUserId, rememberedName, rememberedAccessType, rememberedEmail);
+      goToChat(rememberedUserId, rememberedName, rememberedAccessType, rememberedEmail, rememberedToken);
+    }
+
+    // Sent here by chat.html when the login keycard went quiet for too long (or was refused).
+    if (new URLSearchParams(window.location.search).get('expired')) {
+      const expiredMsg = document.getElementById('loginError');
+      expiredMsg.textContent = 'You were signed out after a period of inactivity. Please log in again.';
+      expiredMsg.style.display = 'block';
     }
 
     // ---- LOG IN ----
@@ -659,6 +754,7 @@
     let pendingForcedName = null;
     let pendingForcedAccessType = null;
     let pendingForcedEmail = null;
+    let pendingForcedToken = null;
     let pendingRemember = false;
 
     document.getElementById('loginForm').addEventListener('submit', async function (e) {
@@ -677,7 +773,7 @@
         const res = await fetch(`${API_BASE}/api/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password }),
+          body: JSON.stringify({ username, password, remember }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'Login failed.');
@@ -690,6 +786,7 @@
           pendingForcedName = data.name;
           pendingForcedAccessType = data.access_type;
           pendingForcedEmail = data.email;
+          pendingForcedToken = data.token;
           pendingRemember = remember;
           document.getElementById('forcedPassword').value = '';
           document.getElementById('forcedConfirmPassword').value = '';
@@ -705,8 +802,9 @@
           localStorage.setItem('remembered_name', data.name);
           localStorage.setItem('remembered_access_type', data.access_type || 'user');
           localStorage.setItem('remembered_email', data.email || '');
+          localStorage.setItem('remembered_token', data.token || '');
         }
-        goToChat(data.user_id, data.name, data.access_type, data.email);
+        goToChat(data.user_id, data.name, data.access_type, data.email, data.token);
       } catch (err) {
         errorMsg.textContent = err.message || 'Incorrect username or password.';
         errorMsg.style.display = 'block';
@@ -736,11 +834,38 @@
         return;
       }
 
+      const pmChoice = document.querySelector('input[name="peopleManager"]:checked');
+      if (!pmChoice) {
+        errorMsg.textContent = 'Please tell us whether you are a people manager.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+      if (!document.getElementById('managerName').value.trim()) {
+        errorMsg.textContent = "Please enter your manager's name.";
+        errorMsg.style.display = 'block';
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('managerEmail').value.trim())) {
+        errorMsg.textContent = "Please enter your manager's email address.";
+        errorMsg.style.display = 'block';
+        return;
+      }
+      if (!countrySelect.value) {
+        errorMsg.textContent = 'Please choose your country.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+      if (!cityInput.value.trim() || !cityChosen) {
+        errorMsg.textContent = cityInput.value.trim() ? 'Please pick your city from the list, or choose “My city isn’t listed”.' : 'Please choose your city.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
       btn.disabled = true;
       btn.textContent = 'Creating account...';
 
       const payload = {
-        username: document.getElementById('signupUsername').value.trim(),
+        username: document.getElementById('signupEmail').value.trim(),
         email: document.getElementById('signupEmail').value.trim(),
         password: password,
         name: document.getElementById('name').value.trim().replace(/\b\w/g, c => c.toUpperCase()),
@@ -748,7 +873,11 @@
         designation: document.getElementById('designation').value.trim(),
         department: document.getElementById('department').value.trim(),
         company: document.getElementById('company').value.trim(),
-        country: document.getElementById('country').value.trim(),
+        country: (worldCountries.find(c => c.code === countrySelect.value) || {}).name || '',
+        city: cityInput.value.trim(),
+        is_people_manager: pmChoice.value === 'yes',
+        manager_name: document.getElementById('managerName').value.trim(),
+        manager_email: document.getElementById('managerEmail').value.trim(),
       };
 
       try {
@@ -760,7 +889,7 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'Could not create your account.');
 
-        goToChat(data.user_id, data.name, data.access_type, data.email || payload.email);
+        goToChat(data.user_id, data.name, data.access_type, data.email || payload.email, data.token);
       } catch (err) {
         errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
         errorMsg.style.display = 'block';
@@ -834,8 +963,9 @@
           localStorage.setItem('remembered_name', pendingForcedName);
           localStorage.setItem('remembered_access_type', pendingForcedAccessType || 'user');
           localStorage.setItem('remembered_email', pendingForcedEmail || '');
+          localStorage.setItem('remembered_token', pendingForcedToken || '');
         }
-        goToChat(pendingForcedUserId, pendingForcedName, pendingForcedAccessType, pendingForcedEmail);
+        goToChat(pendingForcedUserId, pendingForcedName, pendingForcedAccessType, pendingForcedEmail, pendingForcedToken);
       } catch (err) {
         errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
         errorMsg.style.display = 'block';
