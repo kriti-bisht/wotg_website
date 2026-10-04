@@ -83,7 +83,28 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .header-spacer { flex:1; }
 .admin-profile { display:flex; align-items:center; gap:0.7rem; }
 /* The round placeholder where the profile photo will appear on its own -- deliberately empty (no letter). */
-.admin-profile .avatar-lg { width:38px; height:38px; border-radius:50%; background:transparent; border:2px solid rgba(255,255,255,0.3); flex-shrink:0; }
+.admin-profile .avatar-lg { display:block; width:38px; height:38px; border-radius:50%; background:transparent; border:2px solid rgba(255,255,255,0.3); flex-shrink:0; overflow:hidden; cursor:pointer; transition:background 0.15s; }
+.admin-profile .avatar-lg:hover { background:rgba(255,255,255,0.16); }
+.admin-profile .avatar-lg img { width:100%; height:100%; object-fit:cover; display:none; }
+.admin-profile .avatar-lg img.has-photo { display:block; }
+/* The photo's drop-down: the SAME box as the user page's (chat.html .profile-dropdown) -- same size, gold accent rows, slide-in. */
+.profile-wrap { position:relative; }
+.profile-dropdown {
+  position:absolute; top:48px; right:0; width:200px; z-index:500;
+  background:var(--white); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.25);
+  padding:0.4rem; display:none;
+}
+.profile-dropdown.open { display:block; animation:notifSlide 0.2s ease; }
+.profile-dropdown a, .profile-dropdown button {
+  display:block; width:100%; text-align:left; background:rgba(228,202,10,0.08);
+  border:none; border-left:4px solid var(--gold);
+  font-family:'Poppins',sans-serif; padding:0.65rem 0.8rem; border-radius:6px;
+  font-size:0.83rem; color:var(--night2); text-decoration:none; cursor:pointer;
+  margin-bottom:0.15rem;
+}
+.profile-dropdown a:last-child, .profile-dropdown button:last-child { margin-bottom:0; }
+.profile-dropdown a:hover, .profile-dropdown button:hover { background:rgba(228,202,10,0.16); color:var(--night); }
+@keyframes notifSlide { from{opacity:0; transform:translateY(-8px);} to{opacity:1; transform:translateY(0);} }
 .admin-profile-text .name { color:#fff; font-weight:600; font-size:0.92rem; }
 .admin-profile-text .title { color:var(--grey2); font-size:0.76rem; }
 .admin-content { max-width:1500px; margin:0 auto; padding:1.6rem 2rem 3rem; }
@@ -316,7 +337,13 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
         <div class="name" id="profName"></div>
         <div class="title" id="profRole"></div>
       </div>
-      <div class="avatar-lg" id="profAvatar"></div>
+      <div class="profile-wrap" id="profileItem">
+        <a class="avatar-lg" id="profAvatar" href="#" onclick="toggleProfileMenu(event)" title="My Profile"><img id="profPhoto" alt="Profile"></a>
+        <div class="profile-dropdown" id="profileDropdown">
+          <a href="chat.html">Back to chat</a>
+          <button type="button" class="logout-row" onclick="logOut()">Log out</button>
+        </div>
+      </div>
     </div>
   </div>
 </header>
@@ -1575,10 +1602,9 @@ const NAV = [
 function drawNav(activeKey) {
   $('#adminNav').innerHTML = NAV.map(n => `<button class="admin-nav-item ${n.key === activeKey ? 'active' : ''}" data-hash="${n.hash}">${icon(n.icon)} ${esc(n.label)}${n.soon ? '<span class="soon">Soon</span>' : ''}</button>`).join('') +
     `<div class="admin-nav-divider"></div>
-     <button class="admin-nav-item" id="navHelp">${icon('help')} Help &amp; information <span class="soon">Soon</span></button>
-     <button class="admin-nav-item" id="navOut">${icon('out')} Log out</button>`;
+     <button class="admin-nav-item" id="navHelp">${icon('help')} Help &amp; information <span class="soon">Soon</span></button>`;
   $$('[data-hash]', $('#adminNav')).forEach(b => b.onclick = () => { location.hash = b.dataset.hash; if (window.innerWidth <= 960) $('#adminSidebar').classList.remove('open'); });
-  $('#navHelp').onclick = openHelp; $('#navOut').onclick = logOut;
+  $('#navHelp').onclick = openHelp;  // Log out lives ONLY in the photo drop-down (Kriti, 2026-10-03), exactly like the user page
 }
 function openHelp() {
   const m = openModal({ title: 'Help & information', size: 'narrow', html: `<div class="banner"><strong>Raise a ticket — coming soon.</strong> Soon you will be able to ask for help, or request a change such as a new Company Admin, right from here.</div><p style="font-size:0.88rem;color:var(--night2)">Until then, email <a href="mailto:inquiry@korporatewisdom.com" style="text-decoration:underline">inquiry@korporatewisdom.com</a>.</p>` });
@@ -1615,6 +1641,26 @@ async function route() {
   if (parts[0] === 'soon') { drawNav(parts[1]); return renderSoon(parts[1]); }
   location.hash = '#users';
 }
+// ── Profile photo + its drop-down (Kriti, 2026-10-03): same behaviour as the user page -- click your photo, the
+// menu opens ("Back to chat"); click anywhere else or press Esc and it closes. ──
+function toggleProfileMenu(e) {
+  e.preventDefault(); e.stopPropagation();
+  $('#profileDropdown').classList.toggle('open');
+}
+document.addEventListener('click', () => { const d = $('#profileDropdown'); if (d) d.classList.remove('open'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { const d = $('#profileDropdown'); if (d) d.classList.remove('open'); } });
+// The photo the person uploaded under My Profile on the user page. Its own small fetch, independent of the rest of
+// the page (like the user page's header photo): if it fails or there is none, the circle just stays empty.
+async function loadProfilePhoto() {
+  try {
+    const res = await fetch(API_BASE + '/api/my-profile?user_id=' + encodeURIComponent(CURRENT_USER_ID));
+    if (!res.ok) return;
+    const p = await res.json();
+    if (p.photo_base64) { const img = $('#profPhoto'); img.src = 'data:image/jpeg;base64,' + p.photo_base64; img.classList.add('has-photo'); }
+  } catch (err) { /* leave the empty circle */ }
+}
+loadProfilePhoto();
+
 (async function init() {
   $('#burger').onclick = () => {
     if (window.innerWidth <= 960) { $('#adminSidebar').classList.toggle('open'); return; }

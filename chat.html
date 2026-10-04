@@ -82,7 +82,7 @@ header.topbar { background:var(--night); }
   color:var(--gold2); background:rgba(228,202,10,0.16); border:1px solid rgba(228,202,10,0.4);
   border-radius:10px; padding:0.12rem 0.5rem; margin-left:0.5rem; vertical-align:middle; white-space:nowrap;
 }
-.card-header .coming-soon-tag { color:#fff; background:rgba(255,255,255,0.22); border-color:rgba(255,255,255,0.4); flex-shrink:0; font-size:0.52rem; padding:0.1rem 0.4rem; }
+.card-header .coming-soon-tag { color:#fff; background:rgba(255,255,255,0.22); border-color:rgba(255,255,255,0.4); flex-shrink:0; font-size:0.40rem; padding:0.08rem 0.25rem; } /* was 0.52rem / 0.1rem 0.4rem -- made smaller 2026-10-04 (Kriti) so the header titles fit */
 .insight-card h3 .coming-soon-tag { margin-left:0.4rem; }
 .card-body li.side-loading, .card-body li.side-empty { color:var(--grey3); font-style:italic; cursor:default; }
 .card-body li.side-loading:hover, .card-body li.side-empty:hover { color:var(--grey3); font-weight:400; }
@@ -240,7 +240,7 @@ header.topbar { background:var(--night); }
 .card:nth-child(3) .card-body { padding-left:calc(1.3rem + (var(--slant) / 2)); }
 .card-body ul { list-style:none; }
 .card-body li {
-  padding:0.55rem 0; font-size:0.95rem; color:var(--night2);
+  padding:var(--row-pad, 0.55rem) 0; font-size:0.95rem; color:var(--night2);
   border-bottom:1px solid rgba(0,0,0,0.05); text-align:left;
 }
 .card-body li:last-child { border-bottom:none; }
@@ -248,6 +248,43 @@ header.topbar { background:var(--night); }
 .card-body li.hotspot:hover { color:var(--green2); font-weight:500; }
 .card-body li.hotspot .li-tooltip { top:-32px; bottom:auto; left:0; right:auto; }
 .card-body li.hotspot:hover .li-tooltip { opacity:1; }
+/* Long skill lists, Kriti's explicit call, 2026-10-03: the box used to just cut the list off at the bottom
+   of the card (a long list lost its last rows, e.g. "Building Rapport"). Now the list scrolls INSIDE its
+   box -- wheel / trackpad / touch, and click-and-drag with the mouse -- with no visible scrollbar and no
+   change to how the box looks. The card's height is fixed by the hero, so min-height:0 lets the body
+   shrink to it instead of overflowing. */
+@media (min-width: 769px) {
+  .card { min-height:0; }
+  /* Equal VISIBLE width for the three boxes, Kriti's call 2026-10-04: the middle (gold) box slants on BOTH
+     sides, so with equal flex shares it looked ~14px narrower than green and navy. Giving it a head start of
+     half a slant (flex-basis) makes the three visible widths identical, at any screen width. */
+  .card:nth-child(2) { flex:1 1 calc(var(--slant) / 2); }
+  /* On a laptop-width window the green and navy headers (title + "Coming soon") were wider than their share
+     and pushed the gold box in (it was ~40px narrower at 1210px wide). min-width:0 lets all three share the
+     space equally. Header font size, padding and the Coming-soon tags are NOT changed (Kriti, 2026-10-04):
+     if a title is too wide for its box it is cut with an ellipsis by .card-header-title; she will say how
+     much to reduce if needed. */
+  .card { min-width:0; }
+  .card-group { min-width:0; }  /* without this the group grows past the page edge when a header is wider than its share */
+  /* Same left gap for all three header titles, Kriti 2026-10-04: the titles were CENTRED in their boxes, so the
+     gap to each box's visible left edge differed (at 1280px: Peer 26px, Learning 34px, Strategic 13px) and the gold
+     one looked pushed right. Now all three are left-aligned with the gap Strategic Learning Goals has (9.6px, measured
+     from the visible edge; the gold and navy boxes slant, the green one is straight, hence its different padding). */
+  .card-header { justify-content:flex-start; text-align:left; }
+  .card:nth-child(1) .card-header { padding-left:0.6rem; }
+  .card-body { min-height:0; }
+  /* the LIST is the scrolling area (not the whole box), so it clips exactly at its own top and bottom edge:
+     no half-row ever shows in the box's padding above it */
+  .card-body ul { flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; scrollbar-width:none; -ms-overflow-style:none; overscroll-behavior:contain; }
+  .card-body ul::-webkit-scrollbar { display:none; width:0; height:0; }
+}
+.card-body.dragging { cursor:grabbing; user-select:none; -webkit-user-select:none; }
+.card-body.dragging li.hotspot { cursor:grabbing; }
+/* The "Click to explore this skill" hint is ONE shared bubble placed by script (see loadHeroLearningRecs),
+   because a tooltip living inside a scrolling list would be cut off at the list's edge. Same look/spot as before. */
+/* Two classes, not one: the general .chat-icon-tooltip rule (bottom:52px; right:0) sits LOWER in this file, so a
+   single-class override here lost to it and stretched the bubble into a big black box. */
+.chat-icon-tooltip.li-tooltip-shared { bottom:auto; right:auto; }
 
 /* ---- Live chat panel (replaces hero on send) ---- */
 .chat-panel {
@@ -423,6 +460,16 @@ header.topbar { background:var(--night); }
 }
 .period-toggle-bottom { display:inline-flex; margin-top:0.65rem; }
 .period-toggle-bottom span { padding:0.2rem 0.5rem; font-size:0.6rem; }
+/* Learning Momentum + Star Stock, Kriti's explicit call, 2026-10-03: the list box ENDS ABOVE the
+   Month/Quarter/Year toggle, and the toggle is pinned in its own bottom row of the card. Both cards
+   are the same height (the strip stretches them), so the two toggles land on one line by construction
+   -- no script measuring one list against the other, nothing to drift when a label wraps or a skill
+   is added. The star list takes whatever room is left (flex-basis 0, so it never makes the card
+   taller) and scrolls inside that room. */
+#learningMomentumCard, #starStockCard { display:flex; flex-direction:column; }
+#learningMomentumCard .stat-list, #starStockCard .star-list { margin-bottom:0.65rem; }
+#learningMomentumCard .period-toggle-bottom, #starStockCard .period-toggle-bottom { margin-top:auto; align-self:flex-start; flex-shrink:0; }
+#starStockCard .star-list { flex:1 1 0; min-height:0; max-height:none; height:auto; }
 
 /* Learning Momentum */
 .stat-tile { display:flex; align-items:center; gap:0.7rem; padding:0.28rem 0; border-bottom:1px solid rgba(0,0,0,0.05); }
@@ -1576,17 +1623,13 @@ header.topbar { background:var(--night); }
         <div class="stat-text"><div class="stat-value" id="lmCompletionRate">--</div><div class="stat-label">Completion Rate</div></div>
       </div>
       </div>
-      <div class="period-toggle period-toggle-bottom" id="learningMomentumToggle">
-        <span class="active" data-period="month" onclick="setLearningMomentumPeriod('month')">Month</span><span data-period="quarter" onclick="setLearningMomentumPeriod('quarter')">Quarter</span><span data-period="year" onclick="setLearningMomentumPeriod('year')">Year</span>
-      </div>
+      <div class="period-toggle period-toggle-bottom" id="learningMomentumToggle"></div><!-- filled from the one shared template, see _fillPeriodToggle() -->
     </div>
 
     <div class="insight-card" id="starStockCard">
       <h3>Star Stock</h3>
       <div class="star-list" id="starStockList"></div>
-      <div class="period-toggle period-toggle-bottom" id="starStockToggle">
-        <span class="active" data-period="month" onclick="setStarStockPeriod('month')">Month</span><span data-period="quarter" onclick="setStarStockPeriod('quarter')">Quarter</span><span data-period="year" onclick="setStarStockPeriod('year')">Year</span>
-      </div>
+      <div class="period-toggle period-toggle-bottom" id="starStockToggle"></div><!-- filled from the one shared template, see _fillPeriodToggle() -->
     </div>
 
     <div class="insight-card">
@@ -1891,17 +1934,30 @@ function initSession() {
 // the same space as real numbers), so this can run immediately; also
 // re-run on resize since text can wrap differently at narrower widths.
 function _syncStarStockHeight() {
-  const statList = document.getElementById('statList');
+  // RETIRED 2026-10-03, Kriti's explicit call: the two cards are now laid out
+  // so the Month/Quarter/Year toggles sit in a fixed bottom row of equal-height
+  // cards (see #learningMomentumCard / #starStockCard in the CSS), which keeps
+  // them on one line without measuring anything. This only clears any inline
+  // size an older version of this function may have left, so it can never fight
+  // the CSS. The name stays because the callers below still reference it.
   const starList = document.getElementById('starStockList');
-  if (!statList || !starList) return;
-  starList.style.maxHeight = statList.offsetHeight + 'px';
-  // Fixed height, not just a max -- an empty (or 1-2 row) list used to
-  // collapse and drag the Month/Quarter/Year toggle up to the top of the
-  // card. Kriti's explicit call, 2026-09-19: the toggle always stays at
-  // the bottom.
-  if (statList.offsetHeight > 0) starList.style.height = statList.offsetHeight + 'px';
+  if (starList) { starList.style.maxHeight = ''; starList.style.height = ''; }
 }
 window.addEventListener('resize', _syncStarStockHeight);
+
+// ONE template for both Month / Quarter / Year toggles (Learning Momentum and Star Stock), Kriti's explicit call,
+// 2026-10-03: "copy paste the same toggle in both boxes so there's zero difference." Both are built by this one
+// function, from the same markup and the same CSS (.period-toggle .period-toggle-bottom), so they can never drift
+// apart. Only the function each click calls differs. Runs here, before either card loads its data.
+function _fillPeriodToggle(containerId, setterName) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = ['month', 'quarter', 'year'].map(function(p, i) {
+    return '<span' + (i === 0 ? ' class="active"' : '') + ' data-period="' + p + '" onclick="' + setterName + "('" + p + "')" + '">' + p.charAt(0).toUpperCase() + p.slice(1) + '</span>';
+  }).join('');
+}
+_fillPeriodToggle('learningMomentumToggle', 'setLearningMomentumPeriod');
+_fillPeriodToggle('starStockToggle', 'setStarStockPeriod');
 
 // Phone header's real height (see the mobile media query's .side-panel/
 // .panel-overlay rules) varies with content, so it's measured here rather
@@ -2741,21 +2797,147 @@ async function loadHeroLearningRecs() {
     const list = document.getElementById('learningRecsList');
     if (skills.length === 0) { _renderHeroEmpty('No skills assigned yet.'); return; }
     list.innerHTML = '';
+    // ONE shared hint bubble per card, placed over the hovered row by script (same spot as before: 32px
+    // above the row, flush left). It cannot live inside each row any more: the list scrolls now, and a
+    // bubble inside a scrolling box is cut off at the box's edge. Coordinates are card-relative, so the
+    // card's hover lift (translateY) cancels out.
+    const card = list.closest('.card');
+    let tip = card.querySelector('.li-tooltip-shared');
+    if (!tip) {
+      tip = document.createElement('span');
+      tip.className = 'chat-icon-tooltip li-tooltip-shared';
+      tip.textContent = 'Click to explore this skill';
+      card.appendChild(tip);
+    }
+    const hideTip = function() { tip.style.opacity = '0'; };
     skills.forEach(function(skillName) {
       const li = document.createElement('li');
       li.className = 'hotspot';
       li.textContent = skillName;
-      const tip = document.createElement('span');
-      tip.className = 'chat-icon-tooltip li-tooltip';
-      tip.textContent = 'Click to explore this skill';
-      li.appendChild(tip);
+      li.addEventListener('mouseenter', function() {
+        if (card.querySelector('.card-body.dragging')) return;
+        const r = li.getBoundingClientRect(), c = card.getBoundingClientRect();
+        tip.style.top = (r.top - c.top - 32) + 'px';
+        tip.style.left = (r.left - c.left) + 'px';
+        tip.style.opacity = '1';
+      });
+      li.addEventListener('mouseleave', hideTip);
       li.addEventListener('click', function() { startLearningGoalSession(skillName); });
       list.appendChild(li);
     });
+    const body = list.closest('.card-body');
+    if (body && !list._scrollHintBound) {
+      list._scrollHintBound = true;
+      list.addEventListener('scroll', hideTip, { passive: true });
+      // when scrolling stops (wheel, trackpad or touch), settle on a whole row -- never left half-cut
+      let snapTimer = null;
+      list.addEventListener('scroll', function() {
+        clearTimeout(snapTimer);
+        snapTimer = setTimeout(function() { if (!body.classList.contains('dragging')) _snapHeroRows(body); }, 140);
+      }, { passive: true });
+    }
+    _fitHeroRows();
   } catch (err) {
     _renderHeroEmpty('Could not load learning goals.');
   }
 }
+
+// ─── EXACT-FIT ROWS for the three hero skill boxes (Kriti, 2026-10-03) ─────────────────────────────────
+// Kriti: "building rapport is always getting cut ... the scroll should start at the dotted line level."
+// What this does, on desktop only (the phone layout lets each box grow with its content):
+//  1. Every skill name stays on ONE line. A long name (up to ~34 letters, e.g. "Expressing Disagreement/
+//     Objection") is shrunk only as far as it needs to fit the box width; short names are untouched.
+//  2. Every row is the same height, and that height is the original one tightened by the smallest amount that
+//     lets SIX whole rows fit above the bottom edge. It is measured from the real box and font, so it holds at
+//     any screen width. It can only tighten, never loosen. All three boxes share the value.
+//  3. The bottom padding is dropped, so the 7th row starts exactly at the edge, and scrolling settles on whole
+//     rows (see _snapHeroRows): a row is never left half-cut, at rest or after scrolling.
+const HERO_ROWS_VISIBLE = 6;
+function _scroller(body) { return body.querySelector('ul') || body; }   // the list is what scrolls on desktop
+const HERO_MIN_FONT_PX = 12;   // a name that still does not fit at this size gets "…" (none of the real names reach it)
+function _fitHeroRows() {
+  const group = document.querySelector('.card-group');
+  if (!group) return;
+  const bodies = Array.from(group.querySelectorAll('.card-body'));
+  const items = Array.from(group.querySelectorAll('.card-body li')).filter(function(li) { return !li.classList.contains('side-loading') && !li.classList.contains('side-empty'); });
+  // start clean (also what the phone layout keeps)
+  items.forEach(function(li) { ['fontSize','whiteSpace','overflow','textOverflow','height','lineHeight','padding','boxSizing'].forEach(function(k) { li.style[k] = ''; }); });
+  bodies.forEach(function(b) { b.style.paddingBottom = ''; });
+  if (window.innerWidth <= 768 || !items.length) return;
+  bodies.forEach(function(b) { b.style.paddingBottom = '0px'; });   // measure with no bottom padding: the list may use the whole box height
+
+  // 1. one line each; shrink only the names that are too wide (measured at hover weight, so hovering never wraps/clips)
+  items.forEach(function(li) {
+    li.style.whiteSpace = 'nowrap';
+    const w0 = li.style.fontWeight; li.style.fontWeight = '500';
+    let fs = parseFloat(getComputedStyle(li).fontSize);
+    while (li.scrollWidth > li.clientWidth + 0.5 && fs > HERO_MIN_FONT_PX) { fs -= 0.2; li.style.fontSize = fs.toFixed(1) + 'px'; }
+    li.style.fontWeight = w0;
+    if (li.scrollWidth > li.clientWidth + 0.5) { li.style.overflow = 'hidden'; li.style.textOverflow = 'ellipsis'; }
+  });
+
+  // 2. one uniform row height
+  const body = bodies[1] || bodies[0];
+  const visible = _scroller(body).clientHeight;   // the list's own height = the room the rows have
+  const padDefault = parseFloat(getComputedStyle(items[0]).paddingTop);
+  const natural = Math.max.apply(null, items.map(function(li) { return li.getBoundingClientRect().height; }));   // a default-size one-line row (with its 1px divider)
+  const wanted = Math.floor((visible / HERO_ROWS_VISIBLE) * 100) / 100 - 0.05;                                      // tiny safety so rounding never pushes row 6 out
+  const fitting = wanted < natural;
+  const rowH = fitting ? Math.max(wanted, 2 * 4 + 14) : natural;
+  items.forEach(function(li) {
+    li.style.boxSizing = 'border-box'; li.style.padding = '0';
+    li.style.height = rowH.toFixed(2) + 'px'; li.style.lineHeight = (rowH - 1).toFixed(2) + 'px';
+    if (!li.style.overflow) li.style.overflow = 'hidden';   // keeps a row's text on its row; the hover hint is not inside the row any more
+  });
+  if (!fitting) bodies.forEach(function(b) { b.style.paddingBottom = ''; });   // plenty of room: keep the original bottom padding
+}
+window.addEventListener('resize', function() { _fitHeroRows(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(function() { _fitHeroRows(); });
+
+// Snap a box's scroll position to the nearest whole row (called when scrolling or dragging stops).
+function _snapHeroRows(body) {
+  const sc = _scroller(body);
+  const rows = Array.from(sc.querySelectorAll('li'));
+  if (rows.length < 2) return;
+  // scrollTop that puts row i exactly where row 0 sits at rest = how far row i is below row 0
+  const top0 = rows[0].getBoundingClientRect().top;
+  const points = rows.map(function(li) { return li.getBoundingClientRect().top - top0; });
+  const max = sc.scrollHeight - sc.clientHeight;
+  let best = 0, bestD = Infinity;
+  points.forEach(function(pt) { const t = Math.min(Math.max(pt, 0), max); const d = Math.abs(t - sc.scrollTop); if (d < bestD) { bestD = d; best = t; } });
+  if (bestD > 0.75) sc.scrollTo({ top: best, behavior: 'smooth' });
+}
+
+// ─── CLICK-AND-DRAG SCROLLING for the three hero skill boxes (Kriti, 2026-10-03) ─────────────────────
+// The boxes scroll with the wheel / trackpad / touch on their own and show no scrollbar; this adds the
+// mouse drag. A drag of more than 5px scrolls the list and swallows the click that follows it, so
+// dragging never opens a skill by accident. A plain click (no drag) works exactly as before.
+(function() {
+  document.querySelectorAll('.card-body').forEach(function(body) {
+    let down = false, moved = false, startY = 0, startTop = 0, swallowClick = false;
+    body.addEventListener('pointerdown', function(e) {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      const sc = _scroller(body);
+      if (sc.scrollHeight <= sc.clientHeight + 1) return;  // nothing to scroll
+      down = true; moved = false; startY = e.clientY; startTop = sc.scrollTop;
+    });
+    window.addEventListener('pointermove', function(e) {
+      if (!down) return;
+      const dy = e.clientY - startY;
+      if (!moved && Math.abs(dy) > 5) { moved = true; body.classList.add('dragging'); }
+      if (moved) { _scroller(body).scrollTop = startTop - dy; e.preventDefault(); }
+    });
+    function endDrag() {
+      if (!down) return;
+      down = false;
+      body.classList.remove('dragging');
+      if (moved) { swallowClick = true; setTimeout(function() { swallowClick = false; }, 0); setTimeout(function() { _snapHeroRows(body); }, 30); }
+    }
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+    body.addEventListener('click', function(e) { if (swallowClick) { e.stopPropagation(); e.preventDefault(); } }, true);
+  });
+})();
 
 // ─── PARKING LOT / CONVERSATION HISTORY (real) ─────────────────────────────
 function _renderSideEmpty(container, message) {
@@ -3661,7 +3843,29 @@ function renderApplicationCommitmentForm(question, opts) {
   // Non-empty is the only bar, Kriti's explicit call -- gibberish is fine,
   // it just can't be blank. Same rule enforced again server-side in
   // training_loop.submit_application_commitment, not just trusted from here.
+  // 300-character cap, Kriti's call 2026-10-04 (first set to 350, then 300):
+  // the commitment card (learning_nudges/application_commitment_card.py)
+  // shrinks the text and finally cuts it with "..." when it does not fit.
+  // One cap for every language keeps cards from being cut in all but the
+  // widest scripts (Chinese/Japanese in the tightest design fit ~258).
+  // maxLength stops typing/pasting; the oninput trim below is a second
+  // guard for keyboards/IMEs that can step past maxLength. Backend is
+  // deliberately NOT changed -- it still saves whatever it is sent.
+  const COMMITMENT_MAX_CHARS = 300;
+  textarea.maxLength = COMMITMENT_MAX_CHARS;
+
+  const counter = document.createElement('div');
+  counter.style.cssText = 'margin-top:0.25rem;text-align:right;font-family:Poppins,sans-serif;' +
+    'font-size:0.72rem;color:var(--night2);opacity:0.6;';
+  counter.textContent = '0 / ' + COMMITMENT_MAX_CHARS;
+
   textarea.oninput = function() {
+    if (textarea.value.length > COMMITMENT_MAX_CHARS) {
+      let cut = COMMITMENT_MAX_CHARS;
+      if (/[\uD800-\uDBFF]/.test(textarea.value.charAt(cut - 1))) cut--;  // never split an emoji in half
+      textarea.value = textarea.value.slice(0, cut);
+    }
+    counter.textContent = textarea.value.length + ' / ' + COMMITMENT_MAX_CHARS;
     const hasText = textarea.value.trim().length > 0;
     submitBtn.disabled = !hasText;
     submitBtn.style.opacity = hasText ? '1' : '0.5';
@@ -3669,6 +3873,7 @@ function renderApplicationCommitmentForm(question, opts) {
   submitBtn.onclick = function() { submitApplicationCommitment(textarea.value); };
 
   card.appendChild(textarea);
+  card.appendChild(counter);
   card.appendChild(submitBtn);
   wrap.appendChild(avatar);
   wrap.appendChild(card);
