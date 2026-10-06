@@ -138,7 +138,7 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.1rem; margin-bottom:1.4rem; }
 .stat-card { background:var(--white); border-radius:12px; padding:1.15rem 1.3rem; display:flex; align-items:center; gap:0.9rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05); transition:transform 0.2s ease, box-shadow 0.2s ease; min-width:0; }
 .stat-card:hover { transform:translateY(-5px); box-shadow:0 16px 30px rgba(4,26,64,0.16); }
-.stat-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+.stat-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px rgba(0,0,0,0.12); color:#fff; }
 .stat-icon svg { width:22px; height:22px; }
 .stat-icon.teal { background:var(--teal); } .stat-icon.green { background:var(--green); } .stat-icon.gold { background:var(--gold); } .stat-icon.navy { background:var(--night2); }
 .stat-body { min-width:0; }
@@ -315,6 +315,177 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .hist-list { list-style:none; margin:0.5rem 0 0; padding:0; font-size:0.78rem; color:var(--night2); }
 .hist-list li { padding:0.3rem 0; border-bottom:1px solid var(--line); }
 
+/* ---- Adoption Overview ---- */
+.adopt-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:1.1rem; margin-bottom:1.4rem; }
+/* Kriti, 2026-10-06, after the floating Fable-style bar wasn't what she wanted: "you have created that
+   accent design in the observation [.adopt-insight, below] -- why can't you replicate it on the cards."
+   Same technique exactly -- a flush border-left, not an inset floating bar -- night-sky instead of teal. */
+.adopt-card { position:relative; background:var(--white); border-radius:14px; border-left:4px solid var(--night); padding:1.3rem 1.4rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border-top:1px solid rgba(4,26,64,0.05); border-right:1px solid rgba(4,26,64,0.05); border-bottom:1px solid rgba(4,26,64,0.05); cursor:pointer; text-align:left; transition:transform 0.2s ease, box-shadow 0.2s ease; display:block; width:100%; font-family:'Poppins',sans-serif; }
+.adopt-card:hover { transform:translateY(-5px); box-shadow:0 16px 30px rgba(4,26,64,0.16); }
+/* border-color isn't touched here (only the ring/glow shows "selected") -- the left accent stays night
+   regardless of active state, so it never gets confused with the teal selection highlight. */
+.adopt-card.active { box-shadow:0 0 0 2px var(--teal), 0 10px 24px rgba(20,184,166,0.18); }
+.adopt-card-top { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.9rem; }
+.adopt-card-label { font-size:0.95rem; font-weight:700; color:var(--night); }
+/* nowrap on the ROW means the caption can never drop to a whole new line below the number (Kriti,
+   2026-10-06, after this recurred: "I want the sentence next to the number, not in the following line")
+   -- min-width:0 lets the caption itself still wrap its OWN text onto a second line when it's long,
+   but that second line stays in the caption's own column, beside the number, never under it. This also
+   fixes the three cards' uneven alignment: a card with no data this period (a shorter caption, no "in
+   October") used to end up a different height than its siblings once a LONGER caption on another card
+   wrapped below its number -- with nowrap, every card's caption starts in the exact same place. */
+.adopt-card-hero { display:flex; align-items:baseline; flex-wrap:nowrap; gap:0.35rem; }
+.adopt-card-num { font-size:1.9rem; font-weight:700; color:var(--night); line-height:1.1; flex-shrink:0; }
+.adopt-card-sub { font-size:0.82rem; color:var(--grey3); flex:1; min-width:0; }
+/* Applied Learning's card shows two metrics, but the card itself can never grow past the other tabs'
+   one-line size (Kriti, 2026-10-06: "you can't increase the size of the card... you have to reduce the
+   font size" -- the card height is the fixed thing, the two numbers have to fit inside it, not the other
+   way round). The icon row moves up a little to free up real room (only on this card -- "you don't need
+   that room in the other tabs"), spent on bigger text for the two number lines rather than banked as
+   whitespace -- tuned by direct measurement against the one-line card's own real height, not guessed. */
+.adopt-card.two-metric { padding-top:1.05rem; }
+.adopt-card.two-metric .adopt-card-top { margin-bottom:0.5rem; }
+.adopt-card.two-metric .adopt-card-num { font-size:1.2rem; }
+.adopt-card.two-metric .adopt-card-sub { font-size:0.72rem; line-height:1.15; }
+.adopt-card.two-metric .adopt-card-hero2 { margin-top:0.15rem; }
+.adopt-back { display:flex; align-items:center; gap:0.4rem; font-size:0.84rem; font-weight:600; color:var(--teal); background:none; border:none; cursor:pointer; margin-bottom:0.9rem; padding:0; }
+.adopt-back:hover { color:#0d8f81; text-decoration:underline; }
+.adopt-controls { display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap; margin-bottom:1.2rem; }
+.adopt-controls .filter-select-wrap { min-width:0; }
+.adopt-seg { display:inline-flex; background:var(--grey1); border-radius:20px; padding:0.2rem; }
+.adopt-seg button { font-size:0.8rem; font-weight:600; color:var(--night2); background:none; border:none; border-radius:16px; padding:0.4rem 0.85rem; cursor:pointer; }
+.adopt-seg button.active { background:var(--night); color:#fff; }
+.adopt-legend { display:flex; gap:1rem; font-size:0.76rem; color:var(--night2); flex-wrap:wrap; }
+.adopt-legend span { display:inline-flex; align-items:center; gap:0.35rem; }
+.adopt-legend i { width:9px; height:9px; border-radius:3px; display:inline-block; }
+.adopt-newexisting { display:flex; gap:0.4rem; margin-top:0.7rem; }
+.adopt-newexisting .seg { flex:1; height:10px; border-radius:5px; }
+.adopt-newexisting .seg.new { background:var(--teal); }
+.adopt-newexisting .seg.existing { background:var(--night); }
+
+/* drag-and-drop: a card is draggable, the panel below is the drop target */
+.adopt-card.dragging { opacity:0.4; }
+.adopt-droptarget { transition:box-shadow 0.15s, background 0.15s; }
+.adopt-droptarget.drag-over { box-shadow:0 0 0 2.5px var(--green) inset; background:rgba(58,181,74,0.04); }
+
+/* the four tabs (Usage Hours / Learning Atoms / Applied Learning / Average Duration) -- one big chart
+   at a time, never four tiles together (Kriti's explicit call, 2026-10-05) */
+.adopt-tabs { display:flex; gap:0.3rem; border-bottom:1px solid var(--line); margin-bottom:1.2rem; flex-wrap:wrap; }
+.adopt-tabs button { font-size:0.84rem; font-weight:600; color:var(--grey3); background:none; border:none; padding:0.7rem 1rem; cursor:pointer; border-bottom:2.5px solid transparent; margin-bottom:-1px; }
+.adopt-tabs button.active { color:var(--night); border-bottom-color:var(--teal); }
+.adopt-tabs button:hover:not(.active) { color:var(--night2); }
+
+.adopt-hero { display:flex; align-items:baseline; flex-wrap:wrap; gap:0.8rem; margin-bottom:0.5rem; }
+.adopt-hero .num { font-size:2.4rem; font-weight:700; color:var(--night); line-height:1; }
+.adopt-hero .unit { font-size:1rem; color:var(--grey3); }
+.adopt-hero-delta { font-size:0.82rem; font-weight:600; color:#0d8f81; background:rgba(20,184,166,0.14); border-radius:10px; padding:0.25rem 0.6rem; }
+.adopt-hero-delta.down { color:var(--red); background:rgba(224,48,58,0.1); }
+.adopt-insight { font-size:0.82rem; color:var(--night2); background:rgba(20,184,166,0.08); border-left:3px solid var(--teal); border-radius:6px; padding:0.65rem 0.9rem; margin-bottom:1.1rem; }
+
+/* the bar chart itself: y-axis ticks, gridlines, stacked/plain bars, direct value labels, x-axis labels */
+.adopt-chart-row { display:flex; gap:0.7rem; }
+.adopt-chart-yaxis { display:flex; flex-direction:column; justify-content:space-between; font-size:0.68rem; color:var(--grey3); text-align:right; flex-shrink:0; width:40px; font-variant-numeric:tabular-nums; }
+.adopt-chart-main { position:relative; flex:1; min-width:0; overflow-x:auto; padding-bottom:1.6rem; }
+.adopt-chart-gridlines { position:absolute; top:0; left:0; right:0; display:flex; flex-direction:column; justify-content:space-between; pointer-events:none; }
+.adopt-chart-gridline { border-top:1px solid var(--line); }
+.adopt-chart-cols { display:flex; align-items:flex-end; gap:0.9rem; padding:0 0.3rem; position:relative; min-width:min-content; }
+.adopt-trend-line { position:absolute; top:0; left:0; pointer-events:none; z-index:1; overflow:visible; }
+/* height is set inline to the full chart height (not just the bar's own height) and justify-content
+   pins content to the bottom -- otherwise the column's own CSS box only covers its visible content (tip
+   + bar), so a short bar leaves most of the chart area above it outside the hoverable element entirely.
+   Barely noticeable on a tall stacked bar; a real miss target on the grouped chart's often-tiny second
+   bar (Kriti, 2026-10-06: "your hover numbers are gone"). */
+.adopt-bar-col { display:flex; flex-direction:column; justify-content:flex-end; align-items:center; width:42px; flex-shrink:0; position:relative; z-index:2; }
+.adopt-bar-tip { font-size:0.64rem; font-weight:700; color:var(--night2); margin-bottom:3px; font-variant-numeric:tabular-nums; white-space:nowrap; opacity:0; transition:opacity 0.12s; }
+.adopt-bar-col:hover .adopt-bar-tip { opacity:1; }
+.adopt-bar-stack { width:100%; border-radius:4px 4px 0 0; overflow:hidden; display:flex; flex-direction:column-reverse; min-height:2px; }
+.adopt-bar-seg { width:100%; }
+.adopt-bar-seg.texture, .adopt-bar-thin.texture { background-image:repeating-linear-gradient(135deg, rgba(255,255,255,0.42) 0 3px, transparent 3px 6px); }
+.adopt-bar-pair { display:flex; align-items:flex-end; justify-content:center; }
+.adopt-bar-thin { border-radius:4px 4px 0 0; }
+/* legend dots are 9px -- the bars' own 3px/6px stripe reads as a single diagonal slash at that size, so
+   the legend gets its own finer 2px/4px band instead (Fable's own legend-dot stripe, productdemo/
+   admin_intro.html line 1078 -- her bars and her legend dots already use two different band widths for
+   the same reason). */
+.adopt-legend i.texture { background-image:repeating-linear-gradient(135deg, rgba(255,255,255,0.42) 0 2px, transparent 2px 4px); }
+.adopt-bar-col:hover .adopt-bar-stack { outline:2px solid var(--night2); outline-offset:1px; }
+.adopt-tip-dot { color:var(--grey3); }
+.adopt-bar-label { font-size:0.66rem; color:var(--grey3); margin-top:0.45rem; white-space:nowrap; position:absolute; bottom:-1.5rem; left:50%; transform:translateX(-50%); }
+
+/* Applied Learning's two-axis chart -- a right-hand axis to mirror .adopt-chart-yaxis, a single plain
+   bar, and a hoverable line point. The hover label is its own shared class (.adopt-hover-num) nested
+   INSIDE the bar or the dot, never on the shared column -- that's what keeps the two mutually exclusive:
+   hovering the bar can never also light up the dot's label, and vice versa. */
+.adopt-chart-yaxis-right { display:flex; flex-direction:column; justify-content:space-between; font-size:0.68rem; color:var(--grey3); text-align:left; flex-shrink:0; width:36px; font-variant-numeric:tabular-nums; }
+.adopt-bar-single { position:relative; width:100%; border-radius:4px 4px 0 0; background-color:var(--night2); }
+.adopt-bar-single:hover { outline:2px solid var(--night2); outline-offset:1px; }
+.adopt-hover-num { position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:4px; font-size:0.64rem; font-weight:700; color:var(--night2); white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.12s; font-variant-numeric:tabular-nums; z-index:5; }
+.adopt-hover-num.teal { color:var(--teal); }
+/* the line's own hover label sits BELOW its dot, not above (Kriti, 2026-10-06: "the label should show
+   below the line") -- the dot usually sits near the top of the chart (close to 100%), so a label floating
+   above it has nowhere safe to render; .adopt-chart-main's overflow-x:auto implicitly makes its OTHER
+   axis "auto" too (a genuine CSS rule, not a bug in that line), so anything that drifts above the chart's
+   own box there gets silently clipped -- which is the real reason the label "didn't show" at all, not a
+   hover-trigger problem. Below the dot always has clear chart space under it instead. */
+.adopt-hover-num.below { bottom:auto; top:100%; margin-bottom:0; margin-top:6px; }
+.adopt-bar-single:hover .adopt-hover-num { opacity:1; }
+.adopt-line-dot { position:absolute; left:50%; width:10px; height:10px; margin-left:-5px; margin-bottom:-5px; border-radius:50%; background:var(--teal); border:2px solid #fff; box-shadow:0 0 0 1px rgba(4,26,64,0.12); cursor:pointer; z-index:4; }
+.adopt-line-dot:hover .adopt-hover-num { opacity:1; }
+/* Kriti, 2026-10-06: "on the y-axis I need labeling... left side says number of atoms applied, right
+   side says success rate" -- same vertical rotated title Fable uses (productdemo/admin_intro.html's own
+   .axis-title-v), copied exactly: the left title reads bottom-to-top, the right one top-to-bottom. */
+.adopt-axis-title-v { writing-mode:vertical-rl; transform:rotate(180deg); font-size:0.64rem; color:var(--grey3); font-weight:600; flex:none; display:flex; align-items:center; justify-content:center; padding:0 0.15rem; white-space:nowrap; }
+.adopt-axis-title-v.right { transform:none; }
+
+/* Average Duration's own chart shape -- Fable's "column list" (productdemo/admin_intro.html's
+   .trend-row/.trend-track/.trend-fill), copied in structure: a period label + its (completed) value on
+   one top line, then its track, then the incomplete track right underneath, thin and close (Kriti,
+   2026-10-06: "the two bars for a particular period are very close... they're thin also"). */
+.duration-row { margin-bottom:0.85rem; }
+.duration-row-top { display:flex; justify-content:space-between; font-size:0.8rem; color:var(--night2); margin-bottom:0.3rem; }
+.duration-track { height:6px; background:var(--grey1); border-radius:3px; overflow:hidden; }
+.duration-fill { height:100%; border-radius:3px; background:linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 50%), linear-gradient(90deg, var(--night2) 0%, var(--night) 100%); }
+.duration-fill.texture { background:var(--red) repeating-linear-gradient(135deg, rgba(255,255,255,0.42) 0 3px, transparent 3px 6px); }
+/* the incomplete track: thin, right under the completed one with almost no gap, no permanent label of
+   its own -- its value only shows on hover, kept OUT of the always-visible right edge entirely, so the
+   row never shows two numbers at once ("that'll be too many numbers"). */
+.duration-track-incomplete { position:relative; height:4px; margin-top:3px; cursor:pointer; }
+.duration-hover-val { position:absolute; right:0; top:100%; margin-top:3px; font-size:0.68rem; font-weight:700; color:var(--red); white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.12s; font-variant-numeric:tabular-nums; }
+.duration-track-incomplete:hover .duration-hover-val { opacity:1; }
+
+/* ---- Filter trigger + drawer (Kriti, 2026-10-06 -- copied exactly from productdemo/admin_intro.html's
+   own Reports & Insights drill-down drawer, the asset she asked this page to match) ---- */
+.ri-dd-trigger {
+  position:relative; display:flex; align-items:center; gap:0.45rem; font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:600;
+  color:var(--night2); background:var(--white); border:1.5px solid rgba(4,26,64,0.14); border-radius:20px;
+  padding:0.5rem 1.05rem; cursor:pointer; transition:border-color 0.15s, color 0.15s;
+}
+.ri-dd-trigger svg { width:15px; height:15px; }
+.ri-dd-trigger:hover { border-color:var(--night2); color:var(--night); }
+.dd-overlay { position:fixed; inset:0; background:rgba(4,26,64,0.45); z-index:199; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.dd-overlay.open { opacity:1; pointer-events:auto; }
+.dd-drawer {
+  position:fixed; top:0; right:0; width:320px; height:100vh; z-index:200;
+  background:var(--white); display:flex; flex-direction:column;
+  transform:translateX(100%); transition:transform 0.25s; box-shadow:-4px 0 24px rgba(0,0,0,0.18);
+}
+.dd-drawer.open { transform:translateX(0); }
+.dd-drawer-head { display:flex; align-items:center; justify-content:space-between; padding:1.4rem 1.4rem 1rem; border-bottom:1px solid rgba(4,26,64,0.08); flex-shrink:0; }
+.dd-drawer-head h3 { font-size:1.05rem; font-weight:700; color:var(--night); }
+.dd-close-btn { width:32px; height:32px; border-radius:8px; border:none; background:var(--grey1); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--grey3); transition:background 0.15s, color 0.15s; flex-shrink:0; }
+.dd-close-btn:hover { background:var(--grey2); color:var(--night); }
+.dd-close-btn svg { width:16px; height:16px; }
+.dd-drawer-body { flex:1; overflow-y:auto; padding:1.2rem 1.4rem; }
+.dd-drawer-foot { padding:1rem 1.4rem 1.4rem; border-top:1px solid rgba(4,26,64,0.08); flex-shrink:0; display:flex; flex-direction:column; gap:0.5rem; }
+.dd-go-btn { width:100%; font-family:'Poppins',sans-serif; font-size:0.86rem; font-weight:600; color:#fff; background:var(--teal); border:none; border-radius:20px; padding:0.65rem; cursor:pointer; transition:background 0.15s; }
+.dd-go-btn:hover { background:#0d8f81; }
+.adopt-dd-option {
+  width:100%; text-align:left; background:var(--grey1); border:none; border-radius:10px; padding:0.7rem 0.9rem; margin-bottom:0.6rem;
+  font-family:'Poppins',sans-serif; font-size:0.84rem; font-weight:600; color:var(--night2); cursor:pointer; transition:background 0.15s, color 0.15s;
+}
+.adopt-dd-option:hover { background:var(--grey2); }
+.adopt-dd-option.active { background:rgba(20,184,166,0.14); color:#0d8f81; }
+
 </style>
 </head>
 <body>
@@ -341,6 +512,7 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
         <a class="avatar-lg" id="profAvatar" href="#" onclick="toggleProfileMenu(event)" title="My Profile"><img id="profPhoto" alt="Profile"></a>
         <div class="profile-dropdown" id="profileDropdown">
           <a href="chat.html">Back to chat</a>
+          <button type="button" class="logout-row hidden" id="companySettingsRow" onclick="openCompanySettings(event)">Company Settings</button>
           <button type="button" class="logout-row" onclick="logOut()">Log out</button>
         </div>
       </div>
@@ -354,7 +526,6 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 
   <div class="admin-main" id="adminMain">
     <div class="admin-content" id="view"><div class="loading-block"><span class="spinner"></span> Loading…</div></div>
-    <div class="footer-credit">Location data © <a href="https://www.geonames.org" target="_blank" rel="noopener" style="text-decoration:underline">GeoNames</a>, CC BY 4.0</div>
   </div>
 </div>
 <div id="modalRoot"></div>
@@ -368,13 +539,19 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 // refuse, and shows the server's own messages when it does.
 // ════════════════════════════════════════════════════════════════════════
 const _q = new URLSearchParams(location.search);
-// Local preview only: ?api=http://localhost:8765&as=<user_id>:<access_type>. Honoured ONLY when the page itself is
-// served from localhost -- on the live site a link like this could otherwise send an admin's ID to someone else's server.
+// Local preview only: ?api=http://localhost:8765&as=<user_id>:<access_type>&token=<a locally-issued login
+// token>. Honoured ONLY when the page itself is served from localhost -- on the live site a link like
+// this could otherwise send an admin's ID to someone else's server. `token` added 2026-10-05 alongside
+// the new Adoption Overview calls, which need a real Bearer token, not just a user_id -- same guard,
+// same reasoning, just one more field a local preview can carry.
 const PREVIEW_API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? _q.get('api') : null;
 const API_BASE = PREVIEW_API || 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
 if (PREVIEW_API && _q.get('as')) {
   const [uid, acc] = _q.get('as').split(':');
-  try { localStorage.setItem('user_id', uid); localStorage.setItem('access_type', acc || 'admin'); } catch (e) {}
+  try {
+    localStorage.setItem('user_id', uid); localStorage.setItem('access_type', acc || 'admin');
+    if (_q.get('token')) localStorage.setItem('login_token', _q.get('token'));
+  } catch (e) {}
 }
 const CURRENT_USER_ID = (function () { try { return localStorage.getItem('user_id') || ''; } catch (e) { return ''; } })();
 const ACCESS_ALLOWED = ['admin', 'company_admin', 'super_admin'];
@@ -414,6 +591,19 @@ const ICONS = {
   help: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><circle cx="12" cy="17" r=".6"/></svg>',
   out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
   up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M4 3h16"/></svg>',
+  filter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="4 4 20 4 14 12.5 14 19 10 21 10 12.5 4 4"/></svg>',
+  // The reference page's own icon shapes (admin_intro.html's KPI_BASE/OVERALL_ICON), matched exactly --
+  // Kriti, 2026-10-06: "use the icons that the demo version has... in color" (hers are flat var(--night)
+  // line art; these use currentColor so they pick up each card's own accent instead).
+  // Kriti, 2026-10-06, comparing Self-Initiated to Recommended head-on: "self-initiated is literally like
+  // the pixel is above... recommended is very visibly below the line." Both squares sit at the identical
+  // pixel position (measured, not guessed) -- the mismatch is each glyph's OWN vertical center inside its
+  // shared 24x24 viewBox (mountain center≈10.5, star center≈11.5, globe center=12, from their own path
+  // coordinates). Re-centered every icon on 12 -- the globe's own natural center, since it needed no
+  // change -- with a <g transform> wrapper rather than touching the path data itself.
+  selfInit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(0,1.5)"><path d="M2 19 L9 8 L12 13 L16 6 L22 19"/><line x1="16" y1="6" x2="16" y2="2"/><path d="M16 2 L20.5 3.6 L16 5.2 Z" fill="currentColor" stroke="none"/><circle cx="6.3" cy="9.6" r="0.9" fill="currentColor" stroke="none"/><line x1="6.3" y1="10.5" x2="6.3" y2="12.3"/><line x1="6.3" y1="10.9" x2="5" y2="10.1"/><line x1="6.3" y1="10.9" x2="7.6" y2="9.9"/></g></svg>',
+  recommended: '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(0,0.5)"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></g></svg>',
+  globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.7 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.7-3.8-9s1.3-6.5 3.8-9Z"/></svg>',
   down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg>',
   dots: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>',
   search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
@@ -537,7 +727,8 @@ async function locationPicker(host, opts) {
       <div class="field"><label>Country${opts.requireCity === false ? '' : ' <span class="req">*</span>'}</label><select class="loc-country"><option value="">Select country…</option>${world.map(c => `<option value="${esc(c.code)}">${esc(c.name)}</option>`).join('')}</select><div class="err hidden"></div></div>
       <div class="field"><label>City${opts.requireCity === false ? '' : ' <span class="req">*</span>'}</label>
         <div class="combo"><input type="text" class="loc-city" autocomplete="off" placeholder="Choose a country first" disabled><div class="combo-list hidden"></div></div><div class="err hidden"></div></div>
-    </div>`;
+    </div>
+    <div class="footer-credit" style="padding:0.5rem 0 0; text-align:left">Location data © <a href="https://www.geonames.org" target="_blank" rel="noopener" style="text-decoration:underline">GeoNames</a>, CC BY 4.0</div>`;
   const selC = $('.loc-country', host), inpCity = $('.loc-city', host), list = $('.combo-list', host);
   const errs = $$('.err', host);
   let cities = [];
@@ -1591,9 +1782,652 @@ async function renderGlossary() {
   $('#gl_q').oninput = draw; draw();
 }
 
+// ════════════ ADOPTION OVERVIEW ════════════
+// The live reports app (wotg-reports). Same local-preview override as API_BASE above:
+// ?reportsApi=http://localhost:8002, honoured only when this page itself is served from localhost,
+// same reasoning as PREVIEW_API.
+const PREVIEW_REPORTS_API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? _q.get('reportsApi') : null;
+const REPORTS_API_BASE = PREVIEW_REPORTS_API || 'https://wotg-reports.azurewebsites.net';
+
+function loginToken() { try { return localStorage.getItem('login_token') || ''; } catch (e) { return ''; } }
+
+async function reportsApi(path, opts) {
+  opts = opts || {};
+  const res = await fetch(REPORTS_API_BASE + path, { method: opts.method || 'GET', headers: { 'Authorization': 'Bearer ' + loginToken() } });
+  if (!res.ok) { const body = await res.json().catch(() => ({})); throw new Error(body.detail || ('Request failed (' + res.status + ')')); }
+  return res.json();
+}
+
+// Self-Initiated = Voluntary Opening, Recommended = Learning Recommendation, Overall = both tracks summed
+// (Kriti, 2026-10-05). Only Recommended ever shows an assigned-by filter -- mr_adoption_report.py is the
+// only one of the three backend files with that parameter at all, so this split mirrors the backend
+// exactly rather than re-deciding it here.
+const ADOPT_TRACKS = {
+  vo: { track: 'voluntary_opening', label: 'Self-Initiated', icon: 'selfInit', iconClass: 'teal', hasAssignedBy: false },
+  mr: { track: 'learning_recommendations', label: 'Recommended', icon: 'recommended', iconClass: 'gold', hasAssignedBy: true },
+  overall: { track: 'overall', label: 'Overall', icon: 'globe', iconClass: 'navy', hasAssignedBy: false },
+};
+const ADOPT_LEVELS = ['company', 'department', 'manager', 'user'];   // broadest to narrowest -- Kriti's explicit order, 2026-10-05
+// Four tabs, Kriti's explicit call, 2026-10-05 -- one at a time, each its OWN chart, never four tiles
+// shown at once. No NPS, no Learning Application/top-2-box anywhere on this page -- a different kind of
+// report (satisfaction), not adoption; dropped entirely, not just hidden.
+const ADOPT_TABS = [
+  { key: 'usage', label: 'Usage Hours' },
+  { key: 'atoms', label: 'Learning Atoms' },
+  { key: 'applied', label: 'Applied Learning' },
+  { key: 'duration', label: 'Average Duration' },
+];
+S.adopt = { active: 'overall', tab: 'usage', level: 'company', period: 'month', assignedBy: '', assignedByOptions: null, fiscalStartMonth: null };
+
+function fmtHours(n) { return (n || 0).toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' hrs'; }
+// Period keys from the backend are plain sortable strings, never what's shown on screen (Kriti,
+// 2026-10-06: the raw "2026-11-14" / "2026-11" / "2026-Q1" must never appear as a bar label). These turn
+// one into the label she asked for, per period type.
+const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+function ordinal(n) { const v = n % 100; return n + (['th', 'st', 'nd', 'rd'][(v - 20) % 10] || ['th', 'st', 'nd', 'rd'][v] || 'th'); }
+// Which two months a fiscal quarter covers, fiscal-start-aware -- mirrors vo_adoption_report.py's own
+// _fiscal_quarter() math exactly, so a bar's label can never disagree with which rows it actually holds.
+function quarterMonthRange(qNum, fiscalStartMonth) {
+  const m0 = (fiscalStartMonth - 1 + (qNum - 1) * 3) % 12, m2 = (m0 + 2) % 12;
+  return `${MONTH_ABBR[m0]}–${MONTH_ABBR[m2]}`;
+}
+function formatPeriodLabel(period, apiPeriod, fiscalStartMonth) {
+  if (apiPeriod === 'month') { const [, m, d] = period.split('-').map(Number); return `${ordinal(d)} ${MONTH_ABBR[m - 1]}`; }
+  if (apiPeriod === 'year') { const [y, m] = period.split('-').map(Number); return `${MONTH_ABBR[m - 1]} '${String(y).slice(2)}`; }
+  if (apiPeriod === 'quarter') {
+    const [fy, qPart] = period.split('-Q'), q = Number(qPart);
+    return `Q${q} '${String(fy).slice(2)} (${quarterMonthRange(q, fiscalStartMonth || 1)})`;
+  }
+  return period;
+}
+function niceCeil(n) {
+  if (n <= 0) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(n)));
+  const norm = n / mag;
+  return (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10) * mag;
+}
+// The step that divides 0..range into AT MOST maxTicks gaps -- tried in ascending {1,2,5}x10^n order,
+// so it always stops at the SMALLEST step that still fits the cap. Unlike niceCeil(range/maxTicks), this
+// is monotonic: range/step never exceeds maxTicks for ANY range, so the same maxTicks gives the same
+// density everywhere (Kriti, 2026-10-06: liked Quarter's 6-tick result, found Month/Year denser on real
+// numbers -- the old formula could spike to 7-8 ticks for ranges roughly 26-35 before dropping back at
+// the next bracket; this one can't spike, by construction).
+function niceStep(range, maxTicks) {
+  if (range <= 0) return 1;
+  for (let mag = Math.pow(10, Math.floor(Math.log10(range / maxTicks || 1)) - 1); mag <= range; mag *= 10) {
+    for (const c of [1, 2, 5]) {
+      const step = c * mag;
+      if (step > 0 && range / step <= maxTicks) return step;
+    }
+  }
+  return range;
+}
+// The ONE y-axis ceiling rule, shared by every chart on this page (Kriti, 2026-10-06: "I hope you're
+// applying this rule universally... not just usage hours or learning atoms") -- nearest multiple of 5
+// that sits at least CEILING_MIN_GAP above the actual max. Was a minimum gap of 5 (6 -> 15, 2 -> 10),
+// which read as "very very stunted" on small numbers -- a bar of 2 sitting in a 10-tall chart. Dropped
+// to 3: 2 -> 5, 6 -> 10, 10 -> 15 -- still never touches the top gridline, but nowhere near as much dead
+// air above it. A single shared function so no future chart can quietly drift back to a different gap.
+const CEILING_MIN_GAP = 3;
+function chartCeiling(actualMax) {
+  return Math.ceil((actualMax + CEILING_MIN_GAP) / 5) * 5;
+}
+// All periods returned for one view are the SAME granularity (year-only, quarter-only, etc. -- never
+// mixed), so each branch only needs to sort correctly within its own type.
+function periodSortKey(p) {
+  const y = parseInt((p.match(/^(\d{4})/) || [0, 0])[1]) || 0;
+  const q = p.match(/-Q(\d)/); if (q) return y * 10 + parseInt(q[1]);
+  const m = p.match(/-(\d{2})$/); if (m) return y * 100 + parseInt(m[1]);
+  return y * 1000;
+}
+// One point per period, summed across whatever drill-down groups exist inside it (a department-level
+// view still draws ONE bar per period -- the table below the chart has the per-group breakdown).
+// apiPeriod/fiscalStartMonth are only used to compute each point's display label -- the grouping itself
+// is already done, by the backend, off the raw `period` key.
+function seriesFromRows(rows, apiPeriod, fiscalStartMonth) {
+  const byPeriod = {};
+  rows.forEach(r => { (byPeriod[r.period] = byPeriod[r.period] || []).push(r); });
+  return Object.keys(byPeriod).sort((a, b) => periodSortKey(a) - periodSortKey(b)).map(period => {
+    const grp = byPeriod[period];
+    const s = { period, label: formatPeriodLabel(period, apiPeriod, fiscalStartMonth), usageAll: 0, usageNew: 0, usageExisting: 0, compCount: 0, notCompCount: 0, applied: 0, topBox: 0, scored: 0, compDurHours: 0, compDurCount: 0, notCompDurHours: 0, notCompDurCount: 0 };
+    grp.forEach(r => {
+      s.usageAll += r.all.usage_hours || 0; s.usageNew += r.new.usage_hours || 0; s.usageExisting += r.existing.usage_hours || 0;
+      s.compCount += r.all.completed_count; s.notCompCount += r.all.not_completed_count; s.applied += r.all.applied_count;
+      // top2box_percent's raw numerator/denominator -- summed across every group in the period, THEN
+      // divided (below), never averaging two already-computed percentages (the same roll-up rule as
+      // every other ratio metric on this page).
+      s.topBox += r.all.top2box_percent.top_box; s.scored += r.all.top2box_percent.scored;
+      // completed/not_completed_duration_avg -- same roll-up rule: sum each group's own total_hours and
+      // count, divide once at the end (below), never average two already-computed averages.
+      s.compDurHours += r.all.completed_duration_avg.total_hours || 0; s.compDurCount += r.all.completed_duration_avg.count || 0;
+      s.notCompDurHours += r.all.not_completed_duration_avg.total_hours || 0; s.notCompDurCount += r.all.not_completed_duration_avg.count || 0;
+    });
+    s.successRate = s.scored ? (s.topBox / s.scored) * 100 : null;
+    s.compAvgMin = s.compDurCount ? (s.compDurHours / s.compDurCount) * 60 : null;
+    s.notCompAvgMin = s.notCompDurCount ? (s.notCompDurHours / s.notCompDurCount) * 60 : null;
+    return s;
+  });
+}
+function pctDelta(first, last) { return first ? ((last - first) / first) * 100 : null; }
+// deltaText is a ready-made string ("+12% vs Sep") or null to omit the pill entirely -- Kriti, 2026-10-06:
+// a delta with no stated comparison ("minus compared to what?") is worse than no delta at all.
+function heroBlock(value, unit, deltaText, insight) {
+  const deltaHtml = deltaText == null ? '' : `<span class="adopt-hero-delta${deltaText.trim().startsWith('-') ? ' down' : ''}">${esc(deltaText)}</span>`;
+  return `<div class="adopt-hero"><span class="num">${value}</span><span class="unit">${esc(unit)}</span>${deltaHtml}</div>${insight ? `<div class="adopt-insight">${insight}</div>` : ''}`;
+}
+// One reusable bar-chart renderer for all four tabs -- real axis ticks, gridlines, a trend line over
+// every bar, and a per-segment hover readout. cols: [{period, label, segs:[{value,color,texture}]}].
+// Rebuilt 2026-10-06 against the commercial reference (productdemo/admin_intro.html, Fable's own design,
+// Kriti's explicit call to retain it exactly) after a graph-by-graph review of Usage Hours:
+//   - the y-axis step is now a real "nice" step (1/2/5/10 x10^n), not a fixed 4-way split of the max --
+//     a max of 6 now shows 0,1,2,...,10, never the sparse 0,3,5,8,10 that made the chart look stunted.
+//   - a segment that is genuinely zero still draws a thin floor line, never nothing -- "I know it's
+//     zero, but it has to be a line... so we know two colors are represented."
+//   - the hover readout colors each number to match its own segment (repeat in navy, new in teal), so
+//     the middle dot reads as two colored numbers, never a stray decimal point.
+function renderBarChart(cols) {
+  if (!cols.length) return '<div class="banner info">No sessions match this view yet.</div>';
+  const totals = cols.map(c => c.segs.reduce((s, x) => s + x.value, 0));
+  // Ceiling and density are two separate dials (Kriti, 2026-10-06): the ceiling comes from the one
+  // shared chartCeiling() (see its own comment), never a proportional 15% headroom, which balloons at
+  // scale. Density is a hard CAP on tick count (niceStep, not niceCeil(yMax/7) -- that one could spike
+  // past the cap for some ranges), so Month/Quarter/Year all get the same number of gridlines regardless
+  // of their numbers -- the 6-tick look she approved for Quarter, everywhere, not just when the math
+  // happens to land there.
+  const MAX_TICKS = 5;   // gaps, not labels -- 5 gaps = 6 labels incl. 0, matching the Quarter density Kriti approved
+  const actualMax = Math.max(1, ...totals);
+  const yMax = chartCeiling(actualMax);
+  const step = niceStep(yMax, MAX_TICKS);
+  const H = 200;
+  const ticks = []; for (let t = yMax; t >= 0; t -= step) ticks.push(t);
+  // Pixel-exact overlay, matched to each bar column's own width and the gap between columns -- an SVG
+  // positioned over the SAME flex row, not a second, independently-laid-out chart that could drift out
+  // of alignment with the bars underneath it.
+  // Bar width is Fable's own 44px, fixed, the SAME for every period (Kriti, 2026-10-06: Quarter's wider
+  // bar was "obscene" -- every period must look the same). A long label (quarter's month-range text,
+  // which Fable's original design never had) is never solved by widening the BAR -- it overflows its own
+  // 44px column on both sides (same technique Fable's own day-label CSS uses: overflow visible, centered,
+  // nowrap) and the GAP between columns widens just enough that neighbouring labels don't collide.
+  const PAD = 4.8, BAR_WIDTH = 44, BASE_GAP = 20;
+  const maxLabelChars = Math.max(...cols.map(c => (c.label || c.period).length));
+  const neededCenterSpacing = Math.ceil(maxLabelChars * 6.5) + 8;   // label width + a small buffer
+  const GAP = Math.max(BASE_GAP, neededCenterSpacing - BAR_WIDTH);
+  const COLW = BAR_WIDTH;
+  const barTopPx = i => H - (totals[i] / yMax) * H;
+  const trendPoints = cols.map((c, i) => `${(PAD + i * (COLW + GAP) + COLW / 2).toFixed(1)},${barTopPx(i).toFixed(1)}`).join(' ');
+  const svgWidth = PAD * 2 + cols.length * COLW + Math.max(0, cols.length - 1) * GAP;
+  const trendLine = cols.length > 1
+    ? `<svg class="adopt-trend-line" width="${svgWidth}" height="${H}" viewBox="0 0 ${svgWidth} ${H}"><polyline points="${trendPoints}" fill="none" stroke="var(--night2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.5"/>${cols.map((c, i) => `<circle cx="${(PAD + i * (COLW + GAP) + COLW / 2).toFixed(1)}" cy="${barTopPx(i).toFixed(1)}" r="2.5" fill="var(--night2)" opacity="0.6"/>`).join('')}</svg>`
+    : '';
+  const ZERO_FLOOR = 3;   // px -- a "zero" segment still draws this much of a line, never nothing
+  return `<div class="adopt-chart-row">
+      <div class="adopt-chart-yaxis" style="height:${H}px">${ticks.map(t => `<div>${t.toLocaleString()}</div>`).join('')}</div>
+      <div class="adopt-chart-main">
+        <div class="adopt-chart-gridlines" style="height:${H}px">${ticks.map(() => `<div class="adopt-chart-gridline"></div>`).join('')}</div>
+        <div class="adopt-chart-cols" style="height:${H}px; gap:${GAP}px">
+          ${trendLine}
+          ${cols.map((c, i) => {
+            const stackPx = (totals[i] / yMax) * H;
+            let segPx = c.segs.map(s => (s.value / (totals[i] || 1)) * stackPx);
+            const zeroIdx = c.segs.map((s, idx) => s.value === 0 ? idx : -1).filter(idx => idx !== -1);
+            if (zeroIdx.length && zeroIdx.length < segPx.length) {
+              const borrowed = ZERO_FLOOR * zeroIdx.length;
+              const nonZeroTotal = segPx.reduce((s, px, idx) => s + (zeroIdx.includes(idx) ? 0 : px), 0);
+              segPx = segPx.map((px, idx) => zeroIdx.includes(idx) ? ZERO_FLOOR : (nonZeroTotal > 0 ? px - (px / nonZeroTotal) * borrowed : px));
+            }
+            const plainTip = c.segs.map(s => Math.round(s.value).toLocaleString()).join(' · ');
+            const coloredTip = c.segs.map(s => `<span style="color:${s.color}">${Math.round(s.value).toLocaleString()}</span>`).join(' <span class="adopt-tip-dot">·</span> ');
+            return `<div class="adopt-bar-col" style="width:${COLW}px; height:${H}px" title="${esc(c.label || c.period)}: ${plainTip}">
+              <div class="adopt-bar-tip">${coloredTip}</div>
+              <div class="adopt-bar-stack" style="height:${stackPx.toFixed(1)}px">
+                ${c.segs.map((s, idx) => `<div class="adopt-bar-seg${s.texture ? ' texture' : ''}" style="height:${segPx[idx].toFixed(1)}px; background-color:${s.color}"></div>`).join('')}
+              </div>
+              <div class="adopt-bar-label">${esc(c.label || c.period)}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+// Learning Atoms only (Kriti, 2026-10-06: "I don't want to replicate the same look on every page") --
+// two thin bars side by side per period, matching Fable's own atoms chart exactly (productdemo/
+// admin_intro.html), instead of the stacked-segment look the other tabs use. Shares the same y-axis
+// ceiling/density rules and label-overflow technique as renderBarChart, so the page still reads as one
+// family of charts -- no trend line here, Fable's own atoms chart doesn't have one either, and a single
+// line would have to pick one of two unrelated bars to follow. cols: [{period, label, bars:[{value,color,texture}]}].
+function renderGroupedBarChart(cols) {
+  if (!cols.length) return '<div class="banner info">No sessions match this view yet.</div>';
+  const actualMax = Math.max(1, ...cols.flatMap(c => c.bars.map(b => b.value)));
+  const MAX_TICKS = 5;
+  const yMax = chartCeiling(actualMax);
+  const step = niceStep(yMax, MAX_TICKS);
+  const H = 200;
+  const ticks = []; for (let t = yMax; t >= 0; t -= step) ticks.push(t);
+  const BAR_W = 16, INNER_GAP = 5, BASE_GAP = 20;
+  const numBars = cols[0].bars.length;
+  const COLW = numBars * BAR_W + (numBars - 1) * INNER_GAP;
+  const maxLabelChars = Math.max(...cols.map(c => (c.label || c.period).length));
+  const neededCenterSpacing = Math.ceil(maxLabelChars * 6.5) + 8;
+  const GAP = Math.max(BASE_GAP, neededCenterSpacing - COLW);
+  const ZERO_FLOOR = 3;   // px -- a genuinely-zero bar still draws this much of a line, never nothing
+  return `<div class="adopt-chart-row">
+      <div class="adopt-chart-yaxis" style="height:${H}px">${ticks.map(t => `<div>${t.toLocaleString()}</div>`).join('')}</div>
+      <div class="adopt-chart-main">
+        <div class="adopt-chart-gridlines" style="height:${H}px">${ticks.map(() => `<div class="adopt-chart-gridline"></div>`).join('')}</div>
+        <div class="adopt-chart-cols" style="height:${H}px; gap:${GAP}px">
+          ${cols.map(c => {
+            const plainTip = c.bars.map(b => Math.round(b.value).toLocaleString()).join(' · ');
+            const coloredTip = c.bars.map(b => `<span style="color:${b.color}">${Math.round(b.value).toLocaleString()}</span>`).join(' <span class="adopt-tip-dot">·</span> ');
+            const barPx = c.bars.map(b => Math.max(ZERO_FLOOR, (b.value / yMax) * H));
+            const pairH = Math.max(...barPx);   // the pair's own box is only as tall as its TALLEST bar,
+            // never the full chart height -- otherwise it overflows the fixed-height column upward and
+            // drags the hover tip up with it (Kriti, 2026-10-06: "see how high your data labels are
+            // hovering" -- the tip was landing up by the top gridline instead of next to the actual bar).
+            return `<div class="adopt-bar-col" style="width:${COLW}px; height:${H}px" title="${esc(c.label || c.period)}: ${plainTip}">
+              <div class="adopt-bar-tip">${coloredTip}</div>
+              <div class="adopt-bar-pair" style="height:${pairH.toFixed(1)}px; gap:${INNER_GAP}px">
+                ${c.bars.map((b, idx) => `<div class="adopt-bar-thin${b.texture ? ' texture' : ''}" style="width:${BAR_W}px; height:${barPx[idx].toFixed(1)}px; background-color:${b.color}"></div>`).join('')}
+              </div>
+              <div class="adopt-bar-label">${esc(c.label || c.period)}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+// Applied Learning only -- a genuine two-axis chart, matching Fable's own (productdemo/admin_intro.html):
+// a navy bar (LEFT axis, absolute "Atoms Applied" count, same chartCeiling/niceStep/44px-bar rules as
+// every other chart here) and a teal line (RIGHT axis, 0-100% "Success Rate" -- a percentage always has
+// the same 0-100 range, so unlike the left axis this one is fixed, not data-dependent, exactly like
+// Fable's own fixed rightTicks). Separate hover targets for the bar and the line's own point -- each
+// shows ONLY its own value, never both together (Kriti, 2026-10-06: "I just want to see one data label,
+// don't put a dot and show me both... when I hover on the bar show me the bar data label, when I hover
+// on the line show me the line data label"). cols: [{period, label, bar:number, line:number|null}].
+function renderDualAxisChart(cols) {
+  if (!cols.length) return '<div class="banner info">No sessions match this view yet.</div>';
+  const MAX_TICKS = 5;
+  const actualMax = Math.max(1, ...cols.map(c => c.bar));
+  const yMax = chartCeiling(actualMax);
+  const step = niceStep(yMax, MAX_TICKS);
+  const H = 200;
+  const leftTicks = []; for (let t = yMax; t >= 0; t -= step) leftTicks.push(t);
+  const rightTicks = [100, 80, 60, 40, 20, 0];   // Success Rate is always 0-100% -- Fable's own fixed right axis
+  const BAR_W = 44, BASE_GAP = 20, PAD = 4.8;   // same "standard" bar width/spacing every other chart here uses
+  const maxLabelChars = Math.max(...cols.map(c => (c.label || c.period).length));
+  const neededCenterSpacing = Math.ceil(maxLabelChars * 6.5) + 8;
+  const GAP = Math.max(BASE_GAP, neededCenterSpacing - BAR_W);
+  const COLW = BAR_W;
+  const svgWidth = PAD * 2 + cols.length * COLW + Math.max(0, cols.length - 1) * GAP;
+  // The left (bar) axis always has headroom above its tallest bar, via chartCeiling's minimum gap -- a
+  // bar can never touch the top gridline. The right (percent) axis has no such headroom by construction
+  // (100% IS the ceiling, always), so a genuine 100% point maps to y=0 with no padding at all: its own
+  // 2px line stroke visually sits right on top of the gridline (Kriti, 2026-10-06: "move the trend line
+  // below the 100% mark"). TOP_PAD reserves real, visible space so 100% still reads as the top gridline's
+  // value but is clearly drawn below it, never touching it.
+  const TOP_PAD = 22;
+  const points = cols.map((c, i) => ({
+    x: PAD + i * (COLW + GAP) + COLW / 2,
+    y: c.line == null ? null : TOP_PAD + (1 - c.line / 100) * (H - TOP_PAD),
+  }));
+  const linePoints = points.filter(p => p.y != null);
+  const polyline = linePoints.length > 1 ? linePoints.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') : '';
+  return `<div class="adopt-chart-row">
+      <div class="adopt-axis-title-v">Number of Atoms Applied</div>
+      <div class="adopt-chart-yaxis" style="height:${H}px">${leftTicks.map(t => `<div>${t.toLocaleString()}</div>`).join('')}</div>
+      <div class="adopt-chart-main">
+        <div class="adopt-chart-gridlines" style="height:${H}px">${leftTicks.map(() => `<div class="adopt-chart-gridline"></div>`).join('')}</div>
+        <div class="adopt-chart-cols" style="height:${H}px; gap:${GAP}px">
+          ${polyline ? `<svg class="adopt-trend-line" width="${svgWidth}" height="${H}" viewBox="0 0 ${svgWidth} ${H}"><polyline points="${polyline}" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>` : ''}
+          ${cols.map((c, i) => {
+            const bpx = Math.max(2, (c.bar / yMax) * H);
+            const lpx = points[i].y == null ? null : H - points[i].y;
+            return `<div class="adopt-bar-col" style="width:${COLW}px; height:${H}px">
+              <div class="adopt-bar-single" style="height:${bpx.toFixed(1)}px"><span class="adopt-hover-num">${Math.round(c.bar).toLocaleString()}</span></div>
+              ${lpx == null ? '' : `<div class="adopt-line-dot" style="bottom:${lpx.toFixed(1)}px"><span class="adopt-hover-num teal below">${Math.round(c.line)}%</span></div>`}
+              <div class="adopt-bar-label">${esc(c.label || c.period)}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="adopt-chart-yaxis-right" style="height:${H}px">${rightTicks.map(t => `<div>${t}%</div>`).join('')}</div>
+      <div class="adopt-axis-title-v right">Success Rate (%)</div>
+    </div>`;
+}
+// Repeat users: solid night-sky navy. New users: green with a diagonal texture fill -- Kriti's own
+// reference image, 2026-10-06: "night sky with green, and the green is a texture fill." Order matches
+// her reference too -- repeat (navy) first, new (green) second, both in the legend and in each stack
+// (repeat on the bottom, new on top -- renderBarChart draws segs bottom-to-top).
+const LEGEND_NEW_EXISTING = `<div class="adopt-legend" style="margin-top:0.8rem"><span><i style="background:var(--night)"></i>Repeat users</span><span><i class="texture" style="background-color:var(--teal)"></i>New users</span></div>`;
+
+// Kriti, 2026-10-06: the hero number means something different depending on what the bars actually
+// are. Month/Year's bars are SUB-DIVISIONS of the stated window (days of this month, months of this
+// fiscal year so far) -- the hero is their SUM, "6 hours... in October" / "9 hours... this year". But
+// Quarter's bars are each a COMPLETE, separate period -- summing them would mix unrelated quarters
+// together, so the hero is just the current (last) quarter's own total, "this quarter".
+// The delta needs an explicit comparison ("minus compared to what?") -- only Quarter can show one for
+// free right now, since the previous quarter is already sitting in the same series that's on screen.
+// Month's "previous month" and Year's "previous year" need one more small piece (data this view
+// doesn't fetch today) -- flagged to Kriti rather than guessed, 2026-10-06.
+// ONE formula, shared by every tab's own big hero AND the three small cards up top (Kriti, 2026-10-06:
+// "the two are sort of connected" -- they read the identical series through the identical function, so
+// they can never say two different things about the same data.
+function computeHero(series, period, metricFn, unitLabel) {
+  if (!series.length) return { value: 0, suffix: unitLabel, deltaText: null };
+  const sum = series.reduce((s, x) => s + metricFn(x), 0);
+  if (period === 'quarter') {
+    const last = series[series.length - 1], prev = series[series.length - 2];
+    let deltaText = null;
+    if (prev) { const d = pctDelta(metricFn(prev), metricFn(last)); if (d != null) deltaText = `${d >= 0 ? '+' : ''}${d.toFixed(0)}% vs last quarter`; }
+    return { value: metricFn(last), suffix: `${unitLabel} this quarter`, deltaText };
+  }
+  if (period === 'month') {
+    const [, m] = (series[series.length - 1].period || '').split('-').map(Number);
+    return { value: sum, suffix: `${unitLabel} in ${MONTH_FULL[(m || 1) - 1]}`, deltaText: null };
+  }
+  return { value: sum, suffix: `${unitLabel} this year`, deltaText: null };
+}
+// Success Rate is a RATIO, not a count -- computeHero's generic sum-then-divide logic (built for
+// additive metrics like hours/atoms) would be wrong here: summing each period's own percentage and
+// dividing by the number of periods IS averaging an average, the exact mistake this whole codebase
+// guards against everywhere else (see vo_adoption_report.py's top2box_percent docstring). Same
+// month/quarter/year shape as computeHero, but sums the raw topBox/scored components across the visible
+// window first, THEN divides. Used only by the three summary cards on the Applied Learning tab (Kriti,
+// 2026-10-06: "you'll have to show me two lines... atoms applied in October, application success rate").
+function successRateHero(series, period) {
+  const unitLabel = 'application success rate';
+  if (!series.length) return { value: 0, suffix: unitLabel };
+  if (period === 'quarter') {
+    const last = series[series.length - 1];
+    return { value: last.successRate == null ? 0 : Math.round(last.successRate), suffix: `${unitLabel} this quarter` };
+  }
+  const topBox = series.reduce((s, x) => s + x.topBox, 0);
+  const scored = series.reduce((s, x) => s + x.scored, 0);
+  const value = scored ? Math.round((topBox / scored) * 100) : 0;
+  if (period === 'month') {
+    const [, m] = (series[series.length - 1].period || '').split('-').map(Number);
+    return { value, suffix: `${unitLabel} in ${MONTH_FULL[(m || 1) - 1]}` };
+  }
+  return { value, suffix: `${unitLabel} this year` };
+}
+// Average Duration is a ratio too (minutes per session), same reasoning as successRateHero just above --
+// sum the raw hours/count components across the visible window first, THEN divide. ALWAYS the completed
+// sessions' own duration (Kriti, 2026-10-06: "this is longest COMPLETED average session... don't observe
+// the incomplete ones") -- incomplete is drawn on the chart below but never feeds this number.
+function avgDurationHero(series, period) {
+  const unitLabel = 'min / session';
+  if (!series.length) return { value: 0, suffix: unitLabel };
+  if (period === 'quarter') {
+    const last = series[series.length - 1];
+    return { value: last.compAvgMin == null ? 0 : last.compAvgMin, suffix: `${unitLabel} this quarter` };
+  }
+  const hours = series.reduce((s, x) => s + x.compDurHours, 0);
+  const count = series.reduce((s, x) => s + x.compDurCount, 0);
+  const value = count ? (hours / count) * 60 : 0;
+  if (period === 'month') {
+    const [, m] = (series[series.length - 1].period || '').split('-').map(Number);
+    return { value, suffix: `${unitLabel} in ${MONTH_FULL[(m || 1) - 1]}` };
+  }
+  return { value, suffix: `${unitLabel} this year` };
+}
+// Every tab's metric extractor + unit label, in ONE place -- drawAdoptCards() below reads this same
+// table, by S.adopt.tab, so the cards and the open tab never drift apart. usage/atoms/applied are plain
+// sums, safe for computeHero's generic month/year sum-then-nothing-to-divide logic; applied's SECOND
+// line (success rate) and duration's hero both go through their own dedicated ratio-aware functions
+// above instead, since computeHero's sum would silently average an average for either of them.
+const ADOPT_METRICS = {
+  usage: { metric: s => s.usageAll, unit: 'hours of active learning' },
+  atoms: { metric: s => s.compCount, unit: 'atoms completed' },
+  applied: { metric: s => s.applied, unit: 'atoms applied' },
+};
+function renderUsageTab(series) {
+  if (!series.length) return renderBarChart([]);
+  const hi = series.reduce((a, b) => b.usageAll > a.usageAll ? b : a), lo = series.reduce((a, b) => b.usageAll < a.usageAll ? b : a);
+  const { value, suffix, deltaText } = computeHero(series, S.adopt.period, ADOPT_METRICS.usage.metric, ADOPT_METRICS.usage.unit);
+  return heroBlock(Math.round(value).toLocaleString(), suffix, deltaText,
+      series.length > 1 ? `Highest usage: <strong>${esc(hi.label)} at ${Math.round(hi.usageAll)} hrs</strong> · Lowest: <strong>${esc(lo.label)} at ${Math.round(lo.usageAll)} hrs</strong>` : '')
+    + renderBarChart(series.map(s => ({ period: s.period, label: s.label, segs: [{ value: s.usageExisting, color: 'var(--night)' }, { value: s.usageNew, color: 'var(--teal)', texture: true }] })))
+    + LEGEND_NEW_EXISTING;
+}
+function renderAtomsTab(series) {
+  if (!series.length) return renderBarChart([]);
+  const totalComp = s => s.compCount;
+  const hi = series.reduce((a, b) => totalComp(b) > totalComp(a) ? b : a), lo = series.reduce((a, b) => totalComp(b) < totalComp(a) ? b : a);
+  const { value, suffix, deltaText } = computeHero(series, S.adopt.period, ADOPT_METRICS.atoms.metric, ADOPT_METRICS.atoms.unit);
+  return heroBlock(Math.round(value).toLocaleString(), suffix, deltaText,
+      series.length > 1 ? `Most completed: <strong>${esc(hi.label)} at ${hi.compCount}</strong> · Fewest: <strong>${esc(lo.label)} at ${lo.compCount}</strong>` : '')
+    + renderGroupedBarChart(series.map(s => ({ period: s.period, label: s.label, bars: [{ value: s.compCount, color: 'var(--night2)' }, { value: s.notCompCount, color: 'var(--red)', texture: true }] })))
+    + `<div class="adopt-legend" style="margin-top:0.8rem"><span><i style="background:var(--night2)"></i>Completed</span><span><i class="texture" style="background-color:var(--red)"></i>Incomplete</span></div>`;
+}
+function renderAppliedTab(series) {
+  if (!series.length) return renderDualAxisChart([]);
+  // The hero number is still Atoms Applied (the left-axis bar) -- but the insight line below it is about
+  // Success Rate, the chart's OTHER metric, same as Fable's own wording ("Highest success rate: ... ·
+  // Lowest: ..."). Only periods that actually have a scored session count toward hi/lo.
+  const scored = series.filter(s => s.successRate != null);
+  const hi = scored.length ? scored.reduce((a, b) => b.successRate > a.successRate ? b : a) : null;
+  const lo = scored.length ? scored.reduce((a, b) => b.successRate < a.successRate ? b : a) : null;
+  const { value, suffix, deltaText } = computeHero(series, S.adopt.period, ADOPT_METRICS.applied.metric, ADOPT_METRICS.applied.unit);
+  return heroBlock(Math.round(value).toLocaleString(), suffix, deltaText,
+      hi ? `Highest success rate: <strong>${esc(hi.label)} at ${Math.round(hi.successRate)}%</strong> · Lowest: <strong>${esc(lo.label)} at ${Math.round(lo.successRate)}%</strong>` : '')
+    + renderDualAxisChart(series.map(s => ({ period: s.period, label: s.label, bar: s.applied, line: s.successRate })))
+    + `<div class="adopt-legend" style="margin-top:0.8rem"><span><i style="background:var(--night2)"></i>Atoms Applied</span><span><i style="background:var(--teal)"></i>Success Rate</span></div>`;
+}
+// Average Duration only -- Fable's own "column" list (productdemo/admin_intro.html's .trend-row), not
+// the gridline bar charts every other tab uses: one row per period, a thin rounded track, the value
+// fixed at the row's own right edge. Kriti, 2026-10-06, revised mid-build: showing BOTH values
+// permanently made the right side too busy ("that'll be too many numbers") -- only the completed value
+// is ever permanent, sharing the row's own top line with the period label, same as Fable's single-series
+// row. The incomplete track sits right underneath, thin, no permanent text of its own, its value only on
+// hover -- "so that the two bars for a particular period are very close... the right hand side doesn't
+// get too busy." cols: [{period, label, compAvgMin, notCompAvgMin}] (minutes, null when no data yet).
+function renderDurationList(cols) {
+  if (!cols.length) return '<div class="banner info">No sessions match this view yet.</div>';
+  const allVals = cols.flatMap(c => [c.compAvgMin, c.notCompAvgMin]).filter(v => v != null);
+  // the track's own capacity: 30 seconds (0.5 min) past the longest session in view, a fixed buffer, not
+  // a percentage or a rounded-to-5 ceiling like the gridline charts -- Kriti, 2026-10-06: "so that the
+  // dark line never breaks the line frame."
+  const ceiling = (allVals.length ? Math.max(...allVals) : 1) + 0.5;
+  const pct = v => v == null ? 0 : Math.min(100, (v / ceiling) * 100);
+  const fmt = v => v == null ? '—' : `${v.toFixed(1)} min`;
+  return `<div class="duration-list">${cols.map(c => `
+      <div class="duration-row">
+        <div class="duration-row-top"><span>${esc(c.label)}</span><span>${fmt(c.compAvgMin)}</span></div>
+        <div class="duration-track"><div class="duration-fill" style="width:${pct(c.compAvgMin).toFixed(1)}%"></div></div>
+        <div class="duration-track duration-track-incomplete" title="Incomplete: ${fmt(c.notCompAvgMin)}">
+          <div class="duration-fill incomplete texture" style="width:${pct(c.notCompAvgMin).toFixed(1)}%"></div>
+          <span class="duration-hover-val">${fmt(c.notCompAvgMin)}</span>
+        </div>
+      </div>`).join('')}</div>`;
+}
+function renderDurationTab(series) {
+  if (!series.length) return renderDurationList([]);
+  const { value, suffix } = avgDurationHero(series, S.adopt.period);
+  // "Longest/Shortest average session" is the COMPLETED average only -- Kriti, 2026-10-06: "please
+  // understand this is longest completed average session, so don't observe the incomplete ones."
+  const scored = series.filter(s => s.compAvgMin != null);
+  const hi = scored.length ? scored.reduce((a, b) => b.compAvgMin > a.compAvgMin ? b : a) : null;
+  const lo = scored.length ? scored.reduce((a, b) => b.compAvgMin < a.compAvgMin ? b : a) : null;
+  return heroBlock(value.toFixed(1), suffix, null,
+      hi ? `Longest completed average session: <strong>${esc(hi.label)} at ${hi.compAvgMin.toFixed(1)} min</strong> · Shortest: <strong>${esc(lo.label)} at ${lo.compAvgMin.toFixed(1)} min</strong>` : '')
+    + renderDurationList(series.map(s => ({ period: s.period, label: s.label, compAvgMin: s.compAvgMin, notCompAvgMin: s.notCompAvgMin })))
+    + `<div class="adopt-legend" style="margin-top:0.8rem"><span><i style="background:var(--night2)"></i>Completed</span><span><i class="texture" style="background-color:var(--red)"></i>Incomplete</span></div>`;
+}
+const ADOPT_TAB_RENDER = { usage: renderUsageTab, atoms: renderAtomsTab, applied: renderAppliedTab, duration: renderDurationTab };
+
+// ONE page, always visible together -- Kriti's correction, 2026-10-05: the three small cards up top are
+// never a separate page from the big detail view. The big panel is ALWAYS on screen, directly below the
+// cards, and defaults to "Overall" the moment the page opens -- nobody has to click anything to see it.
+// Clicking (the mockup's own "drag") a different card swaps the SAME panel's content in place; "Back to
+// Overview" just swaps it back to Overall. Nothing here ever navigates to a separate URL/page.
+// The "Filter" trigger + slide-out drawer, Kriti's explicit call 2026-10-06: match the reference page's
+// own drill-down drawer design exactly (not a plain <select>). Today it holds the one real filter this
+// page has -- which level to group by -- built once and reused; what's actually shown inside is set
+// fresh every open.
+function openAdoptFilterDrawer() {
+  let overlay = $('#adoptDdOverlay'), drawer = $('#adoptDdDrawer');
+  if (!drawer) {
+    document.body.insertAdjacentHTML('beforeend', `
+      <div class="dd-overlay" id="adoptDdOverlay"></div>
+      <div class="dd-drawer" id="adoptDdDrawer">
+        <div class="dd-drawer-head"><h3>Filter</h3><button class="dd-close-btn" id="adoptDdClose" aria-label="Close">×</button></div>
+        <div class="dd-drawer-body" id="adoptDdBody"></div>
+        <div class="dd-drawer-foot"><button class="dd-go-btn" id="adoptDdGo">Apply</button></div>
+      </div>`);
+    overlay = $('#adoptDdOverlay'); drawer = $('#adoptDdDrawer');
+    const close = () => { overlay.classList.remove('open'); drawer.classList.remove('open'); };
+    overlay.onclick = close;
+    $('#adoptDdClose').onclick = close;
+  }
+  let pending = S.adopt.level;
+  const renderOptions = () => `<div style="font-size:0.74rem;font-weight:600;color:var(--grey3);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:0.6rem">Group by</div>`
+    + ADOPT_LEVELS.map(l => `<button class="adopt-dd-option${l === pending ? ' active' : ''}" data-level="${l}">${titleCase(l)}</button>`).join('');
+  const wireOptions = () => $$('[data-level]', $('#adoptDdBody')).forEach(b => b.onclick = () => {
+    pending = b.dataset.level;
+    $$('[data-level]', $('#adoptDdBody')).forEach(x => x.classList.toggle('active', x.dataset.level === pending));
+  });
+  $('#adoptDdBody').innerHTML = renderOptions();
+  wireOptions();
+  $('#adoptDdGo').onclick = () => {
+    S.adopt.level = pending;
+    overlay.classList.remove('open'); drawer.classList.remove('open');
+    drawAdoptPanel(); drawAdoptCards();
+  };
+  overlay.classList.add('open'); drawer.classList.add('open');
+}
+
+// The caller's real fiscal-year-start month, fetched once and cached on S.adopt -- shared by the cards
+// AND the panel so neither one ever guesses. Kriti, 2026-10-07: the cards used to fire off with a
+// January placeholder before this was known, so a company on (say) an April fiscal year could show one
+// number on the cards and a DIFFERENT one on the panel below, every time the page first loaded -- "it's
+// showing wrong data... it can't do that." Fixed by never letting either one fetch its rows before this
+// is resolved -- see renderAdoption() below, which now awaits this FIRST, before either is drawn.
+async function ensureFiscalStartMonth() {
+  if (S.adopt.fiscalStartMonth !== null) return S.adopt.fiscalStartMonth;
+  try { S.adopt.fiscalStartMonth = (await reportsApi('/api/reports/adoption-fiscal-year-start')).fiscal_year_start_month; }
+  catch (e) { S.adopt.fiscalStartMonth = 1; }
+  return S.adopt.fiscalStartMonth;
+}
+
+async function renderAdoption() {
+  $('#view').innerHTML = `<div class="um-page-head"><div><h1 class="um-title">Adoption Overview</h1></div></div>
+    <div id="adoptCards" class="adopt-cards"></div>
+    <div id="adoptPanel" class="panel adopt-droptarget"></div>`;
+  // Real HTML5 drag-and-drop onto the panel (Kriti's explicit call, 2026-10-05: a click alone was not
+  // what she asked for) -- these two listeners live on the STABLE panel element itself, set once here,
+  // not inside drawAdoptPanel() (which only replaces the panel's innerHTML on every redraw).
+  const panel = $('#adoptPanel');
+  panel.ondragover = e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; panel.classList.add('drag-over'); };
+  panel.ondragleave = () => panel.classList.remove('drag-over');
+  panel.ondrop = e => {
+    e.preventDefault(); panel.classList.remove('drag-over');
+    const key = e.dataTransfer.getData('text/plain');
+    if (ADOPT_TRACKS[key]) { S.adopt.active = key; drawAdoptCards(); drawAdoptPanel(); }
+  };
+  await ensureFiscalStartMonth();   // resolved BEFORE either draw below ever fetches a single row
+  drawAdoptCards();
+  drawAdoptPanel();
+}
+
+function drawAdoptCards() {
+  const cardsEl = $('#adoptCards');
+  // Applied Learning is the one tab with two genuinely different metrics (atoms applied, a count; success
+  // rate, a percentage) -- Kriti, 2026-10-06: "you've got two atoms applied in October... you'll have to
+  // show me two lines... application success rate." Every other tab still shows its one line.
+  const isApplied = S.adopt.tab === 'applied';
+  cardsEl.innerHTML = Object.keys(ADOPT_TRACKS).map(key => {
+    const t = ADOPT_TRACKS[key];
+    return `<button class="adopt-card${key === S.adopt.active ? ' active' : ''}${isApplied ? ' two-metric' : ''}" data-key="${key}" draggable="true">
+      <div class="adopt-card-top"><div class="stat-icon ${t.iconClass}">${icon(t.icon)}</div><div class="adopt-card-label">${esc(t.label)}</div></div>
+      <div class="adopt-card-hero"><span class="adopt-card-num" id="adoptNum_${key}"><span class="spinner"></span></span><span class="adopt-card-sub" id="adoptSub_${key}"></span></div>
+      ${isApplied ? `<div class="adopt-card-hero adopt-card-hero2"><span class="adopt-card-num" id="adoptNum2_${key}"></span><span class="adopt-card-sub" id="adoptSub2_${key}"></span></div>` : ''}
+    </button>`;
+  }).join('');
+  $$('[data-key]', cardsEl).forEach(b => {
+    b.onclick = () => { S.adopt.active = b.dataset.key; drawAdoptCards(); drawAdoptPanel(); };
+    b.ondragstart = e => { e.dataTransfer.setData('text/plain', b.dataset.key); e.dataTransfer.effectAllowed = 'move'; b.classList.add('dragging'); };
+    b.ondragend = () => b.classList.remove('dragging');
+  });
+  // Each card's own total, fetched independently -- one slow or failed track never blocks the other two.
+  // Synced to whichever period/tab/drill-down level the main panel below is currently showing (Kriti,
+  // 2026-10-06: "the two are sort of connected" -- and later the same day: the cards must follow the
+  // Filter drawer's level too, the same way they already follow the period toggle) -- the SAME
+  // computeHero() the big hero uses, so a card and the open tab can never say two different things.
+  const isDuration = S.adopt.tab === 'duration';
+  const tabInfo = ADOPT_METRICS[S.adopt.tab] || ADOPT_METRICS.usage;
+  Object.keys(ADOPT_TRACKS).forEach(async key => {
+    const numEl = $('#adoptNum_' + key), subEl = $('#adoptSub_' + key);
+    const numEl2 = isApplied ? $('#adoptNum2_' + key) : null, subEl2 = isApplied ? $('#adoptSub2_' + key) : null;
+    try {
+      const rows = await reportsApi(`/api/reports/adoption-overview?track=${ADOPT_TRACKS[key].track}&level=${S.adopt.level}&period=${S.adopt.period}`);
+      const series = seriesFromRows(rows, S.adopt.period, await ensureFiscalStartMonth());
+      const { value, suffix } = isDuration ? avgDurationHero(series, S.adopt.period) : computeHero(series, S.adopt.period, tabInfo.metric, tabInfo.unit);
+      if (numEl) numEl.textContent = isDuration ? value.toFixed(1) : Math.round(value).toLocaleString();
+      if (subEl) subEl.textContent = suffix;
+      if (isApplied) {
+        const sr = successRateHero(series, S.adopt.period);
+        if (numEl2) numEl2.textContent = sr.value + '%';
+        if (subEl2) subEl2.textContent = sr.suffix;
+      }
+    } catch (e) {
+      if (numEl) numEl.textContent = '—';
+    }
+  });
+}
+
+async function drawAdoptPanel() {
+  const key = S.adopt.active, t = ADOPT_TRACKS[key];
+  const panel = $('#adoptPanel');
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.3rem;flex-wrap:wrap">
+      <h3 style="font-size:1.05rem;font-weight:700;color:var(--night);text-transform:none;letter-spacing:0">${esc(t.label)}</h3>
+      ${key !== 'overall' ? `<button class="adopt-back" id="adoptBackBtn">${icon('out')} Back to Overview</button>` : ''}
+    </div>
+    <div class="adopt-controls">
+      <div class="adopt-seg" id="adoptPeriodSeg">${['month', 'quarter', 'year'].map(p => `<button data-period="${p}" class="${p === S.adopt.period ? 'active' : ''}">${titleCase(p)}</button>`).join('')}</div>
+      <button class="ri-dd-trigger" id="adoptFilterTrigger">${icon('filter')} Filter</button>
+      ${t.hasAssignedBy ? `<div class="filter-select-wrap"><select class="filter-select" id="adoptAssignedBy"><option value="">Assigned by: everyone</option></select></div>` : ''}
+    </div>
+    <div class="adopt-tabs" id="adoptTabsRow">${ADOPT_TABS.map(tb => `<button data-tab="${tb.key}" class="${tb.key === S.adopt.tab ? 'active' : ''}">${esc(tb.label)}</button>`).join('')}</div>
+    <div id="adoptBody" class="loading-block"><div class="spinner"></div></div>`;
+  if (key !== 'overall') $('#adoptBackBtn').onclick = () => { S.adopt.active = 'overall'; drawAdoptCards(); drawAdoptPanel(); };
+  $$('[data-period]', $('#adoptPeriodSeg')).forEach(b => b.onclick = () => { S.adopt.period = b.dataset.period; drawAdoptPanel(); drawAdoptCards(); });
+  $('#adoptFilterTrigger').onclick = openAdoptFilterDrawer;
+  $$('[data-tab]', $('#adoptTabsRow')).forEach(b => b.onclick = () => { S.adopt.tab = b.dataset.tab; drawAdoptPanel(); drawAdoptCards(); });
+  if (t.hasAssignedBy) {
+    const sel = $('#adoptAssignedBy');
+    sel.onchange = e => { S.adopt.assignedBy = e.target.value; drawAdoptPanel(); };
+    // A dropdown of REAL names only, never free text -- Kriti's explicit call, 2026-10-05: "what you're
+    // showing has to always be verified with the admin's rights." The options come from the server's own
+    // scope check (the exact same one build_report() uses below), so a department admin can never even
+    // SEE a name from outside their own department, let alone type one in. Cached on S.adopt for the
+    // session -- it rarely changes and every tab/period/level switch would otherwise re-fetch it.
+    (async () => {
+      try {
+        if (!S.adopt.assignedByOptions) S.adopt.assignedByOptions = await reportsApi('/api/reports/adoption-assigned-by-options');
+        const cur = $('#adoptAssignedBy'); if (!cur) return;   // the panel may have moved on by the time this resolves
+        cur.innerHTML = '<option value="">Assigned by: everyone</option>' + S.adopt.assignedByOptions.map(n => `<option value="${esc(n)}" ${n === S.adopt.assignedBy ? 'selected' : ''}>${esc(n)}</option>`).join('');
+      } catch (e) { /* the "everyone" option still works */ }
+    })();
+  }
+  try {
+    const fiscalStartMonth = await ensureFiscalStartMonth();   // same cached fact the cards now also wait on
+    let path = `/api/reports/adoption-overview?track=${t.track}&level=${S.adopt.level}&period=${S.adopt.period}`;
+    if (t.hasAssignedBy && S.adopt.assignedBy) path += '&assigned_by=' + encodeURIComponent(S.adopt.assignedBy);
+    const rows = await reportsApi(path);
+    // loading-block's own 3rem padding (meant only for the spinner) was being left on this div after
+    // real content replaced it -- the dead space Kriti flagged, 2026-10-06, between the tabs and the
+    // hero number. Real content gets this div's padding back to normal.
+    $('#adoptBody').classList.remove('loading-block');
+    $('#adoptBody').innerHTML = ADOPT_TAB_RENDER[S.adopt.tab](seriesFromRows(rows, S.adopt.period, fiscalStartMonth));
+  } catch (e) {
+    $('#adoptBody').innerHTML = `<div class="banner">${esc(e.message)}</div>`;
+  }
+}
+
 // ════════════ NAVIGATION, ROUTER, START-UP ════════════
 const NAV = [
-  { key: 'adoption', label: 'Adoption Overview', icon: 'dash', hash: '#soon/adoption', soon: true },
+  { key: 'adoption', label: 'Adoption Overview', icon: 'dash', hash: '#adoption' },
   { key: 'users', label: 'User Management', icon: 'users', hash: '#users' },
   { key: 'learning', label: 'Learning Management', icon: 'book', hash: '#learning/assign' },
   { key: 'reports', label: 'Reports & Insights', icon: 'chart', hash: '#soon/reports', soon: true },
@@ -1606,6 +2440,47 @@ function drawNav(activeKey) {
   $$('[data-hash]', $('#adminNav')).forEach(b => b.onclick = () => { location.hash = b.dataset.hash; if (window.innerWidth <= 960) $('#adminSidebar').classList.remove('open'); });
   $('#navHelp').onclick = openHelp;  // Log out lives ONLY in the photo drop-down (Kriti, 2026-10-03), exactly like the user page
 }
+// Company Settings (new 2026-10-06): one setting, right now -- which month this company's fiscal
+// year starts in. Lives in the profile drop-down, never under User Management (Kriti's explicit call:
+// "User Management is about users"). A Company Admin sees only their own company (or companies, for a
+// multi-company CA); the super admin picks from every company on file.
+async function openCompanySettings(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  $('#profileDropdown').classList.remove('open');
+  const cos = scopeCompanies();
+  if (!cos.length) { toast('No company is available to configure.', 'warn'); return; }
+  const m = openModal({
+    title: 'Company Settings', sub: 'Right now, one setting: when this company’s fiscal year starts.',
+    html: `
+      ${cos.length > 1 ? `<div class="field"><label>Company</label><select id="csCompany">${cos.map(c => `<option value="${esc(c.company_code)}">${esc(c.company_name)}</option>`).join('')}</select></div>` : `<input type="hidden" id="csCompany" value="${esc(cos[0].company_code)}">`}
+      <div class="field"><label>Fiscal year starts in</label><select id="csMonth">${MONTH_ABBR.map((mo, i) => `<option value="${i + 1}">${mo}</option>`).join('')}</select></div>
+      <div id="csStatus" style="margin-top:0.8rem;font-size:0.85rem;color:var(--grey3)"></div>`,
+  });
+  const loadCurrent = async () => {
+    const code = $('#csCompany').value;
+    $('#csStatus').textContent = 'Loading…';
+    try {
+      const r = await api('/api/admin/company-settings?company_code=' + encodeURIComponent(code));
+      $('#csMonth').value = String(r.fiscal_year_start_month);
+      $('#csStatus').textContent = '';
+    } catch (err) { $('#csStatus').textContent = err.message; }
+  };
+  if (cos.length > 1) $('#csCompany').onchange = loadCurrent;
+  await loadCurrent();
+  setFoot(m, [
+    { label: 'Cancel', cls: 'btn-outline', onClick: () => m.close() },
+    { label: 'Save', cls: 'btn-primary-add', onClick: async (btn) => {
+        btn.disabled = true;
+        try {
+          await api('/api/admin/company-settings', { method: 'POST', json: { company_code: $('#csCompany').value, fiscal_year_start_month: Number($('#csMonth').value) } });
+          toast('Company Settings saved.');
+          S.adopt.fiscalStartMonth = null;   // next adoption-report fetch picks up the new value
+          m.close();
+        } catch (err) { toast(err.message, 'error'); btn.disabled = false; }
+      } },
+  ]);
+}
+
 function openHelp() {
   const m = openModal({ title: 'Help & information', size: 'narrow', html: `<div class="banner"><strong>Raise a ticket — coming soon.</strong> Soon you will be able to ask for help, or request a change such as a new Company Admin, right from here.</div><p style="font-size:0.88rem;color:var(--night2)">Until then, email <a href="mailto:inquiry@korporatewisdom.com" style="text-decoration:underline">inquiry@korporatewisdom.com</a>.</p>` });
   setFoot(m, [{ label: 'Close', cls: 'btn-primary-add', onClick: () => m.close() }]);
@@ -1639,6 +2514,7 @@ async function route() {
     return renderAssign(params);
   }
   if (parts[0] === 'soon') { drawNav(parts[1]); return renderSoon(parts[1]); }
+  if (parts[0] === 'adoption') { drawNav('adoption'); return renderAdoption(); }
   location.hash = '#users';
 }
 // ── Profile photo + its drop-down (Kriti, 2026-10-03): same behaviour as the user page -- click your photo, the
@@ -1678,6 +2554,10 @@ loadProfilePhoto();
   $('#profName').textContent = shownName;
   const cos = scopeCompanies().map(c => c.company_name);
   $('#profRole').textContent = (ROLE_LABEL[S.me.access_type] || 'Admin') + (level() === 'super' ? '' : (cos.length ? ' · ' + cos.slice(0, 2).join(', ') + (cos.length > 2 ? ' +' + (cos.length - 2) : '') : ''));
+  // Company Settings: only a Company Admin or the super admin may see or change it -- same tier as the
+  // department list (Kriti, 2026-10-06). Lives in the profile drop-down, not User Management -- "User
+  // Management is about users."
+  if (level() === 'company' || level() === 'super') $('#companySettingsRow').classList.remove('hidden');
   window.addEventListener('hashchange', route);
   route();
 })();
