@@ -430,7 +430,16 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .adopt-hover-num.below { bottom:auto; top:100%; margin-bottom:0; margin-top:6px; }
 .adopt-bar-single:hover .adopt-hover-num { opacity:1; }
 .adopt-line-dot { position:absolute; left:50%; width:10px; height:10px; margin-left:-5px; margin-bottom:-5px; border-radius:50%; background:var(--teal); border:2px solid #fff; box-shadow:0 0 0 1px rgba(4,26,64,0.12); cursor:pointer; z-index:4; }
-.adopt-line-dot:hover .adopt-hover-num { opacity:1; }
+.adopt-line-dot { cursor:default; }
+/* Success Rate labels are ALWAYS visible (Kriti, 2026-10-07: "don't give them hover... show that value and make
+   sure it doesn't get cut by the line itself"). A solid white pill sits ABOVE the line in stacking order, so the
+   line can never run through the digits; which side of the dot it sits on is chosen per point in JS. */
+.adopt-line-label { position:absolute; left:50%; transform:translateX(-50%); font-size:0.68rem; font-weight:700; color:#0d8f81; background:#fff; padding:1px 5px; border-radius:8px; box-shadow:0 0 0 1px rgba(4,26,64,0.1); white-space:nowrap; pointer-events:none; z-index:5; font-variant-numeric:tabular-nums; }
+.adopt-line-label.above { bottom:100%; margin-bottom:5px; }
+.adopt-line-label.below { top:100%; margin-top:5px; }
+/* Atoms Applied's hover value sits INSIDE the bar, centred, in white (Kriti, 2026-10-07) -- so it can never
+   collide with a Success Rate label. A bar too short to hold it (under 20px) keeps the old above-the-bar spot. */
+.adopt-bar-single .adopt-hover-num.in-bar { bottom:auto; top:50%; margin:0; transform:translate(-50%,-50%); color:#fff; font-size:0.74rem; }
 /* Kriti, 2026-10-06: "on the y-axis I need labeling... left side says number of atoms applied, right
    side says success rate" -- same vertical rotated title Fable uses (productdemo/admin_intro.html's own
    .axis-title-v), copied exactly: the left title reads bottom-to-top, the right one top-to-bottom. */
@@ -449,8 +458,9 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 /* the incomplete track: thin, right under the completed one with almost no gap, no permanent label of
    its own -- its value only shows on hover, kept OUT of the always-visible right edge entirely, so the
    row never shows two numbers at once ("that'll be too many numbers"). */
-.duration-track-incomplete { position:relative; height:4px; margin-top:3px; cursor:pointer; }
-.duration-hover-val { position:absolute; right:0; top:100%; margin-top:3px; font-size:0.68rem; font-weight:700; color:var(--red); white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.12s; font-variant-numeric:tabular-nums; }
+.duration-track-incomplete { position:relative; height:4px; margin-top:3px; overflow:visible; }
+.duration-track-incomplete::before { content:''; position:absolute; left:0; right:0; top:-7px; bottom:-7px; }   /* a 4px bar is hard to hover -- this widens the hover zone only */
+.duration-hover-val { position:absolute; top:50%; transform:translateY(-50%); font-size:0.72rem; font-weight:700; color:var(--red); white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.12s; font-variant-numeric:tabular-nums; }
 .duration-track-incomplete:hover .duration-hover-val { opacity:1; }
 
 /* ---- Filter trigger + drawer (Kriti, 2026-10-06 -- copied exactly from productdemo/admin_intro.html's
@@ -462,6 +472,37 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 }
 .ri-dd-trigger svg { width:15px; height:15px; }
 .ri-dd-trigger:hover { border-color:var(--night2); color:var(--night); }
+.adopt-fb-body { display:flex; align-items:center; gap:2.4rem; flex-wrap:wrap; }
+.adopt-fb-hero { min-width:170px; }
+.adopt-fb-num { font-size:3rem; font-weight:700; color:var(--night); line-height:1; }
+.adopt-fb-label { font-size:0.84rem; color:var(--grey3); margin-top:0.5rem; display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap; }
+.adopt-fb-tag { font-size:0.62rem; font-weight:700; color:#fff; padding:0.2rem 0.6rem; border-radius:10px; text-transform:uppercase; letter-spacing:0.03em; }
+.adopt-fb-tag.great { background:var(--green); } .adopt-fb-tag.good { background:var(--teal); }
+.adopt-fb-tag.fair { background:var(--gold); color:var(--night); } .adopt-fb-tag.poor { background:var(--red); }
+.adopt-fb-meta { font-size:0.78rem; color:var(--grey3); margin-top:0.35rem; }
+.adopt-fb-dist { flex:1; min-width:260px; }
+.adopt-fb-bar { display:flex; gap:2px; height:12px; border-radius:6px; overflow:hidden; margin-bottom:0.9rem; background:var(--grey1); }
+.adopt-fb-bar span.pro, .adopt-fb-legend i.pro { background:var(--teal); }
+.adopt-fb-bar span.pas, .adopt-fb-legend i.pas { background:var(--grey2); }
+.adopt-fb-bar span.det, .adopt-fb-legend i.det { background:var(--red); }
+.adopt-fb-legend-row { display:flex; align-items:center; gap:0.55rem; font-size:0.84rem; color:var(--night2); padding:0.28rem 0; }
+.adopt-fb-legend-row i { width:9px; height:9px; border-radius:3px; flex-shrink:0; }
+.adopt-fb-legend-row .lbl { flex:1; } .adopt-fb-legend-row small { color:var(--grey3); font-size:0.76rem; margin-left:0.3rem; }
+.adopt-fb-legend-row .val { font-weight:600; color:var(--night); font-variant-numeric:tabular-nums; }
+.adopt-fb-note { font-size:0.76rem; color:var(--grey3); margin-top:1.1rem; }
+.adopt-fb-empty { color:var(--grey3); font-size:0.9rem; padding:1.2rem 0; }
+.ri-dd-item { margin-bottom:0.6rem; }
+.ri-dd-toggle { width:100%; text-align:left; background:var(--grey1); border:none; border-radius:10px; padding:0.7rem 0.9rem; font-family:'Poppins',sans-serif; font-size:0.84rem; font-weight:600; color:var(--night2); cursor:pointer; transition:background 0.15s, color 0.15s; }
+.ri-dd-toggle:hover { background:var(--grey2); }
+.ri-dd-item.open .ri-dd-toggle { background:rgba(20,184,166,0.14); color:#0d8f81; }
+.ri-dd-panel { max-height:0; overflow:hidden; transition:max-height 0.25s ease; display:flex; flex-direction:column; gap:0.5rem; padding:0 0.4rem; }
+.ri-dd-item.open .ri-dd-panel { max-height:360px; padding:0.7rem 0.4rem 0.2rem; overflow-y:auto; }
+.ri-dd-panel label { display:flex; align-items:center; gap:0.55rem; font-size:0.8rem; color:var(--night2); cursor:pointer; }
+.ri-dd-panel input { accent-color:var(--teal); width:14px; height:14px; flex-shrink:0; }
+.adopt-focus-chip { display:inline-flex; align-items:center; gap:0.45rem; font-size:0.84rem; color:var(--grey3); background:rgba(20,184,166,0.12); border-radius:20px; padding:0.35rem 0.5rem 0.35rem 0.85rem; }
+.adopt-focus-chip strong { color:var(--night); font-weight:600; }
+.adopt-focus-chip button { border:none; background:rgba(4,26,64,0.1); color:var(--night); width:20px; height:20px; border-radius:50%; cursor:pointer; line-height:1; font-size:0.9rem; padding:0; }
+.adopt-focus-chip button:hover { background:rgba(4,26,64,0.2); }
 .dd-overlay { position:fixed; inset:0; background:rgba(4,26,64,0.45); z-index:199; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .dd-overlay.open { opacity:1; pointer-events:auto; }
 .dd-drawer {
@@ -1817,7 +1858,7 @@ const ADOPT_TABS = [
   { key: 'applied', label: 'Applied Learning' },
   { key: 'duration', label: 'Average Duration' },
 ];
-S.adopt = { active: 'overall', tab: 'usage', level: 'company', period: 'month', assignedBy: '', assignedByOptions: null, fiscalStartMonth: null };
+S.adopt = { active: 'overall', tab: 'usage', level: 'company', period: 'month', assignedBy: '', assignedByOptions: null, fiscalStartMonth: null, focus: null, focusOptions: null, fbPeriod: 'month', fbWant: null, fbSig: null };
 
 function fmtHours(n) { return (n || 0).toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' hrs'; }
 // Period keys from the backend are plain sortable strings, never what's shown on screen (Kriti,
@@ -1890,7 +1931,7 @@ function seriesFromRows(rows, apiPeriod, fiscalStartMonth) {
   rows.forEach(r => { (byPeriod[r.period] = byPeriod[r.period] || []).push(r); });
   return Object.keys(byPeriod).sort((a, b) => periodSortKey(a) - periodSortKey(b)).map(period => {
     const grp = byPeriod[period];
-    const s = { period, label: formatPeriodLabel(period, apiPeriod, fiscalStartMonth), usageAll: 0, usageNew: 0, usageExisting: 0, compCount: 0, notCompCount: 0, applied: 0, topBox: 0, scored: 0, compDurHours: 0, compDurCount: 0, notCompDurHours: 0, notCompDurCount: 0 };
+    const s = { period, label: formatPeriodLabel(period, apiPeriod, fiscalStartMonth), usageAll: 0, usageNew: 0, usageExisting: 0, compCount: 0, notCompCount: 0, applied: 0, topBox: 0, scored: 0, compDurHours: 0, compDurCount: 0, notCompDurHours: 0, notCompDurCount: 0, npsPromoters: 0, npsPassives: 0, npsDetractors: 0, npsScored: 0 };
     grp.forEach(r => {
       s.usageAll += r.all.usage_hours || 0; s.usageNew += r.new.usage_hours || 0; s.usageExisting += r.existing.usage_hours || 0;
       s.compCount += r.all.completed_count; s.notCompCount += r.all.not_completed_count; s.applied += r.all.applied_count;
@@ -1902,6 +1943,8 @@ function seriesFromRows(rows, apiPeriod, fiscalStartMonth) {
       // count, divide once at the end (below), never average two already-computed averages.
       s.compDurHours += r.all.completed_duration_avg.total_hours || 0; s.compDurCount += r.all.completed_duration_avg.count || 0;
       s.notCompDurHours += r.all.not_completed_duration_avg.total_hours || 0; s.notCompDurCount += r.all.not_completed_duration_avg.count || 0;
+      // NPS raw components -- same rule: summed here, the score is only ever worked out from the totals.
+      s.npsPromoters += r.all.nps.promoters || 0; s.npsPassives += r.all.nps.passives || 0; s.npsDetractors += r.all.nps.detractors || 0; s.npsScored += r.all.nps.scored || 0;
     });
     s.successRate = s.scored ? (s.topBox / s.scored) * 100 : null;
     s.compAvgMin = s.compDurCount ? (s.compDurHours / s.compDurCount) * 60 : null;
@@ -2040,10 +2083,9 @@ function renderGroupedBarChart(cols) {
 // a navy bar (LEFT axis, absolute "Atoms Applied" count, same chartCeiling/niceStep/44px-bar rules as
 // every other chart here) and a teal line (RIGHT axis, 0-100% "Success Rate" -- a percentage always has
 // the same 0-100 range, so unlike the left axis this one is fixed, not data-dependent, exactly like
-// Fable's own fixed rightTicks). Separate hover targets for the bar and the line's own point -- each
-// shows ONLY its own value, never both together (Kriti, 2026-10-06: "I just want to see one data label,
-// don't put a dot and show me both... when I hover on the bar show me the bar data label, when I hover
-// on the line show me the line data label"). cols: [{period, label, bar:number, line:number|null}].
+// Fable's own fixed rightTicks). Kriti, 2026-10-07 (replacing the 2026-10-06 "hover each" rule): the Success
+// Rate labels are ALWAYS visible (white pill, never cut by the line); only Atoms Applied hovers, and its value
+// shows inside the bar in white -- so the two can never overlap. cols: [{period, label, bar:number, line:number|null}].
 function renderDualAxisChart(cols) {
   if (!cols.length) return '<div class="banner info">No sessions match this view yet.</div>';
   const MAX_TICKS = 5;
@@ -2071,6 +2113,25 @@ function renderDualAxisChart(cols) {
     y: c.line == null ? null : TOP_PAD + (1 - c.line / 100) * (H - TOP_PAD),
   }));
   const linePoints = points.filter(p => p.y != null);
+  // Which side of its dot a Success Rate label sits on, so the line is out of the way: above a peak (or a
+  // lone point), below a valley; on a slope, above when the line descends to the right and below when it rises.
+  // Never above where there is no room (top of the chart) or below where the axis labels start.
+  // The one hard rule: a label may never sit where the hovered Atoms value is drawn (the middle of its own bar),
+  // so the two can never overlap -- that check wins over the line-avoidance preference above.
+  const labelSide = (i, bpx) => {
+    const y = points[i].y;
+    const nbr = [points[i - 1], points[i + 1]].filter(p => p && p.y != null);
+    const higher = nbr.filter(p => p.y < y).length, lower = nbr.filter(p => p.y > y).length;
+    let above = !higher ? true : !lower ? false : (points[i + 1] && points[i + 1].y != null ? points[i + 1].y > y : points[i - 1].y < y);
+    if (above && y < 30) above = false;
+    if (!above && y > H - 28) above = true;
+    if (bpx >= 20) {
+      const mid = H - bpx / 2;
+      const hitsNumber = isAbove => { const [top, bottom] = isAbove ? [y - 26, y - 10] : [y + 10, y + 26]; return top < mid + 8 && bottom > mid - 8; };
+      if (hitsNumber(above)) above = !above;
+    }
+    return above ? 'above' : 'below';
+  };
   const polyline = linePoints.length > 1 ? linePoints.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') : '';
   return `<div class="adopt-chart-row">
       <div class="adopt-axis-title-v">Number of Atoms Applied</div>
@@ -2083,8 +2144,8 @@ function renderDualAxisChart(cols) {
             const bpx = Math.max(2, (c.bar / yMax) * H);
             const lpx = points[i].y == null ? null : H - points[i].y;
             return `<div class="adopt-bar-col" style="width:${COLW}px; height:${H}px">
-              <div class="adopt-bar-single" style="height:${bpx.toFixed(1)}px"><span class="adopt-hover-num">${Math.round(c.bar).toLocaleString()}</span></div>
-              ${lpx == null ? '' : `<div class="adopt-line-dot" style="bottom:${lpx.toFixed(1)}px"><span class="adopt-hover-num teal below">${Math.round(c.line)}%</span></div>`}
+              <div class="adopt-bar-single" style="height:${bpx.toFixed(1)}px"><span class="adopt-hover-num${bpx >= 20 ? ' in-bar' : ''}">${Math.round(c.bar).toLocaleString()}</span></div>
+              ${lpx == null ? '' : `<div class="adopt-line-dot" style="bottom:${lpx.toFixed(1)}px"><span class="adopt-line-label ${labelSide(i, bpx)}">${Math.round(c.line)}%</span></div>`}
               <div class="adopt-bar-label">${esc(c.label || c.period)}</div>
             </div>`;
           }).join('')}
@@ -2234,9 +2295,9 @@ function renderDurationList(cols) {
       <div class="duration-row">
         <div class="duration-row-top"><span>${esc(c.label)}</span><span>${fmt(c.compAvgMin)}</span></div>
         <div class="duration-track"><div class="duration-fill" style="width:${pct(c.compAvgMin).toFixed(1)}%"></div></div>
-        <div class="duration-track duration-track-incomplete" title="Incomplete: ${fmt(c.notCompAvgMin)}">
+        <div class="duration-track duration-track-incomplete">
           <div class="duration-fill incomplete texture" style="width:${pct(c.notCompAvgMin).toFixed(1)}%"></div>
-          <span class="duration-hover-val">${fmt(c.notCompAvgMin)}</span>
+          <span class="duration-hover-val" style="${pct(c.notCompAvgMin) > 82 ? 'right:0;top:100%;transform:none;margin-top:2px' : `left:calc(${pct(c.notCompAvgMin).toFixed(1)}% + 8px)`}">${fmt(c.notCompAvgMin)}</span>
         </div>
       </div>`).join('')}</div>`;
 }
@@ -2260,10 +2321,35 @@ const ADOPT_TAB_RENDER = { usage: renderUsageTab, atoms: renderAtomsTab, applied
 // cards, and defaults to "Overall" the moment the page opens -- nobody has to click anything to see it.
 // Clicking (the mockup's own "drag") a different card swaps the SAME panel's content in place; "Back to
 // Overview" just swaps it back to Overall. Nothing here ever navigates to a separate URL/page.
-// The "Filter" trigger + slide-out drawer, Kriti's explicit call 2026-10-06: match the reference page's
-// own drill-down drawer design exactly (not a plain <select>). Today it holds the one real filter this
-// page has -- which level to group by -- built once and reused; what's actually shown inside is set
-// fresh every open.
+// The "Filter" trigger + slide-out drawer, in Fable's own "+" style (productdemo/admin_intro.html): a "+ Company" /
+// "+ Department" / "+ Manager" / "+ User" button each, which opens a scrollable list of tick-boxes of everything
+// the caller may see -- tick as many as you like (Kriti, 2026-10-07). Apply narrows the cards, chart, hero and
+// feedback to the ticked ones. Within a level any ticked item counts; across levels all must match. The backend
+// only ever narrows inside the caller's own scope. A level with fewer than two choices is never offered, so
+// someone who can see a single department gets no Filter at all. Comparing organisation vs department etc. is
+// deliberately NOT here: that belongs on the later Reports & Insights page.
+function focusLevels() {
+  const o = S.adopt.focusOptions || {};
+  return ADOPT_LEVELS.filter(l => (o[l] || []).length >= 2);
+}
+function focusIsSet() {
+  const f = S.adopt.focus;
+  return !!f && ADOPT_LEVELS.some(l => (f[l] || []).length);
+}
+function focusQuery() {
+  if (!focusIsSet()) return '';
+  return ADOPT_LEVELS.flatMap(l => (S.adopt.focus[l] || []).map(o => `&focus_${l}=${encodeURIComponent(o.key)}`)).join('');
+}
+function focusSummary() {
+  const labels = ADOPT_LEVELS.flatMap(l => ((S.adopt.focus || {})[l] || []).map(o => o.label));
+  return labels.slice(0, 2).join(', ') + (labels.length > 2 ? ` +${labels.length - 2} more` : '');
+}
+async function ensureFocusOptions() {
+  if (S.adopt.focusOptions) return S.adopt.focusOptions;
+  try { S.adopt.focusOptions = await reportsApi('/api/reports/adoption-focus-options'); }
+  catch (e) { S.adopt.focusOptions = {}; }
+  return S.adopt.focusOptions;
+}
 function openAdoptFilterDrawer() {
   let overlay = $('#adoptDdOverlay'), drawer = $('#adoptDdDrawer');
   if (!drawer) {
@@ -2279,17 +2365,34 @@ function openAdoptFilterDrawer() {
     overlay.onclick = close;
     $('#adoptDdClose').onclick = close;
   }
-  let pending = S.adopt.level;
-  const renderOptions = () => `<div style="font-size:0.74rem;font-weight:600;color:var(--grey3);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:0.6rem">Group by</div>`
-    + ADOPT_LEVELS.map(l => `<button class="adopt-dd-option${l === pending ? ' active' : ''}" data-level="${l}">${titleCase(l)}</button>`).join('');
-  const wireOptions = () => $$('[data-level]', $('#adoptDdBody')).forEach(b => b.onclick = () => {
-    pending = b.dataset.level;
-    $$('[data-level]', $('#adoptDdBody')).forEach(x => x.classList.toggle('active', x.dataset.level === pending));
-  });
-  $('#adoptDdBody').innerHTML = renderOptions();
-  wireOptions();
+  const opts = S.adopt.focusOptions || {};
+  const levels = focusLevels();
+  const picked = {};
+  levels.forEach(l => { picked[l] = new Set(((S.adopt.focus || {})[l] || []).map(o => o.key)); });
+  const toggleText = (l, open) => `${open ? '− ' : '+ '}${titleCase(l)}${picked[l].size ? ` (${picked[l].size})` : ''}`;
+  const body = $('#adoptDdBody');
+  body.innerHTML = levels.map(l => `
+    <div class="ri-dd-item${picked[l].size ? ' open' : ''}" data-item="${l}">
+      <button type="button" class="ri-dd-toggle" data-toggle="${l}">${toggleText(l, picked[l].size > 0)}</button>
+      <div class="ri-dd-panel">${(opts[l] || []).map(o => `<label><input type="checkbox" data-level="${l}" value="${esc(o.key)}"${picked[l].has(o.key) ? ' checked' : ''}>${esc(o.label)}</label>`).join('')}</div>
+    </div>`).join('');
+  body.onclick = e => {
+    const t = e.target.closest('[data-toggle]');
+    if (!t) return;
+    const item = t.parentElement, open = item.classList.toggle('open');
+    t.textContent = toggleText(t.dataset.toggle, open);
+  };
+  body.onchange = e => {
+    const box = e.target.closest('input[data-level]');
+    if (!box) return;
+    const l = box.dataset.level;
+    box.checked ? picked[l].add(box.value) : picked[l].delete(box.value);
+    $('[data-toggle="' + l + '"]', body).textContent = toggleText(l, true);
+  };
   $('#adoptDdGo').onclick = () => {
-    S.adopt.level = pending;
+    const f = {};
+    levels.forEach(l => { const sel = (opts[l] || []).filter(o => picked[l].has(o.key)); if (sel.length) f[l] = sel; });
+    S.adopt.focus = Object.keys(f).length ? f : null;
     overlay.classList.remove('open'); drawer.classList.remove('open');
     drawAdoptPanel(); drawAdoptCards();
   };
@@ -2312,7 +2415,8 @@ async function ensureFiscalStartMonth() {
 async function renderAdoption() {
   $('#view').innerHTML = `<div class="um-page-head"><div><h1 class="um-title">Adoption Overview</h1></div></div>
     <div id="adoptCards" class="adopt-cards"></div>
-    <div id="adoptPanel" class="panel adopt-droptarget"></div>`;
+    <div id="adoptPanel" class="panel adopt-droptarget"></div>
+    <div id="adoptFeedbackPanel" class="panel"></div>`;
   // Real HTML5 drag-and-drop onto the panel (Kriti's explicit call, 2026-10-05: a click alone was not
   // what she asked for) -- these two listeners live on the STABLE panel element itself, set once here,
   // not inside drawAdoptPanel() (which only replaces the panel's innerHTML on every redraw).
@@ -2324,7 +2428,7 @@ async function renderAdoption() {
     const key = e.dataTransfer.getData('text/plain');
     if (ADOPT_TRACKS[key]) { S.adopt.active = key; drawAdoptCards(); drawAdoptPanel(); }
   };
-  await ensureFiscalStartMonth();   // resolved BEFORE either draw below ever fetches a single row
+  await Promise.all([ensureFiscalStartMonth(), ensureFocusOptions()]);   // resolved BEFORE either draw below ever fetches a single row
   drawAdoptCards();
   drawAdoptPanel();
 }
@@ -2359,7 +2463,7 @@ function drawAdoptCards() {
     const numEl = $('#adoptNum_' + key), subEl = $('#adoptSub_' + key);
     const numEl2 = isApplied ? $('#adoptNum2_' + key) : null, subEl2 = isApplied ? $('#adoptSub2_' + key) : null;
     try {
-      const rows = await reportsApi(`/api/reports/adoption-overview?track=${ADOPT_TRACKS[key].track}&level=${S.adopt.level}&period=${S.adopt.period}`);
+      const rows = await reportsApi(`/api/reports/adoption-overview?track=${ADOPT_TRACKS[key].track}&level=${S.adopt.level}&period=${S.adopt.period}${focusQuery()}`);
       const series = seriesFromRows(rows, S.adopt.period, await ensureFiscalStartMonth());
       const { value, suffix } = isDuration ? avgDurationHero(series, S.adopt.period) : computeHero(series, S.adopt.period, tabInfo.metric, tabInfo.unit);
       if (numEl) numEl.textContent = isDuration ? value.toFixed(1) : Math.round(value).toLocaleString();
@@ -2375,6 +2479,75 @@ function drawAdoptCards() {
   });
 }
 
+// ════════════ USER FEEDBACK (NPS) -- Kriti, 2026-10-07 ════════════
+// Under the chart, its OWN Month/Quarter/Year toggle (independent of the chart's), following the same single
+// drill-down, the same active card (Self-Initiated / Recommended / Overall) and, for Recommended, the same
+// assigned-by choice. NPS = % promoters - % detractors off the end-of-track 10-point score; the raw
+// promoter/passive/detractor counts are summed across the window FIRST and the score worked out once from
+// the totals -- never an average of already-computed scores. Quarter shows the current quarter, like every
+// other hero on this page.
+function feedbackWindow(series, period) {
+  const pts = period === 'quarter' ? series.slice(-1) : series;
+  const t = pts.reduce((a, s) => ({ p: a.p + s.npsPromoters, m: a.m + s.npsPassives, d: a.d + s.npsDetractors, n: a.n + s.npsScored }), { p: 0, m: 0, d: 0, n: 0 });
+  let when = period === 'quarter' ? 'this quarter' : 'this year';
+  if (period === 'month' && series.length) { const [, mo] = (series[series.length - 1].period || '').split('-').map(Number); when = `in ${MONTH_FULL[(mo || 1) - 1]}`; }
+  return { ...t, nps: t.n ? ((t.p - t.d) / t.n) * 100 : null, when };
+}
+function npsTag(n) {
+  if (n >= 50) return { text: 'Excellent', cls: 'great' };
+  if (n >= 30) return { text: 'Good', cls: 'good' };
+  if (n >= 0) return { text: 'Fair', cls: 'fair' };
+  return { text: 'Needs attention', cls: 'poor' };
+}
+function renderFeedbackBody(series, period) {
+  const w = feedbackWindow(series, period);
+  if (!w.n) return `<div class="adopt-fb-empty">No feedback has come in ${esc(w.when)} yet.</div>`;
+  const tag = npsTag(w.nps), pct = c => (c / w.n) * 100;
+  const seg = (cls, c) => c ? `<span class="${cls}" style="flex:${c} 1 0"></span>` : '';
+  const row = (cls, label, range, c) => `<div class="adopt-fb-legend-row"><i class="${cls}"></i><span class="lbl">${label} <small>${range}</small></span><span class="val">${c} <small>${Math.round(pct(c))}%</small></span></div>`;
+  return `<div class="adopt-fb-body">
+      <div class="adopt-fb-hero">
+        <div class="adopt-fb-num">${Math.round(w.nps)}</div>
+        <div class="adopt-fb-label">NPS Score <span class="adopt-fb-tag ${tag.cls}">${tag.text}</span></div>
+        <div class="adopt-fb-meta">${w.n} ${w.n === 1 ? 'response' : 'responses'} ${esc(w.when)}</div>
+      </div>
+      <div class="adopt-fb-dist">
+        <div class="adopt-fb-bar">${seg('pro', w.p)}${seg('pas', w.m)}${seg('det', w.d)}</div>
+        <div class="adopt-fb-legend">${row('pro', 'Promoters', '9–10', w.p)}${row('pas', 'Passives', '7–8', w.m)}${row('det', 'Detractors', '0–6', w.d)}</div>
+      </div>
+    </div>
+    <div class="adopt-fb-note">NPS is the share of promoters minus the share of detractors, from the end-of-track feedback score.</div>`;
+}
+async function drawAdoptFeedback() {
+  const box = $('#adoptFeedbackPanel'); if (!box) return;
+  const t = ADOPT_TRACKS[S.adopt.active];
+  const assigned = t.hasAssignedBy ? S.adopt.assignedBy : '';
+  const sig = [t.track, S.adopt.fbPeriod, assigned, JSON.stringify(S.adopt.focus)].join('|');
+  if (S.adopt.fbSig === sig && box.dataset.ready) return;
+  S.adopt.fbWant = sig;
+  box.dataset.ready = '';
+  box.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap">
+      <h3 style="font-size:1.05rem;font-weight:700;color:var(--night);text-transform:none;letter-spacing:0;margin:0">User Feedback</h3>
+      <div class="adopt-seg" id="adoptFbSeg">${['month', 'quarter', 'year'].map(p => `<button data-fbperiod="${p}" class="${p === S.adopt.fbPeriod ? 'active' : ''}">${titleCase(p)}</button>`).join('')}</div>
+    </div>
+    <div id="adoptFbBody" class="loading-block"><div class="spinner"></div></div>`;
+  $$('[data-fbperiod]', box).forEach(b => b.onclick = () => { S.adopt.fbPeriod = b.dataset.fbperiod; drawAdoptFeedback(); });
+  try {
+    const fiscalStartMonth = await ensureFiscalStartMonth();
+    let path = `/api/reports/adoption-overview?track=${t.track}&level=${S.adopt.level}&period=${S.adopt.fbPeriod}${focusQuery()}`;
+    if (assigned) path += '&assigned_by=' + encodeURIComponent(assigned);
+    const rows = await reportsApi(path);
+    if (S.adopt.fbWant !== sig) return;   // the person moved on while this was loading
+    const body = $('#adoptFbBody'); if (!body) return;
+    body.classList.remove('loading-block');
+    body.innerHTML = renderFeedbackBody(seriesFromRows(rows, S.adopt.fbPeriod, fiscalStartMonth), S.adopt.fbPeriod);
+    S.adopt.fbSig = sig; box.dataset.ready = '1';
+  } catch (e) {
+    const body = $('#adoptFbBody'); if (body && S.adopt.fbWant === sig) { body.classList.remove('loading-block'); body.innerHTML = `<div class="banner">${esc(e.message)}</div>`; }
+  }
+}
+
 async function drawAdoptPanel() {
   const key = S.adopt.active, t = ADOPT_TRACKS[key];
   const panel = $('#adoptPanel');
@@ -2385,14 +2558,16 @@ async function drawAdoptPanel() {
     </div>
     <div class="adopt-controls">
       <div class="adopt-seg" id="adoptPeriodSeg">${['month', 'quarter', 'year'].map(p => `<button data-period="${p}" class="${p === S.adopt.period ? 'active' : ''}">${titleCase(p)}</button>`).join('')}</div>
-      <button class="ri-dd-trigger" id="adoptFilterTrigger">${icon('filter')} Filter</button>
+      ${focusLevels().length || focusIsSet() ? `<button class="ri-dd-trigger" id="adoptFilterTrigger">${icon('filter')} Filter</button>` : ''}
+      ${focusIsSet() ? `<span class="adopt-focus-chip">Showing: <strong>${esc(focusSummary())}</strong><button type="button" id="adoptFocusClear" aria-label="Show everything">×</button></span>` : ''}
       ${t.hasAssignedBy ? `<div class="filter-select-wrap"><select class="filter-select" id="adoptAssignedBy"><option value="">Assigned by: everyone</option></select></div>` : ''}
     </div>
     <div class="adopt-tabs" id="adoptTabsRow">${ADOPT_TABS.map(tb => `<button data-tab="${tb.key}" class="${tb.key === S.adopt.tab ? 'active' : ''}">${esc(tb.label)}</button>`).join('')}</div>
     <div id="adoptBody" class="loading-block"><div class="spinner"></div></div>`;
   if (key !== 'overall') $('#adoptBackBtn').onclick = () => { S.adopt.active = 'overall'; drawAdoptCards(); drawAdoptPanel(); };
   $$('[data-period]', $('#adoptPeriodSeg')).forEach(b => b.onclick = () => { S.adopt.period = b.dataset.period; drawAdoptPanel(); drawAdoptCards(); });
-  $('#adoptFilterTrigger').onclick = openAdoptFilterDrawer;
+  if ($('#adoptFilterTrigger')) $('#adoptFilterTrigger').onclick = openAdoptFilterDrawer;
+  if ($('#adoptFocusClear')) $('#adoptFocusClear').onclick = () => { S.adopt.focus = null; drawAdoptPanel(); drawAdoptCards(); };
   $$('[data-tab]', $('#adoptTabsRow')).forEach(b => b.onclick = () => { S.adopt.tab = b.dataset.tab; drawAdoptPanel(); drawAdoptCards(); });
   if (t.hasAssignedBy) {
     const sel = $('#adoptAssignedBy');
@@ -2410,9 +2585,10 @@ async function drawAdoptPanel() {
       } catch (e) { /* the "everyone" option still works */ }
     })();
   }
+  drawAdoptFeedback();   // its own card + its own toggle; a no-op unless the track / drill-down / assigned-by changed
   try {
     const fiscalStartMonth = await ensureFiscalStartMonth();   // same cached fact the cards now also wait on
-    let path = `/api/reports/adoption-overview?track=${t.track}&level=${S.adopt.level}&period=${S.adopt.period}`;
+    let path = `/api/reports/adoption-overview?track=${t.track}&level=${S.adopt.level}&period=${S.adopt.period}${focusQuery()}`;
     if (t.hasAssignedBy && S.adopt.assignedBy) path += '&assigned_by=' + encodeURIComponent(S.adopt.assignedBy);
     const rows = await reportsApi(path);
     // loading-block's own 3rem padding (meant only for the spinner) was being left on this div after
