@@ -23,6 +23,8 @@
   --amber2:  #c17d00;
   --red:     #e0303a;
   --teal:    #14B8A6;
+  --rose:    #E85D8A;   /* the Key Insights star badge (Fable's colour) -- was undefined here, so the badge drew blank (2026-10-09) */
+  --blue:    #4A6FA5;   /* the Key Insights bullet dots: the same duller steel blue as Knowledge & Skill Application */
   --line:    rgba(4,26,64,0.10);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -527,6 +529,142 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .adopt-dd-option:hover { background:var(--grey2); }
 .adopt-dd-option.active { background:rgba(20,184,166,0.14); color:#0d8f81; }
 
+/* ════════════ LEARNING FRICTION (Reports & Insights): Fable's reports_insights styles, only what admin.html did not already have ════════════ */
+.ri-level-head { display:flex; align-items:center; gap:1rem; margin-bottom:1.3rem; flex-wrap:wrap; min-height:36px; }
+.ri-level-title { font-size:1.3rem; font-weight:700; color:var(--night); }
+.ri-back-btn {
+  font-family:'Poppins',sans-serif; font-size:0.8rem; font-weight:600; color:var(--grey3); background:var(--grey1);
+  border:none; border-radius:16px; padding:0.4rem 0.9rem; cursor:pointer; transition:background 0.15s, color 0.15s;
+}
+.ri-back-btn:hover { background:var(--grey2); color:var(--night); }
+.dd-tooltip {
+  position:absolute; top:calc(100% + 10px); right:0; z-index:80; width:250px;
+  background:rgba(255,250,222,0.94); backdrop-filter:blur(10px) saturate(160%); -webkit-backdrop-filter:blur(10px) saturate(160%);
+  border:1.5px solid var(--gold); border-radius:14px; text-align:left; white-space:normal;
+  font-family:'Poppins',sans-serif; font-weight:400;
+  padding:0.85rem 0.95rem; box-shadow:0 14px 34px rgba(0,0,0,0.35);
+  opacity:0; pointer-events:none; transform:translateY(-4px); transition:opacity 0.15s, transform 0.15s;
+}
+.dd-tooltip::before {
+  content:''; position:absolute; top:-7px; right:24px; width:12px; height:12px;
+  background:rgba(255,250,222,0.94); border-left:1.5px solid var(--gold); border-top:1.5px solid var(--gold);
+  transform:rotate(45deg);
+}
+.dd-tooltip strong { display:block; font-size:0.8rem; font-weight:700; color:var(--night); margin-bottom:0.4rem; }
+.dd-tooltip span { display:block; font-size:0.74rem; line-height:1.55; color:var(--night2); }
+.ri-dd-trigger:hover .dd-tooltip { opacity:1; }
+.period-toggle { position:relative; display:flex; background:var(--grey1); border-radius:20px; padding:0.2rem; }
+.period-toggle-thumb { position:absolute; top:0.2rem; bottom:0.2rem; left:0.2rem; background:var(--teal); border-radius:16px; transition:left 0.25s ease, width 0.25s ease; z-index:0; }
+.period-toggle span { position:relative; z-index:1; padding:0.32rem 0.75rem; font-size:0.72rem; color:var(--grey3); border-radius:16px; cursor:pointer; transition:color 0.15s; }
+.period-toggle span.active { color:#fff; font-weight:600; }
+.chart-legend { display:flex; gap:1.2rem; margin-top:0.9rem; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:0.4rem; font-size:0.76rem; color:var(--grey3); }
+.legend-dot { display:inline-block; width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.key-obs-card { background:var(--white); border-radius:14px; padding:1.3rem 1.3rem 1.5rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05); position:sticky; top:1.6rem; }
+.key-obs-head { display:flex; align-items:center; gap:0.6rem; margin-bottom:1.15rem; }
+.key-obs-icon { width:32px; height:32px; border-radius:9px; background:linear-gradient(135deg, var(--blue), #2f4cb3); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+.key-obs-icon svg { width:16px; height:16px; }
+.key-obs-title { font-size:0.95rem; font-weight:700; color:var(--night); }
+.key-obs-list { display:flex; flex-direction:column; gap:0.95rem; }
+.key-obs-item { font-size:0.82rem; line-height:1.58; color:var(--night2); padding-left:1rem; position:relative; }
+.key-obs-item::before { content:''; position:absolute; left:0; top:0.5rem; width:6px; height:6px; border-radius:50%; background:var(--blue); }
+.rh-graph-card { flex:1.5; min-width:0; background:var(--white); border-radius:14px; padding:1.4rem 1.5rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05); }
+.rh-insights-card { flex:1; min-width:0; }
+.rh-graph-controls { display:flex; gap:1.4rem; margin-bottom:1.3rem; flex-wrap:wrap; }
+.rh-section-title { font-size:1.05rem; font-weight:700; color:var(--night); margin-bottom:1rem; display:flex; align-items:center; gap:0.6rem; }
+.footprint-note { font-size:0.7rem; color:var(--grey3); line-height:1.5; }
+.friction-stack { width:100%; display:flex; flex-direction:column; border-radius:5px; overflow:hidden; box-shadow:0 2px 8px rgba(4,26,64,0.1); }
+.friction-seg { display:flex; align-items:center; justify-content:center; min-height:10px; }
+.friction-seg-num { font-size:0.62rem; font-weight:700; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.25); }
+.chart-legend.nowrap { flex-wrap:nowrap; gap:0.6rem; }
+.chart-legend.nowrap .legend-item { white-space:normal; align-items:flex-start; flex:1; min-width:0; line-height:1.25; font-size:0.72rem; }
+.chart-legend.nowrap .legend-dot { margin-top:0.2rem; flex-shrink:0; }
+.fr-filter-tag { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.7rem; font-weight:600; color:#0d8f81; background:rgba(20,184,166,0.14); padding:0.3rem 0.7rem; border-radius:12px; margin-bottom:1rem; }
+.fr-filter-tag button { border:none; background:none; color:#0d8f81; cursor:pointer; font-weight:700; font-size:0.85rem; line-height:1; padding:0; }
+.rh-subnote { font-size:0.8rem; color:var(--grey3); line-height:1.55; margin-bottom:1rem; }
+.bubble-matrix { width:100%; border-collapse:collapse; }
+.bubble-matrix th, .bubble-matrix td { text-align:center; padding:0.5rem 0.3rem; }
+.bubble-matrix thead th { font-size:0.68rem; font-weight:600; color:var(--night2); white-space:normal; line-height:1.25; vertical-align:bottom; }
+.bubble-matrix tbody th { font-size:0.72rem; font-weight:600; color:var(--night2); text-align:left; white-space:normal; line-height:1.25; min-width:170px; max-width:190px; padding-right:0.8rem; }
+.bubble-row-dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:0.4rem; }
+.bubble { margin:0 auto; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.6rem; font-weight:700; box-shadow:0 2px 6px rgba(0,0,0,0.15); transition:transform 0.15s; }
+.bubble:hover { transform:scale(1.08); }
+.friction-area-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.2rem; }
+.friction-area-card { background:var(--white); border-radius:16px; padding:1.6rem 1.8rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05); border-left:6px solid transparent; transition:transform 0.2s ease, box-shadow 0.2s ease; }
+.friction-area-card.clickable { cursor:pointer; }
+.friction-area-card.clickable:hover { transform:translateY(-4px); box-shadow:0 16px 30px rgba(4,26,64,0.16); }
+.friction-area-top { display:flex; align-items:center; gap:1.3rem; }
+.friction-area-ring-wrap { flex-shrink:0; }
+.friction-area-ring { width:96px; height:96px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.friction-area-ring-inner { width:72px; height:72px; border-radius:50%; background:var(--white); display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:700; }
+.friction-area-text { min-width:0; }
+.friction-area-text h3 { font-size:1.02rem; color:var(--night); margin-bottom:0.45rem; line-height:1.3; }
+.friction-area-text p { font-size:0.8rem; color:var(--grey3); line-height:1.55; margin-bottom:0.6rem; }
+.friction-area-tag { display:inline-block; font-size:0.66rem; font-weight:700; padding:0.24rem 0.6rem; border-radius:10px; }
+.rf-inline-trigger { display:flex; align-items:center; gap:0.35rem; font-family:'Poppins',sans-serif; font-size:0.72rem; font-weight:600; color:var(--night2); background:var(--grey1); border:none; border-radius:14px; padding:0.35rem 0.75rem; cursor:pointer; transition:background 0.15s, color 0.15s; white-space:nowrap; }
+.rf-inline-trigger svg { width:12px; height:12px; }
+.rf-inline-trigger:hover { background:var(--grey2); color:var(--night); }
+.fr-controls-right { margin-left:auto; display:flex; align-items:center; gap:0.8rem; }
+.friction-stack.empty { box-shadow:none; background:transparent; border:1.5px dashed var(--grey2); border-radius:5px; }
+.fr-state { background:var(--white); border-radius:14px; padding:2.4rem; text-align:center; color:var(--grey3); font-size:0.9rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); }
+.fr-loading { opacity:0.55; transition:opacity 0.15s; }
+.friction-area-ring.nodata { background:var(--grey1) !important; }
+.friction-area-ring.nodata .friction-area-ring-inner { color:var(--grey2) !important; }
+.fr-chart-empty { text-align:center; color:var(--grey3); font-size:0.82rem; padding:2rem 0 1rem; }
+.rf-inline-trigger .rf-count { background:var(--teal); color:#fff; border-radius:9px; padding:0 0.4rem; font-size:0.64rem; margin-left:0.2rem; }
+.fr-cards-bar { display:flex; justify-content:flex-end; margin-bottom:0.9rem; }
+.ri-dd-hint { font-size:0.74rem; color:var(--grey3); padding:0.2rem 0 0.8rem; line-height:1.5; }
+.fr-hrows { display:flex; flex-direction:column; gap:1rem; max-height:560px; overflow-y:auto; padding:0.2rem 0.4rem 0.6rem 0; }
+.fr-hrow { display:flex; align-items:center; gap:0.9rem; cursor:default; }
+.bubble-matrix thead th { min-width:92px; vertical-align:bottom; }
+.bubble-matrix thead th:first-child, .bubble-matrix tbody th { position:sticky; left:0; z-index:2; background:var(--white); }
+.bubble-matrix .bubble { cursor:pointer; outline:none; }
+.bubble-matrix .bubble:focus-visible { box-shadow:0 0 0 3px rgba(4,26,64,0.35); }
+.bubble-matrix .bubble.on { transform:scale(1.12); box-shadow:0 0 0 3px #fff, 0 0 0 5px var(--night); }
+.bubble-matrix .wc-none { color:var(--grey2); font-size:0.7rem; }
+.wc-scroll { overflow-x:auto; padding-bottom:0.4rem; }
+.wc-panel { margin-top:1.1rem; border-radius:12px; background:var(--grey1); padding:1rem 1.2rem 0.8rem; border-left:6px solid var(--grey2); }
+.wc-panel-head { display:flex; align-items:baseline; flex-wrap:wrap; gap:0.3rem 0.8rem; margin-bottom:0.55rem; }
+.wc-panel-head b { font-size:0.88rem; color:var(--night); }
+.wc-panel-sub { font-size:0.72rem; color:var(--grey3); }
+.wc-panel-list { list-style:none; margin:0; padding:0; display:grid; gap:0.35rem; }
+.wc-panel-list li { background:var(--white); border-radius:8px; padding:0.55rem 0.8rem; font-size:0.82rem; color:var(--night); min-height:2.1rem; display:flex; align-items:center; }
+.wc-panel-list li.empty { color:var(--grey2); }
+.fr-hrow:hover .friction-stack { box-shadow:0 4px 14px rgba(4,26,64,0.22); }
+.fr-hlabel { flex:none; text-align:right; font-size:0.7rem; color:var(--grey3); white-space:nowrap; }
+.friction-stack.fr-hstack { flex-direction:row; height:20px; flex:1; width:auto; min-width:0; }
+.fr-hstack .friction-seg { min-height:0; min-width:0; }
+.fr-tip { position:fixed; z-index:400; pointer-events:none; background:var(--night); color:#fff; border-radius:10px; padding:0.6rem 0.8rem; font-size:0.72rem; line-height:1.5; box-shadow:0 8px 24px rgba(4,26,64,0.3); opacity:0; transition:opacity 0.12s; max-width:260px; }
+.fr-tip.show { opacity:1; }
+.fr-tip b { display:block; margin-bottom:0.25rem; font-size:0.74rem; }
+.fr-tip i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:0.4rem; }
+.fr-tip .muted { color:var(--grey2); }
+
+/* ---- Reports & Insights hub (Fable's report list) + How Friction Compounds ---- */
+/* the toggle, Filter by Reflector and Drill Down sit side by side: ALL THREE exactly the toggle's height (Kriti, 2026-10-09) */
+.fr-controls-right .period-toggle, .fr-controls-right .rf-inline-trigger, .fr-controls-right .ri-dd-trigger { height:2.1rem; box-sizing:border-box; }
+.fr-controls-right .rf-inline-trigger, .fr-controls-right .ri-dd-trigger { padding-top:0; padding-bottom:0; }
+.report-list { display:flex; flex-direction:column; gap:1rem; }
+.report-row {
+  background:var(--white); border-radius:14px; padding:1.3rem 1.7rem; box-shadow:0 6px 20px rgba(4,26,64,0.08);
+  border:1px solid rgba(4,26,64,0.05); border-left:5px solid transparent; position:relative; display:flex; align-items:center; gap:1.4rem;
+  transition:transform 0.2s ease, box-shadow 0.2s ease;
+}
+.report-row.clickable { cursor:pointer; }
+.report-row.clickable:hover { transform:translateY(-4px); box-shadow:0 16px 30px rgba(4,26,64,0.16); }
+.report-row-text { min-width:0; }
+.report-row-text h3 { font-size:1.22rem; font-weight:700; letter-spacing:-0.01em; color:var(--night); margin-bottom:0.4rem; }
+.report-row-text p { font-size:0.83rem; color:#7e8a9c; line-height:1.65; }
+.report-row.coming-soon { opacity:0.7; }
+.report-row-index { width:92px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:3.8rem; font-weight:700; color:#e2e7ed; }
+.report-row.clickable .report-row-index { color:var(--green); }   /* the live reports: a green number (Kriti, 2026-10-09) */
+.report-soon-tag { position:absolute; top:1.2rem; right:1.4rem; font-size:0.6rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; color:var(--grey3); background:var(--grey1); padding:0.2rem 0.55rem; border-radius:10px; }
+.footprint-list { display:flex; flex-direction:column; gap:0.6rem; margin-bottom:0.9rem; }
+.footprint-row { display:flex; align-items:center; justify-content:space-between; font-size:0.82rem; padding:0.5rem 0.7rem; background:var(--grey1); border-radius:8px; }
+.footprint-name { color:var(--night2); font-weight:600; }
+.footprint-share { color:var(--green2); font-weight:700; font-size:0.76rem; }
+.combo-severity-bar { display:flex; height:38px; border-radius:8px; overflow:hidden; margin-bottom:1.1rem; }
+.combo-severity-seg { display:flex; align-items:center; justify-content:center; font-size:0.74rem; font-weight:700; color:#fff; }
 </style>
 </head>
 <body>
@@ -2601,12 +2739,327 @@ async function drawAdoptPanel() {
   }
 }
 
+// ════════════ LEARNING FRICTION (Reports & Insights) ════════════
+// The Learning Friction report, row 04 of Reports & Insights (Kriti, 2026-10-09). Everything is read from wotg-reports
+// /api/reports/driver-report (+ -workplace, -options) with the login token -- the page does no maths of its own and
+// never decides who may see what: the backend only ever answers inside the caller's own scope.
+// TOP HALF (cards, Friction Share Over Time, Key Insights, How Friction Compounds): two independent Month/Quarter/Year
+// toggles (the four cards, and the chart -- Compounds follows the chart), one Filter by Reflector and one Drill Down.
+// BOTTOM HALF ("Friction x Workplace Challenge"): its OWN toggle, Filter by Reflector and Drill Down (company and
+// department only -- never manager, user or assigner, privacy) and its OWN request; the top half never touches it.
+// All names live in this one object so nothing here can collide with the Adoption Overview code.
+const LF = (() => {
+  const COLORS = { confidence: '#0F766E',   // the deep teal (Kriti, 2026-10-09: the brighter teal was too bright for the eyes -- reverted)
+     mindset: '#E45756', situation: '#D97706', knowledge: '#4A6FA5' };   // knowledge: a duller steel blue (Kriti, 2026-10-09: the old #2563EB was too sharp)
+  const COMBO_COLORS = { one: '#D5E8D4', two: '#79C174', three_plus: '#3D7A3C' };   // three shades of one green, light -> dark as friction compounds: Fable's own ladder (Kriti, 2026-10-09; blue was taken by Knowledge & Skill Application)
+  const PERIODS = [['month', 'Month'], ['quarter', 'Quarter'], ['year', 'Year']];
+  const LEVELS = [['company', 'Company'], ['department', 'Department'], ['manager', 'Manager'], ['user', 'User'], ['assigner', 'Assigner']];
+  const WC_LEVELS = [['company', 'Company'], ['department', 'Department']];
+  const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const DD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="4 4 20 4 14 12.5 14 19 10 21 10 12.5 4 4"/></svg>';
+  const DD_TOOLTIP = '<div class="dd-tooltip"><strong>Reveal Insights from Every Angle</strong><span>Analyze learning insights across different organizational dimensions. Slice data vertically and horizontally to uncover trends, compare groups, and identify where capability gaps and strengths exist.</span></div>';
+  const RF_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const BUBBLE_MIN = 22, BUBBLE_MAX = 60, PCT_MIN = 12, PCT_MAX = 44;
+  const st = { period: 'month',   // ONE toggle for the whole Learning Friction section: the cards, the chart and Compounds move together (Kriti, 2026-10-09)
+                focus: { company: [], department: [], manager: [], user: [], assigner: [] },
+               wc: { company: [], department: [] }, reflectors: [], options: null, data: null, error: null, loading: true, ddMode: 'page',
+               wcPeriod: 'month', wcReflectors: [], wcData: null, wcError: null, wcLoading: true, rfMode: 'page' };
+  let seq = 0, wcSeq = 0;
+
+  // the backend's raw codes are never shown to a person
+  function friendly(msg) { return /login_required|invalid_token|expired|401/i.test(String(msg)) ? 'Your session has ended. Please sign in again.' : String(msg); }
+  function ordinal(n) { const v = n % 100; return n + (['th', 'st', 'nd', 'rd'][(v - 20) % 10] || ['th', 'st', 'nd', 'rd'][v] || 'th'); }
+  function quarterMonthRange(qNum, fsm) { const m0 = (fsm - 1 + (qNum - 1) * 3) % 12, m2 = (m0 + 2) % 12; return `${MONTH_ABBR[m0]}–${MONTH_ABBR[m2]}`; }
+  function bucketLabel(key, period, fsm) {
+    if (period === 'month') { const [, m, d] = key.split('-').map(Number); return `${ordinal(d)} ${MONTH_ABBR[m - 1]}`; }
+    if (period === 'year') { const [y, m] = key.split('-').map(Number); return `${MONTH_ABBR[m - 1]} '${String(y).slice(2)}`; }
+    const [fy, q] = key.split('-Q'); return `Q${q} '${String(fy).slice(2)} (${quarterMonthRange(Number(q), fsm || 1)})`;
+  }
+  function cardsNote(d) {
+    if (st.period === 'month') return 'Share of friction, month to date';
+    if (st.period === 'quarter') return 'Share of friction, this quarter';
+    return 'Share of friction, ' + (d.fiscal_start_month === 1 ? d.year_label : 'FY' + d.year_label);
+  }
+  function params() {
+    const p = new URLSearchParams({ cards_period: st.period, trend_period: st.period });
+    LEVELS.forEach(([l]) => st.focus[l].forEach(k => p.append('focus_' + l, k)));
+    st.reflectors.forEach(r => p.append('reflector', r));
+    return p.toString();
+  }
+  function wcParams() {
+    const p = new URLSearchParams({ period: st.wcPeriod });
+    WC_LEVELS.forEach(([l]) => st.wc[l].forEach(k => p.append('wc_' + l, k)));
+    st.wcReflectors.forEach(r => p.append('reflector', r));
+    return p.toString();
+  }
+  async function loadWc() {
+    const mine = ++wcSeq;
+    st.wcLoading = true; paintWc();
+    try { const data = await reportsApi('/api/reports/driver-report-workplace?' + wcParams()); if (mine !== wcSeq) return; st.wcData = data; st.wcError = null; }
+    catch (e) { if (mine !== wcSeq) return; st.wcError = e.message; }
+    st.wcLoading = false; paintWc();
+  }
+  async function load() {
+    const mine = ++seq;
+    st.loading = true; paint();
+    try { const data = await reportsApi('/api/reports/driver-report?' + params()); if (mine !== seq) return; st.data = data; st.error = null; }
+    catch (e) { if (mine !== seq) return; st.error = e.message; }
+    st.loading = false; paint();
+  }
+
+  // ---- markup ----
+  function focusSummary() {
+    const out = [];
+    LEVELS.forEach(([l]) => { const opts = (st.options && st.options[l]) || []; st.focus[l].forEach(k => { const o = opts.find(x => x.key === k); out.push(o ? o.label : k); }); });
+    return out;
+  }
+  function periodToggle(which) {
+    const cur = which === 'wc' ? st.wcPeriod : st.period;
+    return `<div class="period-toggle fr-period-toggle"><div class="period-toggle-thumb"></div>${PERIODS.map(([k, label]) => `<span class="${k === cur ? 'active' : ''}" onclick="LF.setPeriod('${which}','${k}')">${label}</span>`).join('')}</div>`;
+  }
+  function areaCards(cards, areas, d) {
+    const none = cards.identifications === 0;
+    return `<div class="friction-area-grid">${areas.map(a => {
+      const pct = cards.areas[a.key].percent, color = COLORS[a.key];
+      return `<div class="friction-area-card" style="border-left-color:${color}"><div class="friction-area-top">
+        <div class="friction-area-ring-wrap"><div class="friction-area-ring ${none ? 'nodata' : ''}" style="background:conic-gradient(${color} 0% ${pct || 0}%, var(--grey1) ${pct || 0}% 100%)"><div class="friction-area-ring-inner" style="color:${color}">${none ? '—' : pct + '%'}</div></div></div>
+        <div class="friction-area-text"><h3>${esc(a.label)}</h3><p>${esc(a.description)}</p><span class="friction-area-tag" style="background:${color}22; color:${color}">${none ? 'No data yet' : cardsNote(d)}</span></div>
+      </div></div>`;
+    }).join('')}</div>`;
+  }
+  function legend(areas) { return `<div class="chart-legend nowrap">${areas.map(a => `<div class="legend-item"><span class="legend-dot" style="background:${COLORS[a.key]}"></span>${esc(a.label)}</div>`).join('')}</div>`; }
+  function trendChart(data) {
+    const areas = data.areas;
+    // a period with nothing in it is not shown; newest period on top
+    const shown = data.trend.buckets.map((b, i) => ({ b, i })).filter(x => x.b.identifications > 0).reverse();
+    if (!shown.length) return `<div class="fr-chart-empty">No friction identified in this period${st.reflectors.length ? ' for the chosen reflectors' : ''}.</div>${legend(areas)}`;
+    const labelW = data.trend_period === 'quarter' ? 150 : 70;
+    const rows = shown.map(x => `<div class="fr-hrow fr-hit" data-i="${x.i}"><div class="fr-hlabel" style="width:${labelW}px">${esc(bucketLabel(x.b.bucket, data.trend_period, data.fiscal_start_month))}</div>
+      <div class="friction-stack fr-hstack">${areas.map(a => { const pct = x.b.areas[a.key].percent; return pct ? `<div class="friction-seg" style="width:${pct}%; background:${COLORS[a.key]}">${pct >= 4 ? `<span class="friction-seg-num">${pct}%</span>` : ''}</div>` : ''; }).join('')}</div></div>`).join('');
+    return `<div class="fr-hrows">${rows}</div>${legend(areas)}`;
+  }
+  function insights(data) {
+    const labels = data.areas.map(a => a.label).sort((x, y) => y.length - x.length);
+    const bold = t => labels.reduce((acc, l) => acc.split(esc(l)).join(`<strong>${esc(l)}</strong>`), esc(t));
+    return `<div class="key-obs-card rh-insights-card"><div class="key-obs-head">
+      <div class="key-obs-icon" style="background:linear-gradient(135deg, var(--rose), #b23763)"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2 13.8 8.2 20 10 13.8 11.8 12 18 10.2 11.8 4 10 10.2 8.2Z"/></svg></div><div class="key-obs-title">Key Insights</div></div>
+      <div class="key-obs-list">${data.insights.length ? data.insights.map(t => `<div class="key-obs-item">${bold(t)}</div>`).join('') : '<div class="key-obs-item" style="color:var(--grey3)">Not enough data yet to draw insights for this selection.</div>'}</div></div>`;
+  }
+  function bubbleSize(pct) { return Math.round(BUBBLE_MIN + (Math.max(PCT_MIN, Math.min(PCT_MAX, pct)) - PCT_MIN) / (PCT_MAX - PCT_MIN) * (BUBBLE_MAX - BUBBLE_MIN)); }
+  function panelHtml(arena, area) {
+    const items = arena && area ? (arena.areas[area.key].samples || []) : [];
+    const slots = [];
+    for (let i = 0; i < 5; i++) slots.push(items[i] ? `<li>${esc(items[i])}</li>` : `<li class="empty">${arena && area ? '&ndash;' : (i === 0 ? 'Hover over a bubble to see representative workplace situations behind it.' : '&nbsp;')}</li>`);
+    const head = arena && area
+      ? `<b>${esc(arena.arena)} &times; ${esc(area.label)}</b><span class="wc-panel-sub">${arena.areas[area.key].count} session${arena.areas[area.key].count === 1 ? '' : 's'} behind this bubble${items.length < arena.areas[area.key].count ? ` &middot; showing ${items.length}` : ''}</span>`
+      : '<b>Representative situations</b>';
+    return `<div class="wc-panel-head">${head}</div><ol class="wc-panel-list">${slots.join('')}</ol>`;
+  }
+  function compoundsBlock(d) {
+    const c = d.compounds, none = c.cases === 0;
+    return `<div class="rh-graph-card" style="margin-top:1.8rem;">
+      <div class="rh-graph-controls"><h3 class="rh-section-title" style="margin-bottom:0;">How Friction Compounds</h3></div>
+      <p class="rh-subnote">For every case where an employee is blocked, how many of the 4 friction areas are involved at the same time.</p>
+      ${none ? '<div class="fr-chart-empty">No friction identified for this selection.</div>' : `
+      <div class="combo-severity-bar">${c.buckets.filter(b => b.percent).map(b => `<div class="combo-severity-seg" style="width:${b.percent}%; background:${COMBO_COLORS[b.key]}; color:${b.key === 'three_plus' ? '#fff' : 'var(--night)'}">${b.percent}%</div>`).join('')}</div>
+      <div class="footprint-list">${c.buckets.map(b => `<div class="footprint-row"><span class="footprint-name"><span class="legend-dot" style="background:${COMBO_COLORS[b.key]};display:inline-block;margin-right:0.5rem;"></span>${esc(b.label)}</span><span class="footprint-share" style="color:var(--night)">${b.percent}%</span></div>`).join('')}</div>`}
+    </div>`;
+  }
+  function wcControls() {
+    const wcOpts = WC_LEVELS.filter(([l]) => st.options && (st.options[l] || []).length >= 2);
+    return `<div class="fr-controls-right">${periodToggle('wc')}
+      <button class="rf-inline-trigger" id="wcReflector" onclick="LF.toggleReflector('wc')">${RF_ICON}Filter by Reflector${st.wcReflectors.length ? `<span class="rf-count">${st.wcReflectors.length}</span>` : ''}</button>
+      ${wcOpts.length ? `<button class="ri-dd-trigger" id="wcDrill" onclick="LF.toggleDrill('wc')">${DD_ICON}Drill Down</button>` : ''}</div>`;
+  }
+  function workplaceBlock() {
+    const w = st.wcData, d = st.data, areas = (w && w.areas) || (d && d.areas) || [];
+    const wcTag = WC_LEVELS.flatMap(([l]) => st.wc[l].map(k => { const o = ((st.options && st.options[l]) || []).find(x => x.key === k); return o ? o.label : k; }));
+    const head = `<div class="rh-graph-controls" style="align-items:center;"><h3 class="rh-section-title" style="margin-bottom:0;">Friction &times; Workplace Challenge</h3>${wcControls()}</div>
+      ${wcTag.length ? `<div class="fr-filter-tag" id="wcTag">Filtered by: ${wcTag.map(esc).join(', ')} <button onclick="LF.clearWc()">&times;</button></div>` : ''}
+      ${st.wcReflectors.length ? `<div class="fr-filter-tag" id="wcRefTag">Reflectors: ${st.wcReflectors.length <= 3 ? st.wcReflectors.map(esc).join(', ') : st.wcReflectors.length + ' chosen'} <button onclick="LF.clearWcReflectors()">&times;</button></div>` : ''}
+      <p class="rh-subnote">Which friction area shows up most within which workplace challenge. Hover a bubble to see the situations behind it.</p>`;
+    if (!w) return `<div class="rh-graph-card" id="wcCard" style="margin-top:1.8rem;">${head}<div class="fr-chart-empty">${st.wcError ? esc(friendly(st.wcError)) : 'Loading…'}</div></div>`;
+    if (!w.arenas.length) return `<div class="rh-graph-card" id="wcCard" style="margin-top:1.8rem;">${head}<div class="fr-chart-empty">No classified workplace situations in this selection yet.</div></div>`;
+    return `<div class="rh-graph-card" id="wcCard" style="margin-top:1.8rem;">${head}
+      <div class="wc-scroll"><table class="bubble-matrix">
+        <thead><tr><th></th>${w.arenas.map(a => `<th>${esc(a.arena)}</th>`).join('')}</tr></thead>
+        <tbody>${areas.map(area => `<tr><th><span class="bubble-row-dot" style="background:${COLORS[area.key]}"></span>${esc(area.label)}</th>${w.arenas.map((a, i) => {
+          const c = a.areas[area.key];
+          return c.count ? `<td><div class="bubble" tabindex="0" data-ai="${i}" data-area="${area.key}" style="width:${bubbleSize(c.percent)}px;height:${bubbleSize(c.percent)}px;background:${COLORS[area.key]}">${c.percent}%</div></td>` : '<td><span class="wc-none">&ndash;</span></td>';
+        }).join('')}</tr>`).join('')}</tbody>
+      </table></div>
+      <p class="footprint-note">Bubble size = that area's share of the friction within one workplace challenge. Reading down a column shows the friction mix behind one challenge; reading across a row shows where one friction area shows up most.</p>
+      <div class="wc-panel" id="wcPanel">${panelHtml(null, null)}</div></div>`;
+  }
+  function paintWc() {
+    const slot = $('#lfWc'); if (!slot) return;
+    slot.innerHTML = workplaceBlock();
+    slot.classList.toggle('fr-loading', st.wcLoading && !!st.wcData);
+    requestAnimationFrame(positionThumbs);
+    bindBubbles();
+  }
+  function page() {
+    const d = st.data, summary = focusSummary();
+    const head = `<div class="um-page-head"><div><button class="ri-back-btn" onclick="location.hash='#reports'" style="margin-bottom:0.7rem;">&larr; Reports &amp; Insights</button><h1 class="um-title">Learning Friction</h1></div>
+      <div class="fr-controls-right">${periodToggle('page')}
+        <button class="rf-inline-trigger" onclick="LF.toggleReflector('page')">${RF_ICON}Filter by Reflector${st.reflectors.length ? `<span class="rf-count">${st.reflectors.length}</span>` : ''}</button>
+        <button class="ri-dd-trigger" onclick="LF.toggleDrill('page')">${DD_ICON}Drill Down${DD_TOOLTIP}</button>
+      </div></div>
+      ${summary.length ? `<div class="fr-filter-tag">Filtered by: ${summary.map(esc).join(', ')} <button onclick="LF.clearFocus()">&times;</button></div>` : ''}
+      ${st.reflectors.length ? `<div class="fr-filter-tag">Reflectors: ${st.reflectors.length <= 3 ? st.reflectors.map(esc).join(', ') : st.reflectors.length + ' chosen'} <button onclick="LF.clearReflectors()">&times;</button></div>` : ''}`;
+    // The toggles are drawn in EVERY state (loading, error, data) so the page never changes shape under the reader.
+    const note = d ? '' : `<div class="fr-state">${esc(st.error ? friendly(st.error) : 'Loading…')}</div>`;
+    return `${head}
+      ${d ? areaCards(d.cards, d.areas, d) : note}
+      <div class="rh-graph-card" style="margin-top:1.8rem;">
+        <div class="rh-graph-controls" style="justify-content:space-between; align-items:center;"><h3 class="rh-section-title" style="margin-bottom:0;">Friction Share Over Time</h3></div>
+        ${d ? trendChart(d) : '<div class="fr-chart-empty">&nbsp;</div>'}
+      </div>
+      ${d ? `<div style="margin-top:1.4rem;">${insights(d)}</div>
+      ${compoundsBlock(d)}` : ''}
+      <div id="lfWc"></div>
+      ${d && st.error ? `<div class="fr-state" style="margin-top:1rem;">${esc(friendly(st.error))}</div>` : ''}`;
+  }
+  function paint() {
+    const main = $('#lfMain'); if (!main) return;
+    main.innerHTML = page();
+    main.classList.toggle('fr-loading', st.loading && !!st.data);
+    requestAnimationFrame(positionThumbs);
+    bindTips(); paintWc();
+  }
+  function positionThumbs() {
+    document.querySelectorAll('.fr-period-toggle').forEach(t => {
+      const a = t.querySelector('span.active'), th = t.querySelector('.period-toggle-thumb');
+      if (a && th) { th.style.left = a.offsetLeft + 'px'; th.style.width = a.offsetWidth + 'px'; }
+    });
+  }
+  // hover over a bar: the counts behind it, in a tip of our own (never the browser's grey title box)
+  function bindTips() {
+    const tip = $('#lfTip'); if (!tip || !st.data) return;
+    document.querySelectorAll('#lfMain .fr-hit').forEach(row => {
+      row.addEventListener('mousemove', e => {
+        const b = st.data.trend.buckets[Number(row.dataset.i)];
+        tip.innerHTML = `<b>${esc(bucketLabel(b.bucket, st.data.trend_period, st.data.fiscal_start_month))}</b>${st.data.areas.map(a => `<div><i style="background:${COLORS[a.key]}"></i>${b.areas[a.key].percent}% <span class="muted">(${b.areas[a.key].count})</span></div>`).join('')}<div class="muted" style="margin-top:0.3rem">${b.sessions} session${b.sessions === 1 ? '' : 's'} · ${b.identifications} identifications</div>`;
+        tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
+        tip.classList.add('show');
+      });
+      row.addEventListener('mouseleave', () => tip.classList.remove('show'));
+    });
+  }
+  function bindBubbles() {
+    const w = st.wcData, panel = $('#wcPanel'); if (!w || !panel) return;
+    const show = b => {
+      const arena = w.arenas[Number(b.dataset.ai)], area = w.areas.find(a => a.key === b.dataset.area);
+      document.querySelectorAll('#lfWc .bubble.on').forEach(x => x.classList.remove('on')); b.classList.add('on');
+      panel.innerHTML = panelHtml(arena, area); panel.style.borderLeftColor = COLORS[area.key];
+    };
+    document.querySelectorAll('#lfWc .bubble[data-ai]').forEach(b => { b.addEventListener('mouseenter', () => show(b)); b.addEventListener('focus', () => show(b)); b.addEventListener('click', () => show(b)); });
+  }
+
+  // ---- drawers (built once, kept in <body> like the Adoption filter drawer) ----
+  function ensureDrawers() {
+    if ($('#lfDdDrawer')) return;
+    const x = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    document.body.insertAdjacentHTML('beforeend', `
+      <div class="dd-overlay" id="lfDdOverlay" onclick="LF.toggleDrill()"></div>
+      <div class="dd-drawer" id="lfDdDrawer"><div class="dd-drawer-head"><h3 id="lfDdTitle">Drill Down</h3><button class="dd-close-btn" onclick="LF.toggleDrill()" aria-label="Close">${x}</button></div>
+        <div class="dd-drawer-body" id="lfDdBody"></div><div class="dd-drawer-foot"><button class="dd-go-btn" onclick="LF.applyDrill()">Go</button></div></div>
+      <div class="dd-overlay" id="lfRfOverlay" onclick="LF.toggleReflector()"></div>
+      <div class="dd-drawer" id="lfRfDrawer"><div class="dd-drawer-head"><h3>Filter By Reflector</h3><button class="dd-close-btn" onclick="LF.toggleReflector()" aria-label="Close">${x}</button></div>
+        <div class="dd-drawer-body" id="lfRfBody"></div><div class="dd-drawer-foot"><button class="dd-go-btn" onclick="LF.applyReflector()">Go</button></div></div>
+      <div class="fr-tip" id="lfTip"></div>`);
+  }
+  function drillBody() {
+    const wc = st.ddMode === 'wc', state = wc ? st.wc : st.focus;
+    const levels = (wc ? WC_LEVELS : LEVELS).filter(([l]) => st.options && (st.options[l] || []).length >= 2);
+    $('#lfDdBody').innerHTML = levels.length ? levels.map(([l, name]) => {
+      const open = state[l].length > 0;
+      return `<div class="ri-dd-item ${open ? 'open' : ''}" data-level="${l}"><button class="ri-dd-toggle" data-label="${name}" onclick="LF.toggleDD(this)">${open ? '− ' : '+ '}${name}</button>
+        <div class="ri-dd-panel">${st.options[l].map(o => `<label><input type="checkbox" value="${esc(o.key)}" ${state[l].includes(o.key) ? 'checked' : ''}>${esc(o.label)}</label>`).join('')}</div></div>`;
+    }).join('') : '<div class="ri-dd-hint">There is nothing to drill into yet — this view has only one choice at every level.</div>';
+  }
+  function reflectorBody() {
+    const chosen = st.rfMode === 'wc' ? st.wcReflectors : st.reflectors;
+    $('#lfRfBody').innerHTML = ((st.options && st.options.reflectors) || []).map(g => {
+      const open = g.reflectors.some(r => chosen.includes(r));
+      return `<div class="ri-dd-item ${open ? 'open' : ''}"><button class="ri-dd-toggle" data-label="${esc(g.capability)}" onclick="LF.toggleDD(this)">${open ? '− ' : '+ '}${esc(g.capability)}</button>
+        <div class="ri-dd-panel">${g.reflectors.map(r => `<label><input type="checkbox" value="${esc(r)}" ${chosen.includes(r) ? 'checked' : ''}>${esc(r)}</label>`).join('')}</div></div>`;
+    }).join('');
+  }
+
+  return {
+    async render() {
+      ensureDrawers();
+      $('#view').innerHTML = '<div id="lfMain"></div>';
+      paint();
+      if (!st.options) { try { st.options = await reportsApi('/api/reports/driver-report-options'); } catch (e) { st.error = e.message; } }
+      load(); loadWc();
+    },
+    setPeriod(which, k) { if (which === 'wc') { st.wcPeriod = k; loadWc(); } else { st.period = k; load(); } },
+    toggleDD(btn) { const open = btn.parentElement.classList.toggle('open'); btn.textContent = (open ? '− ' : '+ ') + btn.dataset.label; },
+    toggleDrill(mode) {
+      if (typeof mode === 'string') st.ddMode = mode;
+      $('#lfDdTitle').textContent = st.ddMode === 'wc' ? 'Drill Down: Workplace Challenge' : 'Drill Down';
+      const open = $('#lfDdDrawer').classList.toggle('open');
+      $('#lfDdOverlay').classList.toggle('open', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+      if (open) drillBody();
+    },
+    applyDrill() {
+      const state = st.ddMode === 'wc' ? st.wc : st.focus;
+      (st.ddMode === 'wc' ? WC_LEVELS : LEVELS).forEach(([l]) => {
+        const item = document.querySelector(`#lfDdBody .ri-dd-item[data-level="${l}"]`);
+        if (item) state[l] = Array.from(item.querySelectorAll('input:checked')).map(cb => cb.value);
+      });
+      LF.toggleDrill(); if (st.ddMode === 'wc') loadWc(); else load();
+    },
+    toggleReflector(mode) {
+      if (typeof mode === 'string') st.rfMode = mode;
+      const open = $('#lfRfDrawer').classList.toggle('open');
+      $('#lfRfOverlay').classList.toggle('open', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+      if (open) reflectorBody();
+    },
+    applyReflector() {
+      const picked = Array.from(document.querySelectorAll('#lfRfBody input:checked')).map(cb => cb.value);
+      if (st.rfMode === 'wc') { st.wcReflectors = picked; LF.toggleReflector(); loadWc(); } else { st.reflectors = picked; LF.toggleReflector(); load(); }
+    },
+    clearFocus() { LEVELS.forEach(([l]) => st.focus[l] = []); load(); },
+    clearWc() { WC_LEVELS.forEach(([l]) => st.wc[l] = []); loadWc(); },
+    clearWcReflectors() { st.wcReflectors = []; loadWc(); },
+    clearReflectors() { st.reflectors = []; load(); },
+    repaint() { if ($('#lfMain') && st.data) paint(); },
+  };
+})();
+let _lfResize; addEventListener('resize', () => { clearTimeout(_lfResize); _lfResize = setTimeout(() => LF.repaint(), 150); });
+
+// ════════════ REPORTS & INSIGHTS (the list of reports) ════════════
+// Fable's report list (productdemo/reports_insights.html, level 1) with Adoption Overview moved in as 01 (Kriti,
+// 2026-10-09). Only the live reports are links (a green number); the rest are faded with a gray "Coming Soon" tag.
+const REPORTS_BACK = '<button class="ri-back-btn" onclick="location.hash=\'#reports\'" style="margin-bottom:0.7rem;">&larr; Reports &amp; Insights</button>';
+const REPORT_ROWS = [
+  { label: 'Adoption Overview', desc: 'See who is using Wisdom on the GO!, how often, and where adoption is growing.', hash: '#reports/adoption' },
+  { label: 'Competency Dashboard', desc: 'Understand learner engagement, learning investment and proficiency across every organizational competency. Drill down into individual competencies to identify strengths, development priorities and adoption trends.' },
+  { label: 'Capability Landscape', desc: 'Explore the organization’s capability profile to identify where human capabilities are strongest, where they are underdeveloped, and how they are evolving across teams and employee groups.' },
+  { label: 'Learning Friction', desc: 'Identify the underlying barriers preventing employees from demonstrating critical human skills. Analyze friction across the four learning drivers to understand where development efforts should be focused.', hash: '#reports/friction' },
+  { label: 'Reflector Insights', desc: 'Analyze Reflector demand to identify the human skills most frequently diagnosed, recommended and mapped across organizational competencies and learning initiatives. Explore demand, proficiency and growth trends over time.' },
+  { label: 'Workplace Challenges', desc: 'Discover the most common workplace situations employees seek help with, helping identify recurring business challenges, emerging trends and areas requiring organizational attention.' },
+];
+function renderReportsHub() {
+  $('#view').innerHTML = `<div class="um-page-head"><div><h1 class="um-title">Reports &amp; Insights</h1></div></div>
+    <div class="report-list">${REPORT_ROWS.map((r, i) => `
+      <div class="report-row ${r.hash ? 'clickable' : 'coming-soon'}" style="border-left-color:${i % 2 === 0 ? 'var(--green)' : 'var(--night)'}" ${r.hash ? `onclick="location.hash='${r.hash}'" role="link" tabindex="0"` : ''}>
+        <div class="report-row-index">${String(i + 1).padStart(2, '0')}</div>
+        <div class="report-row-text"><h3>${esc(r.label)}</h3><p>${esc(r.desc)}</p></div>
+        ${r.hash ? '' : '<span class="report-soon-tag">Coming Soon</span>'}
+      </div>`).join('')}</div>`;
+}
+
 // ════════════ NAVIGATION, ROUTER, START-UP ════════════
 const NAV = [
-  { key: 'adoption', label: 'Adoption Overview', icon: 'dash', hash: '#adoption' },
   { key: 'users', label: 'User Management', icon: 'users', hash: '#users' },
   { key: 'learning', label: 'Learning Management', icon: 'book', hash: '#learning/assign' },
-  { key: 'reports', label: 'Reports & Insights', icon: 'chart', hash: '#soon/reports', soon: true },
+  { key: 'reports', label: 'Reports & Insights', icon: 'chart', hash: '#reports' },
   { key: 'impact', label: 'Business Impact', icon: 'trend', hash: '#soon/impact', soon: true },
 ];
 function drawNav(activeKey) {
@@ -2690,7 +3143,13 @@ async function route() {
     return renderAssign(params);
   }
   if (parts[0] === 'soon') { drawNav(parts[1]); return renderSoon(parts[1]); }
-  if (parts[0] === 'adoption') { drawNav('adoption'); return renderAdoption(); }
+  if (parts[0] === 'adoption') { location.replace('#reports/adoption'); return; }   // Adoption Overview now lives inside Reports & Insights (Kriti, 2026-10-09); old links still land there
+  if (parts[0] === 'reports') {
+    drawNav('reports');
+    if (parts[1] === 'adoption') { renderAdoption(); $('#view .um-page-head > div').insertAdjacentHTML('afterbegin', REPORTS_BACK); return; }
+    if (parts[1] === 'friction') return LF.render();
+    return renderReportsHub();
+  }
   location.hash = '#users';
 }
 // ── Profile photo + its drop-down (Kriti, 2026-10-03): same behaviour as the user page -- click your photo, the
