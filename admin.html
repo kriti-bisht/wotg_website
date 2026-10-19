@@ -679,7 +679,7 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
     </a>
     <div class="greeting">
       <div class="hello">Hello <span class="name" id="helloName"></span>,</div>
-      <div class="sub" id="helloSub">Manage users, departments and learning for your organization</div>
+      <div class="sub" id="helloSub">Manage users, business units and learning for your organization</div>
     </div>
     <div class="header-spacer"></div>
     <div class="admin-profile">
@@ -747,7 +747,7 @@ function plainRoleChoices(current) { return current === 'LND' ? ['user', 'manage
 
 const S = {
   me: null, scope: null, users: [], usersLoaded: false, glossary: null, world: null, managed: null,
-  route: '', filters: { q: '', company: '', dept: '', role: '' }, page: 1, selected: new Set(), pageSize: 20,
+  route: '', filters: { q: '', company: '', bu: '', dept: '', role: '' }, page: 1, selected: new Set(), pageSize: 20,
 };
 
 // ── tiny helpers ──────────────────────────────────────────────────────────
@@ -874,10 +874,12 @@ function showMenu(anchor, items) {
 function scopeCompanies() { return (S.scope && S.scope.companies) || []; }
 function companyByCode(code) { return scopeCompanies().find(c => c.company_code === code); }
 function companyByName(name) { const n = String(name || '').trim().toLowerCase(); return scopeCompanies().find(c => c.company_name.toLowerCase() === n); }
-function deptsOf(code) { const c = companyByCode(code); return c ? c.departments : []; }
+function busOf(code) { const c = companyByCode(code); return c ? c.bus : []; }
+// A department is typed text, so two spellings of one department must count as one: lower case, spaces collapsed.
+function deptKey(s) { return String(s || '').trim().replace(/\s+/g, ' ').toLowerCase(); }
 function level() { return S.scope ? S.scope.level : 'none'; }
 function canCreateAdmins() { return level() === 'company' || level() === 'super'; }
-function canManageDepartments() { return level() === 'company' || level() === 'super'; }
+function canManageBus() { return level() === 'company' || level() === 'super'; }
 function plainRolesFor() { return PLAIN_ROLES; }
 
 // ── location picker: country, then a searchable list of that country's cities ──
@@ -1007,10 +1009,10 @@ document.addEventListener('input', e => {
   }
 }, true);
 
-// ════════════ USER MANAGEMENT (Users | Departments | Admins) ════════════
+// ════════════ USER MANAGEMENT (Users | Business Units | Admins) ════════════
 function titleCase(s) { return String(s || '').replace(/\b([a-z])/g, (m, c) => c.toUpperCase()); }
 function umShell(active, actionsHtml) {
-  const tabs = [['users', 'Users'], ['departments', 'Departments'], ['admins', 'Admins'], ['bulk', 'Bulk User Actions']];
+  const tabs = [['users', 'Users'], ['business-units', 'Business Units'], ['admins', 'Admins'], ['bulk', 'Bulk User Actions']];
   $('#view').innerHTML = `
     <div class="um-page-head"><div><h1 class="um-title">User Management</h1>
       <div class="um-sub">${esc(umSubtitle())}</div></div><div>${actionsHtml || ''}</div></div>
@@ -1022,7 +1024,7 @@ function umSubtitle() {
   const l = level();
   if (l === 'super') return 'Every company on the platform.';
   if (l === 'company') return 'Everyone in ' + scopeCompanies().map(c => c.company_name).join(', ') + '.';
-  if (l === 'dept') return 'People in your departments.';
+  if (l === 'bu') return 'People in your business units.';
   return 'You have not been given access to any company yet.';
 }
 
@@ -1039,7 +1041,8 @@ function filteredUsers() {
   return S.users.filter(u => {
     if (q && !(String(u.name || '').toLowerCase().includes(q) || String(u.email || '').toLowerCase().includes(q) || String(u.username || '').toLowerCase().includes(q))) return false;
     if (f.company && String(u.company || '').toLowerCase() !== f.company.toLowerCase()) return false;
-    if (f.dept && String(u.department || '').split('/')[0].trim().toLowerCase() !== f.dept.toLowerCase()) return false;
+    if (f.bu && String(u.business_unit || '').trim().toLowerCase() !== f.bu.toLowerCase()) return false;
+    if (f.dept && deptKey(u.department) !== f.dept) return false;
     if (f.role && (u.access_type || 'user') !== f.role) return false;
     return true;
   });
@@ -1047,31 +1050,36 @@ function filteredUsers() {
 function drawUsers() {
   const all = S.users, comps = scopeCompanies();
   const nAdmins = all.filter(u => u.access_type === 'admin' || u.access_type === 'company_admin').length;
-  const nDepts = comps.reduce((n, c) => n + c.departments.length, 0);
-  const deptOpts = [];
-  comps.filter(c => !S.filters.company || c.company_name === S.filters.company).forEach(c => c.departments.forEach(d => { if (deptOpts.indexOf(d.department_name) === -1) deptOpts.push(d.department_name); }));
-  deptOpts.sort();
+  const nBus = comps.reduce((n, c) => n + c.bus.length, 0);
+  const buOpts = [];
+  comps.filter(c => !S.filters.company || c.company_name === S.filters.company).forEach(c => c.bus.forEach(b => { if (buOpts.indexOf(b.bu_name) === -1) buOpts.push(b.bu_name); }));
+  buOpts.sort();
+  const deptSeen = new Map();   // normalized key -> the first spelling met, for display
+  all.filter(u => !S.filters.company || u.company === S.filters.company).forEach(u => { const k = deptKey(u.department); if (k && !deptSeen.has(k)) deptSeen.set(k, String(u.department).trim().replace(/\s+/g, ' ')); });
+  const deptOpts = Array.from(deptSeen.entries()).sort((a, b) => a[1].localeCompare(b[1]));
   $('#umBody').innerHTML = `
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-icon teal">${icon('usersW')}</div><div class="stat-body"><div class="stat-num">${all.length.toLocaleString()}</div><div class="stat-label">${level() === 'super' ? 'Total Users' : 'People you manage'}</div></div></div>
       <div class="stat-card"><div class="stat-icon gold">${icon('shield')}</div><div class="stat-body"><div class="stat-num">${nAdmins}</div><div class="stat-label">Admins</div></div></div>
       <div class="stat-card"><div class="stat-icon green">${icon('building')}</div><div class="stat-body"><div class="stat-num">${comps.length}</div><div class="stat-label">${comps.length === 1 ? 'Company' : 'Companies'}</div></div></div>
-      <div class="stat-card"><div class="stat-icon navy">${icon('grid')}</div><div class="stat-body"><div class="stat-num">${nDepts}</div><div class="stat-label">Departments</div></div></div>
+      <div class="stat-card"><div class="stat-icon navy">${icon('grid')}</div><div class="stat-body"><div class="stat-num">${nBus}</div><div class="stat-label">Business Units</div></div></div>
     </div>
     <div class="filter-bar">
       <div class="um-search-wrap">${icon('search').replace('<svg', '<svg class="um-search-icon"')}<input type="text" class="um-search" id="fSearch" placeholder="Search by name, email or username" value="${esc(S.filters.q)}"></div>
       ${comps.length > 1 ? `<div class="filter-select-wrap"><select class="filter-select" id="fCompany"><option value="">All Companies</option>${comps.map(c => `<option ${S.filters.company === c.company_name ? 'selected' : ''} value="${esc(c.company_name)}">${esc(c.company_name)}</option>`).join('')}</select></div>` : ''}
-      <div class="filter-select-wrap"><select class="filter-select" id="fDept"><option value="">All Departments</option>${deptOpts.map(d => `<option ${S.filters.dept === d ? 'selected' : ''} value="${esc(d)}">${esc(titleCase(d))}</option>`).join('')}</select></div>
+      <div class="filter-select-wrap"><select class="filter-select" id="fBu"><option value="">All Business Units</option>${buOpts.map(b => `<option ${S.filters.bu === b ? 'selected' : ''} value="${esc(b)}">${esc(titleCase(b))}</option>`).join('')}</select></div>
+      <div class="filter-select-wrap"><select class="filter-select" id="fDept"><option value="">All Departments</option>${deptOpts.map(d => `<option ${S.filters.dept === d[0] ? 'selected' : ''} value="${esc(d[0])}">${esc(d[1])}</option>`).join('')}</select></div>
       <div class="filter-select-wrap"><select class="filter-select" id="fRole"><option value="">All Roles</option>${['user', 'manager'].concat(all.some(u => u.access_type === 'LND') ? ['LND'] : [], ['admin', 'company_admin', 'super_admin']).map(r => `<option ${S.filters.role === r ? 'selected' : ''} value="${r}">${ROLE_LABEL[r]}</option>`).join('')}</select></div>
       <div class="um-bar-actions">
         <button class="btn-outline" id="btnExport">${icon('down')} Export</button>
       </div>
     </div>
     <div class="um-table-card"><div class="um-table-scroll"><table class="um-table"><thead><tr>
-      <th>User</th><th>Company</th><th>Department</th><th>Role</th><th style="width:44px"></th></tr></thead>
+      <th>User</th><th>Company</th><th>Business unit</th><th>Department</th><th>Role</th><th style="width:44px"></th></tr></thead>
       <tbody id="umRows"></tbody></table></div><div class="um-pagination" id="umPag"></div></div>`;
   $('#fSearch').oninput = e => { S.filters.q = e.target.value; S.page = 1; drawRows(); };
-  const fc = $('#fCompany'); if (fc) fc.onchange = e => { S.filters.company = e.target.value; S.filters.dept = ''; S.page = 1; drawUsers(); };
+  const fc = $('#fCompany'); if (fc) fc.onchange = e => { S.filters.company = e.target.value; S.filters.bu = ''; S.filters.dept = ''; S.page = 1; drawUsers(); };
+  $('#fBu').onchange = e => { S.filters.bu = e.target.value; S.page = 1; drawRows(); };
   $('#fDept').onchange = e => { S.filters.dept = e.target.value; S.page = 1; drawRows(); };
   $('#fRole').onchange = e => { S.filters.role = e.target.value; S.page = 1; drawRows(); };
   $('#btnExport').onclick = exportUsers;
@@ -1085,10 +1093,10 @@ function drawRows() {
   tb.innerHTML = slice.length ? slice.map(u => {
     return `<tr class="clickable" data-id="${esc(u.user_id)}">
       <td><div class="um-user-cell">${avatarHtml(u.name)}<div><div class="um-user-name">${esc(u.name || '(no name)')}</div><div class="um-user-email">${esc(u.email || u.username || '')}</div></div></div></td>
-      <td>${esc(u.company || '—')}</td><td>${esc(titleCase(String(u.department || '').split('/')[0].trim()) || '—')}</td>
+      <td>${esc(u.company || '—')}</td><td>${esc(titleCase(String(u.business_unit || '').trim()) || '—')}</td><td>${esc(String(u.department || '').trim() || '—')}</td>
       <td>${roleBadge(u.access_type)}${(u.access_type !== 'manager' && String(u.is_people_manager) === 'true') ? ' <span class="chip">People manager</span>' : ''}</td>
       <td data-stop="1"><button class="um-action-btn" data-menu="${esc(u.user_id)}" aria-label="Actions for ${esc(u.name)}">${icon('dots')}</button></td></tr>`;
-  }).join('') : `<tr><td colspan="5" class="empty-row">${S.users.length ? 'No one matches those filters.' : 'No people to show yet. Add someone with “+ Add User”.'}</td></tr>`;
+  }).join('') : `<tr><td colspan="6" class="empty-row">${S.users.length ? 'No one matches those filters.' : 'No people to show yet. Add someone with “+ Add User”.'}</td></tr>`;
   $$('tr.clickable', tb).forEach(tr => tr.onclick = e => { if (e.target.closest('[data-stop]')) return; openEditUser(tr.dataset.id); });
   $$('[data-menu]', tb).forEach(b => b.onclick = e => { e.stopPropagation(); rowMenu(b, S.users.find(u => u.user_id === b.dataset.menu)); });
   $('#umPag').innerHTML = `<div class="um-pag-info">${total ? `Showing ${(S.page - 1) * per + 1}–${Math.min(S.page * per, total)} of ${total.toLocaleString()} people` : ''}</div>
@@ -1109,7 +1117,7 @@ function rowMenu(anchor, u) {
   ]);
 }
 function exportUsers() {
-  const rows = [['Name', 'Email', 'Username', 'Company', 'Department', 'Role']].concat(filteredUsers().map(u => [u.name, u.email, u.username, u.company, u.department, ROLE_LABEL[u.access_type || 'user']]));
+  const rows = [['Name', 'Email', 'Username', 'Company', 'Business unit', 'Department', 'Role']].concat(filteredUsers().map(u => [u.name, u.email, u.username, u.company, u.business_unit, u.department, ROLE_LABEL[u.access_type || 'user']]));
   downloadText('wotg-users.csv', toCsv(rows));
 }
 async function resendInvite(u) {
@@ -1123,7 +1131,7 @@ async function openAddUser() {
   if (!companies.length) { toast('You have not been given access to a company yet. Ask the person who set you up.', 'warn'); return; }
   const m = openModal({ title: 'Add a person', sub: 'They must choose their own password the first time they sign in.', size: 'wide', sticky: true });
   const roleOpts = [['user', 'User'], ['manager', 'Manager']];
-  if (canCreateAdmins()) roleOpts.push(['admin', 'Admin (specific departments)']);
+  if (canCreateAdmins()) roleOpts.push(['admin', 'Admin (specific business units)']);
   if (level() === 'super') roleOpts.push(['company_admin', 'Company Admin (whole company)']);
   m.body.innerHTML = `<div class="form-grid">
     <div class="field"><label>Full name <span class="req">*</span></label><input type="text" id="au_name"><div class="err hidden"></div></div>
@@ -1135,35 +1143,36 @@ async function openAddUser() {
     <div class="field"><label>Manager's name <span class="req">*</span></label><input type="text" id="au_mname" placeholder="Who they report to"><div class="help">If nobody is above them, enter their own name and email.</div><div class="err hidden"></div></div>
     <div class="field"><label>Manager's email <span class="req">*</span></label><input type="email" id="au_memail" placeholder="manager@company.com" data-lower><div class="err hidden"></div></div>
     <div class="field"><label>Company <span class="req">*</span></label><select id="au_company">${companies.length > 1 ? '<option value="">Select company…</option>' : ''}${companies.map(c => `<option value="${esc(c.company_code)}">${esc(c.company_name)}</option>`).join('')}</select><div class="err hidden"></div></div>
-    <div class="field"><label>Department <span class="req">*</span></label><select id="au_dept"></select><div class="help" id="au_dept_code"></div><div class="err hidden"></div></div>
+    <div class="field"><label>Business unit <span class="req">*</span></label><select id="au_bu"></select><div class="help" id="au_bu_code"></div><div class="err hidden"></div></div>
+    <div class="field"><label>Department <span class="req">*</span></label><input type="text" id="au_dept" maxlength="100" placeholder="e.g. Sales"><div class="help">Type it the same way for everyone in the department. Reports group people by what you type: “Sales” and “sales” count as one, but “Sales” and “Sales Team” do not.</div><div class="err hidden"></div></div>
     <div class="full" id="au_loc"></div>
     <div class="field"><label>Access level</label><select id="au_role">${roleOpts.map(r => `<option value="${r[0]}">${r[1]}</option>`).join('')}</select></div>
     <div class="field"><label>Password <span class="req">*</span></label><select id="au_pwmode"><option value="in_file">I will type a password</option><option value="email">Email them an invite</option></select><div class="help" id="au_pwhelp"></div></div>
     <div class="field full" id="au_pwbox"><label>Temporary password (6+ characters)</label><input type="password" id="au_pw" autocomplete="new-password"><div class="err hidden"></div></div>
-    <div class="field full hidden" id="au_admin_depts"><label>Departments this Admin will manage</label><div class="check-list" id="au_admin_depts_list"></div></div>
+    <div class="field full hidden" id="au_admin_bus"><label>Business units this Admin will manage</label><div class="check-list" id="au_admin_bus_list"></div></div>
     <div class="field full hidden" id="au_admin_cos"><label>Companies this Company Admin will manage</label><div class="check-list" id="au_admin_cos_list"></div></div>
   </div>`;
   const loc = await locationPicker($('#au_loc'), {});
-  const syncDepts = () => {
-    const code = $('#au_company').value, ds = deptsOf(code);
-    $('#au_dept').innerHTML = (ds.length ? '<option value="">Select department…</option>' : '<option value="">(no departments yet)</option>') + ds.map(d => `<option value="${esc(d.department_code)}">${esc(titleCase(d.department_name))}</option>`).join('');
-    $('#au_dept_code').textContent = '';
-    if (ds.length === 1) { $('#au_dept').value = ds[0].department_code; showCode(); }
+  const syncBus = () => {
+    const code = $('#au_company').value, bs = busOf(code);
+    $('#au_bu').innerHTML = (bs.length ? '<option value="">Select business unit…</option>' : '<option value="">(no business units yet)</option>') + bs.map(b => `<option value="${esc(b.bu_code)}">${esc(titleCase(b.bu_name))}</option>`).join('');
+    $('#au_bu_code').textContent = '';
+    if (bs.length === 1) { $('#au_bu').value = bs[0].bu_code; showCode(); }
     syncAdminLists();
   };
-  const showCode = () => { const v = $('#au_dept').value; $('#au_dept_code').innerHTML = v ? `Department code: <span class="code-pill">${esc(v)}</span>` : ''; };
+  const showCode = () => { const v = $('#au_bu').value; $('#au_bu_code').innerHTML = v ? `Business unit code: <span class="code-pill">${esc(v)}</span>` : ''; };
   const syncAdminLists = () => {
     const role = $('#au_role').value;
-    $('#au_admin_depts').classList.toggle('hidden', role !== 'admin');
+    $('#au_admin_bus').classList.toggle('hidden', role !== 'admin');
     $('#au_admin_cos').classList.toggle('hidden', role !== 'company_admin');
     if (role === 'admin') {
-      $('#au_admin_depts_list').innerHTML = companies.map(c => `<div class="grp">${esc(c.company_name)}</div>` + c.departments.map(d => `<label><input type="checkbox" class="gd" data-c="${esc(c.company_code)}" data-d="${esc(d.department_code)}" ${(c.company_code === $('#au_company').value && d.department_code === $('#au_dept').value) ? 'checked' : ''}> ${esc(titleCase(d.department_name))}</label>`).join('')).join('');
+      $('#au_admin_bus_list').innerHTML = companies.map(c => `<div class="grp">${esc(c.company_name)}</div>` + c.bus.map(b => `<label><input type="checkbox" class="gd" data-c="${esc(c.company_code)}" data-d="${esc(b.bu_code)}" ${(c.company_code === $('#au_company').value && b.bu_code === $('#au_bu').value) ? 'checked' : ''}> ${esc(titleCase(b.bu_name))}</label>`).join('')).join('');
     }
     if (role === 'company_admin') {
       $('#au_admin_cos_list').innerHTML = companies.map(c => `<label><input type="checkbox" class="gc" data-c="${esc(c.company_code)}" ${c.company_code === $('#au_company').value ? 'checked' : ''}> ${esc(c.company_name)}</label>`).join('');
     }
   };
-  $('#au_company').onchange = syncDepts; $('#au_dept').onchange = () => { showCode(); syncAdminLists(); }; $('#au_role').onchange = syncAdminLists;
+  $('#au_company').onchange = syncBus; $('#au_bu').onchange = () => { showCode(); syncAdminLists(); }; $('#au_role').onchange = syncAdminLists;
   $('#au_pron').onchange = () => $('#au_pron_other').classList.toggle('hidden', $('#au_pron').value !== '__other');
   // "Is a people manager?" and the Manager access level are one fact: changing either changes the other.
   const setPm = v => { const r = $('input[name=au_pm][value=' + v + ']', m.body); if (r) r.checked = true; };
@@ -1176,7 +1185,7 @@ async function openAddUser() {
     $('#au_pwbox').classList.toggle('hidden', email);
     $('#au_pwhelp').textContent = email ? 'They get an email with a temporary password and the sign-in link. You never see the password.' : 'You tell them the password yourself.';
   };
-  $('#au_pwmode').onchange = syncPw; syncPw(); syncDepts();
+  $('#au_pwmode').onchange = syncPw; syncPw(); syncBus();
 
   const fieldErr = (id, msg) => { const f = $('#' + id).closest('.field'); f.classList.toggle('invalid', !!msg); const e = $('.err', f); if (e) { e.textContent = msg || ''; e.classList.toggle('hidden', !msg); } return !msg; };
   setFoot(m, [
@@ -1194,13 +1203,14 @@ async function openAddUser() {
       ok = fieldErr('au_mname', v('au_mname') ? '' : "Please enter their manager's name.") && ok;
       ok = fieldErr('au_memail', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('au_memail')) ? '' : "Please enter their manager's email address.") && ok;
       ok = fieldErr('au_company', $('#au_company').value ? '' : 'Please choose a company.') && ok;
-      ok = fieldErr('au_dept', $('#au_dept').value ? '' : 'Please choose a department.') && ok;
+      ok = fieldErr('au_bu', $('#au_bu').value ? '' : 'Please choose a business unit.') && ok;
+      ok = fieldErr('au_dept', v('au_dept') ? '' : 'Please type the department.') && ok;
       ok = loc.validate() && ok;
       const mode = $('#au_pwmode').value;
       if (mode === 'in_file') ok = fieldErr('au_pw', $('#au_pw').value.length >= 6 ? '' : 'The password must be at least 6 characters.') && ok;
       const role = $('#au_role').value;
-      let admin_departments = [], admin_companies = [];
-      if (role === 'admin') { admin_departments = $$('.gd:checked', m.body).map(c => ({ company_code: c.dataset.c, department_code: c.dataset.d })); if (!admin_departments.length) { toast('Pick at least one department for this Admin.', 'warn'); ok = false; } }
+      let admin_bus = [], admin_companies = [];
+      if (role === 'admin') { admin_bus = $$('.gd:checked', m.body).map(c => ({ company_code: c.dataset.c, bu_code: c.dataset.d })); if (!admin_bus.length) { toast('Pick at least one business unit for this Admin.', 'warn'); ok = false; } }
       if (role === 'company_admin') { admin_companies = $$('.gc:checked', m.body).map(c => c.dataset.c); if (!admin_companies.length) { toast('Pick at least one company for this Company Admin.', 'warn'); ok = false; } }
       if (!ok) return;
       const lv = loc.getValue(), toEmail = v('au_email');
@@ -1208,8 +1218,8 @@ async function openAddUser() {
       try {
         const r = await api('/api/admin/create-user', { json: {
           password: mode === 'in_file' ? $('#au_pw').value : '', password_mode: mode, email: v('au_email'), name: v('au_name'),
-          company_code: $('#au_company').value, department_code: $('#au_dept').value, city: lv.city, country: lv.country, designation: v('au_desig'),
-          pronouns: pron, is_people_manager: pm === 'yes', manager_name: v('au_mname'), manager_email: v('au_memail'), access_type: role, admin_companies, admin_departments } });
+          company_code: $('#au_company').value, bu_code: $('#au_bu').value, department: v('au_dept'), city: lv.city, country: lv.country, designation: v('au_desig'),
+          pronouns: pron, is_people_manager: pm === 'yes', manager_name: v('au_mname'), manager_email: v('au_memail'), access_type: role, admin_companies, admin_bus } });
         m.close();
         if (r.invite === 'failed') toast('Account created, but the invite email could not be sent. Use “Resend invite email” on their row.', 'warn');
         else toast(mode === 'email' ? 'Account created. An invite email is on its way to ' + toEmail + '.' : 'Account created. They will choose their own password at first sign-in.');
@@ -1226,9 +1236,9 @@ async function openEditUser(userId) {
   try { u = await api('/api/admin/user-lookup?user_id=' + encodeURIComponent(userId)); } catch (e) { m.close(); toast(e.message, 'error'); return; }
   const canEdit = (u.allowed || []).indexOf('edit') !== -1;
   const co = companyByName(u.company);
-  const ds = co ? co.departments : [];
-  const curDept = String(u.department || '');
-  const deptNames = ds.map(d => d.department_name);
+  const bs = co ? co.bus : [];
+  const curBu = String(u.business_unit || '').trim().toLowerCase();
+  const buNames = bs.map(b => b.bu_name);
   const isPlain = PLAIN_ROLES.indexOf(u.access_type || 'user') !== -1;
   const dis = canEdit ? '' : 'disabled';
   const isMgr = u.is_people_manager === true || (u.is_people_manager == null && u.access_type === 'manager');
@@ -1237,7 +1247,7 @@ async function openEditUser(userId) {
   const histLine = h => {
     const d = h.details || {}; let extra = '';
     if (h.action === 'edited') extra = Object.keys(d).length ? ' — ' + Object.keys(d).map(k => k.replace(/_/g, ' ')).join(', ') : '';
-    else if (h.action === 'moved department' && d.department) extra = ' — to ' + titleCase(d.department[1]);
+    else if (h.action === 'moved BU' && d.business_unit) extra = ' — to ' + titleCase(d.business_unit[1]);
     else if (h.action === 'changed manager' && d.new_manager) extra = ' — to ' + d.new_manager[0];
     else if (h.action === 'changed admin role' && d.role) extra = ' — ' + d.role;
     return `<li>${esc(fmtWhen(h.at))} · <strong>${esc(h.actor_name)}</strong> ${esc(h.action)}${esc(extra)}</li>`;
@@ -1247,7 +1257,8 @@ async function openEditUser(userId) {
   m.body.innerHTML = `<div class="form-grid">
     <div class="field"><label>Company</label><input type="text" value="${esc(u.company)}" disabled></div>
     <div class="field"><label>Username</label><input type="text" value="${esc(u.username || u.email)}" disabled><div class="help">The username can't be changed.</div></div>
-    <div class="field"><label>Department</label><select id="eu_dept" ${dis}>${deptNames.indexOf(curDept.split('/')[0].trim().toLowerCase()) === -1 ? `<option value="__keep">${esc(curDept || '(none)')}</option>` : ''}${ds.map(d => `<option value="${esc(d.department_name)}" ${d.department_name === curDept.split('/')[0].trim().toLowerCase() ? 'selected' : ''}>${esc(titleCase(d.department_name))}</option>`).join('')}</select>${canEdit ? '<div class="help">Moving them changes their department right away. You can only choose departments you have access to.</div>' : ''}</div>
+    <div class="field"><label>Business unit</label><select id="eu_bu" ${dis}>${buNames.indexOf(curBu) === -1 ? `<option value="__keep">${esc(u.business_unit || '(none)')}</option>` : ''}${bs.map(b => `<option value="${esc(b.bu_name)}" ${b.bu_name === curBu ? 'selected' : ''}>${esc(titleCase(b.bu_name))}</option>`).join('')}</select>${canEdit ? '<div class="help">Moving them changes their business unit right away. You can only choose business units you have access to.</div>' : ''}</div>
+    <div class="field"><label>Department</label><input type="text" id="eu_dept" maxlength="100" value="${esc(u.department)}" ${dis}>${canEdit ? '<div class="help">Reports group people by what is typed here: “Sales” and “sales” count as one, but “Sales” and “Sales Team” do not.</div>' : ''}</div>
     <div class="field"><label>Designation</label><input type="text" id="eu_desig" value="${esc(u.designation)}" ${dis}></div>
     <div class="field"><label>Access level</label>${isPlain ? `<select id="eu_role" ${dis}>${plainRoleChoices(u.access_type || 'user').map(r => `<option value="${r}" ${r === (u.access_type || 'user') ? 'selected' : ''}>${ROLE_LABEL[r]}</option>`).join('')}</select>` : `<input type="text" value="${esc(ROLE_LABEL[u.access_type] || u.access_type)} (change it from “Admin role…”)" disabled>`}</div>
     <div class="field"><label>Is a people manager?</label><div class="radio-row"><label><input type="radio" name="eu_pm" value="yes" ${isMgr ? 'checked' : ''} ${dis}> Yes</label><label><input type="radio" name="eu_pm" value="no" ${u.is_people_manager === false ? 'checked' : ''} ${dis}> No</label></div><div class="help">Yes and the Manager access level always go together.</div></div>
@@ -1271,7 +1282,7 @@ async function openEditUser(userId) {
   const buttons = [{ label: 'Close', onClick: () => m.close() }];
   if (canEdit) buttons.push({ label: 'Save changes', cls: 'btn-primary-add', async onClick(btn) {
     const pm = ($('input[name=eu_pm]:checked', m.body) || {}).value;
-    const dsel = $('#eu_dept').value;
+    const bsel = $('#eu_bu').value;
     const lv = loc.getValue();
     if (loc.touched() && !loc.validate()) return;
     const fe = (id, msg) => { const f = $('#' + id).closest('.field'); f.classList.toggle('invalid', !!msg); const e = $('.err', f); e.textContent = msg || ''; e.classList.toggle('hidden', !msg); return !msg; };
@@ -1282,8 +1293,9 @@ async function openEditUser(userId) {
       user_id: u.user_id, job_description: $('#eu_jd').value, company_context: $('#eu_ctx').value, is_people_manager: pm === 'yes' ? true : pm === 'no' ? false : null,
       additional_notes: $('#eu_notes').value, access_type: isPlain ? $('#eu_role').value : u.access_type,
       manager_name: $('#eu_mname').value, manager_email: $('#eu_memail').value,
-      department: dsel === '__keep' ? curDept : dsel, designation: $('#eu_desig').value, country: loc.touched() ? lv.country : u.country,
+      department: $('#eu_dept').value.trim(), designation: $('#eu_desig').value, country: loc.touched() ? lv.country : u.country,
     };
+    if (bsel !== '__keep') body.business_unit = bsel;   // left out -> the server keeps the stored business unit
     if (loc.touched()) body.city = lv.city;       // untouched -> city left out, the server keeps the stored location
     btn.disabled = true; btn.textContent = 'Saving…';
     try { await api('/api/admin/user-update', { json: body }); btn.textContent = 'Saved'; btn.classList.add('btn-done'); toast('Saved.'); await new Promise(r => setTimeout(r, 700)); m.close(); await loadUsers(true); if (S.route === 'users') drawRows(); }
@@ -1319,12 +1331,12 @@ async function deleteOne(u) {
 }
 // ── CSV import ────────────────────────────────────────────────────────────
 function csvColumns(mode) {
-  const base = ['name', 'email', 'company_code', 'department_code', 'designation', 'city', 'country', 'pronouns', 'is_people_manager', 'manager_name', 'manager_email'];
+  const base = ['name', 'email', 'company_code', 'bu_code', 'department', 'designation', 'city', 'country', 'pronouns', 'is_people_manager', 'manager_name', 'manager_email'];
   return mode === 'in_file' ? base.concat(['password']) : base;
 }
 function openImportCsv() {
   const comps = scopeCompanies();
-  const m = openModal({ title: 'Import people from a CSV', size: 'wide', sticky: true, sub: 'One row per person. Departments must already exist (add them on the Departments tab first).' });
+  const m = openModal({ title: 'Import people from a CSV', size: 'wide', sticky: true, sub: 'One row per person. Business units must already exist (add them on the Business Units tab first).' });
   m.body.innerHTML = `
     <div class="form-grid">
       <div class="field"><label>How do people get their password? <span class="req">*</span></label><select id="im_mode"><option value="email">Email each person an invite (leave the password column out or blank)</option><option value="in_file">The passwords are in the file</option></select><div class="help" id="im_help"></div></div>
@@ -1332,18 +1344,18 @@ function openImportCsv() {
     </div>
     <div class="panel" style="margin:1rem 0 0;box-shadow:none;border:1px solid var(--line)"><h3>Columns this file needs</h3><div class="hint" id="im_cols"></div>
       <button class="btn-outline" id="im_tpl">${icon('down')} Download a template</button>
-      <details style="margin-top:0.9rem"><summary style="cursor:pointer;font-weight:600;font-size:0.84rem">Your company and department codes</summary>
-        <table class="result-table" style="margin-top:0.6rem"><thead><tr><th>Company</th><th>Company code</th><th>Department</th><th>Department code</th></tr></thead><tbody>${comps.map(c => c.departments.map(d => `<tr><td>${esc(c.company_name)}</td><td><span class="code-pill">${esc(c.company_code)}</span></td><td>${esc(titleCase(d.department_name))}</td><td><span class="code-pill">${esc(d.department_code)}</span></td></tr>`).join('')).join('')}</tbody></table></details></div>
+      <details style="margin-top:0.9rem"><summary style="cursor:pointer;font-weight:600;font-size:0.84rem">Your company and business unit codes</summary>
+        <table class="result-table" style="margin-top:0.6rem"><thead><tr><th>Company</th><th>Company code</th><th>Business unit</th><th>Business unit code</th></tr></thead><tbody>${comps.map(c => c.bus.map(b => `<tr><td>${esc(c.company_name)}</td><td><span class="code-pill">${esc(c.company_code)}</span></td><td>${esc(titleCase(b.bu_name))}</td><td><span class="code-pill">${esc(b.bu_code)}</span></td></tr>`).join('')).join('')}</tbody></table></details></div>
     <div id="im_result" style="margin-top:1rem"></div>`;
   const sync = () => {
     const mode = $('#im_mode').value;
     $('#im_help').textContent = mode === 'email' ? 'Each person gets an email with a temporary password. You never see the passwords.' : 'Every row must have a password of at least 6 characters.';
-    $('#im_cols').innerHTML = csvColumns(mode).map(c => `<span class="chip mono">${c}</span>`).join('') + '<br><span style="display:block;margin-top:0.5rem">The username is set to the email address automatically, so there is no username column. Use the codes (not names) for company and department. <span class="mono">is_people_manager</span> is yes or no. Every row needs a manager name and email (someone with nobody above them uses their own). Pronouns: she/her, he/him, they/them or your own. City and country go in separate columns.</span>';
+    $('#im_cols').innerHTML = csvColumns(mode).map(c => `<span class="chip mono">${c}</span>`).join('') + '<br><span style="display:block;margin-top:0.5rem">The username is set to the email address automatically, so there is no username column. Use the codes (not names) for company and business unit. The department is typed in the same way for everyone in it: reports group people by what is typed (“Sales” and “sales” count as one, but “Sales” and “Sales Team” do not). <span class="mono">is_people_manager</span> is yes or no. Every row needs a manager name and email (someone with nobody above them uses their own). Pronouns: she/her, he/him, they/them or your own. City and country go in separate columns.</span>';
   };
   $('#im_mode').onchange = sync; sync();
   $('#im_tpl').onclick = () => {
-    const mode = $('#im_mode').value, cols = csvColumns(mode), c0 = comps[0], d0 = c0 && c0.departments[0];
-    const sample = { name: 'Priya Sharma', email: 'priya.sharma@company.com', company_code: c0 ? c0.company_code : '', department_code: d0 ? d0.department_code : '', designation: 'Analyst', city: 'Pune', country: 'India', pronouns: 'she/her', is_people_manager: 'no', manager_name: 'Asha Rao', manager_email: 'asha.rao@company.com', password: mode === 'in_file' ? 'ChangeMe123' : '' };
+    const mode = $('#im_mode').value, cols = csvColumns(mode), c0 = comps[0], b0 = c0 && c0.bus[0];
+    const sample = { name: 'Priya Sharma', email: 'priya.sharma@company.com', company_code: c0 ? c0.company_code : '', bu_code: b0 ? b0.bu_code : '', department: 'Sales', designation: 'Analyst', city: 'Pune', country: 'India', pronouns: 'she/her', is_people_manager: 'no', manager_name: 'Asha Rao', manager_email: 'asha.rao@company.com', password: mode === 'in_file' ? 'ChangeMe123' : '' };
     downloadText('wotg-users-template.csv', toCsv([cols, cols.map(c => sample[c])]));
   };
   setFoot(m, [{ label: 'Close', onClick: () => m.close() }, { label: 'Upload', cls: 'btn-primary-add', id: 'im_go', async onClick(btn) {
@@ -1369,66 +1381,66 @@ async function openRoleModal(u) {
   const cur = u.access_type || 'user';
   const m = openModal({ title: 'Admin role — ' + (u.name || ''), size: 'narrow', sticky: true, sub: 'Choose what ' + (u.name || 'this person') + ' can manage.' });
   const roles = [['user', 'Not an admin (regular user)']];
-  roles.push(['admin', 'Admin — specific departments']);
+  roles.push(['admin', 'Admin — specific business units']);
   if (level() === 'super') roles.push(['company_admin', 'Company Admin — a whole company']);
   const roleVal = ['admin', 'company_admin'].indexOf(cur) !== -1 ? cur : 'user';
   m.body.innerHTML = `<div class="field"><label>Role</label><select id="rl_role">${roles.map(r => `<option value="${r[0]}" ${r[0] === roleVal ? 'selected' : ''}>${r[1]}</option>`).join('')}</select></div>
-    <div class="field" id="rl_depts" style="margin-top:0.9rem"><label>Departments</label><div class="check-list">${comps.map(c => `<div class="grp">${esc(c.company_name)}</div>` + c.departments.map(d => `<label><input type="checkbox" class="rd" data-c="${esc(c.company_code)}" data-d="${esc(d.department_code)}" ${grants.some(g => g.company_code === c.company_code && g.department_code === d.department_code) ? 'checked' : ''}> ${esc(titleCase(d.department_name))}</label>`).join('')).join('')}</div></div>
-    <div class="field" id="rl_cos" style="margin-top:0.9rem"><label>Companies</label><div class="check-list">${comps.map(c => `<label><input type="checkbox" class="rc" data-c="${esc(c.company_code)}" ${grants.some(g => g.company_code === c.company_code && !g.department_code) ? 'checked' : ''}> ${esc(c.company_name)}</label>`).join('')}</div></div>`;
-  const sync = () => { const r = $('#rl_role').value; $('#rl_depts').classList.toggle('hidden', r !== 'admin'); $('#rl_cos').classList.toggle('hidden', r !== 'company_admin'); };
+    <div class="field" id="rl_bus" style="margin-top:0.9rem"><label>Business units</label><div class="check-list">${comps.map(c => `<div class="grp">${esc(c.company_name)}</div>` + c.bus.map(b => `<label><input type="checkbox" class="rd" data-c="${esc(c.company_code)}" data-d="${esc(b.bu_code)}" ${grants.some(g => g.company_code === c.company_code && g.bu_code === b.bu_code) ? 'checked' : ''}> ${esc(titleCase(b.bu_name))}</label>`).join('')).join('')}</div></div>
+    <div class="field" id="rl_cos" style="margin-top:0.9rem"><label>Companies</label><div class="check-list">${comps.map(c => `<label><input type="checkbox" class="rc" data-c="${esc(c.company_code)}" ${grants.some(g => g.company_code === c.company_code && !g.bu_code) ? 'checked' : ''}> ${esc(c.company_name)}</label>`).join('')}</div></div>`;
+  const sync = () => { const r = $('#rl_role').value; $('#rl_bus').classList.toggle('hidden', r !== 'admin'); $('#rl_cos').classList.toggle('hidden', r !== 'company_admin'); };
   $('#rl_role').onchange = sync; sync();
   setFoot(m, [{ label: 'Cancel', onClick: () => m.close() }, { label: 'Save', cls: 'btn-primary-add', async onClick(btn) {
     const role = $('#rl_role').value;
-    const departments = $$('.rd:checked', m.body).map(c => ({ company_code: c.dataset.c, department_code: c.dataset.d }));
+    const bus = $$('.rd:checked', m.body).map(c => ({ company_code: c.dataset.c, bu_code: c.dataset.d }));
     const companies = $$('.rc:checked', m.body).map(c => c.dataset.c);
-    if (role === 'admin' && !departments.length) { toast('Pick at least one department.', 'warn'); return; }
+    if (role === 'admin' && !bus.length) { toast('Pick at least one business unit.', 'warn'); return; }
     if (role === 'company_admin' && !companies.length) { toast('Pick at least one company.', 'warn'); return; }
     btn.disabled = true;
-    try { await api('/api/admin/set-admin-role', { json: { user_id: u.user_id, role, companies: role === 'company_admin' ? companies : [], departments: role === 'admin' ? departments : [] } });
+    try { await api('/api/admin/set-admin-role', { json: { user_id: u.user_id, role, companies: role === 'company_admin' ? companies : [], bus: role === 'admin' ? bus : [] } });
       m.close(); toast('Saved.'); S.managed = null; await loadUsers(true); if (S.route === 'users') drawUsers(); if (S.route === 'admins') renderAdmins(); }
     catch (e) { toast(e.message, 'error'); btn.disabled = false; }
   } }]);
 }
 
-// ════════════ DEPARTMENTS tab ════════════
-async function renderDepartments() {
-  const can = canManageDepartments();
-  umShell('departments', can ? `<button class="btn-primary-add" id="btnAddDept">+ Add Department</button>` : '');
-  if (!S.deptCompany || !companyByCode(S.deptCompany)) S.deptCompany = (scopeCompanies()[0] || {}).company_code || '';
-  drawDepartments();
-  if (can && $('#btnAddDept')) $('#btnAddDept').onclick = openAddDepartment;
+// ════════════ BUSINESS UNITS tab ════════════
+async function renderBusinessUnits() {
+  const can = canManageBus();
+  umShell('business-units', can ? `<button class="btn-primary-add" id="btnAddBu">+ Add Business Unit</button>` : '');
+  if (!S.buCompany || !companyByCode(S.buCompany)) S.buCompany = (scopeCompanies()[0] || {}).company_code || '';
+  drawBusinessUnits();
+  if (can && $('#btnAddBu')) $('#btnAddBu').onclick = openAddBu;
 }
-function drawDepartments() {
-  const comps = scopeCompanies(), can = canManageDepartments();
+function drawBusinessUnits() {
+  const comps = scopeCompanies(), can = canManageBus();
   if (!comps.length) { $('#umBody').innerHTML = '<div class="banner">You have not been given access to a company yet.</div>'; return; }
-  const co = companyByCode(S.deptCompany) || comps[0];
-  const ds = co.departments.slice().sort((a, b) => a.department_name.localeCompare(b.department_name));
+  const co = companyByCode(S.buCompany) || comps[0];
+  const ds = co.bus.slice().sort((a, b) => a.bu_name.localeCompare(b.bu_name));
   const missing = ds.filter(d => !(d.description || '').trim()).length;
   $('#umBody').innerHTML = `
-    <div class="banner info">Set up departments <strong>first</strong>, then add people. Every department gets a short code the moment it is created — share that code with whoever uploads people (the CSV needs it).${can ? '' : ' Only Company Admins can add or remove departments.'}</div>
-    ${missing && can ? `<div class="banner"><strong>${missing} ${missing === 1 ? 'department needs' : 'departments need'} a short description.</strong> Use “Edit description” on each.</div>` : ''}
-    ${comps.length > 1 ? `<div class="filter-bar" style="margin-bottom:1rem"><div class="filter-select-wrap"><select class="filter-select" id="dpCompany">${comps.map(c => `<option value="${esc(c.company_code)}" ${c.company_code === co.company_code ? 'selected' : ''}>${esc(c.company_name)}</option>`).join('')}</select></div><span style="font-size:0.82rem;color:var(--grey3)">Company code: <span class="code-pill">${esc(co.company_code)}</span></span></div>` : `<div style="font-size:0.82rem;color:var(--grey3);margin-bottom:0.8rem">${esc(co.company_name)} · company code <span class="code-pill">${esc(co.company_code)}</span></div>`}
-    <div class="um-table-card"><div class="um-table-scroll"><table class="um-table"><thead><tr><th>Department</th><th class="nowrap">Code</th><th>What it does</th><th style="width:44px"></th></tr></thead><tbody>
-      ${ds.length ? ds.map(d => `<tr><td class="nowrap"><strong>${esc(titleCase(d.department_name))}</strong></td><td class="nowrap"><span class="code-pill">${esc(d.department_code)}</span> <button class="btn-link" data-copy="${esc(d.department_code)}" title="Copy the code">copy</button></td>
+    <div class="banner info">Set up business units <strong>first</strong>, then add people. Every business unit gets a short code the moment it is created — share that code with whoever uploads people (the CSV needs it). Departments are not set up here: you type a person’s department when you add them.${can ? '' : ' Only Company Admins can add or remove business units.'}</div>
+    ${missing && can ? `<div class="banner"><strong>${missing} ${missing === 1 ? 'business unit needs' : 'business units need'} a short description.</strong> Use “Edit description” on each.</div>` : ''}
+    ${comps.length > 1 ? `<div class="filter-bar" style="margin-bottom:1rem"><div class="filter-select-wrap"><select class="filter-select" id="buCompany">${comps.map(c => `<option value="${esc(c.company_code)}" ${c.company_code === co.company_code ? 'selected' : ''}>${esc(c.company_name)}</option>`).join('')}</select></div><span style="font-size:0.82rem;color:var(--grey3)">Company code: <span class="code-pill">${esc(co.company_code)}</span></span></div>` : `<div style="font-size:0.82rem;color:var(--grey3);margin-bottom:0.8rem">${esc(co.company_name)} · company code <span class="code-pill">${esc(co.company_code)}</span></div>`}
+    <div class="um-table-card"><div class="um-table-scroll"><table class="um-table"><thead><tr><th>Business unit</th><th class="nowrap">Code</th><th>What it does</th><th style="width:44px"></th></tr></thead><tbody>
+      ${ds.length ? ds.map(d => `<tr><td class="nowrap"><strong>${esc(titleCase(d.bu_name))}</strong></td><td class="nowrap"><span class="code-pill">${esc(d.bu_code)}</span> <button class="btn-link" data-copy="${esc(d.bu_code)}" title="Copy the code">copy</button></td>
         <td style="white-space:normal;min-width:260px">${(d.description || '').trim() ? esc(d.description) : '<span class="badge badge-warn">Needs a description</span>'}</td>
-        <td data-stop="1">${can ? `<button class="um-action-btn" data-dmenu="${esc(d.department_name)}" aria-label="Actions for ${esc(d.department_name)}">${icon('dots')}</button>` : ''}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-row">No departments yet.</td></tr>'}
+        <td data-stop="1">${can ? `<button class="um-action-btn" data-dmenu="${esc(d.bu_name)}" aria-label="Actions for ${esc(d.bu_name)}">${icon('dots')}</button>` : ''}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-row">No business units yet.</td></tr>'}
     </tbody></table></div></div>`;
-  const sel = $('#dpCompany'); if (sel) sel.onchange = e => { S.deptCompany = e.target.value; drawDepartments(); };
+  const sel = $('#buCompany'); if (sel) sel.onchange = e => { S.buCompany = e.target.value; drawBusinessUnits(); };
   $$('[data-copy]').forEach(b => b.onclick = () => { navigator.clipboard && navigator.clipboard.writeText(b.dataset.copy); toast('Copied ' + b.dataset.copy); });
-  $$('[data-dmenu]').forEach(b => b.onclick = e => { e.stopPropagation(); const d = ds.find(x => x.department_name === b.dataset.dmenu);
-    showMenu(b, [{ label: 'Edit description', onClick: () => openDescribeDepartment(co, d) }, '-', { label: 'Remove department', danger: true, onClick: () => removeDepartment(co, d) }]); });
+  $$('[data-dmenu]').forEach(b => b.onclick = e => { e.stopPropagation(); const d = ds.find(x => x.bu_name === b.dataset.dmenu);
+    showMenu(b, [{ label: 'Edit description', onClick: () => openDescribeBu(co, d) }, '-', { label: 'Remove business unit', danger: true, onClick: () => removeBu(co, d) }]); });
 }
 function descField(initial) {
-  return `<div class="field"><label>What does this department do? <span class="req">*</span></label><textarea id="dp_desc" placeholder="e.g. Runs our training programmes and client delivery.">${esc(initial || '')}</textarea><div class="err hidden"></div></div>`;
+  return `<div class="field"><label>What does this business unit do? <span class="req">*</span></label><textarea id="dp_desc" placeholder="e.g. Runs our training programmes and client delivery.">${esc(initial || '')}</textarea><div class="err hidden"></div></div>`;
 }
 function wireCounter() { /* the words-used count under the box is added to every textarea by decorateLimit() */ }
 function descError(msg) { const f = $('#dp_desc').closest('.field'); f.classList.toggle('invalid', !!msg); const e = $('.err', f); e.textContent = msg || ''; e.classList.toggle('hidden', !msg); return !msg; }
-function openAddDepartment() {
-  const comps = scopeCompanies(); const co = companyByCode(S.deptCompany) || comps[0];
-  const m = openModal({ title: 'Add a department', size: 'narrow', sticky: true, sub: 'To ' + co.company_name + '. The code is created for you.' });
-  m.body.innerHTML = `<div class="field"><label>Department name <span class="req">*</span></label><input type="text" id="dp_name" placeholder="e.g. Customer Success"><div class="err hidden"></div></div><div style="height:0.8rem"></div>${descField('')}`;
+function openAddBu() {
+  const comps = scopeCompanies(); const co = companyByCode(S.buCompany) || comps[0];
+  const m = openModal({ title: 'Add a business unit', size: 'narrow', sticky: true, sub: 'To ' + co.company_name + '. The code is created for you.' });
+  m.body.innerHTML = `<div class="field"><label>Business unit name <span class="req">*</span></label><input type="text" id="dp_name" placeholder="e.g. Customer Success"><div class="err hidden"></div></div><div style="height:0.8rem"></div>${descField('')}`;
   wireCounter();
-  setFoot(m, [{ label: 'Cancel', onClick: () => m.close() }, { label: 'Add department', cls: 'btn-primary-add', async onClick(btn) {
+  setFoot(m, [{ label: 'Cancel', onClick: () => m.close() }, { label: 'Add business unit', cls: 'btn-primary-add', async onClick(btn) {
     const name = $('#dp_name').value.trim(), desc = $('#dp_desc').value.replace(/\s+/g, ' ').trim();
     const fn = $('#dp_name').closest('.field'); fn.classList.toggle('invalid', !name); const en = $('.err', fn); en.textContent = name ? '' : 'Please enter a name.'; en.classList.toggle('hidden', !!name);
     let ok = !!name;
@@ -1436,27 +1448,27 @@ function openAddDepartment() {
     if (!ok) return;
     btn.disabled = true; btn.textContent = 'Adding…';
     try {
-      const r = await api('/api/admin/departments/add', { json: { company_code: co.company_code, department_name: name, description: desc } });
-      m.close(); await loadScope(); drawDepartments();
-      const done = openModal({ title: 'Department created', size: 'narrow', html: `<p style="font-size:0.9rem;margin-bottom:0.8rem"><strong>${esc(titleCase(name))}</strong> is ready. Its code is:</p><div style="text-align:center;font-size:2rem;font-weight:700" class="mono">${esc(r.department_code)}</div><p style="font-size:0.84rem;color:var(--grey3);margin-top:0.8rem">Share this code with whoever uploads or adds people to this department — it goes in the <span class="mono">department_code</span> column of the CSV.</p>` });
-      setFoot(done, [{ label: 'Copy code', onClick() { navigator.clipboard && navigator.clipboard.writeText(r.department_code); toast('Copied ' + r.department_code); } }, { label: 'Done', cls: 'btn-primary-add', onClick: () => done.close() }]);
-    } catch (e) { toast(e.message, 'error'); btn.disabled = false; btn.textContent = 'Add department'; }
+      const r = await api('/api/admin/bus/add', { json: { company_code: co.company_code, bu_name: name, description: desc } });
+      m.close(); await loadScope(); drawBusinessUnits();
+      const done = openModal({ title: 'Business unit created', size: 'narrow', html: `<p style="font-size:0.9rem;margin-bottom:0.8rem"><strong>${esc(titleCase(name))}</strong> is ready. Its code is:</p><div style="text-align:center;font-size:2rem;font-weight:700" class="mono">${esc(r.bu_code)}</div><p style="font-size:0.84rem;color:var(--grey3);margin-top:0.8rem">Share this code with whoever uploads or adds people to this business unit — it goes in the <span class="mono">bu_code</span> column of the CSV.</p>` });
+      setFoot(done, [{ label: 'Copy code', onClick() { navigator.clipboard && navigator.clipboard.writeText(r.bu_code); toast('Copied ' + r.bu_code); } }, { label: 'Done', cls: 'btn-primary-add', onClick: () => done.close() }]);
+    } catch (e) { toast(e.message, 'error'); btn.disabled = false; btn.textContent = 'Add business unit'; }
   } }]);
 }
-function openDescribeDepartment(co, d) {
-  const m = openModal({ title: 'Edit description — ' + titleCase(d.department_name), size: 'narrow', sticky: true, sub: 'The name and code never change.' });
+function openDescribeBu(co, d) {
+  const m = openModal({ title: 'Edit description — ' + titleCase(d.bu_name), size: 'narrow', sticky: true, sub: 'The name and code never change.' });
   m.body.innerHTML = descField(d.description); wireCounter();
   setFoot(m, [{ label: 'Cancel', onClick: () => m.close() }, { label: 'Save', cls: 'btn-primary-add', async onClick(btn) {
     const desc = $('#dp_desc').value.replace(/\s+/g, ' ').trim();
     if (!descError(!desc ? 'Please add a short description.' : (wordCount(desc) > 200 ? 'Please keep it to 200 words or fewer.' : ''))) return;
     btn.disabled = true;
-    try { await api('/api/admin/departments/describe', { json: { company_code: co.company_code, department_name: d.department_name, description: desc } }); m.close(); toast('Saved.'); await loadScope(); drawDepartments(); }
+    try { await api('/api/admin/bus/describe', { json: { company_code: co.company_code, bu_name: d.bu_name, description: desc } }); m.close(); toast('Saved.'); await loadScope(); drawBusinessUnits(); }
     catch (e) { toast(e.message, 'error'); btn.disabled = false; }
   } }]);
 }
-async function removeDepartment(co, d) {
-  if (!(await confirmBox('Remove ' + titleCase(d.department_name) + '?', 'This removes the department from ' + esc(co.company_name) + '. You can only remove a department nobody is in, and a company must keep at least one.', 'Remove', true))) return;
-  try { await api('/api/admin/departments/remove', { json: { company_code: co.company_code, department_name: d.department_name } }); toast('Removed.'); await loadScope(); drawDepartments(); }
+async function removeBu(co, d) {
+  if (!(await confirmBox('Remove ' + titleCase(d.bu_name) + '?', 'This removes the business unit from ' + esc(co.company_name) + '. You can only remove a business unit nobody is in, and a company must keep at least one.', 'Remove', true))) return;
+  try { await api('/api/admin/bus/remove', { json: { company_code: co.company_code, bu_name: d.bu_name } }); toast('Removed.'); await loadScope(); drawBusinessUnits(); }
   catch (e) { toast(e.message, 'error'); }
 }
 
@@ -1467,10 +1479,10 @@ async function renderAdmins() {
   $('#umBody').innerHTML = '<div class="loading-block"><span class="spinner"></span> Loading admins…</div>';
   let admins; try { admins = await loadManaged(true); } catch (e) { $('#umBody').innerHTML = `<div class="banner">${esc(e.message)}</div>`; return; }
   $('#umBody').innerHTML = `
-    <div class="banner info">${level() === 'super' ? 'Company Admins run a whole company and can add Admins for specific departments. Only you can add or remove a Company Admin.' : 'Admins you add here can manage only the departments you give them. Only the super admin can add or remove a Company Admin.'}</div>
+    <div class="banner info">${level() === 'super' ? 'Company Admins run a whole company and can add Admins for specific business units. Only you can add or remove a Company Admin.' : 'Admins you add here can manage only the business units you give them. Only the super admin can add or remove a Company Admin.'}</div>
     <div class="um-table-card"><div class="um-table-scroll"><table class="um-table"><thead><tr><th>Admin</th><th>Role</th><th>Manages</th><th style="width:150px"></th></tr></thead><tbody>
     ${admins.length ? admins.map(a => `<tr><td><div class="um-user-cell">${avatarHtml(a.name)}<div><div class="um-user-name">${esc(a.name)}</div><div class="um-user-email">${esc(a.email)}</div></div></div></td><td>${roleBadge(a.role)}</td>
-      <td style="white-space:normal">${a.grants.length ? a.grants.map(g => `<span class="chip">${esc(g.company_name)}${g.department_code ? ' · ' + esc(g.department_code) : ' · whole company'}</span>`).join('') : '<span class="badge badge-warn">No access given yet</span>'}</td>
+      <td style="white-space:normal">${a.grants.length ? a.grants.map(g => `<span class="chip">${esc(g.company_name)}${g.bu_code ? ' · ' + esc(g.bu_code) : ' · whole company'}</span>`).join('') : '<span class="badge badge-warn">No access given yet</span>'}</td>
       <td>${(a.role === 'company_admin' && level() !== 'super') ? '<span style="font-size:0.75rem;color:var(--grey3)">Super admin only</span>' : `<button class="btn-outline" data-edit="${esc(a.user_id)}">Change access</button>`}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-row">No admins yet. Use “+ Make someone an admin”.</td></tr>'}
     </tbody></table></div></div>`;
   $$('[data-edit]').forEach(b => b.onclick = () => { const a = admins.find(x => x.user_id === b.dataset.edit); openRoleModal({ user_id: a.user_id, name: a.name, access_type: a.role }); });
@@ -1484,7 +1496,7 @@ async function renderAdmins() {
 }
 
 // ════════════ BULK ACTIONS: three separate sections — upload, edit, delete ════════════
-// Bulk edit and bulk delete each have their own list with filters (department, designation, manager), so a whole
+// Bulk edit and bulk delete each have their own list with filters (business unit, department, designation, manager), so a whole
 // team can be found and ticked at once — e.g. everyone reporting to a manager who has left.
 
 async function renderBulk() {
@@ -1499,7 +1511,7 @@ async function renderBulk() {
       <div class="hint">Shorten the list with the filters, tick the people, then choose ONE change to make to all of them.</div>
       <div id="bk_e_people"></div>
       <div class="form-grid" style="margin-top:1rem">
-        <div class="field"><label>What do you want to change? <span class="req">*</span></label><select id="bk_what"><option value="">Select…</option><option value="manager">Change their manager</option><option value="department">Move them to another department</option><option value="mark">Mark them as people managers</option><option value="unmark">Unmark them as people managers</option></select></div>
+        <div class="field"><label>What do you want to change? <span class="req">*</span></label><select id="bk_what"><option value="">Select…</option><option value="manager">Change their manager</option><option value="bu">Move them to another business unit</option><option value="mark">Mark them as people managers</option><option value="unmark">Unmark them as people managers</option></select></div>
         <div class="full" id="bk_fields"></div>
       </div>
       <div style="margin-top:1rem;display:flex;gap:0.8rem;align-items:center;flex-wrap:wrap"><button class="btn-primary-add" id="bk_apply" disabled>Apply to everyone ticked</button><span class="help" id="bk_missing"></span></div>
@@ -1522,7 +1534,7 @@ function drawBulkPickers() {
 }
 
 const plural = n => n + (n === 1 ? ' person' : ' people');
-// "3 skipped: not in your access (2); already in that department (1)"
+// "3 skipped: not in your access (2); already in that business unit (1)"
 function reasonSummary(results, okWord) {
   const bad = results.filter(r => r.status !== okWord), counts = {};
   bad.forEach(r => { const k = String(r.status).replace(/^SKIPPED -- /, ''); counts[k] = (counts[k] || 0) + 1; });
@@ -1538,7 +1550,7 @@ function setupBulkEdit(people) {
     if (!n) miss.push('tick at least one person');
     if (!what) miss.push('choose what to change');
     if (what === 'manager') { if (!$('#bk_mname').value.trim()) miss.push("the new manager's name"); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('#bk_memail').value.trim())) miss.push("the new manager's email"); }
-    if (what === 'department' && !$('#bk_dept').value) miss.push('the department');
+    if (what === 'bu' && !$('#bk_bu').value) miss.push('the business unit');
     $('#bk_apply').disabled = miss.length > 0;
     $('#bk_apply').dataset.idle = 'Apply to ' + (n ? plural(n) : 'everyone ticked'); $('#bk_apply').textContent = $('#bk_apply').dataset.idle;
     $('#bk_missing').textContent = miss.length ? 'Still needed: ' + miss.join(', ') + '.' : '';
@@ -1549,9 +1561,9 @@ function setupBulkEdit(people) {
     if (what === 'manager') {
       box.innerHTML = `<div class="form-grid"><div class="field"><label>New manager's name <span class="req">*</span></label><input type="text" id="bk_mname"></div><div class="field"><label>New manager's email <span class="req">*</span></label><input type="email" id="bk_memail" data-lower></div></div>`;
       $('#bk_mname').oninput = refresh; $('#bk_memail').oninput = refresh;
-    } else if (what === 'department') {
-      box.innerHTML = `<div class="field"><label>Move them to <span class="req">*</span></label><select id="bk_dept"><option value="">Select a department…</option>${comps.map(c => `<optgroup label="${esc(c.company_name)}">${c.departments.map(d => `<option value="${esc(c.company_code + '|' + d.department_code)}">${esc(titleCase(d.department_name))}</option>`).join('')}</optgroup>`).join('')}</select><div class="help">Only people who belong to that company can be moved there, and only into departments you have access to.</div></div>`;
-      $('#bk_dept').onchange = refresh;
+    } else if (what === 'bu') {
+      box.innerHTML = `<div class="field"><label>Move them to <span class="req">*</span></label><select id="bk_bu"><option value="">Select a business unit…</option>${comps.map(c => `<optgroup label="${esc(c.company_name)}">${c.bus.map(b => `<option value="${esc(c.company_code + '|' + b.bu_code)}">${esc(titleCase(b.bu_name))}</option>`).join('')}</optgroup>`).join('')}</select><div class="help">Only people who belong to that company can be moved there, and only into business units you have access to. Their department is not changed.</div></div>`;
+      $('#bk_bu').onchange = refresh;
     } else if (what === 'mark' || what === 'unmark') {
       box.innerHTML = `<div class="help">${what === 'mark' ? 'Their access level becomes Manager. Admins stay Admins and are simply marked as people managers.' : 'Managers go back to the User access level. Admins stay Admins.'}</div>`;
     } else box.innerHTML = '';
@@ -1563,7 +1575,7 @@ function setupBulkEdit(people) {
     const what = $('#bk_what').value, ids = Array.from(sel);
     let path, body = { user_ids: ids };
     if (what === 'manager') { path = '/api/admin/bulk-change-manager'; body.manager_name = $('#bk_mname').value; body.manager_email = $('#bk_memail').value; }
-    else if (what === 'department') { path = '/api/admin/bulk-move-department'; const [c, d] = $('#bk_dept').value.split('|'); body.company_code = c; body.department_code = d; }
+    else if (what === 'bu') { path = '/api/admin/bulk-move-bu'; const [c, b] = $('#bk_bu').value.split('|'); body.company_code = c; body.bu_code = b; }
     else { path = '/api/admin/bulk-set-people-manager'; body.is_people_manager = what === 'mark'; }
     return saveFlow($('#bk_apply'), 'Saving…', 'Saved', async () => {
       const r = await api(path, { json: body });
@@ -1672,19 +1684,21 @@ function skillPicker(root, gl, multi, onChange) {
   return { skills: () => multi ? chosen.slice() : (!pick.value ? [] : level.value === 'capability' ? inCap(pick.value).map(r => r.reflector_name) : [pick.value]) };
 }
 
-// peoplePicker: filters (department, designation, manager), search, a "select everyone shown" box, and a tick list.
+// peoplePicker: filters (business unit, department, designation, manager), search, a "select everyone shown" box, and a tick list.
 // `sel` is a Set of user_ids kept by the caller. The filters shorten the list, so "select everyone shown" can pick,
 // say, all 50 people reporting to one manager.
 function peoplePicker(root, people, sel, onChange) {
-  const deptOf = u => String(u.department || '').split('/')[0].trim().toLowerCase();
+  const buOf = u => String(u.business_unit || '').trim().toLowerCase();
+  const deptOf = u => deptKey(u.department);
   const desigOf = u => String(u.designation || '').trim();
   const mgrKey = u => String(u.manager_email || '').trim().toLowerCase() || (u.manager_name ? 'name:' + String(u.manager_name).trim().toLowerCase() : '__none');
   const distinct = (keyOf, labelOf) => { const m = new Map(); people.forEach(u => { const k = keyOf(u); if (k !== '' && !m.has(k)) m.set(k, labelOf(u)); }); return Array.from(m.entries()).sort((a, b) => String(a[1]).localeCompare(String(b[1]))); };
-  const depts = distinct(deptOf, u => titleCase(deptOf(u))), desigs = distinct(u => desigOf(u).toLowerCase(), desigOf);
+  const bus = distinct(buOf, u => titleCase(buOf(u))), depts = distinct(deptOf, u => String(u.department).trim().replace(/\s+/g, ' ')), desigs = distinct(u => desigOf(u).toLowerCase(), desigOf);
   const mgrs = distinct(mgrKey, u => mgrKey(u) === '__none' ? 'No manager recorded' : (u.manager_name || u.manager_email) + (u.manager_email && u.manager_name ? ' (' + u.manager_email + ')' : ''));
-  const F = { dept: '', desig: '', mgr: '' };
+  const F = { bu: '', dept: '', desig: '', mgr: '' };
   const opts = (all, list) => `<option value="">${all}</option>` + list.map(([k, l]) => `<option value="${esc(k)}">${esc(l)}</option>`).join('');
   root.innerHTML = `<div class="pp-filters">
+      <div class="filter-select-wrap"><select class="filter-select pp_f_bu" aria-label="Filter by business unit">${opts('All business units', bus)}</select></div>
       <div class="filter-select-wrap"><select class="filter-select pp_f_dept" aria-label="Filter by department">${opts('All departments', depts)}</select></div>
       <div class="filter-select-wrap"><select class="filter-select pp_f_desig" aria-label="Filter by designation">${opts('All designations', desigs)}</select></div>
       <div class="filter-select-wrap"><select class="filter-select pp_f_mgr" aria-label="Filter by manager">${opts('All managers', mgrs)}</select></div></div>
@@ -1693,7 +1707,7 @@ function peoplePicker(root, people, sel, onChange) {
     <div class="help"><label style="display:inline-flex;gap:0.4rem;align-items:center;font-weight:600"><input type="checkbox" class="pp_all"> Select everyone shown</label> · <button type="button" class="btn-link pp_none">Clear</button> · <span class="pp_shown"></span> · <span class="pp_count">0 selected</span></div>`;
   const q = $('.pp_q', root), list = $('.pp_list', root), all = $('.pp_all', root);
   const shown = () => { const t = q.value.trim().toLowerCase(); return people.filter(u => (!t || (u.name || '').toLowerCase().includes(t) || (u.email || '').toLowerCase().includes(t))
-    && (!F.dept || deptOf(u) === F.dept) && (!F.desig || desigOf(u).toLowerCase() === F.desig) && (!F.mgr || mgrKey(u) === F.mgr)); };
+    && (!F.bu || buOf(u) === F.bu) && (!F.dept || deptOf(u) === F.dept) && (!F.desig || desigOf(u).toLowerCase() === F.desig) && (!F.mgr || mgrKey(u) === F.mgr)); };
   const sync = () => {
     const sh = shown();
     $('.pp_count', root).textContent = sel.size + ' selected';
@@ -1708,6 +1722,7 @@ function peoplePicker(root, people, sel, onChange) {
     sync();
   };
   q.oninput = draw;
+  $('.pp_f_bu', root).onchange = e => { F.bu = e.target.value; draw(); };
   $('.pp_f_dept', root).onchange = e => { F.dept = e.target.value; draw(); };
   $('.pp_f_desig', root).onchange = e => { F.desig = e.target.value; draw(); };
   $('.pp_f_mgr', root).onchange = e => { F.mgr = e.target.value; draw(); };
@@ -1719,7 +1734,7 @@ function peoplePicker(root, people, sel, onChange) {
 
 // ── Skill Assignment Center ───────────────────────────────────────────────
 // People only: a manager gives a skill to specific people, and says why. (Targeting a whole
-// department or designation lives in the Initiative Builder, where new joiners can be included.)
+// business unit, department or designation lives in the Initiative Builder, where new joiners can be included.)
 async function renderAssign(params) {
   lmShell('assign');
   $('#lmBody').innerHTML = '<div class="loading-block"><span class="spinner"></span> Loading…</div>';
@@ -1891,7 +1906,7 @@ async function renderInitiatives() {
       </div>
       <h3 style="margin-top:1.4rem">Skills</h3><div id="in_skills"></div>
       <h3 style="margin-top:1.4rem">Who is it for?</h3>
-      <div class="radio-row" style="margin-bottom:0.7rem"><label><input type="radio" name="in_who" value="company" checked> Whole company</label><label><input type="radio" name="in_who" value="departments"> Departments</label><label><input type="radio" name="in_who" value="designations"> Designations</label><label><input type="radio" name="in_who" value="individuals"> Individuals</label></div>
+      <div class="radio-row" style="margin-bottom:0.7rem"><label><input type="radio" name="in_who" value="company" checked> Whole company</label><label><input type="radio" name="in_who" value="bus"> Business units</label><label><input type="radio" name="in_who" value="departments"> Departments</label><label><input type="radio" name="in_who" value="designations"> Designations</label><label><input type="radio" name="in_who" value="individuals"> Individuals</label></div>
       <div id="in_who_box"></div><div class="help" id="in_who_count" style="margin-top:0.5rem"></div>
       <h3 style="margin-top:1.4rem">Why this learning initiative?</h3><div class="hint">The learning coach reads these answers, so each one is needed.</div>
       <div class="form-grid">
@@ -1906,15 +1921,15 @@ async function renderInitiatives() {
       <div style="margin-top:0.6rem;display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap"><button class="btn-primary-add" disabled>Save changes</button><button class="btn-outline btn-danger-outline" disabled>Remove initiative</button></div></div>`;
 
   skillPicker($('#in_skills'), gl, true, null);
-  const sel = new Set(), deptSel = new Set(), desigSel = new Set();
+  const sel = new Set(), buSel = new Set(), deptSel = new Set(), desigSel = new Set();
   const company = () => companies.find(c => c.company_code === $('#in_company').value) || companies[0];
   const mine = () => S.users.filter(u => String(u.company || '').toLowerCase() === company().company_name.toLowerCase());
-  const primary = u => String(u.department || '').split('/')[0].trim().toLowerCase();
+  const buOf = u => String(u.business_unit || '').trim().toLowerCase();
   const desigOf = u => String(u.designation || '').trim();
   const who = () => ($('input[name=in_who]:checked') || {}).value;
   const countNow = () => {
     const w = who(), ps = mine();
-    const n = w === 'company' ? ps.length : w === 'departments' ? ps.filter(u => deptSel.has(primary(u))).length : w === 'designations' ? ps.filter(u => desigSel.has(desigOf(u).toLowerCase())).length : ps.filter(u => sel.has(u.user_id)).length;
+    const n = w === 'company' ? ps.length : w === 'bus' ? ps.filter(u => buSel.has(buOf(u))).length : w === 'departments' ? ps.filter(u => deptSel.has(deptKey(u.department))).length : w === 'designations' ? ps.filter(u => desigSel.has(desigOf(u).toLowerCase())).length : ps.filter(u => sel.has(u.user_id)).length;
     $('#in_who_count').textContent = `${n} ${n === 1 ? 'person' : 'people'} would be included today. People who join later in the chosen group would be added automatically.`;
     if (w === 'individuals') $('#in_who_count').textContent = `${n} ${n === 1 ? 'person' : 'people'} chosen.`;
   };
@@ -1930,14 +1945,18 @@ async function renderInitiatives() {
   const drawWho = () => {
     const w = who(), box = $('#in_who_box');
     if (w === 'company') { box.innerHTML = `<div class="def-box"><div class="def-text">Everyone in ${esc(company().company_name)}.</div></div>`; countNow(); }
-    else if (w === 'departments') checkList(company().departments, deptSel, d => d.department_name, d => titleCase(d.department_name));
+    else if (w === 'bus') checkList(company().bus, buSel, b => b.bu_name, b => titleCase(b.bu_name));
+    else if (w === 'departments') {
+      const seen = new Map(); mine().forEach(u => { const k = deptKey(u.department); if (k && !seen.has(k)) seen.set(k, String(u.department).trim().replace(/\s+/g, ' ')); });
+      checkList(Array.from(seen.entries()).sort((a, b) => a[1].localeCompare(b[1])), deptSel, d => d[0], d => d[1]);
+    }
     else if (w === 'designations') {
       const seen = new Map(); mine().forEach(u => { const d = desigOf(u); if (d && !seen.has(d.toLowerCase())) seen.set(d.toLowerCase(), d); });
       checkList(Array.from(seen.values()).sort((a, b) => a.localeCompare(b)), desigSel, d => d.toLowerCase(), d => d);
     } else { box.innerHTML = '<div id="in_people"></div>'; peoplePicker($('#in_people'), mine().filter(u => (u.allowed || []).indexOf('skills') !== -1), sel, countNow); }
   };
   $$('input[name=in_who]').forEach(r => r.onchange = drawWho);
-  $('#in_company').onchange = () => { sel.clear(); deptSel.clear(); desigSel.clear(); drawWho(); };
+  $('#in_company').onchange = () => { sel.clear(); buSel.clear(); deptSel.clear(); desigSel.clear(); drawWho(); };
   drawWho();
 }
 
@@ -1978,15 +1997,15 @@ async function reportsApi(path, opts) {
 }
 
 // Self-Initiated = Voluntary Opening, Recommended = Learning Recommendation, Overall = both tracks summed
-// (Kriti, 2026-10-05). Only Recommended ever shows an assigned-by filter -- mr_adoption_report.py is the
-// only one of the three backend files with that parameter at all, so this split mirrors the backend
-// exactly rather than re-deciding it here.
+// (Kriti, 2026-10-05). The assigner is one of the Filter drawer's levels like the others; only Recommended sessions
+// have one, so the drawer lists assigners only when the data in scope has at least two.
 const ADOPT_TRACKS = {
-  vo: { track: 'voluntary_opening', label: 'Self-Initiated', icon: 'selfInit', iconClass: 'teal', hasAssignedBy: false },
-  mr: { track: 'learning_recommendations', label: 'Recommended', icon: 'recommended', iconClass: 'gold', hasAssignedBy: true },
-  overall: { track: 'overall', label: 'Overall', icon: 'globe', iconClass: 'navy', hasAssignedBy: false },
+  vo: { track: 'voluntary_opening', label: 'Self-Initiated', icon: 'selfInit', iconClass: 'teal' },
+  mr: { track: 'learning_recommendations', label: 'Recommended', icon: 'recommended', iconClass: 'gold' },
+  overall: { track: 'overall', label: 'Overall', icon: 'globe', iconClass: 'navy' },
 };
-const ADOPT_LEVELS = ['company', 'department', 'manager', 'user'];   // broadest to narrowest -- Kriti's explicit order, 2026-10-05
+const ADOPT_LEVELS = ['company', 'bu', 'department', 'assigner', 'manager', 'user'];   // broadest to narrowest
+const LEVEL_NAMES = { company: 'Company', bu: 'Business Unit', department: 'Department', manager: 'Manager', user: 'User', assigner: 'Assigner' };
 // Four tabs, Kriti's explicit call, 2026-10-05 -- one at a time, each its OWN chart, never four tiles
 // shown at once. No NPS, no Learning Application/top-2-box anywhere on this page -- a different kind of
 // report (satisfaction), not adoption; dropped entirely, not just hidden.
@@ -1996,7 +2015,7 @@ const ADOPT_TABS = [
   { key: 'applied', label: 'Applied Learning' },
   { key: 'duration', label: 'Average Duration' },
 ];
-S.adopt = { active: 'overall', tab: 'usage', level: 'company', period: 'month', assignedBy: '', assignedByOptions: null, fiscalStartMonth: null, focus: null, focusOptions: null, fbPeriod: 'month', fbWant: null, fbSig: null };
+S.adopt = { active: 'overall', tab: 'usage', level: 'company', period: 'month', fiscalStartMonth: null, focus: null, focusOptions: null, fbPeriod: 'month', fbWant: null, fbSig: null };
 
 function fmtHours(n) { return (n || 0).toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' hrs'; }
 // Period keys from the backend are plain sortable strings, never what's shown on screen (Kriti,
@@ -2460,11 +2479,11 @@ const ADOPT_TAB_RENDER = { usage: renderUsageTab, atoms: renderAtomsTab, applied
 // Clicking (the mockup's own "drag") a different card swaps the SAME panel's content in place; "Back to
 // Overview" just swaps it back to Overall. Nothing here ever navigates to a separate URL/page.
 // The "Filter" trigger + slide-out drawer, in Fable's own "+" style (productdemo/admin_intro.html): a "+ Company" /
-// "+ Department" / "+ Manager" / "+ User" button each, which opens a scrollable list of tick-boxes of everything
+// "+ Business Unit" / "+ Department" / "+ Manager" / "+ User" button each, which opens a scrollable list of tick-boxes of everything
 // the caller may see -- tick as many as you like (Kriti, 2026-10-07). Apply narrows the cards, chart, hero and
 // feedback to the ticked ones. Within a level any ticked item counts; across levels all must match. The backend
 // only ever narrows inside the caller's own scope. A level with fewer than two choices is never offered, so
-// someone who can see a single department gets no Filter at all. Comparing organisation vs department etc. is
+// someone who can see a single business unit gets no Filter at all. Comparing organisation vs business unit etc. is
 // deliberately NOT here: that belongs on the later Reports & Insights page.
 function focusLevels() {
   const o = S.adopt.focusOptions || {};
@@ -2507,7 +2526,7 @@ function openAdoptFilterDrawer() {
   const levels = focusLevels();
   const picked = {};
   levels.forEach(l => { picked[l] = new Set(((S.adopt.focus || {})[l] || []).map(o => o.key)); });
-  const toggleText = (l, open) => `${open ? '− ' : '+ '}${titleCase(l)}${picked[l].size ? ` (${picked[l].size})` : ''}`;
+  const toggleText = (l, open) => `${open ? '− ' : '+ '}${LEVEL_NAMES[l]}${picked[l].size ? ` (${picked[l].size})` : ''}`;
   const body = $('#adoptDdBody');
   body.innerHTML = levels.map(l => `
     <div class="ri-dd-item${picked[l].size ? ' open' : ''}" data-item="${l}">
@@ -2619,8 +2638,7 @@ function drawAdoptCards() {
 
 // ════════════ USER FEEDBACK (NPS) -- Kriti, 2026-10-07 ════════════
 // Under the chart, its OWN Month/Quarter/Year toggle (independent of the chart's), following the same single
-// drill-down, the same active card (Self-Initiated / Recommended / Overall) and, for Recommended, the same
-// assigned-by choice. NPS = % promoters - % detractors off the end-of-track 10-point score; the raw
+// drill-down and the same active card (Self-Initiated / Recommended / Overall). NPS = % promoters - % detractors off the end-of-track 10-point score; the raw
 // promoter/passive/detractor counts are summed across the window FIRST and the score worked out once from
 // the totals -- never an average of already-computed scores. Quarter shows the current quarter, like every
 // other hero on this page.
@@ -2659,8 +2677,7 @@ function renderFeedbackBody(series, period) {
 async function drawAdoptFeedback() {
   const box = $('#adoptFeedbackPanel'); if (!box) return;
   const t = ADOPT_TRACKS[S.adopt.active];
-  const assigned = t.hasAssignedBy ? S.adopt.assignedBy : '';
-  const sig = [t.track, S.adopt.fbPeriod, assigned, JSON.stringify(S.adopt.focus)].join('|');
+  const sig = [t.track, S.adopt.fbPeriod, JSON.stringify(S.adopt.focus)].join('|');
   if (S.adopt.fbSig === sig && box.dataset.ready) return;
   S.adopt.fbWant = sig;
   box.dataset.ready = '';
@@ -2674,7 +2691,6 @@ async function drawAdoptFeedback() {
   try {
     const fiscalStartMonth = await ensureFiscalStartMonth();
     let path = `/api/reports/adoption-overview?track=${t.track}&level=${S.adopt.level}&period=${S.adopt.fbPeriod}${focusQuery()}`;
-    if (assigned) path += '&assigned_by=' + encodeURIComponent(assigned);
     const rows = await reportsApi(path);
     if (S.adopt.fbWant !== sig) return;   // the person moved on while this was loading
     const body = $('#adoptFbBody'); if (!body) return;
@@ -2698,7 +2714,6 @@ async function drawAdoptPanel() {
       <div class="adopt-seg" id="adoptPeriodSeg">${['month', 'quarter', 'year'].map(p => `<button data-period="${p}" class="${p === S.adopt.period ? 'active' : ''}">${titleCase(p)}</button>`).join('')}</div>
       ${focusLevels().length || focusIsSet() ? `<button class="ri-dd-trigger" id="adoptFilterTrigger">${icon('filter')} Filter</button>` : ''}
       ${focusIsSet() ? `<span class="adopt-focus-chip">Showing: <strong>${esc(focusSummary())}</strong><button type="button" id="adoptFocusClear" aria-label="Show everything">×</button></span>` : ''}
-      ${t.hasAssignedBy ? `<div class="filter-select-wrap"><select class="filter-select" id="adoptAssignedBy"><option value="">Assigned by: everyone</option></select></div>` : ''}
     </div>
     <div class="adopt-tabs" id="adoptTabsRow">${ADOPT_TABS.map(tb => `<button data-tab="${tb.key}" class="${tb.key === S.adopt.tab ? 'active' : ''}">${esc(tb.label)}</button>`).join('')}</div>
     <div id="adoptBody" class="loading-block"><div class="spinner"></div></div>`;
@@ -2707,27 +2722,10 @@ async function drawAdoptPanel() {
   if ($('#adoptFilterTrigger')) $('#adoptFilterTrigger').onclick = openAdoptFilterDrawer;
   if ($('#adoptFocusClear')) $('#adoptFocusClear').onclick = () => { S.adopt.focus = null; drawAdoptPanel(); drawAdoptCards(); };
   $$('[data-tab]', $('#adoptTabsRow')).forEach(b => b.onclick = () => { S.adopt.tab = b.dataset.tab; drawAdoptPanel(); drawAdoptCards(); });
-  if (t.hasAssignedBy) {
-    const sel = $('#adoptAssignedBy');
-    sel.onchange = e => { S.adopt.assignedBy = e.target.value; drawAdoptPanel(); };
-    // A dropdown of REAL names only, never free text -- Kriti's explicit call, 2026-10-05: "what you're
-    // showing has to always be verified with the admin's rights." The options come from the server's own
-    // scope check (the exact same one build_report() uses below), so a department admin can never even
-    // SEE a name from outside their own department, let alone type one in. Cached on S.adopt for the
-    // session -- it rarely changes and every tab/period/level switch would otherwise re-fetch it.
-    (async () => {
-      try {
-        if (!S.adopt.assignedByOptions) S.adopt.assignedByOptions = await reportsApi('/api/reports/adoption-assigned-by-options');
-        const cur = $('#adoptAssignedBy'); if (!cur) return;   // the panel may have moved on by the time this resolves
-        cur.innerHTML = '<option value="">Assigned by: everyone</option>' + S.adopt.assignedByOptions.map(n => `<option value="${esc(n)}" ${n === S.adopt.assignedBy ? 'selected' : ''}>${esc(n)}</option>`).join('');
-      } catch (e) { /* the "everyone" option still works */ }
-    })();
-  }
-  drawAdoptFeedback();   // its own card + its own toggle; a no-op unless the track / drill-down / assigned-by changed
+  drawAdoptFeedback();   // its own card + its own toggle; a no-op unless the track / drill-down changed
   try {
     const fiscalStartMonth = await ensureFiscalStartMonth();   // same cached fact the cards now also wait on
     let path = `/api/reports/adoption-overview?track=${t.track}&level=${S.adopt.level}&period=${S.adopt.period}${focusQuery()}`;
-    if (t.hasAssignedBy && S.adopt.assignedBy) path += '&assigned_by=' + encodeURIComponent(S.adopt.assignedBy);
     const rows = await reportsApi(path);
     // loading-block's own 3rem padding (meant only for the spinner) was being left on this div after
     // real content replaced it -- the dead space Kriti flagged, 2026-10-06, between the tabs and the
@@ -2745,24 +2743,23 @@ async function drawAdoptPanel() {
 // never decides who may see what: the backend only ever answers inside the caller's own scope.
 // TOP HALF (cards, Friction Share Over Time, Key Insights, How Friction Compounds): two independent Month/Quarter/Year
 // toggles (the four cards, and the chart -- Compounds follows the chart), one Filter by Reflector and one Drill Down.
-// BOTTOM HALF ("Friction x Workplace Challenge"): its OWN toggle, Filter by Reflector and Drill Down (company and
-// department only -- never manager, user or assigner, privacy) and its OWN request; the top half never touches it.
+// BOTTOM HALF ("Friction x Workplace Challenge"): its OWN toggle, Filter by Reflector and Drill Down (company, // business unit and department only -- never manager, user or assigner, privacy) and its OWN request; the top half never touches it.
 // All names live in this one object so nothing here can collide with the Adoption Overview code.
 const LF = (() => {
   const COLORS = { confidence: '#0F766E',   // the deep teal (Kriti, 2026-10-09: the brighter teal was too bright for the eyes -- reverted)
      mindset: '#E45756', situation: '#D97706', knowledge: '#4A6FA5' };   // knowledge: a duller steel blue (Kriti, 2026-10-09: the old #2563EB was too sharp)
   const COMBO_COLORS = { one: '#D5E8D4', two: '#79C174', three_plus: '#3D7A3C' };   // three shades of one green, light -> dark as friction compounds: Fable's own ladder (Kriti, 2026-10-09; blue was taken by Knowledge & Skill Application)
   const PERIODS = [['month', 'Month'], ['quarter', 'Quarter'], ['year', 'Year']];
-  const LEVELS = [['company', 'Company'], ['department', 'Department'], ['manager', 'Manager'], ['user', 'User'], ['assigner', 'Assigner']];
-  const WC_LEVELS = [['company', 'Company'], ['department', 'Department']];
+  const LEVELS = [['company', 'Company'], ['bu', 'Business Unit'], ['department', 'Department'], ['assigner', 'Assigner'], ['manager', 'Manager'], ['user', 'User']];
+  const WC_LEVELS = [['company', 'Company'], ['bu', 'Business Unit'], ['department', 'Department']];
   const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const DD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="4 4 20 4 14 12.5 14 19 10 21 10 12.5 4 4"/></svg>';
   const DD_TOOLTIP = '<div class="dd-tooltip"><strong>Reveal Insights from Every Angle</strong><span>Analyze learning insights across different organizational dimensions. Slice data vertically and horizontally to uncover trends, compare groups, and identify where capability gaps and strengths exist.</span></div>';
   const RF_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
   const BUBBLE_MIN = 22, BUBBLE_MAX = 60, PCT_MIN = 12, PCT_MAX = 44;
   const st = { period: 'month',   // ONE toggle for the whole Learning Friction section: the cards, the chart and Compounds move together (Kriti, 2026-10-09)
-                focus: { company: [], department: [], manager: [], user: [], assigner: [] },
-               wc: { company: [], department: [] }, reflectors: [], options: null, data: null, error: null, loading: true, ddMode: 'page',
+                focus: { company: [], bu: [], department: [], manager: [], user: [], assigner: [] },
+               wc: { company: [], bu: [], department: [] }, reflectors: [], options: null, data: null, error: null, loading: true, ddMode: 'page',
                wcPeriod: 'month', wcReflectors: [], wcData: null, wcError: null, wcLoading: true, rfMode: 'page' };
   let seq = 0, wcSeq = 0;
 
@@ -3123,7 +3120,7 @@ function logOut() {
 }
 function renderSoon(which) {
   const names = { adoption: 'Adoption Overview', reports: 'Reports & Insights', impact: 'Business Impact' };
-  const blurb = { adoption: 'See who is using Wisdom on the GO!, how often, and where adoption is growing.', reports: 'Reflector insights, learning friction and more — sliced by your companies and departments.', impact: 'Connect learning to business results.' };
+  const blurb = { adoption: 'See who is using Wisdom on the GO!, how often, and where adoption is growing.', reports: 'Reflector insights, learning friction and more — sliced by your companies, business units and departments.', impact: 'Connect learning to business results.' };
   $('#view').innerHTML = `<div class="um-page-head"><div><h1 class="um-title">${names[which] || 'Coming soon'}</h1></div></div><div class="panel soon-card"><div class="big">Coming soon</div><p>${esc(blurb[which] || '')} Everything here will respect the companies and departments you manage.</p></div>`;
 }
 async function route() {
@@ -3133,7 +3130,7 @@ async function route() {
   const parts = path.split('/');
   S.route = parts[0];
   if (parts[0] === 'users') { drawNav('users'); return renderUsers(); }
-  if (parts[0] === 'departments') { drawNav('users'); return renderDepartments(); }
+  if (parts[0] === 'business-units') { drawNav('users'); return renderBusinessUnits(); }
   if (parts[0] === 'admins') { drawNav('users'); return renderAdmins(); }
   if (parts[0] === 'bulk') { drawNav('users'); return renderBulk(); }
   if (parts[0] === 'learning') {

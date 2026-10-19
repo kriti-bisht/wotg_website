@@ -404,10 +404,14 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="department">Department</label>
-              <select id="department" required disabled>
+              <label for="businessUnit">Business unit</label>
+              <select id="businessUnit" required disabled>
                 <option value="">Select a company first</option>
               </select>
+            </div>
+            <div class="form-group">
+              <label for="department">Department</label>
+              <input type="text" id="department" maxlength="100" placeholder="Type your department, e.g. Sales" autocomplete="off" required />
             </div>
             <div class="form-group">
               <label for="country">Country of Location</label>
@@ -506,22 +510,24 @@
     // Opening-conversation backend. Change this if the service ever moves.
     (() => { const lower = id => { const el = document.getElementById(id); if (el) el.addEventListener('input', () => { if (el.value !== el.value.toLowerCase()) { const a = el.selectionStart, b = el.selectionEnd; el.value = el.value.toLowerCase(); try { el.setSelectionRange(a, b); } catch (_) {} } }); }; lower('signupEmail'); lower('managerEmail'); })();
     (() => { const wire = () => { const e = document.getElementById('signupEmail'), u = document.getElementById('signupUsername'); if (e && u) { const m = () => { u.value = e.value.trim(); }; e.addEventListener('input', m); e.addEventListener('change', m); m(); } }; if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire(); })();
-    const API_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
+    // Opened from this computer (localhost), the page talks to the user management service running on this computer (local_dev/); from anywhere
+    // else it talks to the real one. The password is only ever sent to the address chosen here.
+    const LOCAL_TEST = ['localhost', '127.0.0.1'].indexOf(window.location.hostname) !== -1;
+    const API_BASE = LOCAL_TEST ? 'http://' + window.location.hostname + ':8001' : 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
 
-    // COMPANY/DEPARTMENT DROPDOWNS -- Kriti's explicit call, 2026-09-15:
-    // nobody signs up by typing their company or department anymore, only
-    // by picking from what's registered in company_department_store.py.
-    // Department is cascading -- disabled and empty until a company is
-    // picked, then repopulated to just that company's own departments.
+    // COMPANY/BUSINESS UNIT DROPDOWNS: nobody signs up by typing their company or
+    // business unit, only by picking from what's registered in company_bu_store.py.
+    // Business unit is cascading -- disabled and empty until a company is
+    // picked, then repopulated to just that company's own business units.
     // Both dropdowns show full names only, never the short codes -- the
     // codes are a backend concern, picked automatically off whichever full
-    // name gets submitted.
+    // name gets submitted. Department is typed by the person (free text).
     function titleCase(s) {
       return s.replace(/\w\S*/g, t => t[0].toUpperCase() + t.slice(1));
     }
 
     const companySelect = document.getElementById('company');
-    const departmentSelect = document.getElementById('department');
+    const businessUnitSelect = document.getElementById('businessUnit');
 
     async function loadCompanies() {
       try {
@@ -540,25 +546,25 @@
       }
     }
 
-    async function loadDepartmentsFor(companyCode) {
-      departmentSelect.disabled = true;
-      departmentSelect.innerHTML = '<option value="">Loading departments…</option>';
+    async function loadBusinessUnitsFor(companyCode) {
+      businessUnitSelect.disabled = true;
+      businessUnitSelect.innerHTML = '<option value="">Loading business units…</option>';
       try {
-        const res = await fetch(`${API_BASE}/api/companies/${encodeURIComponent(companyCode)}/departments`);
+        const res = await fetch(`${API_BASE}/api/companies/${encodeURIComponent(companyCode)}/bus`);
         const data = await res.json();
-        const depts = data.departments || [];
-        departmentSelect.innerHTML = depts.length
-          ? '<option value="">Select your department</option>'
-          : '<option value="">No departments listed for this company yet</option>';
-        depts.forEach(d => {
+        const bus = data.bus || [];
+        businessUnitSelect.innerHTML = bus.length
+          ? '<option value="">Select your business unit</option>'
+          : '<option value="">No business units listed for this company yet</option>';
+        bus.forEach(b => {
           const opt = document.createElement('option');
-          opt.value = d.department_name;  // stored lowercased -- exact match for the session-start lookup later
-          opt.textContent = titleCase(d.department_name);
-          departmentSelect.appendChild(opt);
+          opt.value = b.bu_name;  // stored lowercased -- exact match for the session-start lookup later
+          opt.textContent = titleCase(b.bu_name);
+          businessUnitSelect.appendChild(opt);
         });
-        departmentSelect.disabled = depts.length === 0;
+        businessUnitSelect.disabled = bus.length === 0;
       } catch (e) {
-        departmentSelect.innerHTML = '<option value="">Could not load departments -- please refresh</option>';
+        businessUnitSelect.innerHTML = '<option value="">Could not load business units -- please refresh</option>';
       }
     }
 
@@ -566,10 +572,10 @@
       const chosen = companySelect.selectedOptions[0];
       const code = chosen ? chosen.dataset.code : null;
       if (code) {
-        loadDepartmentsFor(code);
+        loadBusinessUnitsFor(code);
       } else {
-        departmentSelect.disabled = true;
-        departmentSelect.innerHTML = '<option value="">Select a company first</option>';
+        businessUnitSelect.disabled = true;
+        businessUnitSelect.innerHTML = '<option value="">Select a company first</option>';
       }
     });
 
@@ -871,6 +877,7 @@
         name: document.getElementById('name').value.trim().replace(/\b\w/g, c => c.toUpperCase()),
         pronouns: readPronouns('signupPronouns'),
         designation: document.getElementById('designation').value.trim(),
+        business_unit: document.getElementById('businessUnit').value.trim(),
         department: document.getElementById('department').value.trim(),
         company: document.getElementById('company').value.trim(),
         country: (worldCountries.find(c => c.code === countrySelect.value) || {}).name || '',

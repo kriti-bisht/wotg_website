@@ -5,7 +5,8 @@
 <title>Wisdom on the Go — Demo</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/atom_slides.css?v=20261019n">
 <style>
 :root {
   --night:   #041A40;
@@ -19,6 +20,8 @@
   --green2:  #2d9640;
   --gold:    #E4CA0A;
   --gold2:   #AB9808;
+  --sand:    #EBDFA6;
+  --slate:   #8CA0BE;
   --slant:   28px;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -131,10 +134,10 @@ header.topbar { background:var(--night); }
 .tour-btn-dismiss:hover { color:var(--night); }
 
 .notif-badge {
-  position:absolute; top:-2px; right:-2px; width:14px; height:14px; box-sizing:border-box;
-  background:#e14b4b; border:2px solid var(--night); border-radius:50%;
-  color:#fff; font-family:'Poppins',sans-serif; font-size:9px; font-weight:800;
-  line-height:10px; text-align:center;
+  position:absolute; top:-6px; right:-8px; min-width:18px; height:18px; box-sizing:border-box; padding:0 4px;
+  background:#e14b4b; border:2px solid var(--night); border-radius:9px;
+  color:#fff; font-family:'Poppins',sans-serif; font-size:10px; font-weight:800;
+  line-height:14px; text-align:center;
 }
 .icon-item.seen .notif-badge { display:none; }
 /* My Notes gets its own color -- green, not red -- Kriti's explicit call,
@@ -296,6 +299,15 @@ header.topbar { background:var(--night); }
 }
 .chat-panel.active { display:flex; }
 .hero.chatting { display:none; }
+
+/* A chat gets the screen. While a conversation is open -- live, a parked one resumed, a History chat or a notification --
+   the panel grows to fill the height between the header and the message box, and the stats strip below it is hidden until the
+   chat is closed. Phones keep their own rule further down. */
+@media (min-width: 769px) {
+  .chat-panel { height:calc(100vh - 190px); min-height:350px; }
+  body:has(.chat-panel.active) .charts-strip,
+  body:has(.notification-overlay.open) .charts-strip { display:none; }
+}
 .chat-panel-head {
   flex-shrink:0; padding:0.7rem 1.3rem; background:var(--night);
   color:var(--white); font-size:0.85rem; font-weight:600;
@@ -412,7 +424,7 @@ header.topbar { background:var(--night); }
 .chat-bar input, .chat-bar textarea {
   flex:1; border:none; outline:none; background:transparent; resize:none;
   font-family:'Poppins',sans-serif; font-size:0.92rem; color:var(--night2);
-  padding:0.85rem 0; max-height:120px; line-height:1.4;
+  padding:0.85rem 0; max-height:40vh; line-height:1.4;
 }
 .chat-bar input::placeholder, .chat-bar textarea::placeholder { color:var(--grey3); }
 .chat-bar textarea:disabled, .chat-bar button:disabled { opacity:0.5; cursor:not-allowed; }
@@ -466,70 +478,174 @@ header.topbar { background:var(--night); }
    -- no script measuring one list against the other, nothing to drift when a label wraps or a skill
    is added. The star list takes whatever room is left (flex-basis 0, so it never makes the card
    taller) and scrolls inside that room. */
-#learningMomentumCard, #starStockCard { display:flex; flex-direction:column; }
-#learningMomentumCard .stat-list, #starStockCard .star-list { margin-bottom:0.65rem; }
-#learningMomentumCard .period-toggle-bottom, #starStockCard .period-toggle-bottom { margin-top:auto; align-self:flex-start; flex-shrink:0; }
-#starStockCard .star-list { flex:1 1 0; min-height:0; max-height:none; height:auto; }
-
+#learningMomentumCard, #starStockCard, #impactCard { display:flex; flex-direction:column; }
+#learningMomentumCard h3, #starStockCard h3, #impactCard h3 { margin-bottom:0.5rem; }
+#learningMomentumCard .grow, #impactCard .grow { flex:1 1 auto; min-height:0; margin-bottom:0.55rem; }
+#learningMomentumCard .grow.spread { display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem; }
+#learningMomentumCard .grow.spread .lm-mid, #learningMomentumCard .grow.spread .times { margin-top:0; }
+#learningMomentumCard .period-toggle-bottom, #starStockCard .period-toggle-bottom, #impactCard .period-toggle-bottom { margin-top:auto; align-self:flex-start; flex-shrink:0; }
+#learningMomentumCard.lm-loading .grow { opacity:0.4; }
+#learningMomentumCard .grow { transition:opacity 0.15s; }
+#impactCard .sub { font-size:0.6rem; letter-spacing:0.09em; text-transform:uppercase; color:var(--grey3); font-weight:600; margin-bottom:0.4rem; }
+#impactCard .rule { height:1px; background:rgba(0,0,0,0.07); margin:0.6rem 0 0.55rem; }
 /* Learning Momentum */
-.stat-tile { display:flex; align-items:center; gap:0.7rem; padding:0.28rem 0; border-bottom:1px solid rgba(0,0,0,0.05); }
-.stat-tile:last-child { border-bottom:none; }
-.stat-tile .stat-icon {
-  width:30px; height:30px; border-radius:8px; background:rgba(58,181,74,0.1);
-  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+#learningMomentumCard .streak-hero { position:relative; overflow:hidden; display:flex; align-items:center; gap:0.8rem; padding:0.5rem 0.85rem; border-radius:12px; background:linear-gradient(135deg,#0b2a5e 0%,#041A40 70%); color:#fff; box-shadow:0 6px 14px rgba(4,26,64,.28); }
+#learningMomentumCard .streak-hero::after { content:""; position:absolute; right:-30px; top:-40px; width:140px; height:140px; border-radius:50%; background:radial-gradient(circle, rgba(130,170,255,.20), transparent 65%); }
+#learningMomentumCard .flame { width:42px; height:42px; flex-shrink:0; filter:drop-shadow(0 0 8px rgba(255,190,40,.7)); animation:lmFlicker 2.4s ease-in-out infinite; transform-origin:50% 90%; fill:url(#flameGrad); }
+#learningMomentumCard .streak-hero .big { font-size:1.4rem; font-weight:700; line-height:1.05; }
+#learningMomentumCard .streak-hero .small { font-size:0.66rem; color:rgba(255,255,255,.7); letter-spacing:.03em; }
+#learningMomentumCard .lm-mid { display:flex; align-items:center; gap:0.85rem; margin-top:0.6rem; }
+#learningMomentumCard .donut { position:relative; width:92px; height:92px; flex-shrink:0; }
+#learningMomentumCard .donut svg { transform:rotate(-90deg); }
+#learningMomentumCard .donut .bg { fill:none; stroke:rgba(58,181,74,.14); stroke-width:9; }
+#learningMomentumCard .donut .fg { fill:none; stroke:url(#ringGrad); stroke-width:9; stroke-linecap:round; transition:stroke-dashoffset 1.1s ease .2s; }
+#learningMomentumCard .donut .mid { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+#learningMomentumCard .donut .mid b { font-size:1.3rem; line-height:1; color:var(--night); }
+#learningMomentumCard .donut .mid > span { font-size:0.5rem; color:var(--grey3); margin-top:2px; letter-spacing:.05em; }
+#learningMomentumCard .facts { flex:1; display:flex; flex-direction:column; gap:0.4rem; min-width:0; }
+#learningMomentumCard .stat2 { display:flex; align-items:center; gap:0.6rem; padding:0.32rem 0.55rem; border-radius:12px; background:#f5f8f6; }
+#learningMomentumCard .stat2 .badge { width:34px; height:34px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#fff; background:linear-gradient(145deg,#4cc95e,#2d9640); box-shadow:0 4px 10px rgba(45,150,64,.32); }
+#learningMomentumCard .stat2 .badge svg { width:20px; height:20px; }
+#learningMomentumCard .stat2 .t { flex:1; min-width:0; }
+#learningMomentumCard .stat2 .v { font-size:1.1rem; font-weight:700; line-height:1.05; color:var(--night); }
+#learningMomentumCard .stat2 .v small { font-size:0.74rem; font-weight:500; color:var(--grey3); }
+#learningMomentumCard .stat2 .l { font-size:0.68rem; color:var(--night3); margin-top:1px; }
+#learningMomentumCard .stat2 .minibar { margin-top:3px; height:5px; }
+#learningMomentumCard .fact .row { display:flex; align-items:baseline; justify-content:space-between; gap:.4rem; }
+#learningMomentumCard .fact .lab { font-size:0.66rem; color:var(--grey3); }
+#learningMomentumCard .fact .val { font-size:0.95rem; font-weight:700; color:var(--night); }
+#learningMomentumCard .fact .val small { font-size:0.66rem; font-weight:500; color:var(--grey3); }
+#learningMomentumCard .minibar { height:6px; border-radius:4px; background:#eef0f2; margin-top:4px; overflow:hidden; }
+#learningMomentumCard .minibar i { display:block; height:100%; width:0; border-radius:4px; background:linear-gradient(90deg,var(--green),var(--gold)); transition:width 1s ease .3s; }
+#learningMomentumCard .skillchip { display:inline-flex; align-items:center; gap:.35rem; }
+#learningMomentumCard .skillchip svg { width:15px; height:15px; color:var(--green2); }
+#learningMomentumCard .times { display:flex; gap:0.6rem; margin-top:0.6rem; }
+#learningMomentumCard .timechip { flex:1; display:flex; align-items:center; gap:0.5rem; padding:0.36rem 0.55rem; border-radius:10px; background:#f5f8f6; }
+#learningMomentumCard .timechip.alt { background:#f4f6fa; }
+#learningMomentumCard .timechip svg { width:18px; height:18px; flex-shrink:0; color:var(--green2); }
+#learningMomentumCard .timechip.alt svg { color:var(--night3); }
+#learningMomentumCard .timechip b { display:block; font-size:0.9rem; line-height:1.1; color:var(--night); }
+#learningMomentumCard .timechip span { font-size:0.58rem; color:var(--grey3); line-height:1.2; display:block; }
+@keyframes lmFlicker { 0%,100% { transform:scale(1) rotate(0); } 40% { transform:scale(1.07) rotate(-2deg); } 70% { transform:scale(.98) rotate(2deg); } }
+/* Star Stock */
+#starStockCard .star-list { flex:1 1 0; min-height:0; margin-bottom:0.55rem; }
+#starStockCard .star-hero { display:flex; align-items:center; gap:0.7rem; padding:0.4rem 0.75rem; border-radius:12px; background:linear-gradient(135deg,#fffbe6,#fdf2bd); box-shadow:inset 0 0 0 1px rgba(228,202,10,.35); }
+#starStockCard .star-hero svg.big { width:34px; height:34px; fill:url(#starShine); filter:drop-shadow(0 3px 6px rgba(168,121,31,.5)); animation:ssTwinkle 3s ease-in-out infinite; flex-shrink:0; }
+#starStockCard .star-hero .big-n { font-size:1.4rem; font-weight:700; line-height:1.05; color:var(--night); }
+#starStockCard .star-hero .small { font-size:0.64rem; color:var(--night3); }
+#starStockCard .star-list { margin-top:0.4rem; overflow-y:auto; flex:1 1 0; min-height:0; padding-right:2px; }
+#starStockCard .strip.phone .star-list { flex:none; max-height:15.5rem; }
+#starStockCard .star-item { display:flex; align-items:center; justify-content:space-between; gap:0.6rem; padding:0.34rem 0.5rem; border-radius:9px; margin-bottom:2px; position:relative; }
+#starStockCard .star-item:hover { background:#fafbfc; }
+#starStockCard .star-item.full { background:linear-gradient(90deg,rgba(228,202,10,.16),rgba(228,202,10,0)); }
+#starStockCard .star-item.full::before { content:""; position:absolute; left:0; top:20%; bottom:20%; width:3px; border-radius:2px; background:linear-gradient(180deg,var(--gold),var(--gold2)); }
+#starStockCard .star-item .nm { font-size:0.74rem; color:var(--night2); font-weight:500; line-height:1.2; min-width:0; }
+#starStockCard .star-item.zero .nm { color:var(--grey3); font-weight:400; }
+#starStockCard .star-item .right { display:flex; align-items:center; gap:0.45rem; flex-shrink:0; }
+#starStockCard .stars { display:flex; gap:3px; }
+#starStockCard .stars svg { width:17px; height:17px; }
+#starStockCard .stars svg.filled { fill:url(#starShine); filter:drop-shadow(0 1px 1.5px rgba(168,121,31,.45)); }
+#starStockCard .stars svg.empty { fill:#dfe2e6; }
+#starStockCard .stars .star-slot { position:relative; display:inline-block; width:17px; height:17px; }
+#starStockCard .stars .star-slot svg { position:absolute; top:0; left:0; }
+#starStockCard .stars .star-slot svg.half { fill:url(#starShine); filter:drop-shadow(0 1px 1.5px rgba(168,121,31,.45)); clip-path:inset(0 50% 0 0); }
+#starStockCard .star-item .num { font-size:0.62rem; color:var(--grey3); width:1.6rem; text-align:right; font-weight:600; }
+@keyframes ssTwinkle { 0%,100% { transform:scale(1) rotate(0); } 50% { transform:scale(1.08) rotate(6deg); } }
+/* Impact You Created */
+#impactCard .path { position:relative; display:flex; justify-content:space-between; align-items:flex-end; padding:0 0.6rem; }
+#impactCard .path .track { position:absolute; left:14%; right:14%; bottom:38px; height:4px; border-radius:3px; background:repeating-linear-gradient(90deg,#d7dce3 0 6px,transparent 6px 11px); }
+#impactCard .path .track i { position:absolute; left:0; top:0; bottom:0; border-radius:3px; background:linear-gradient(90deg,var(--green),var(--gold)); width:0; transition:width 1s ease .3s; }
+#impactCard .stone { position:relative; display:flex; flex-direction:column; align-items:center; width:30%; z-index:1; }
+#impactCard .medal { border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; position:relative; transition:transform .25s; }
+#impactCard .stone:hover .medal { transform:scale(1.07); }
+#impactCard .medal.m1 { width:44px; height:44px; font-size:1.05rem; background:linear-gradient(145deg,#2A3C5D,#041A40); box-shadow:0 4px 10px rgba(4,26,64,.28); }
+#impactCard .medal.m2 { width:52px; height:52px; font-size:1.2rem; background:linear-gradient(145deg,#4cc95e,#2d9640); box-shadow:0 5px 12px rgba(45,150,64,.32); }
+#impactCard .medal.m3 { width:62px; height:62px; font-size:1.45rem; color:var(--night); background:linear-gradient(145deg,#fff3a3 0%,#E4CA0A 45%,#AB9808 100%); box-shadow:0 6px 16px rgba(171,152,8,.42); }
+#impactCard .medal.m3::after { content:""; position:absolute; inset:-6px; border-radius:50%; border:2px solid rgba(228,202,10,.45); animation:imHalo 2.6s ease-in-out infinite; }
+#impactCard .medal.ghost { background:#f3f5f8; color:var(--grey2); box-shadow:none; border:2px dashed #cfd5de; }
+#impactCard .medal.ghost::after { display:none; }
+#impactCard .stone .lbl { margin-top:0.3rem; font-size:0.62rem; color:var(--night2); text-align:center; line-height:1.25; font-weight:500; }
+#impactCard .empty-note { text-align:center; font-size:0.7rem; color:var(--grey3); margin-top:0.65rem; }
+#impactCard .reported-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:0.3rem; }
+#impactCard .reported-head .of { font-size:0.7rem; color:var(--night2); }
+#impactCard .reported-head .of b { font-size:0.95rem; color:var(--night); }
+#impactCard .dots { display:flex; flex-wrap:wrap; gap:7px; min-height:20px; margin-bottom:0.5rem; }
+#impactCard .dot { width:20px; height:20px; border-radius:50%; position:relative; cursor:default; opacity:0; transform:scale(.3); animation:imPop .45s cubic-bezier(.3,1.6,.5,1) forwards; }
+#impactCard .dot.clear { background:radial-gradient(circle at 32% 28%, #fff7b8, #E4CA0A 55%, #AB9808); box-shadow:0 2px 6px rgba(171,152,8,.45); }
+#impactCard .dot.some { background:radial-gradient(circle at 32% 28%, #fff8dc, var(--sand) 60%, #cbb96c); box-shadow:0 2px 5px rgba(150,130,40,.25); }
+#impactCard .dot.land { background:radial-gradient(circle at 32% 28%, #dbe5f3, var(--slate) 62%, #6a7f9f); box-shadow:0 2px 5px rgba(60,80,120,.28); }
+#impactCard .dot.ghost { background:#f1f3f6; border:2px dashed #d3d8e0; box-shadow:none; animation-delay:0s; }
+#impactCard .dot[data-tip]:hover::after { content:attr(data-tip); position:absolute; bottom:135%; left:50%; transform:translateX(-50%); background:var(--night); color:#fff; font-size:0.62rem; padding:0.25rem 0.5rem; border-radius:6px; white-space:nowrap; z-index:5; }
+#impactCard .band { display:flex; height:18px; border-radius:9px; overflow:hidden; margin-bottom:0.5rem; background:#eef0f2; }
+#impactCard .band i { display:block; height:100%; width:0; transition:width .9s ease .2s; }
+#impactCard .band i.clear { background:linear-gradient(180deg,#f3de38,#C9B010); }
+#impactCard .band i.some { background:var(--sand); }
+#impactCard .band i.land { background:var(--slate); }
+#impactCard .outcomes { display:flex; gap:0.5rem; }
+#impactCard .out { flex:1; padding-left:0.55rem; border-left:3px solid transparent; }
+#impactCard .out.clear { border-color:var(--gold); }
+#impactCard .out.some { border-color:var(--sand); }
+#impactCard .out.land { border-color:var(--slate); }
+#impactCard .out .pct { font-size:1.05rem; font-weight:700; color:var(--night); line-height:1.1; }
+#impactCard .out .what { font-size:0.62rem; color:var(--night2); line-height:1.25; margin-top:0.12rem; }
+#impactCard .out .n { font-size:0.58rem; color:var(--grey3); margin-top:0.1rem; }
+#impactCard .foot { font-size:0.64rem; color:var(--night3); font-style:italic; margin-top:0.5rem; text-align:center; }
+#impactCard .waiting { font-size:0.72rem; color:var(--grey3); }
+@keyframes imHalo { 0%,100% { transform:scale(1); opacity:.9 } 50% { transform:scale(1.08); opacity:.3 } }
+@keyframes imPop { to { opacity:1; transform:scale(1); } }
+/* The three cards keep one fixed height on desktop, so switching Quarter / Year or having less data never makes them jump. */
+@media (min-width: 769px) { #learningMomentumCard, #starStockCard, #impactCard { min-height:24.25rem; } }
+@media (max-width: 768px) { #starStockCard .star-list { flex:none; max-height:15.5rem; } }
+
+/* Impact card: the "waiting for results" line sits low, above the toggle, on a night-sky fill. */
+#impactCard .grow { display:flex; flex-direction:column; }
+#impactReported { flex:1 1 auto; display:flex; flex-direction:column; min-height:0; }
+#impactCard .waiting { margin-top:auto; margin-bottom:0.55rem; padding:0.7rem 0.9rem; border-radius:10px; text-align:center; font-size:0.74rem; color:#fff;
+  background:
+    radial-gradient(1.2px 1.2px at 12% 28%, #fff, transparent), radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1.4px 1.4px at 52% 22%, #fff, transparent), radial-gradient(1px 1px at 71% 64%, rgba(255,255,255,0.85), transparent),
+    radial-gradient(1.2px 1.2px at 88% 30%, #fff, transparent), radial-gradient(1px 1px at 44% 82%, rgba(255,255,255,0.7), transparent),
+    linear-gradient(165deg, #0d2b66 0%, #041A40 62%, #02122e 100%); }
+
+/* First run: a learner who has never completed a Learning Atom gets the same three cards, shorter, and the top area gets the room. */
+.lm-firstrun { display:none; }
+#learningMomentumCard, #starStockCard, #impactCard { transition:min-height 0.35s ease; }
+@media (min-width: 769px) {
+  body.first-run #learningMomentumCard, body.first-run #starStockCard, body.first-run #impactCard { min-height:15rem; }
+  body.first-run .hero { height:clamp(260px, calc(100vh - 73px - 84px - 255px), 420px); }
+  body.first-run .avatar-wrap { width:190px; }
 }
-.stat-tile .stat-icon svg { width:16px; height:16px; color:var(--green2); }
-.stat-tile .stat-text { flex:1; }
-.stat-tile .stat-value { font-weight:700; font-size:0.90rem; color:var(--night); transition:opacity 0.15s; }
-.stat-tile .stat-label { font-size:0.7rem; color:var(--grey3); }
-.stat-tile.streak .stat-icon { background:rgba(201,168,76,0.15); }
-.stat-tile.streak .stat-icon svg { color:var(--gold2); }
-/* Loading dim, Kriti's explicit call, 2026-09-17 -- toggling the period
-   used to give no visible sign anything was happening during the fetch,
-   so a slow response looked identical to a broken click. */
-#learningMomentumCard.lm-loading .stat-value,
-#learningMomentumCard.lm-loading .ring-wrap { opacity:0.35; }
-.stat-tile-split .stat-text-split { flex:1; display:flex; align-items:center; }
-.stat-tile-split .stat-text-half { flex:1; }
-.stat-tile-split .stat-divider { width:1px; align-self:stretch; background:rgba(0,0,0,0.12); margin:0 0.7rem; }
-.ring-wrap { position:relative; width:30px; height:30px; flex-shrink:0; transition:opacity 0.15s; }
-.ring-wrap svg { transform:rotate(-90deg); }
-.ring-wrap .ring-bg { fill:none; stroke:rgba(58,181,74,0.15); stroke-width:4; }
-.ring-wrap .ring-fg { fill:none; stroke:var(--green); stroke-width:4; stroke-linecap:round; }
+body.first-run #learningMomentumCard .lm-mid, body.first-run #learningMomentumCard .times { display:none; }
+body.first-run #learningMomentumCard .lm-firstrun { display:block; font-size:0.8rem; color:var(--night3); text-align:center; padding:0.4rem 0.6rem; }
+body.first-run #learningMomentumCard .grow.spread { justify-content:flex-start; gap:0.9rem; }
+body.first-run #impactCard .rule, body.first-run #impactCard .foot, body.first-run #impactCard .sub-reported, body.first-run #impactReported { display:none; }
 
-/* Star Collection */
-/* Height is set from JS (see _syncStarStockHeight()) to match .stat-list's
-   own real rendered height exactly, row for row -- Kriti's explicit call,
-   2026-09-17: the two cards' bottom dividing lines have to land at the
-   same pixel, and guessing a rem value here drifted, showing a 6th row
-   half-cut instead of a clean 5. 17rem is only the pre-JS fallback. */
-.star-list { max-height:17rem; overflow-y:auto; }
-.star-item { padding:0.32rem 0; border-bottom:1px solid rgba(0,0,0,0.05); }
-.star-item:last-child { border-bottom:none; }
-.star-item .skill-name { font-size:0.78rem; color:var(--night2); margin-bottom:0.12rem; font-weight:500; }
-.star-item .stars { display:flex; gap:5px; width:126px; }
-.star-item .stars svg { width:21px; height:21px; }
-.star-item .stars svg.filled { fill:url(#starShine); filter:drop-shadow(0 1px 1.5px rgba(168,121,31,0.45)); }
-.star-item .stars svg.empty { fill:#dfe2e6; }
-.star-item .stars .star-slot { position:relative; display:inline-block; width:21px; height:21px; }
-.star-item .stars .star-slot svg { position:absolute; top:0; left:0; }
-.star-item .stars .star-slot svg.half { fill:url(#starShine); filter:drop-shadow(0 1px 1.5px rgba(168,121,31,0.45)); clip-path:inset(0 50% 0 0); }
-
-/* Annual Growth Map */
-.bar-row { margin-bottom:0.2rem; }
-.bar-row:last-child { margin-bottom:0; }
-.bar-row .bar-label { font-size:0.68rem; color:var(--night2); margin-bottom:0.14rem; }
-.bar-track { height:6px; background:#eef0f2; border-radius:4px; overflow:hidden; }
-.bar-fill { height:100%; border-radius:4px; }
-.bar-fill.green { background:var(--green); }
-.bar-fill.gold { background:var(--gold); }
-.bar-fill.grey { background:#c7cdd6; }
-.bar-legend { display:flex; gap:0.9rem; margin-top:0.3rem; font-size:0.64rem; color:var(--grey3); }
-.bar-legend span { display:inline-flex; align-items:center; gap:0.3rem; }
-.bar-legend .swatch { width:8px; height:8px; border-radius:50%; }
-.bar-legend .swatch.green { background:var(--green); }
-.bar-legend .swatch.gold { background:var(--gold); }
-.bar-legend .swatch.grey { background:#c7cdd6; }
+/* Dashboard layout: the recommendations area and the chat bar. The blue top bar and the side panel are not touched. */
+@media (min-width: 769px) {
+  .hero { height:clamp(244px, calc(100vh - 73px - 84px - 407px), 370px); padding:1.1rem 2rem 0.8rem; }
+  .avatar-wrap { width:150px; margin-right:1.4rem; border-radius:16px 16px 0 0; background:radial-gradient(circle at 50% 35%, rgba(228,202,10,0.16), transparent 68%); }
+  .card-group { gap:1.15rem; box-shadow:none; }
+  .card-group .card { clip-path:none; margin-left:0; border-radius:14px; overflow:hidden; box-shadow:0 6px 20px rgba(22,32,46,0.10); }
+  .card-group .card:nth-child(1), .card-group .card:nth-child(3) { flex:0.85 1 0; }
+  .card-group .card:nth-child(2) { flex:1.3 1 0; box-shadow:0 10px 28px rgba(171,152,8,0.25); }
+  .card-group .card:hover { transform:translateY(-4px); }
+  .card-group .card:nth-child(n) .card-header { padding:0.74rem 1rem; font-size:0.98rem; justify-content:flex-start; text-align:left; box-shadow:none; }
+  .card-group .card:nth-child(2) .card-header { color:var(--night); background:linear-gradient(180deg, #f3de38 0%, var(--gold) 100%); }
+  .card-group .card:nth-child(1) .card-header { background:linear-gradient(180deg, #5cc86a, var(--green2)); }
+  .card-group .card:nth-child(3) .card-header { background:linear-gradient(180deg, #3b4f74, var(--night2)); }
+  .card-group .card-header .coming-soon-tag { margin-left:auto; }
+  .card-group .card:nth-child(n) .card-body { padding:0.6rem 0.7rem 0.6rem; }
+  .card-group .card-body li { border-bottom:none; border-radius:9px; padding:0.56rem 0.8rem; margin-bottom:1px; font-size:0.9rem; transition:background 0.15s, color 0.15s; }
+  .card-group .card-body li.hotspot { display:flex; align-items:center; justify-content:space-between; }
+  .card-group .card-body li.hotspot::after { content:"\203A"; font-size:1.3rem; line-height:1; margin-right:0.35rem; color:var(--grey2); transition:transform 0.15s, color 0.15s; }
+  .card-group .card-body li.hotspot:hover { background:#f6f8f2; color:var(--night); font-weight:500; }
+  .card-group .card-body li.hotspot:hover::after { transform:translateX(3px); color:var(--green2); }
+  .card-group .card:nth-child(1) .card-body li, .card-group .card:nth-child(3) .card-body li { color:var(--grey3); font-size:0.86rem; }
+  .card-group .card:nth-child(1), .card-group .card:nth-child(3) { opacity:0.92; }
+  .chat-bar { margin:0.1rem 2rem 0.85rem; border:1.5px solid rgba(58,181,74,0.40); box-shadow:0 0 0 4px rgba(58,181,74,0.07), 0 8px 22px rgba(22,32,46,0.08); transition:box-shadow 0.2s, border-color 0.2s; }
+  .chat-bar:focus-within { border-color:var(--green); box-shadow:0 0 0 5px rgba(58,181,74,0.16), 0 10px 26px rgba(22,32,46,0.12); }
+  .charts-strip { padding-bottom:0.8rem; }
+}
 
 /* ---- Burger + side panel ---- */
 .burger-btn {
@@ -606,24 +722,6 @@ header.topbar { background:var(--night); }
      bottom:-52px) so the two never overlap. */
   position:absolute; bottom:-86px; left:50%; transform:translateX(-50%);
   color:#fff; font-family:'Poppins',sans-serif; font-size:0.8rem; opacity:0.85;
-}
-/* Added 2026-09-09, Kriti's explicit call -- a session's 2nd page (the
-   Commitment card) can take a real few seconds to build even once fast,
-   and there was nothing at all telling the viewer that a fetch was still
-   in flight -- a working-but-slow load looked identical to a broken
-   click. Same slot as .notes-lightbox-pages above (bottom:-86px) --
-   the two are mutually exclusive by construction: this only ever shows
-   while a 2nd page is still pending, and the page-count only ever shows
-   once BOTH pages have already settled, so they can never appear
-   together. */
-.notes-lightbox-loading-more {
-  position:absolute; bottom:-86px; left:50%; transform:translateX(-50%);
-  color:#fff; font-family:'Poppins',sans-serif; font-size:0.8rem; opacity:0.85;
-  animation:notesLoadingMorePulse 1.4s ease-in-out infinite;
-}
-@keyframes notesLoadingMorePulse {
-  0%, 100% { opacity:0.5; }
-  50% { opacity:0.95; }
 }
 .notes-lightbox-download {
   position:absolute; bottom:-52px; left:50%; transform:translateX(-50%);
@@ -1088,7 +1186,7 @@ header.topbar { background:var(--night); }
 .next-step-btn:disabled { cursor:default; }
 
 /* End-session confirm modal -- ported verbatim, light theme */
-.modal-overlay { position:fixed; inset:0; background:rgba(4,26,64,0.5); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:700; }
+.modal-overlay { position:fixed; inset:0; background:rgba(4,26,64,0.5); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:1000; }   /* above the big chat window (900/901), so Park / End / Continue is never hidden behind it */
 .modal-overlay.hidden { display:none; }
 .modal-card { background:var(--white); border-radius:10px; padding:2rem 2.2rem 1.8rem; max-width:400px; width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.4); }
 .modal-card-wide { max-width:440px; }
@@ -1114,7 +1212,7 @@ header.topbar { background:var(--night); }
 .coming-soon-toast {
   position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px);
   background:var(--night); color:#fff; font-size:0.78rem; padding:0.6rem 1.1rem; border-radius:20px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:900; opacity:0; pointer-events:none; transition:opacity 0.2s, transform 0.2s;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:1100; opacity:0; pointer-events:none; transition:opacity 0.2s, transform 0.2s;
 }
 .coming-soon-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
@@ -1264,6 +1362,71 @@ header.topbar { background:var(--night); }
   .chat-panel { margin:0.6rem; }
   .charts-strip { padding:0 0.6rem 1rem; }
 }
+
+/* ---- The slides sit in the chat as wide cards ---- */
+/* One stack under every slide: the slide with its player attached (one box), then its questions, then Continue. The slide is scaled as one picture
+   (see voFitSlides); the player and the questions are sized in em from --vo-ctl, so they stay in proportion to the slide's own text. */
+.chat-messages .msg.msg-atom > div:not(.msg-avatar) { flex:1 1 0; min-width:0; max-width:var(--vo-stage-w, 1000px); }
+.chat-messages .vo-extra { margin:0 0 0.9rem 0; padding-left:42px; box-sizing:border-box; max-width:var(--vo-stack-w, 1042px); display:flex; flex-wrap:wrap; gap:0.5rem; }
+.chat-messages .vo-extra.vo-playerwrap { display:block; margin-bottom:0.7rem; }
+.chat-messages .vo-extra.vo-chips, .chat-messages .vo-extra.vo-playerwrap { font-size:calc(16px * var(--vo-ctl, 1)); }
+.chat-messages .vo-extra.vo-chips { margin-top:-0.2rem; gap:0.5em; }
+.chat-messages .vo-chip { font-family:'Poppins',sans-serif; font-size:0.85em; line-height:1.4; color:var(--night2); background:var(--white); border:1.5px solid rgba(22,32,46,0.2); border-radius:0.8em; padding:0.45em 1em; cursor:pointer; text-align:left; max-width:100%; white-space:normal; }
+.chat-messages .vo-chip:hover:not(:disabled) { border-color:var(--night2); }
+.chat-messages .vo-chip:disabled { opacity:0.5; cursor:default; }
+.chat-messages .vo-nav-btn { font-family:'Poppins',sans-serif; font-size:0.85rem; font-weight:600; color:#fff; background:var(--green); border:none; border-radius:20px; padding:0.65rem 1.4rem; cursor:pointer; }
+.chat-messages .vo-nav-btn:hover:not(:disabled) { background:var(--green2); }
+.chat-messages .vo-nav-btn:disabled { opacity:0.5; cursor:default; }
+.chat-messages .vo-chip-ask { border-color:var(--green); color:var(--green2); font-weight:600; }
+.chat-messages .vo-chip-ask:hover:not(:disabled) { background:rgba(58,181,74,0.1); border-color:var(--green2); }
+
+/* The slide and the player under it are one box: the slide loses its bottom edge and the player carries it on. */
+.chat-messages .msg-atom.vo-has-player { margin-bottom:0; }
+.chat-messages .msg-atom.vo-has-player .atom-root .slide { border-bottom:none; border-bottom-left-radius:0; border-bottom-right-radius:0; box-shadow:none; }
+.chat-messages .vo-extra.vo-playerwrap.vo-attached { margin-top:0; }
+
+/* The player under each slide: play / pause, progress, play again, volume, Read along. */
+.vo-pbox { background:var(--white); border:1px solid rgba(22,32,46,0.1); border-radius:0 0 0.65em 0.65em; box-shadow:0 3px 10px rgba(22,32,46,0.06); }
+.vo-player { display:flex; align-items:center; gap:0.3em; padding:0.4em 0.7em; }
+.vo-pbtn { width:2.1em; height:2.1em; border:none; background:none; border-radius:50%; color:var(--night2); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; padding:0; }
+.vo-pbtn svg { width:1.15em; height:1.15em; }
+.vo-pbtn:hover { background:rgba(22,32,46,0.07); }
+.vo-pbtn.on { color:var(--green2); background:rgba(58,181,74,0.14); }
+.vo-player .vo-play { width:2.2em; height:2.2em; background:var(--green); color:#fff; }
+.vo-player .vo-play:hover { background:var(--green2); }
+.vo-player .vo-play svg { width:1em; height:1em; }
+.vo-track { flex:1 1 auto; min-width:60px; height:0.3em; margin:0 0.7em 0 0.4em; border-radius:0.2em; background:rgba(22,32,46,0.1); overflow:hidden; }
+.vo-readalong-btn { font-family:'Poppins',sans-serif; font-size:0.82em; font-weight:600; color:var(--night2); background:var(--white); border:1.5px solid rgba(22,32,46,0.2); border-radius:1em; padding:0.3em 0.85em; cursor:pointer; white-space:nowrap; margin-left:0.3em; }
+.vo-readalong-btn:hover { border-color:var(--night2); }
+.vo-readalong-btn.on { color:var(--green2); border-color:var(--green); background:rgba(58,181,74,0.12); }
+.vo-fill { height:100%; width:0; background:var(--green); border-radius:0.2em; transition:width 0.4s linear; }
+.vo-volwrap { position:relative; display:flex; }
+.vo-vol-pop { display:none; position:absolute; bottom:2.8em; left:50%; transform:translateX(-50%); background:var(--night); padding:0.55em 0.75em; border-radius:0.5em; z-index:5; }
+.vo-player.vol-open .vo-vol-pop { display:block; }
+.vo-vol-pop input { width:6em; accent-color:var(--green); display:block; }
+/* The script (Read along): hidden until the learner opens it, or shown from the start when the voice is off. */
+.vo-script { display:none; border-top:1px solid rgba(22,32,46,0.1); padding:0.7em 1em 0.85em; }
+#chatMessages.vo-cc-on .vo-script { display:block; }
+.vo-script-label { font-size:0.65em; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--green2); margin-bottom:0.25em; }
+.vo-script-text { font-size:0.92em; line-height:1.6; color:var(--night2); white-space:pre-wrap; }
+.atom-root .cv-tiplab { font-size:0.84rem; font-weight:700; color:var(--night); }
+/* The Trainer's answers on a slide: with the voice on they are spoken, and their words show only while the script is open. */
+#chatMessages.vo-voice-on:not(.vo-cc-on) .msg.vo-trainer-text { display:none; }
+.chat-bar #micBtn.vo-nudge { animation:voNudge 1.2s ease-out 3; }
+@keyframes voNudge { 0%, 100% { box-shadow:0 0 0 0 rgba(58,181,74,0.6); } 50% { box-shadow:0 0 0 10px rgba(58,181,74,0); } }
+@media (max-width: 480px) { .vo-track { margin:0 0.3em; } .vo-player { padding:0.3em 0.4em; } }
+
+/* The big window: the whole chat -- slides, questions, answers and the message box -- fills the screen, starting from the dark bar with the X. */
+body.chat-maximized { overflow:hidden; }
+body.chat-maximized header.topbar { display:none; }
+/* In the big window everything in the chat sits in one centered column as wide as the slide stack. */
+body.chat-maximized .chat-messages > * { max-width:var(--vo-stack-w, none); margin-left:auto; margin-right:auto; }
+body.chat-maximized .chat-panel.active { position:fixed; top:0; left:0; right:0; bottom:var(--vo-bar-h, 100px); margin:0; height:auto; max-height:none; min-height:0; border-radius:0; box-shadow:none; z-index:900; }
+body.chat-maximized .chat-bar { position:fixed; left:1rem; right:1rem; bottom:0.9rem; margin:0; z-index:901; }
+.chat-head-right { display:flex; align-items:center; gap:0.3rem; }
+.chat-panel-expand { background:none; border:none; color:#fff; cursor:pointer; width:36px; height:36px; border-radius:6px; display:flex; align-items:center; justify-content:center; padding:0; }
+.chat-panel-expand svg { width:19px; height:19px; }
+.chat-panel-expand:hover { background:rgba(255,255,255,0.15); }
 </style>
 </head>
 <body>
@@ -1274,6 +1437,8 @@ header.topbar { background:var(--night); }
       <stop offset="40%" stop-color="#e8c14a"/>
       <stop offset="100%" stop-color="#a8791f"/>
     </linearGradient>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3ab54a"/><stop offset="100%" stop-color="#E4CA0A"/></linearGradient>
+    <linearGradient id="flameGrad" x1="50%" y1="100%" x2="50%" y2="0%"><stop offset="0%" stop-color="#ff8a1f"/><stop offset="55%" stop-color="#ffc63a"/><stop offset="100%" stop-color="#fff2a8"/></linearGradient>
   </defs>
 </svg>
 
@@ -1285,7 +1450,6 @@ header.topbar { background:var(--night); }
     <button class="notes-lightbox-nav next" id="notesLightboxNext" onclick="event.stopPropagation(); showLightboxPage(currentPageIndex + 1);" hidden>&rarr;</button>
     <img id="notesLightboxImg" src="" alt="" onclick="event.stopPropagation()">
     <div class="notes-lightbox-pages" id="notesLightboxPages" hidden></div>
-    <div class="notes-lightbox-loading-more" id="notesLightboxLoadingMore" hidden>Loading page 2…</div>
   </div>
 </div>
 
@@ -1460,7 +1624,7 @@ header.topbar { background:var(--night); }
         <div class="icon-item" id="notifItem">
           <a class="icon-btn" id="bellBtn" href="#" onclick="toggleNotifications(event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 3.5 1 5.5 2 7H4c1-1.5 2-3.5 2-7Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
-            <span class="notif-badge" id="notifBadge" style="display:none">!</span>
+            <span class="notif-badge" id="notifBadge" style="display:none">0</span>
           </a>
           <span class="icon-tooltip">Notifications</span>
           <div class="notif-dropdown" id="notifDropdown">
@@ -1527,9 +1691,12 @@ header.topbar { background:var(--night); }
   <div class="chat-panel" id="chatPanel">
     <div class="chat-panel-head">
       <div class="live-label"><span class="live-dot"></span> <span id="chatPanelLabel">Live conversation</span></div>
-      <div class="close-btn-wrap" id="closeBtnWrap">
-        <button class="chat-panel-close" onclick="endConversation()">&times;</button>
-        <span class="chat-icon-tooltip close-tooltip">Park or end this conversation</span>
+      <div class="chat-head-right">
+        <button type="button" class="chat-panel-expand" id="chatExpandBtn" title="Expand the window" aria-label="Expand the window" onclick="voSetMaximized(!document.body.classList.contains('chat-maximized'))"></button>
+        <div class="close-btn-wrap" id="closeBtnWrap">
+          <button class="chat-panel-close" onclick="endConversation()">&times;</button>
+          <span class="chat-icon-tooltip close-tooltip">Park or end this conversation</span>
+        </div>
       </div>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
@@ -1592,67 +1759,73 @@ header.topbar { background:var(--night); }
 
     <div class="insight-card" id="learningMomentumCard">
       <h3>Learning Momentum</h3>
-      <div class="stat-list" id="statList">
-      <div class="stat-tile streak">
-        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2c.6 3.5-2.6 4.8-3.8 7.3C8.6 11.4 9 13 10.3 14c.8.6 1.9.4 2.4-.4.5-.8.3-1.6-.2-2.1 2.1.6 3.5 2.7 3.5 4.8 0 3.1-2.5 5.7-5.6 5.7S4.8 19.4 4.8 16.3c0-4.6 3.7-6.1 5.4-9.2 1-1.9 1.3-3.2.9-5.1 1 .5 2.1 1.3 2.4 0Z"/></svg></div>
-        <div class="stat-text"><div class="stat-value" id="lmStreak">--</div><div class="stat-label">Current Streak</div></div>
-      </div>
-      <div class="stat-tile">
-        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4.2"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/></svg></div>
-        <div class="stat-text"><div class="stat-value" id="lmAtoms">--</div><div class="stat-label">Learning Atoms</div></div>
-      </div>
-      <div class="stat-tile">
-        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6Z"/><path d="m9 12 2 2 4-4"/></svg></div>
-        <div class="stat-text"><div class="stat-value" id="lmSkills">--</div><div class="stat-label">Skills Trained</div></div>
-      </div>
-      <div class="stat-tile stat-tile-split">
-        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
-        <div class="stat-text-split">
-          <div class="stat-text-half"><div class="stat-value" id="lmAvgCompleted">--</div><div class="stat-label">Avg. Session (Completed)</div></div>
-          <div class="stat-divider"></div>
-          <div class="stat-text-half"><div class="stat-value" id="lmAvgOther">--</div><div class="stat-label">Avg. Session (Other)</div></div>
+      <div class="grow spread">
+        <div class="streak-hero">
+          <svg class="flame" viewBox="0 0 24 24"><path d="M13.5 2c.6 3.5-2.6 4.8-3.8 7.3C8.6 11.4 9 13 10.3 14c.8.6 1.9.4 2.4-.4.5-.8.3-1.6-.2-2.1 2.1.6 3.5 2.7 3.5 4.8 0 3.1-2.5 5.7-5.6 5.7S4.8 19.4 4.8 16.3c0-4.6 3.7-6.1 5.4-9.2 1-1.9 1.3-3.2.9-5.1 1 .5 2.1 1.3 2.4 0Z"/></svg>
+          <div><div class="big" id="lmStreak">--</div><div class="small">Current streak</div></div>
         </div>
-      </div>
-      <div class="stat-tile">
-        <div class="ring-wrap">
-          <svg width="30" height="30" viewBox="0 0 30 30">
-            <circle class="ring-bg" cx="15" cy="15" r="12.5"/>
-            <circle class="ring-fg" id="lmCompletionRing" cx="15" cy="15" r="12.5" stroke-dasharray="78.5" stroke-dashoffset="78.5"/>
-          </svg>
+        <div class="lm-firstrun">Finish your first Learning Atom to start your numbers.</div>
+        <div class="lm-mid">
+          <div class="donut">
+            <svg width="92" height="92" viewBox="0 0 92 92">
+              <circle class="bg" cx="46" cy="46" r="38"/>
+              <circle class="fg" id="lmCompletionRing" cx="46" cy="46" r="38" stroke-dasharray="238.76" stroke-dashoffset="238.76"/>
+            </svg>
+            <div class="mid"><b id="lmCompletionRate">--</b><span>COMPLETION</span></div>
+          </div>
+          <div class="facts">
+            <div class="stat2">
+              <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4.2"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/></svg></div>
+              <div class="t"><div class="v"><span id="lmAtomsDone">--</span> <small>/ <span id="lmAtomsTotal">--</span></small></div><div class="l">Learning Atoms</div><div class="minibar"><i id="lmAtomsBar"></i></div></div>
+            </div>
+            <div class="stat2">
+              <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg></div>
+              <div class="t"><div class="v" id="lmSkills">--</div><div class="l">Skills trained</div></div>
+            </div>
+          </div>
         </div>
-        <div class="stat-text"><div class="stat-value" id="lmCompletionRate">--</div><div class="stat-label">Completion Rate</div></div>
-      </div>
+        <div class="times">
+          <div class="timechip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg><div><b id="lmAvgCompleted">--</b><span>Avg. session (completed)</span></div></div>
+          <div class="timechip alt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg><div><b id="lmAvgOther">--</b><span>Avg. session (other)</span></div></div>
+        </div>
       </div>
       <div class="period-toggle period-toggle-bottom" id="learningMomentumToggle"></div><!-- filled from the one shared template, see _fillPeriodToggle() -->
     </div>
 
     <div class="insight-card" id="starStockCard">
       <h3>Star Stock</h3>
+      <div class="star-hero">
+        <svg class="big" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        <div><div class="big-n" id="starTotal">--</div><div class="small" id="starTotalNote">stars earned</div></div>
+      </div>
       <div class="star-list" id="starStockList"></div>
       <div class="period-toggle period-toggle-bottom" id="starStockToggle"></div><!-- filled from the one shared template, see _fillPeriodToggle() -->
     </div>
 
-    <div class="insight-card">
-      <h3>Annual Growth Map <span class="coming-soon-tag">Coming soon</span></h3>
-      <div class="bar-row"><div class="bar-label">Demonstrating Credibility</div><div class="bar-track"><div class="bar-fill green" style="width:90%"></div></div></div>
-      <div class="bar-row"><div class="bar-label">Attuned Listening</div><div class="bar-track"><div class="bar-fill green" style="width:85%"></div></div></div>
-      <div class="bar-row"><div class="bar-label">Taking Accountability</div><div class="bar-track"><div class="bar-fill green" style="width:82%"></div></div></div>
-      <div class="bar-row"><div class="bar-label">Being Amiable</div><div class="bar-track"><div class="bar-fill gold" style="width:62%"></div></div></div>
-      <div class="bar-row"><div class="bar-label">Structuring Messages Clearly</div><div class="bar-track"><div class="bar-fill gold" style="width:58%"></div></div></div>
-      <div class="bar-row"><div class="bar-label">Negotiating Effectively</div><div class="bar-track"><div class="bar-fill gold" style="width:54%"></div></div></div>
-      <div class="bar-row"><div class="bar-label">Being Inclusive</div><div class="bar-track"><div class="bar-fill grey" style="width:18%"></div></div></div>
-      <div class="bar-row"><div class="bar-label">Prioritizing Effectively</div><div class="bar-track"><div class="bar-fill grey" style="width:15%"></div></div></div>
-      <div class="bar-row"><div class="bar-label">Respecting Boundaries</div><div class="bar-track"><div class="bar-fill grey" style="width:12%"></div></div></div>
-      <div class="bar-legend">
-        <span><i class="swatch green"></i> Current Strengths</span>
-        <span><i class="swatch gold"></i> Biggest Improvements</span>
-        <span><i class="swatch grey"></i> Unexplored</span>
+    <div class="insight-card" id="impactCard">
+      <h3>Impact You Created</h3>
+      <div class="grow">
+        <div class="sub">Your learning in action</div>
+        <div class="path">
+          <div class="track"><i id="impactTrackFill"></i></div>
+          <div class="stone"><div class="medal m1" id="impactMedalDone"><span>--</span></div><div class="lbl">Learning Atoms<br>completed</div></div>
+          <div class="stone"><div class="medal m2" id="impactMedalCommit"><span>--</span></div><div class="lbl">Commitments<br>you made</div></div>
+          <div class="stone"><div class="medal m3" id="impactMedalApplied"><span>--</span></div><div class="lbl">Applied in<br>real life</div></div>
+        </div>
+        <div class="empty-note" id="impactEmptyNote" hidden>Your first Learning Atom starts the path.</div>
+        <div class="rule"></div>
+        <div class="sub sub-reported">Impact reported</div>
+        <div id="impactReported"></div>
+        <div class="foot">Because showing up is everything.</div>
       </div>
+      <div class="period-toggle period-toggle-bottom" id="impactToggle"></div><!-- filled from the one shared template, see _fillPeriodToggle() -->
     </div>
 
   </div>
 </div>
 
+<script src="assets/html2canvas.min.js"></script>
+<script src="assets/atom_slides.js?v=20261019n"></script>
 <script>
 // `overflow:hidden` alone locks scroll on desktop (mouse wheel respects
 // it) but iOS Safari ignores it for a touch-drag -- the background page
@@ -1706,7 +1879,7 @@ const TOUR_SECTION = 'Explore WOTG';
 const TOUR_STEPS = [
   { anchor:'#chatInput', side:false, section:TOUR_SECTION, num:1, title:'Start a Conversation', body:"Describe any real work situation here and hit send. WOTG figures out the human skill that can help and walks you through applying it to your own situation." },
   { anchor:'#managerRecCard', side:false, section:TOUR_SECTION, num:2, title:'Your Assigned Learning Goals', body:'Skills your manager or trainer has assigned you show up here. Click any one to start a conversation built around why it was assigned to you.' },
-  { anchor:'#notesItem', side:false, section:TOUR_SECTION, num:3, title:'My Notes', body:"A quick recap of everything you've learned. For each topic you get a one-page summary of what it covered, plus a reminder of the commitment you made for how you'd apply it." },
+  { anchor:'#notesItem', side:false, section:TOUR_SECTION, num:3, title:'My Notes', body:"A quick recap of everything you've learned. For each topic you get a one-page summary of what it covered." },
   { anchor:'#notifItem', side:false, section:TOUR_SECTION, num:4, title:'Notifications', body:"You'll get a reminder here when it's time to confirm whether you've applied what you learned in your daily work." },
   { anchor:'#profileItem', side:false, section:TOUR_SECTION, num:5, title:'Your Profile', body:"Update your ‘About Me’ info, your current growth goal, and your profile photo any time from here. <strong>Choose your language preference right here too.</strong>" },
   { anchor:'#parkingLotSection', side:true, section:TOUR_SECTION, num:6, title:'Parking Lot', body:'Left a conversation unfinished? Pick it back up exactly where you stopped.' },
@@ -1812,9 +1985,13 @@ function dismissTour() {
 }
 
 // ─── CONFIG ─────────────────────────────────────────────────────────────
-const API_BASE = 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewebsites.net';
-const USER_MGMT_BASE = 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
-const REPORTS_BASE = 'https://wotg-reports.azurewebsites.net';
+// Opened from this computer (localhost), the page talks to the services running on this computer; from anywhere else it talks to the real ones.
+// The login token is only ever sent to the address chosen here -- it can never be pointed elsewhere by a link.
+const LOCAL_TEST = ['localhost', '127.0.0.1'].indexOf(window.location.hostname) !== -1;
+function _localBase(port) { return 'http://' + window.location.hostname + ':' + port; }
+const API_BASE = LOCAL_TEST ? _localBase(8000) : 'https://wotg-backend-eybfawfuayb2hdeh.canadacentral-01.azurewebsites.net';
+const USER_MGMT_BASE = LOCAL_TEST ? _localBase(8001) : 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
+const REPORTS_BASE = LOCAL_TEST ? _localBase(8002) : 'https://wotg-reports.azurewebsites.net';
 
 // The login keycard (2026-10-02): login.html stores the token the server handed out; every call to the reports
 // service carries it as "Authorization: Bearer <token>". A 401 means the card is missing, wrong, or has gone quiet
@@ -1840,8 +2017,8 @@ async function reportsFetch(url, options) {
   }
   return res;
 }
-const NOTIFICATION_BASE = 'https://wotg-notifications.azurewebsites.net';
-const LEARNING_RECS_BASE = 'https://wotg-learning-recommendations.azurewebsites.net';
+const NOTIFICATION_BASE = LOCAL_TEST ? _localBase(8003) : 'https://wotg-notifications.azurewebsites.net';
+const LEARNING_RECS_BASE = LOCAL_TEST ? _localBase(8004) : 'https://wotg-learning-recommendations.azurewebsites.net';
 const NOTIFICATION_BUBBLE_WIDTH = '675px';  // +25% over the old 540px -- Kriti's call, 2026-09-10: 540 looked too narrow sitting in the full chat panel. max-width:100% on the card keeps it responsive on mobile.
 
 let userId = '';
@@ -1922,6 +2099,7 @@ function initSession() {
   checkPronounsGate();
   loadLearningMomentum(learningMomentumPeriod);
   loadStarStock(starStockPeriod);
+  loadImpactCard(impactPeriod);
   _syncStarStockHeight();
   _syncMobileHeaderHeight();
 }
@@ -1945,19 +2123,20 @@ function _syncStarStockHeight() {
 }
 window.addEventListener('resize', _syncStarStockHeight);
 
-// ONE template for both Month / Quarter / Year toggles (Learning Momentum and Star Stock), Kriti's explicit call,
+// ONE template for the Quarter / Year toggles (Learning Momentum, Star Stock and Impact You Created), Kriti's explicit call,
 // 2026-10-03: "copy paste the same toggle in both boxes so there's zero difference." Both are built by this one
 // function, from the same markup and the same CSS (.period-toggle .period-toggle-bottom), so they can never drift
 // apart. Only the function each click calls differs. Runs here, before either card loads its data.
 function _fillPeriodToggle(containerId, setterName) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  el.innerHTML = ['month', 'quarter', 'year'].map(function(p, i) {
+  el.innerHTML = ['quarter', 'year'].map(function(p, i) {
     return '<span' + (i === 0 ? ' class="active"' : '') + ' data-period="' + p + '" onclick="' + setterName + "('" + p + "')" + '">' + p.charAt(0).toUpperCase() + p.slice(1) + '</span>';
   }).join('');
 }
 _fillPeriodToggle('learningMomentumToggle', 'setLearningMomentumPeriod');
 _fillPeriodToggle('starStockToggle', 'setStarStockPeriod');
+_fillPeriodToggle('impactToggle', 'setImpactPeriod');
 
 // Phone header's real height (see the mobile media query's .side-panel/
 // .panel-overlay rules) varies with content, so it's measured here rather
@@ -1976,7 +2155,7 @@ window.addEventListener('resize', _syncMobileHeaderHeight);
 // every skill renders exactly as many stars as it's actually earned, in
 // half-star steps; there's no grey "placeholder" star for an unreached
 // max, since there is no max.
-let starStockPeriod = 'month';
+let starStockPeriod = 'quarter';
 
 function _renderStarIcons(container, starCount) {
   // Silver background, 5 slots, ONE row only -- Kriti's final call,
@@ -2041,19 +2220,32 @@ async function loadStarStock(period) {
 
     const list = document.getElementById('starStockList');
     list.innerHTML = '';
+    let starTotal = 0, skillsWithStars = 0;
     starSkills.forEach(function(s) {
+      starTotal += s.stars;
+      if (s.stars > 0) skillsWithStars++;
       const item = document.createElement('div');
-      item.className = 'star-item';
+      item.className = 'star-item' + (s.stars >= 5 ? ' full' : '') + (s.stars === 0 ? ' zero' : '');
       const name = document.createElement('div');
-      name.className = 'skill-name';
+      name.className = 'nm';
       name.textContent = s.skill;
+      const right = document.createElement('div');
+      right.className = 'right';
       const stars = document.createElement('div');
       stars.className = 'stars';
       _renderStarIcons(stars, s.stars);
+      const num = document.createElement('div');
+      num.className = 'num';
+      num.textContent = s.stars % 1 === 0 ? String(s.stars) : s.stars.toFixed(1);
+      right.appendChild(stars);
+      right.appendChild(num);
       item.appendChild(name);
-      item.appendChild(stars);
+      item.appendChild(right);
       list.appendChild(item);
     });
+    _countTo(document.getElementById('starTotal'), starTotal, 1);
+    document.getElementById('starTotalNote').textContent = skillsWithStars > 0
+      ? 'stars earned across ' + skillsWithStars + (skillsWithStars === 1 ? ' skill' : ' skills') : 'stars earned';
   } catch (err) {
     // leave whatever was already showing -- non-critical card
   }
@@ -2072,7 +2264,7 @@ function setStarStockPeriod(period) {
 // ProfilePhoto above -- a failure here never blocks the rest of the
 // dashboard, it just leaves the card showing its last-known values (or the
 // "--" placeholders on first load).
-let learningMomentumPeriod = 'month';
+let learningMomentumPeriod = 'quarter';
 
 async function loadLearningMomentum(period) {
   learningMomentumPeriod = period || learningMomentumPeriod;
@@ -2087,21 +2279,19 @@ async function loadLearningMomentum(period) {
     if (!res.ok || !data.ok) return;
 
     document.getElementById('lmStreak').textContent = data.streak_days + (data.streak_days === 1 ? ' day' : ' days');
-    document.getElementById('lmAtoms').textContent = data.learning_atoms_completed + ' / ' + data.learning_atoms_total;
+    document.getElementById('lmAtomsDone').textContent = data.learning_atoms_completed;
+    document.getElementById('lmAtomsTotal').textContent = data.learning_atoms_total;
+    const atomsBar = document.getElementById('lmAtomsBar');
+    if (atomsBar) atomsBar.style.width = (data.learning_atoms_total ? Math.round(data.learning_atoms_completed * 100 / data.learning_atoms_total) : 0) + '%';
     document.getElementById('lmSkills').textContent = data.skills_trained;
     document.getElementById('lmAvgCompleted').textContent = data.avg_session_duration_minutes_completed + ' min';
     document.getElementById('lmAvgOther').textContent = data.avg_session_duration_minutes_other + ' min';
-    document.getElementById('lmCompletionRate').textContent = data.completion_rate_percent + '%';
+    _countTo(document.getElementById('lmCompletionRate'), data.completion_rate_percent, 0, '%');
 
-    // Ring circumference is 2*pi*12.5 = 78.5 (the stroke-dasharray value
-    // already on this circle) -- offset it by however much of that isn't
-    // "filled" yet, same math the original hardcoded 96%/3.14 example used.
+    // The ring's circumference is 2*pi*38 = 238.76 (the stroke-dasharray on the circle);
+    // the offset is however much of it is not filled yet.
     const ring = document.getElementById('lmCompletionRing');
-    if (ring) {
-      const circumference = 78.5;
-      const offset = circumference * (1 - data.completion_rate_percent / 100);
-      ring.setAttribute('stroke-dashoffset', offset.toFixed(2));
-    }
+    if (ring) ring.setAttribute('stroke-dashoffset', (238.76 * (1 - data.completion_rate_percent / 100)).toFixed(2));
   } catch (err) {
     // leave whatever the card was already showing -- non-critical card
   } finally {
@@ -2114,6 +2304,138 @@ function setLearningMomentumPeriod(period) {
     s.classList.toggle('active', s.dataset.period === period);
   });
   loadLearningMomentum(period);
+}
+
+// ─── IMPACT YOU CREATED CARD ────────────────────────────────────────────
+// Counts a number up from zero into an element (the same easing on every card).
+function _countTo(el, to, decimals, suffix) {
+  if (!el) return;
+  const t0 = performance.now(), ms = 800, tail = suffix || '';
+  const fmt = function(v) { return (decimals ? String(Math.round(v * 2) / 2) : String(Math.round(v))) + tail; };
+  (function frame(t) {
+    const k = Math.max(0, Math.min(1, (t - t0) / ms));
+    el.textContent = fmt(to * (1 - Math.pow(1 - k, 3)));
+    if (k < 1) requestAnimationFrame(frame);
+  })(t0);
+}
+
+// The three shares always add up to exactly 100 (largest remainder).
+function _sharesOf100(counts) {
+  const total = counts[0] + counts[1] + counts[2];
+  if (!total) return [0, 0, 0];
+  const raw = counts.map(function(c) { return c * 100 / total; });
+  const floor = raw.map(Math.floor);
+  let left = 100 - floor.reduce(function(a, b) { return a + b; }, 0);
+  raw.map(function(r, i) { return [r - floor[i], i]; }).sort(function(a, b) { return b[0] - a[0]; })
+     .slice(0, left).forEach(function(p) { floor[p[1]]++; });
+  return floor;
+}
+
+const IMPACT_DOT_LIMIT = 24;   // past this many applied situations the dots become one band
+let impactPeriod = 'quarter';
+
+// data: { completed, committed, applied, outcomes: { clear, some, land }, skills?: { clear: [names], some: [names], land: [names] } }
+// clear = a rating of 4-5, some = 3, land = 1-2.
+function renderImpact(data) {
+  document.body.classList.toggle('first-run', !data.ever_completed);
+  const done = data.completed | 0, commit = data.committed | 0, applied = data.applied | 0;
+  const o = data.outcomes || {};
+  const counts = [o.clear | 0, o.some | 0, o.land | 0];
+  [['impactMedalDone', done], ['impactMedalCommit', commit], ['impactMedalApplied', applied]].forEach(function(m) {
+    const medal = document.getElementById(m[0]);
+    medal.classList.toggle('ghost', m[1] === 0);
+    _countTo(medal.querySelector('span'), m[1], 0);
+  });
+  document.getElementById('impactTrackFill').style.width = (applied > 0 ? 100 : commit > 0 ? 50 : 0) + '%';
+  document.getElementById('impactEmptyNote').hidden = done > 0;
+
+  const box = document.getElementById('impactReported');
+  box.innerHTML = '';
+  if (applied === 0) {
+    const dots = document.createElement('div');
+    dots.className = 'dots';
+    for (let i = 0; i < 3; i++) { const d = document.createElement('span'); d.className = 'dot ghost'; dots.appendChild(d); }
+    const wait = document.createElement('div');
+    wait.className = 'waiting';
+    wait.textContent = 'Results appear here after you confirm learning application.';
+    box.appendChild(dots);
+    box.appendChild(wait);
+    return;
+  }
+  const rated = counts[0] + counts[1] + counts[2];   // applied situations whose rating is in
+  const shares = _sharesOf100(counts);
+  const head = document.createElement('div');
+  head.className = 'reported-head';
+  head.innerHTML = '<div class="of"><b></b> applied in real life</div>';
+  head.querySelector('b').textContent = applied;
+  box.appendChild(head);
+  const kinds = ['clear', 'some', 'land'];
+  if (rated === 0) {
+    const wait = document.createElement('div');
+    wait.className = 'waiting';
+    wait.textContent = 'Results appear here once the follow-up is answered.';
+    box.appendChild(wait);
+    return;
+  }
+  if (rated <= IMPACT_DOT_LIMIT) {
+    const dots = document.createElement('div');
+    dots.className = 'dots';
+    let n = 0;
+    kinds.forEach(function(kind, k) {
+      for (let i = 0; i < counts[k]; i++) {
+        const d = document.createElement('span');
+        d.className = 'dot ' + kind;
+        d.style.animationDelay = (0.5 + n * 0.09) + 's';
+        const names = data.skills && data.skills[kind];
+        if (names && names[i]) d.setAttribute('data-tip', names[i]);
+        dots.appendChild(d);
+        n++;
+      }
+    });
+    box.appendChild(dots);
+  } else {
+    const band = document.createElement('div');
+    band.className = 'band';
+    kinds.forEach(function(kind, k) { const seg = document.createElement('i'); seg.className = kind; band.appendChild(seg); });
+    box.appendChild(band);
+    requestAnimationFrame(function() { requestAnimationFrame(function() {
+      band.querySelectorAll('i').forEach(function(seg, k) { seg.style.width = shares[k] + '%'; });
+    }); });
+  }
+  const outcomes = document.createElement('div');
+  outcomes.className = 'outcomes';
+  [['clear', 'Made a clear difference'], ['some', 'Made some difference'], ['land', 'Didn\u2019t land']].forEach(function(row, k) {
+    const out = document.createElement('div');
+    out.className = 'out ' + row[0];
+    out.innerHTML = '<div class="pct"><span></span>%</div><div class="what"></div><div class="n"></div>';
+    out.querySelector('.what').textContent = row[1];
+    out.querySelector('.n').textContent = counts[k] + ' of ' + rated;
+    _countTo(out.querySelector('.pct span'), shares[k], 0);
+    outcomes.appendChild(out);
+  });
+  box.appendChild(outcomes);
+}
+
+async function loadImpactCard(period) {
+  impactPeriod = period || impactPeriod;
+  const email = await _getUserEmailForReports();
+  try {
+    const res = await reportsFetch(
+      `${REPORTS_BASE}/api/reports/impact-created?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}&period=${encodeURIComponent(impactPeriod)}`,
+    );
+    const data = await res.json();
+    if (!res.ok || !data.ok) return;
+    renderImpact(data);
+  } catch (err) {
+    // leave whatever the card was already showing -- non-critical card
+  }
+}
+
+function setImpactPeriod(period) {
+  document.querySelectorAll('#impactToggle span').forEach(function(s) {
+    s.classList.toggle('active', s.dataset.period === period);
+  });
+  loadImpactCard(period);
 }
 
 // Fix, 2026-09-09: the header's own avatar (top-right icon) was a hardcoded
@@ -2191,6 +2513,7 @@ function _myProfileSkeletonHtml() {
       <div class="myprofile-info-grid">
         <div class="myprofile-info-cell"><div class="myprofile-info-label">Name</div><div class="myprofile-info-value" id="mpName"></div></div>
         <div class="myprofile-info-cell"><div class="myprofile-info-label">Designation</div><div class="myprofile-info-value" id="mpDesignation"></div></div>
+        <div class="myprofile-info-cell"><div class="myprofile-info-label">Business Unit</div><div class="myprofile-info-value" id="mpBusinessUnit"></div></div>
         <div class="myprofile-info-cell"><div class="myprofile-info-label">Department</div><div class="myprofile-info-value" id="mpDepartment"></div></div>
         <div class="myprofile-info-cell"><div class="myprofile-info-label">Company</div><div class="myprofile-info-value" id="mpCompany"></div></div>
         <div class="myprofile-info-cell"><div class="myprofile-info-label">Country</div><div class="myprofile-info-value" id="mpCountry"></div></div>
@@ -2359,6 +2682,7 @@ async function loadMyProfileOverlay() {
 
     document.getElementById('mpName').textContent = p.name || '';
     document.getElementById('mpDesignation').textContent = p.designation || '--';
+    document.getElementById('mpBusinessUnit').textContent = p.business_unit || '--';
     document.getElementById('mpDepartment').textContent = p.department || '--';
     document.getElementById('mpCompany').textContent = p.company || '--';
     document.getElementById('mpCountry').textContent = p.country || '--';
@@ -2641,7 +2965,6 @@ async function openNotesLightbox(sessionIdForDoc, title, hasRecall, hasCommitmen
   const prevBtn = document.getElementById('notesLightboxPrev');
   const nextBtn = document.getElementById('notesLightboxNext');
   const pagesEl = document.getElementById('notesLightboxPages');
-  const loadingMoreEl = document.getElementById('notesLightboxLoadingMore');
 
   _revokeCurrentPages();
   currentPages = [];
@@ -2651,74 +2974,46 @@ async function openNotesLightbox(sessionIdForDoc, title, hasRecall, hasCommitmen
   prevBtn.hidden = true;
   nextBtn.hidden = true;
   pagesEl.hidden = true;
-  loadingMoreEl.hidden = true;
 
   if (!hasRecall && !hasCommitment) return;  // nothing to open at all
   lightbox.classList.add('open');
 
   const email = await _getUserEmailForReports();
 
-  // "recall" and "commitment" load and render COMPLETELY independently --
-  // rewritten 2026-09-09, Kriti's explicit, repeated correction: a session
-  // may genuinely never have a commitment page at all, and even when it
-  // does, Commitment is built fresh every time (real seconds-long work)
-  // while Recall is just a cached read (near-instant) -- the old version
-  // used Promise.all, which held BOTH back until the slower one finished,
-  // so a fast, ready Recall page sat hidden behind a slow Commitment
-  // build. Now: whichever settles first (with real content) shows
-  // immediately; if the other arrives later, it's added in place -- new
-  // page, nav arrow appears -- without disturbing what's already on
-  // screen. If one path was never requested (hasRecall/hasCommitment
-  // false) or comes back empty, nothing ever waits on it.
+  // The two pages load from the notifications service independently and fill the lightbox as they arrive: the Learning Recall is always
+  // page 1 and the commitment card (the picture made when the learner submitted it) always page 2, whenever both exist.
   const slots = { recall: null, commitment: null };
-  const pending = { recall: hasRecall, commitment: hasCommitment };
+  const pending = { recall: !!hasRecall, commitment: !!hasCommitment };
 
-  function _rerenderLightbox(keepKind) {
-    currentPages = ['recall', 'commitment']
-      .map(function(k) { return slots[k]; })
-      .filter(function(p) { return p; });
-    // Real, visible "still working on it" state, added 2026-09-09, Kriti's
-    // explicit call: a working-but-slow 2nd-page fetch used to look
-    // identical to a broken one -- nothing on screen ever said a request
-    // was still in flight. Only shows once at least one page is already
-    // up (never before the lightbox has anything to show at all -- that
-    // case is the "Loading…" state the overlay markup itself already
-    // covers), and disappears the instant the other slot settles either
-    // way (success or failure) via the same currentPages/pending check.
-    const loadingMoreEl = document.getElementById('notesLightboxLoadingMore');
-    if (loadingMoreEl) loadingMoreEl.hidden = !((pending.recall || pending.commitment) && currentPages.length > 0);
+  function _rerenderLightbox() {
+    currentPages = [slots.recall, slots.commitment].filter(function(p) { return p; });
     if (currentPages.length === 0) {
       if (!pending.recall && !pending.commitment) {
         closeNotesLightbox();
         appendError('Could not load that -- please try again.');
       }
-      return;  // still waiting on at least one -- show nothing yet, don't error
+      return;  // still waiting -- show nothing yet, don't error
     }
-    let idx = 0;
-    if (keepKind) {
-      const found = currentPages.findIndex(function(p) { return p.kind === keepKind; });
-      if (found !== -1) idx = found;
-    }
-    showLightboxPage(idx);
+    showLightboxPage(0);
   }
 
   function _settleLightboxSlot(kind, page) {
     pending[kind] = false;
     slots[kind] = page;
-    const currentKind = currentPages[currentPageIndex] ? currentPages[currentPageIndex].kind : null;
-    _rerenderLightbox(currentKind);
+    _rerenderLightbox();
   }
 
+  const query = `?session_id=${encodeURIComponent(sessionIdForDoc)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`;
   if (hasRecall) {
-    fetch(`${NOTIFICATION_BASE}/api/learning-recall/image?session_id=${encodeURIComponent(sessionIdForDoc)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`)
+    fetch(`${NOTIFICATION_BASE}/api/learning-recall/image${query}`)
       .then(function(res) { return res.ok ? res.blob() : null; })
       .then(function(blob) { _settleLightboxSlot('recall', blob ? { blob: blob, title: title || 'Learning Recall', kind: 'recall' } : null); })
       .catch(function() { _settleLightboxSlot('recall', null); });
   }
   if (hasCommitment) {
-    fetch(`${NOTIFICATION_BASE}/api/application-commitment/image?session_id=${encodeURIComponent(sessionIdForDoc)}&user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`)
+    fetch(`${NOTIFICATION_BASE}/api/commitment/image${query}`)
       .then(function(res) { return res.ok ? res.blob() : null; })
-      .then(function(blob) { _settleLightboxSlot('commitment', blob ? { blob: blob, title: 'My Commitment', kind: 'commitment' } : null); })
+      .then(function(blob) { _settleLightboxSlot('commitment', blob ? { blob: blob, title: 'My commitment', kind: 'commitment' } : null); })
       .catch(function() { _settleLightboxSlot('commitment', null); });
   }
 }
@@ -2777,7 +3072,7 @@ function downloadCurrentPage() {
   const blobUrl = URL.createObjectURL(page.blob);
   const a = document.createElement('a');
   a.href = blobUrl;
-  a.download = safeName + '.png';
+  a.download = safeName + (page.blob.type === 'image/jpeg' ? '.jpg' : '.png');
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -3009,6 +3304,7 @@ async function loadSidePreviousConversations() {
 async function startLearningGoalSession(skillName) {
   if (document.getElementById('sidePanel').classList.contains('open')) toggleSidePanel();
   removeWelcome();
+  voReset();
   document.getElementById('chatMessages').innerHTML = '';
   const inputBox = document.getElementById('chatInput');
   inputBox.value = '';
@@ -3023,12 +3319,13 @@ async function startLearningGoalSession(skillName) {
   // in-progress VO session misrouted.
   const previousTrack = activeTrack;
   activeTrack = 'learning_recommendations';
-  showTyping('skill_introduction');
+  showTyping('MR_skill_introduction');
   try {
-    const res = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/start`, {
+    const newSessionId = await startSession('MR');
+    const res = await reportsFetch(`${LEARNING_RECS_BASE}/api/skill-introduction/start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, skill_name: skillName }),
+      body: JSON.stringify({ session_id: newSessionId, skill_name: skillName }),
     });
     const data = await res.json().catch(function(){ return {}; });
     removeTyping();
@@ -3044,7 +3341,7 @@ async function startLearningGoalSession(skillName) {
   } catch (err) {
     removeTyping();
     activeTrack = previousTrack;
-    appendError('Could not reach the server to start that conversation.');
+    appendError(voErrorText(err, 'Could not reach the server to start that conversation.'));
   }
 }
 
@@ -3138,6 +3435,7 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
   // shape, no skill_name). path defaults to VO so an old link/cache without
   // it keeps behaving exactly as before.
   const isLR = path === 'learning_recommendations';
+  voReset();
   if (document.getElementById('sidePanel').classList.contains('open')) toggleSidePanel();
   removeWelcome();
   document.getElementById('chatMessages').innerHTML = '';
@@ -3159,7 +3457,7 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
   // goes through this function at all, so it's untouched -- neither track
   // ever shows a name before one is actually known.
   document.getElementById('chatPanelLabel').textContent = skillName ? 'Live conversation — ' + skillName : 'Live conversation';
-  showTyping(isLR ? 'skill_introduction' : 'opening');
+  showTyping(isLR ? 'MR_skill_introduction' : 'opening');
   const email = await _getUserEmailForReports();
   try {
     const res = await reportsFetch(
@@ -3170,7 +3468,9 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
     removeTyping();
     document.getElementById('chatMessages').innerHTML = '';
     if (!res.ok || !data.ok) {
-      appendError('Could not resume that conversation -- it may have already ended.');
+      appendError(data && data.reason === 'slides_missing'
+        ? 'The slides for that conversation could not be reloaded -- please start a new conversation.'
+        : 'Could not resume that conversation -- it may have already ended.');
       return;
     }
     sessionEnded = false;
@@ -3203,21 +3503,23 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
       renderDriverDiagnosisForm(pendingForm);
     }
 
-    if (data.auto_continue) {
+    if (data.slide) {
+      // A session parked on a training slide gets its whole thread back; the parked slide's Continue / Finish button is the way on.
+      voRestoreThread(data);
+    }
+
+    if (data.auto_continue && !isLR) {
+      await voAutoContinue();
+    } else if (data.auto_continue) {
       showTyping(currentPhase);
       try {
-        let nextResult;
-        if (isLR) {
-          const res2 = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId, session_id: sessionId, skill_name: activeSkillName, message: '' }),
-          });
-          nextResult = await res2.json().catch(function(){ return {}; });
-          if (!res2.ok) throw new Error(nextResult.detail || 'Something went wrong continuing the conversation.');
-        } else {
-          nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
-        }
+        const res2 = await reportsFetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, message: '' }),
+        });
+        const nextResult = await res2.json().catch(function(){ return {}; });
+        if (!res2.ok) throw new Error(nextResult.detail || 'Something went wrong continuing the conversation.');
         removeTyping();
         await handleBackendResult(nextResult);
       } catch (err) {
@@ -3236,6 +3538,7 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
 // hero. Also used going IN, so opening History/Notifications never leaves
 // two boxes stacked on top of each other.
 function _hideMainPanels() {
+  if (typeof voSetMaximized === 'function') voSetMaximized(false);
   document.getElementById('hero').style.display = 'none';
   document.getElementById('chatPanel').classList.remove('active');
   document.getElementById('notificationOverlay').classList.remove('open');
@@ -3266,6 +3569,7 @@ async function viewClosedConversation(clickedSessionId, path) {
   // name would still be showing while this one's own data is still loading,
   // or forever if this fetch fails below.
   document.getElementById('historyOverlayTitle').textContent = 'Conversation History';
+  if (window.AtomSlides) window.AtomSlides.Voice.stop();
   _hideMainPanels();
   document.getElementById('historyOverlay').classList.add('open');
   // The chat input bar is a permanent sibling of every overlay (see
@@ -3312,6 +3616,7 @@ async function viewClosedConversation(clickedSessionId, path) {
       }
       _renderHistoryMessage(m.sender === 'user' ? 'user' : 'ai', m.text);
     });
+    if (data.atom && Array.isArray(data.atom.slides) && data.atom.slides.length) voRenderHistoryAtom(data.atom, clickedSessionId, path === 'learning_recommendations' ? LEARNING_RECS_BASE : API_BASE);
   } catch (err) {
     _renderHistoryMessage('ai', 'Something went wrong loading that conversation -- please try again.');
   }
@@ -3366,9 +3671,731 @@ function _renderHistoryMessage(role, text) {
   scroll.appendChild(msg);
 }
 
+// ─── NEW SLIDE-BASED VOLUNTARY OPENING (2026-10-15) ─────────────────────────
+// The conversation is the same chat as before; from the moment the Master's slides exist, each slide is drawn by assets/atom_slides.js as a
+// card inside the chat stream, followed by its voiceover as text (and, if the voice is on, read aloud by the browser), its pop-up question
+// chips, and the Continue / Finish button. Every state name the new Voluntary Opening returns starts with "VO_" and every state name Learning
+// Recommendations returns starts with "MR_"; handleBackendResult() sends a "VO_" answer, or an "MR_" answer with a slide, here.
+const VO_AUTO_PHASES = ['VO_reflector_identification', 'VO_driver_diagnosis_resolving', 'VO_content_creation', 'VO_rediagnosis'];
+const VO_ENDED_PHASES = ['VO_scope_session_end', 'VO_objection_session_end', 'VO_PL_no_progression_session_end', 'VO_max_turns_reached_session_end'];
+let voCover = null;        // the cover (slide 1) while it is on screen waiting for the Master's slides
+let voHeld = null;         // the first Master slide, held back until "Let's go" is pressed
+let voSlideNumber = 0;
+let voSlideCount = 0;
+let voLastSlide = false;
+let voBusy = false;
+let voAutoMaxDone = false;   // the window is made big once per conversation, when its slides first show; after that it is the learner's choice
+
+function isVoPhase(phase) { return typeof phase === 'string' && phase.indexOf('VO_') === 0; }
+// The slides are drawn by the same code for both tracks. The Voluntary Opening's states are VO_training_slide_<n>; Manager Recommendation's are
+// MR_real_situation_training_slide_<n> and MR_scenario_training_slide_<n>. The cover is slide 1 and has no state.
+function voSlideNumberOf(phase) {
+  const m = /^(?:VO|MR_real_situation|MR_scenario)_training_slide_(\d+)$/.exec(phase || '');
+  return m ? parseInt(m[1], 10) : 0;
+}
+// The backend that holds the session on screen, and its one door for "continue" / "finish" / a typed message.
+function slideBase() { return activeTrack === 'learning_recommendations' ? LEARNING_RECS_BASE : API_BASE; }
+function slideMessage(message) {
+  if (activeTrack === 'learning_recommendations') {
+    return apiPost('/api/skill-introduction/message', { session_id: sessionId, skill_name: activeSkillName, message: message });
+  }
+  return apiPost('/api/message', { session_id: sessionId, message: message });
+}
+// A result the slide code draws: every Voluntary Opening result, and a Manager Recommendation result that carries a slide (the cover, a training slide).
+function isSlideResult(result) { return isVoPhase(result.phase) || (activeTrack === 'learning_recommendations' && !!result.slide); }
+function voReset() {
+  voCover = null; voHeld = null; voSlideNumber = 0; voSlideCount = 0; voLastSlide = false; voBusy = false; voAutoMaxDone = false;
+  if (window.AtomSlides) window.AtomSlides.Voice.stop();
+}
+// The server's own words when it sent some (an account stop, an AI step that could not finish); a plain line when the network itself failed.
+function voErrorText(err, fallback) {
+  return (err && !(err instanceof TypeError) && err.message) ? err.message : fallback;
+}
+
+// Starts a session on a track ('VO' or 'MR') with user management (which checks the account, makes the session ID and writes the passport);
+// the first call to the track that follows creates its summary row.
+async function startSession(track) {
+  const res = await reportsFetch(USER_MGMT_BASE + '/api/session/start', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ track: track }),
+  });
+  const data = await res.json().catch(function(){ return {}; });
+  if (!res.ok || !data.session_id) throw new Error(data.detail || 'Could not start your session -- please try again.');
+  return data.session_id;
+}
+
+function buildAtomRow(el) {
+  const msg = document.createElement('div');
+  msg.className = 'msg msg-atom';
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+  const right = document.createElement('div');
+  right.appendChild(el);
+  msg.appendChild(avatar);
+  msg.appendChild(right);
+  return msg;
+}
+function appendAtomRow(el) {
+  removeWelcome();
+  const row = buildAtomRow(el);
+  document.getElementById('chatMessages').appendChild(row);
+  voFitSlides();
+  row.scrollIntoView({ block: 'start' });
+  return row;
+}
+function appendVoExtra(child, className) {
+  const wrap = document.createElement('div');
+  wrap.className = 'vo-extra ' + (className || '');
+  wrap.appendChild(child);
+  document.getElementById('chatMessages').appendChild(wrap);
+  return wrap;
+}
+
+// ─── The player under each slide ────────────────────────────────────────────────────────────────────────────────────────────
+// Play / pause, a progress bar, play again, volume, the script (CC), a smaller slide and a bigger window -- the same controls a course player has.
+// The voiceover is read by the browser's own voice (an interim voice), so the bar moves by the words spoken. The script is the same text, shown
+// under the player only when the learner asks for it, or when the voice is off (then the words are the only way to follow).
+const VO_ICON = {
+  play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
+  replay: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
+  volume: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  mute: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M22 9l-6 6M16 9l6 6"/></svg>',
+  cc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10.5 10.2a2.3 2.3 0 1 0 0 3.6M17 10.2a2.3 2.3 0 1 0 0 3.6"/></svg>',
+  zoomOut: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6"/></svg>',
+  zoomIn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6M11 8v6"/></svg>',
+  expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7M10 21H3v-7M21 3l-7.5 7.5M3 21l7.5-7.5"/></svg>',
+  shrink: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10h-6V4M4 14h6v6M14 10l7-7M3 21l7-7"/></svg>'
+};
+let voCcUser = null;          // null: the script follows the voice switch (shown when the voice is off); true/false once the learner presses CC
+let voNavWrap = null;         // the Continue / Finish button on screen, kept below the newest message
+let voPlayerCurrent = null;   // the player whose voiceover is playing now
+let voViewReady = false;
+
+// The view stays where the reader put it: the first thing at the top of the chat keeps its place on screen while something above or around it changes
+// size (the Read along panels opening or closing, the slides being re-fitted). Safari does not do this by itself.
+// anchorEl: the thing the reader just pressed, when there is one; it then stays exactly where it is on screen.
+function voHoldView(change, anchorEl) {
+  const area = document.getElementById('chatMessages');
+  if (!area) { change(); return; }
+  const top = area.getBoundingClientRect().top;
+  let anchor = anchorEl || null;
+  for (let i = 0; !anchor && i < area.children.length; i++) { if (area.children[i].getBoundingClientRect().bottom > top + 1) anchor = area.children[i]; }
+  const before = anchor ? anchor.getBoundingClientRect().top : 0;
+  change();
+  if (anchor && anchor.isConnected) area.scrollTop += anchor.getBoundingClientRect().top - before;
+}
+// A reply to a question that appears below the slide: scroll only as far as it takes to see it (never past its own top), and not at all if it is already in view.
+function voRevealBelow(el) {
+  if (!el) return;
+  const area = document.getElementById('chatMessages');
+  const a = area.getBoundingClientRect(), r = el.getBoundingClientRect();
+  const over = r.bottom - a.bottom + 12;
+  if (over > 0) area.scrollTop += Math.min(over, Math.max(0, r.top - a.top - 8));
+}
+// A new slide: its top goes to the top of the view, with enough room under it for the page to scroll that far. The jump is instant, and it is put
+// back a few times over the next seconds while the slide settles (pictures loading and the fit re-sizing change the heights around it) -- unless the
+// reader scrolls, or presses a question, first.
+let voPin = null;
+function voPinPlace() {
+  const area = document.getElementById('chatMessages');
+  if (!voPin || !voPin.row.isConnected || !area) { voPin = null; return; }
+  area.style.paddingBottom = '';
+  const rowTop = voPin.row.getBoundingClientRect().top - area.getBoundingClientRect().top + area.scrollTop;
+  const need = area.clientHeight - (area.scrollHeight - rowTop);
+  if (need > 0) area.style.paddingBottom = Math.ceil(need + 16) + 'px';
+  area.scrollTop = Math.max(0, rowTop - 4);
+}
+function voPinSlideTop(row) {
+  voPin = { row: row, until: Date.now() + 2500 };
+  voPinPlace();
+  [60, 250, 700, 1500].forEach(function(ms) { setTimeout(function() { if (voPin && voPin.row === row && Date.now() < voPin.until) voPinPlace(); }, ms); });
+}
+function voUnpin() { voPin = null; }
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    const area = document.getElementById('chatMessages');
+    if (!area) return;
+    ['wheel', 'touchstart', 'keydown'].forEach(function(ev) { area.addEventListener(ev, voUnpin, { passive: true }); });
+    area.addEventListener('mousedown', function(e) { if (e.target === area) voUnpin(); });   // the scroll bar
+  });
+})();
+function voVoiceHeard() { return !!(window.AtomSlides && window.AtomSlides.Voice.enabled && window.AtomSlides.Voice.supported()); }
+// One place that makes the page match the voice switch, the CC button, the slide size and the window size.
+function voSyncView() { voHoldView(voSyncViewNow); }
+function voSyncViewNow() {
+  const area = document.getElementById('chatMessages');
+  const W = window.AtomSlides.words;
+  const voiceOn = voVoiceHeard();
+  const cc = voCcUser === null ? !voiceOn : voCcUser;
+  area.classList.toggle('vo-voice-on', voiceOn);
+  area.classList.toggle('vo-cc-on', cc);
+  Array.prototype.forEach.call(area.querySelectorAll('.vo-cc-btn'), function(b) { b.classList.toggle('on', cc); b.setAttribute('aria-pressed', cc ? 'true' : 'false'); b.title = cc ? W.ccHide : W.ccShow; });
+  voFitSlides();
+}
+function voMeasureBar() {
+  const bar = document.querySelector('.chat-bar');
+  if (bar) document.documentElement.style.setProperty('--vo-bar-h', (bar.offsetHeight + 28) + 'px');
+}
+// The whole chat window (not only the slides) grows to fill the screen, starting from the dark bar with the X; the message box stays below it.
+function voSetMaximized(on) {
+  document.body.classList.toggle('chat-maximized', !!on);
+  voMeasureBar();
+  const btn = document.getElementById('chatExpandBtn');
+  if (btn) { btn.innerHTML = on ? VO_ICON.shrink : VO_ICON.expand; btn.title = on ? 'Shrink the window' : 'Expand the window'; btn.setAttribute('aria-label', btn.title); }
+  voFitSlides();
+  if (on) scrollMessagesToBottom();
+}
+// A slide is always drawn the same way: its design width (1000px) and its normal proportions, scaled as ONE picture (nothing inside it is re-laid
+// out or cropped). The scale is the same for every slide of the session: it is worked out from the window's width and height only. The player and
+// the questions are sized from the same scale (--vo-ctl) so they stay in proportion to the slide's own text. A phone keeps its own responsive layout.
+const VO_DESIGN_W = 1000;
+const VO_REF_H = 540;        // the height a typical slide has at its design width; the size is worked out from this, not from the slide on screen
+const VO_ROOM_BELOW = 60;    // what the player under the slide needs
+let voFitTimer = null;
+function voScheduleFit() { clearTimeout(voFitTimer); voFitTimer = setTimeout(voFitSlides, 120); }
+// Re-fitting clears and re-applies the size of every slide; the view is held steady through it (the new-slide pin does its own holding).
+function voFitSlides() {
+  if (voPin && Date.now() < voPin.until) voFitSlidesNow(); else voHoldView(voFitSlidesNow);
+}
+function voFitSlidesNow() {
+  const area = document.getElementById('chatMessages');
+  if (!area) return;
+  const roots = Array.prototype.slice.call(area.querySelectorAll('.msg-atom .atom-root'));
+  roots.forEach(function(root) {
+    if (!root.dataset.voWatch && window.ResizeObserver) { root.dataset.voWatch = '1'; new ResizeObserver(voScheduleFit).observe(root); }   // a picture that loads late changes the height
+    root.style.cssText = '';
+    root.parentElement.style.cssText = '';
+  });
+  ['--vo-stage-w', '--vo-stack-w', '--vo-ctl'].forEach(function(v) { area.style.removeProperty(v); });
+  if (!roots.length || !area.clientHeight) return;
+  const last = roots[roots.length - 1];
+  const row = last.closest('.msg-atom');
+  const avatar = row.querySelector('.msg-avatar');
+  const avatarW = (avatar ? avatar.offsetWidth : 0) + 10;
+  const rowW = document.body.classList.contains('chat-maximized') ? area.clientWidth - 42 : row.clientWidth;
+  const availW = rowW - avatarW - 2;
+  if (availW < 700) return;
+  // One size for every slide of the session: it comes only from the window (its width, and a fixed reference slide height), never from the height
+  // of the slide on screen, so the size does not change from slide to slide. A slide taller than the reference simply scrolls a little.
+  const maximized = document.body.classList.contains('chat-maximized');
+  const maxScale = maximized ? 1.15 : 1;
+  let scale = Math.min(maxScale, availW / VO_DESIGN_W, (area.clientHeight - VO_ROOM_BELOW) / VO_REF_H);
+  scale = Math.round(Math.max(0.7, scale) * 100) / 100;
+  const stage = Math.round(VO_DESIGN_W * scale);
+  roots.forEach(function(root) {
+    if (root.querySelector('.cmt-card')) return;   // the commitment card is photographed by the page, so it is left as it is
+    root.style.width = VO_DESIGN_W + 'px';
+    root.style.transform = 'scale(' + scale + ')';
+    root.style.transformOrigin = '0 0';
+    const wrap = root.parentElement;
+    wrap.style.flex = 'none';
+    wrap.style.width = stage + 'px';
+    wrap.style.height = Math.round(root.offsetHeight * scale) + 'px';
+    wrap.style.overflow = 'hidden';
+  });
+  area.style.setProperty('--vo-stage-w', stage + 'px');
+  area.style.setProperty('--vo-stack-w', (stage + 42) + 'px');
+  area.style.setProperty('--vo-ctl', String(Math.min(1.2, Math.max(0.8, scale))));
+  if (voPin && Date.now() < voPin.until) voPinPlace();
+}
+(function() {
+  window.addEventListener('resize', function() { voMeasureBar(); voScheduleFit(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && document.body.classList.contains('chat-maximized')) voSetMaximized(false); });
+  document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('chatPanel'), bar = document.querySelector('.chat-bar');
+    if (panel) new MutationObserver(function() { if (!panel.classList.contains('active') && document.body.classList.contains('chat-maximized')) voSetMaximized(false); }).observe(panel, { attributes: true, attributeFilter: ['class'] });
+    if (bar && window.ResizeObserver) new ResizeObserver(voMeasureBar).observe(bar);
+    voMeasureBar();
+    const expandBtn = document.getElementById('chatExpandBtn');
+    if (expandBtn && typeof VO_ICON !== 'undefined') expandBtn.innerHTML = VO_ICON.expand;
+  });
+})();
+
+// text: the voiceover (also the script). quiet: nothing starts by itself (a resumed or earlier slide).
+function voPlayer(text, quiet) {
+  const AS = window.AtomSlides, W = AS.words, Voice = AS.Voice;
+  if (!voViewReady) { voViewReady = true; Voice.onChange(voSyncView); }
+  const bar = document.createElement('div');
+  bar.className = 'vo-player';
+  bar.innerHTML =
+    '<button type="button" class="vo-pbtn vo-play"></button>' +
+    '<div class="vo-track"><div class="vo-fill"></div></div>' +
+    '<button type="button" class="vo-pbtn vo-replay-btn" title="' + W.replayLabel + '" aria-label="' + W.replayLabel + '">' + VO_ICON.replay + '</button>' +
+    '<span class="vo-volwrap"><button type="button" class="vo-pbtn vo-vol-btn" title="' + W.volumeLabel + '" aria-label="' + W.volumeLabel + '">' + VO_ICON.volume + '</button>' +
+    '<span class="vo-vol-pop"><input type="range" min="0" max="1" step="0.05" aria-label="' + W.volumeLabel + '"></span></span>' +
+    '<button type="button" class="vo-readalong-btn vo-cc-btn" aria-pressed="false">' + W.readAlong + '</button>';
+  const script = document.createElement('div');
+  script.className = 'vo-script';
+  const label = document.createElement('div');
+  label.className = 'vo-script-label';
+  label.textContent = W.ccLabel;
+  const body = document.createElement('div');
+  body.className = 'vo-script-text';
+  body.setAttribute('dir', 'auto');   // Arabic (right-to-left) support; no effect on left-to-right text
+  body.textContent = text || '';
+  script.appendChild(label);
+  script.appendChild(body);
+  const box = document.createElement('div');
+  box.className = 'vo-pbox';
+  box.appendChild(bar);
+  if (text && String(text).trim()) box.appendChild(script);
+  const playerWrap = appendVoExtra(box, 'vo-playerwrap');
+  const atomRows = document.querySelectorAll('#chatMessages .msg-atom');
+  const slideRow = atomRows[atomRows.length - 1];
+  if (slideRow && slideRow.nextElementSibling === playerWrap) { slideRow.classList.add('vo-has-player'); playerWrap.classList.add('vo-attached'); }
+
+  const q = function(sel) { return bar.querySelector(sel); };
+  const fill = q('.vo-fill'), playBtn = q('.vo-play'), volBtn = q('.vo-vol-btn'), volRange = q('.vo-vol-pop input');
+  let state = 'idle', token = 0, lastChar = 0, timer = null;
+  const hasText = !!(text && String(text).trim());
+  const api = { reset: function() { token += 1; clearTimer(); setFill(0); setState('idle'); lastChar = 0; } };
+
+  function clearTimer() { if (timer) { clearInterval(timer); timer = null; } }
+  function setFill(f) { fill.style.width = Math.max(0, Math.min(1, f)) * 100 + '%'; }
+  function setState(s) {
+    state = s;
+    bar.dataset.state = s;
+    playBtn.innerHTML = s === 'playing' ? VO_ICON.pause : VO_ICON.play;
+    playBtn.title = s === 'playing' ? W.pauseLabel : W.playLabel;
+    playBtn.setAttribute('aria-label', playBtn.title);
+    if (s !== 'playing') clearTimer();
+  }
+  // from: a character position to start from; force: play even when the voice switch is off (the learner pressed play).
+  function begin(from, force) {
+    if (!hasText) return false;
+    if (voPlayerCurrent && voPlayerCurrent !== api) voPlayerCurrent.reset();
+    token += 1;
+    const mine = token;
+    let gotBoundary = false;
+    const ok = Voice.speak(text, force, {
+      onstart: function() { if (mine === token) setState('playing'); },
+      onprogress: function(f, ci) { if (mine !== token) return; gotBoundary = true; lastChar = ci; setFill(f); },
+      onend: function() { if (mine !== token) return; clearTimer(); setFill(1); setState('idle'); lastChar = 0; },
+      onerror: function() { if (mine !== token) return; clearTimer(); setState('idle'); }
+    }, from);
+    if (!ok) { setState('idle'); return false; }
+    voPlayerCurrent = api;
+    setFill(from ? from / text.length : 0);
+    setState('playing');
+    clearTimer();
+    const started = Date.now(), total = Math.max(2, String(text).split(/\s+/).length / 2.6) * 1000;
+    timer = setInterval(function() { if (!gotBoundary && state === 'playing') setFill(Math.min(0.95, (Date.now() - started) / total)); }, 250);   // a voice that reports no word positions: an estimate
+    return true;
+  }
+
+  playBtn.onclick = function() {
+    if (!hasText) return;
+    if (state === 'playing') { Voice.pause(); setState('paused'); }
+    else if (state === 'paused') { Voice.resume(); setState('playing'); }
+    else { begin(0, true); }
+  };
+  q('.vo-replay-btn').onclick = function() { if (hasText) begin(0, true); };
+  volRange.value = String(Voice.volume);
+  volBtn.onclick = function() { bar.classList.toggle('vol-open'); };
+  volRange.oninput = function() {
+    Voice.volume = parseFloat(volRange.value);
+    Array.prototype.forEach.call(document.querySelectorAll('#chatMessages .vo-vol-btn'), function(b) { b.innerHTML = Voice.volume === 0 ? VO_ICON.mute : VO_ICON.volume; });
+    if (state === 'playing') begin(lastChar, true);   // the voice cannot change loudness mid-sentence, so it carries on from the last word with the new volume
+  };
+  q('.vo-cc-btn').onclick = function(ev) { voCcUser = !(voCcUser === null ? !voVoiceHeard() : voCcUser); voHoldView(voSyncViewNow, ev.currentTarget); };
+
+  setState('idle');
+  voSyncView();
+  if (!quiet && Voice.enabled) begin(0, false);
+  return api;
+}
+
+// What the Trainer says on a slide (a pre-written answer, a reply to a typed question, an activity's response). With the voice on it is spoken and its
+// words show only when the learner has the script (CC) open; with the voice off the words simply show. The Continue button is always moved back
+// below it, so the learner never has to scroll up to find it. opts: quiet (nothing is spoken), alwaysShow (the words show whatever the switches say).
+function voTrainerSay(text, opts) {
+  opts = opts || {};
+  const bubble = appendMessage('ai', text, { suppressScroll: !!opts.suppressScroll });
+  const row = bubble.closest('.msg');
+  if (row && !opts.alwaysShow) row.classList.add('vo-trainer-text');
+  if (!opts.quiet) {
+    if (voPlayerCurrent) { voPlayerCurrent.reset(); voPlayerCurrent = null; }
+    window.AtomSlides.Voice.speak(text);
+  }
+  voKeepNavLast();
+  return bubble;
+}
+function voKeepNavLast() {
+  if (!voNavWrap || !voNavWrap.isConnected) return;
+  const area = document.getElementById('chatMessages');
+  if (area.lastElementChild !== voNavWrap) area.appendChild(voNavWrap);
+}
+
+// The pop-up questions of the slide on screen, and the button for a question of the learner's own. Each pre-written answer is written by the Master and
+// comes back from the server, never from here.
+// opts.disabled: all buttons already used up (a slide the learner has moved past); opts.tapped: a Set of the questions already asked.
+function voChips(questions, opts) {
+  const items = [];
+  (Array.isArray(questions) ? questions : []).forEach(function(q, i) {
+    const t = q && typeof q.question_or_objection === 'string' ? q.question_or_objection.trim() : '';
+    if (t) items.push({ index: i, text: t });
+  });
+  const wrap = document.createElement('div');
+  items.forEach(function(it) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'vo-chip';
+    b.textContent = it.text;
+    b.disabled = !!(opts && (opts.disabled || (opts.tapped && opts.tapped.has(it.text))));
+    b.onclick = function() { voAskPopup(b, it.index, it.text); };
+    wrap.appendChild(b);
+  });
+  const own = document.createElement('button');
+  own.type = 'button';
+  own.className = 'vo-chip vo-chip-ask';
+  own.textContent = window.AtomSlides.words.diffQuestion;
+  own.disabled = !!(opts && opts.disabled);
+  own.onclick = voAskOwn;
+  wrap.appendChild(own);
+  appendVoExtra(wrap, 'vo-chips');
+}
+// "I have a different question": the Trainer invites it (spoken when the voice is on), and the message box takes over.
+function voAskOwn() {
+  if (voBusy) return;
+  voUnpin();
+  const reply = voTrainerSay(window.AtomSlides.words.diffReply, { alwaysShow: true, suppressScroll: true });
+  voRevealBelow(reply && reply.closest('.msg'));
+  const input = document.getElementById('chatInput');
+  if (input && !input.disabled) input.focus();
+  const mic = document.getElementById('micBtn');
+  if (mic) { mic.classList.remove('vo-nudge'); void mic.offsetWidth; mic.classList.add('vo-nudge'); }
+}
+async function voAskPopup(btn, index, text) {
+  if (voBusy) return;
+  voUnpin();
+  voBusy = true;
+  btn.disabled = true;
+  appendMessage('user', text, { suppressScroll: true });
+  try {
+    const result = await apiPost('/api/training/popup', { session_id: sessionId, question_index: index });
+    let lastReply = null;
+    (result.messages || []).forEach(function(m) { if (m) lastReply = voTrainerSay(m, { alwaysShow: true, suppressScroll: true }); });
+    voRevealBelow(lastReply && lastReply.closest('.msg'));
+  } catch (err) {
+    btn.disabled = false;
+    appendError(voErrorText(err, 'Something went wrong reaching the server -- please try again.'));
+  }
+  voBusy = false;
+}
+
+function voStepButton(label, onClick, className) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'vo-nav-btn';
+  b.textContent = label;
+  const wrap = appendVoExtra(b, className || 'vo-nav');
+  if (!className) voNavWrap = wrap;
+  b.onclick = function() { if (b.disabled) return; b.disabled = true; onClick(wrap, b); };
+  return wrap;
+}
+function voNavButton() {
+  voStepButton(voLastSlide ? window.AtomSlides.words.finish : window.AtomSlides.words.cont, voAdvance);
+}
+async function voAdvance(wrap, btn) {
+  if (voBusy) { btn.disabled = false; return; }
+  voBusy = true;
+  try {
+    await voProgressChain;   // the server files progress under the slide it is on, so every save must land before it moves on
+    const result = await slideMessage(voLastSlide ? 'finish' : 'continue');
+    wrap.remove();
+    Array.prototype.forEach.call(document.querySelectorAll('#chatMessages .vo-chip'), function(c) { c.disabled = true; });
+    voBusy = false;
+    await handleBackendResult(result);
+  } catch (err) {
+    voBusy = false;
+    btn.disabled = false;
+    appendError(voErrorText(err, 'Something went wrong reaching the server -- please try again.'));
+  }
+}
+
+// restored (a resumed session's parked slide): { tapped, chat, progress } -- the pop-up questions already asked, the Trainer chat held on this
+// slide, and what the learner had done in its activity. The slide is then drawn without the voice starting by itself.
+function voShowMaster(result, restored) {
+  if (!voAutoMaxDone) { voAutoMaxDone = true; voSetMaximized(true); }
+  voSlideNumber = voSlideNumberOf(result.phase);
+  if (result.slide_count) voSlideCount = result.slide_count;
+  voLastSlide = !!result.last_slide;
+  const slide = result.slide;
+  const card = window.AtomSlides.renderSlide(slide, { seed: sessionId, number: voSlideNumber });
+  const slideRow = appendAtomRow(card.el);
+  voPlayer(card.voice, !!restored);
+  voChips(slide.user_questions_or_objections, { tapped: restored && restored.tapped });
+  if (restored) voShowChat(restored.chat);
+  const act = slide.activity;
+  if (act && typeof act === 'object' && act.activity_type) {
+    if (restored && restored.progress) voShowActivity(act, restored.progress, true);
+    else voStepButton(window.AtomSlides.words.cont, function(wrap) { wrap.remove(); voShowActivity(act); });
+  } else {
+    voNavButton();
+  }
+  if (!restored) voPinSlideTop(slideRow);
+}
+// What the learner does in an activity is saved as they go, one save after another in order, so the server always has the latest step.
+let voProgressChain = Promise.resolve();
+function voSaveActivityProgress(progress, finished) {
+  const sid = sessionId;
+  voProgressChain = voProgressChain
+    .then(function() { return apiPost('/api/training/activity-progress', { session_id: sid, progress: progress, done: !!finished }); })
+    .catch(function(err) { console.warn('Could not save the activity progress', err); });
+}
+// saved: what the server kept for this slide's activity ({ done, progress }); quiet: nothing is read aloud by itself.
+function voShowActivity(act, saved, quiet) {
+  const a = window.AtomSlides.renderActivity(act, {
+    seed: sessionId + ':' + voSlideNumber, progress: saved && saved.progress, onProgress: voSaveActivityProgress,
+  });
+  const activityRow = appendAtomRow(a.el);
+  voPlayer(a.voice, quiet);
+  if (!quiet) voPinSlideTop(activityRow);
+  a.onDone(function() {
+    if (a.response) { const reply = voTrainerSay(a.response, { quiet: quiet, suppressScroll: true }); voRevealBelow(reply && reply.closest('.msg')); }
+    voNavButton();
+  });
+}
+// Messages of the chat with the Trainer, as they were held ({ sender, text } each).
+function voShowChat(messages) {
+  (messages || []).forEach(function(m) {
+    const bubble = appendMessage(m.sender === 'user' ? 'user' : 'ai', m.text, { suppressScroll: true });
+    if (m.sender !== 'user') { const row = bubble.closest('.msg'); if (row) row.classList.add('vo-trainer-text'); }
+  });
+}
+
+// A slide the learner has moved past, drawn as it was left: its voiceover text, its used-up pop-up buttons, the Trainer chat held on it and its
+// activity as it ended (nothing to press: the next slide is already on screen).
+function voShowEarlierSlide(slide, number, chat, saved) {
+  const card = window.AtomSlides.renderSlide(slide, { seed: sessionId, number: number });
+  appendAtomRow(card.el);
+  voPlayer(card.voice, true);
+  voChips(slide.user_questions_or_objections, { disabled: true });
+  voShowChat(chat);
+  const act = slide.activity;
+  if (!act || typeof act !== 'object' || !act.activity_type) return;
+  const a = window.AtomSlides.renderActivity(act, { seed: sessionId + ':' + number, progress: saved && saved.progress });
+  appendAtomRow(a.el);
+  voPlayer(a.voice, true);
+  if (a.isFinished() && a.response) voTrainerSay(a.response, { quiet: true, suppressScroll: true });
+}
+
+// A session parked on a training slide gets its whole thread back, as it looked live: the cover (its button used), every slide before the parked
+// one, then the parked slide itself. Parked on the first slide the learner may or may not have pressed the cover's button. A question asked or an
+// activity step taken there proves they did; with neither, nothing records it, so the cover comes back with its button ready and the slide waits
+// behind it.
+function voRestoreThread(data) {
+  const number = voSlideNumberOf(data.phase);
+  const progress = data.activity_progress || {};
+  const chatOn = {}, strays = [];
+  (data.training_chat || []).forEach(function(m) {
+    if (m.slide == null) strays.push(m);
+    else (chatOn[m.slide] = chatOn[m.slide] || []).push(m);
+  });
+  voSlideCount = data.slide_count || 0;
+  if (data.cover && number === 2 && !chatOn[2] && !progress['2']) {
+    voShowCover({ slide: data.cover });
+    voPresent(data);
+    return;
+  }
+  if (data.cover) {
+    const cover = window.AtomSlides.renderCover(data.cover, { seed: sessionId, apiBase: slideBase(), number: 1 });
+    cover.markStarted();
+    appendAtomRow(cover.el);
+  }
+  (data.earlier_slides || []).forEach(function(slide, i) {
+    voShowEarlierSlide(slide, i + 2, chatOn[i + 2], progress[String(i + 2)]);
+  });
+  const asked = new Set((chatOn[number] || []).filter(function(m) { return m.sender === 'user'; }).map(function(m) { return m.text; }));
+  voShowMaster(data, { tapped: asked, chat: chatOn[number], progress: progress[String(number)] });
+  voShowChat(strays);
+}
+
+function voShowCover(result) {
+  voHeld = null;
+  const cover = window.AtomSlides.renderCover(result.slide, { seed: sessionId, apiBase: slideBase(), number: 1 });
+  voCover = cover;
+  appendAtomRow(cover.el);
+  cover.onStart(function() {
+    voCover = null;
+    const held = voHeld;
+    voHeld = null;
+    if (held) voShowMaster(held);
+  });
+}
+
+function disableChatInput(placeholder) {
+  const input = document.getElementById('chatInput');
+  input.disabled = true;
+  input.placeholder = placeholder;
+  document.getElementById('sendBtn').disabled = true;
+  const micBtn = document.getElementById('micBtn');
+  if (micBtn) micBtn.disabled = true;
+}
+
+// The picture of the commitment card with the learner's words in it, as base64 text for the server (card.snapshot makes the JPEG).
+function voPictureOf(card, text) {
+  return card.snapshot(text).then(function(blob) {
+    return new Promise(function(resolve, reject) {
+      const reader = new FileReader();
+      reader.onload = function() { resolve(String(reader.result).split(',')[1] || ''); };
+      reader.onerror = function() { reject(reader.error); };
+      reader.readAsDataURL(blob);
+    });
+  });
+}
+// Saves the typed commitment (once; a second save returns the first) together with the picture of its card, in one call. The button reads
+// "Submitting…" until both are made and sent; nothing is saved if the learner leaves before then. If the picture cannot be made the words
+// are still saved alone. Used by the closing slide in the chat and by the same slide in History. base is the backend address of the track the
+// session belongs to (the Voluntary Opening's or Learning Recommendations'), so the commitment is saved in that track's own table.
+async function voSaveCommitment(card, text, sid, hooks, base) {
+  try {
+    let image = '';
+    try { image = await voPictureOf(card, text); }
+    catch (pictureError) { console.warn('The commitment picture could not be made; saving the words alone', pictureError); }
+    const result = await apiPost('/api/training/commitment', { session_id: sid, commitment_text: text, image_jpeg_base64: image }, base);   // base: the backend of this session's own track
+    card.lock(result.already_saved ? (result.commitment || text) : text);
+    commitmentItems = commitmentItems.filter(function(i) { return i.session_id !== sid; });
+    renderBell();
+    hooks.done(result);
+  } catch (err) {
+    card.unlock();
+    hooks.error(voErrorText(err, 'Something went wrong sending that -- please try again.'));
+  }
+}
+function voShowCommitment(result) {
+  const card = window.AtomSlides.renderCommitment(result.slide, { seed: sessionId, apiBase: slideBase(), number: voSlideCount ? voSlideCount + 2 : undefined });
+  appendAtomRow(card.el);
+  voPlayer(card.voice);
+  disableChatInput('Submit your commitment above.');
+  const sid = sessionId;
+  const base = slideBase();
+  card.onSubmit(function(text) {
+    voSaveCommitment(card, text, sid, {
+      error: function(msg) { appendError(msg); },
+      done: function(r) {
+        (r.messages || []).forEach(function(m) { if (m) appendMessage('ai', m); });
+        lockConversationEnded(false);
+      },
+    }, base);
+  });
+}
+
+function voPresent(result) {
+  const slide = result.slide;
+  if (!slide || typeof slide !== 'object') return;
+  if (slide.type === 'cover') { voShowCover(result); return; }
+  if (slide.type === 'commitment') { voShowCommitment(result); return; }
+  if (voCover) { voHeld = result; voCover.setReady(); return; }   // the Master's slides are in: the cover's button comes alive
+  voShowMaster(result);
+}
+
+function voRetry(text, again) {
+  appendError(text);
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'vo-nav-btn';
+  b.textContent = 'Try again';
+  const wrap = appendVoExtra(b, 'vo-nav');
+  b.onclick = function() { wrap.remove(); again(); };
+}
+// The page's automatic follow-up (empty message) for the phases that work in the background.
+async function voAutoContinue() {
+  if (!voCover) showTyping(currentPhase);
+  try {
+    const next = await slideMessage('');
+    removeTyping();
+    await handleBackendResult(next);
+  } catch (err) {
+    removeTyping();
+    voRetry(voErrorText(err, 'Something went wrong continuing the conversation.'), voAutoContinue);
+  }
+}
+
+async function handleVoResult(result) {
+  currentPhase = result.phase;
+  pendingForm = result.form || null;
+  const messages = result.messages || [];
+  const holdScroll = !!pendingForm;
+  const onSlide = voSlideNumberOf(currentPhase) > 0 && !result.slide;   // the Trainer answering on a training slide
+  let firstEl = null;
+  for (let i = 0; i < messages.length; i++) {
+    if (i > 0) {
+      showTyping(currentPhase);
+      await sleep(800);
+      removeTyping();
+    }
+    if (messages[i]) {
+      const bubble = onSlide ? voTrainerSay(messages[i], { suppressScroll: holdScroll }) : appendMessage('ai', messages[i], { suppressScroll: holdScroll });
+      if (holdScroll && !firstEl) firstEl = bubble.closest('.msg');
+    }
+  }
+  if (pendingForm) {
+    const formRow = renderDriverDiagnosisForm(pendingForm, { suppressScroll: holdScroll });
+    if (!firstEl) firstEl = formRow;
+    if (firstEl) firstEl.scrollIntoView({ block: 'start' });
+  }
+  if (result.slide) voPresent(result);
+  if (VO_AUTO_PHASES.indexOf(currentPhase) !== -1 || (result.slide && result.slide.type === 'cover')) {   // the cover is always followed by the call that brings the Master's slides
+    await voAutoContinue();
+    return;
+  }
+  if (VO_ENDED_PHASES.indexOf(currentPhase) !== -1) lockConversationEnded(holdScroll);
+}
+
+// Conversation History of a slide atom: the chat before the slides, then the cover as a picture, each slide read-only with its voiceover as text
+// (no audio), the Trainer chat held on it and its finished activity, then the commitment slide -- greyed out with the saved words, or still open
+// when none was saved yet (that is where the bell's "Commitment submission awaited" item brings the learner).
+function voRenderHistoryAtom(atom, sid, base) {
+  const scroll = document.getElementById('historyOverlayScroll');
+  const progress = atom.activity_progress || {};
+  const chatOn = {}, strays = [];
+  (atom.training_chat || []).forEach(function(m) {
+    if (m.slide == null) strays.push(m);
+    else (chatOn[m.slide] = chatOn[m.slide] || []).push(m);
+  });
+  const showChat = function(list) { (list || []).forEach(function(m) { _renderHistoryMessage(m.sender === 'user' ? 'user' : 'ai', m.text); }); };
+  if (atom.cover) {
+    const cover = window.AtomSlides.renderCover(atom.cover, { seed: sid, apiBase: base, number: 1, readonly: true });
+    scroll.appendChild(buildAtomRow(cover.el));
+  }
+  atom.slides.forEach(function(slide, i) {
+    const number = i + 2;
+    const card = window.AtomSlides.renderSlide(slide, { seed: sid, number: number, readonly: true });
+    scroll.appendChild(buildAtomRow(card.el));
+    if (card.voice && card.voice.trim()) _renderHistoryMessage('ai', card.voice);
+    showChat(chatOn[number]);
+    const act = slide.activity, saved = progress[String(number)];
+    if (act && typeof act === 'object' && act.activity_type && saved && saved.done) {
+      const a = window.AtomSlides.renderActivity(act, { seed: sid + ':' + number, progress: saved.progress });
+      scroll.appendChild(buildAtomRow(a.el));
+      if (a.voice && a.voice.trim()) _renderHistoryMessage('ai', a.voice);
+      if (a.response) _renderHistoryMessage('ai', a.response);
+    }
+  });
+  showChat(strays);
+  if (!atom.completed) return;
+  const card = window.AtomSlides.renderCommitment({ skill_name: atom.skill_name }, { seed: sid, apiBase: base, number: atom.slides.length + 2, saved: atom.commitment || '', date: atom.commitment_saved_at });
+  const row = buildAtomRow(card.el);
+  scroll.appendChild(row);
+  card.onSubmit(function(text) {
+    voSaveCommitment(card, text, sid, {
+      error: function(msg) { _renderHistoryMessage('ai', msg); },
+      done: function(r) { (r.messages || []).forEach(function(m) { if (m) _renderHistoryMessage('ai', m); }); },
+    }, base);
+  });
+  row.scrollIntoView({ block: 'start' });
+}
+
 // ─── BACKEND CALLS ──────────────────────────────────────────────────────────
-async function apiPost(path, body) {
-  const res = await fetch(API_BASE + path, {
+// Every call to the Voluntary Opening backend carries the login token; the backend works out who the person is from it (no user ID is sent).
+// A 401 sends the person back to the login page (reportsFetch). Any other refusal throws the server's own message, which the callers show.
+async function apiPost(path, body, base) {
+  const res = await reportsFetch((base || slideBase()) + path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -3380,24 +4407,19 @@ async function apiPost(path, body) {
   return data;
 }
 
-const TERMINAL_PHASES = ['complete', 'scope_session_end', 'objection_session_end'];
+const TERMINAL_PHASES = ['MR_scope_session_end', 'objection_session_end'];
 
 async function handleBackendResult(result) {
+  if (isSlideResult(result)) return handleVoResult(result);   // the slide code: the new Voluntary Opening (every state name starts with "VO_") and a Manager Recommendation result with a slide
   currentPhase = result.phase;
   pendingForm = result.form || null;
 
   const messages = result.messages || [];
   const isSignpostPlusQuiz = !!pendingForm;
-  const isTrainerClosingPlusFeedback = result.phase === 'complete' && messages.length === 2;
-  const holdScrollForPair = isSignpostPlusQuiz || isTrainerClosingPlusFeedback;
+  const holdScrollForPair = isSignpostPlusQuiz;
   let firstPairEl = null;
 
   for (let i = 0; i < messages.length; i++) {
-    // The pair's 2nd message ("So what, now what?") is rendered inside the
-    // commitment form's own card below instead -- Kriti's explicit call,
-    // 2026-09-09: the question and its answer box need to be ONE bubble,
-    // not two.
-    if (isTrainerClosingPlusFeedback && i === 1) continue;
     if (i > 0) {
       showTyping(currentPhase);
       await sleep(800);
@@ -3418,41 +4440,17 @@ async function handleBackendResult(result) {
     firstPairEl.scrollIntoView({ block: 'start' });
   }
 
-  // Auto-continue: both tracks show a "working on it" signpost then expect
-  // an empty follow-up call, each against its own backend. VO's own 4
-  // phases below were always like this. LR's 2 content_creation phases
-  // (real_situation_content_creation / scenario_content_creation) work the
-  // exact same way -- confirmed live bug, 2026-09-16: this block was never
-  // updated when Training Coordinator + Trainer were built (2026-09-15),
-  // so those 2 phases fell through to nothing. Content Writers dispatch as
-  // background threads and return the placeholder fast (see enter_real_
-  // situation_content_creation() / enter_scenario_content_creation()), but
-  // nothing ever fetches the actual training content that follows --
-  // dots vanished, chat input stayed enabled, and the only way anything
-  // happened was the user sending a real message by hand, which
-  // backend_api.py's phase routing happens to accept (it ignores the text
-  // for this phase) and treats as the missing follow-up.
-  if (activeTrack === 'voluntary_opening' &&
-      (currentPhase === 'reflector_identification' || currentPhase === 'driver_diagnosis_resolving' || currentPhase === 'content_creation' || currentPhase === 'rediagnosis')) {
-    showTyping(currentPhase);
-    try {
-      const nextResult = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: '' });
-      removeTyping();
-      await handleBackendResult(nextResult);
-    } catch (err) {
-      removeTyping();
-      appendError('Something went wrong continuing the conversation -- please try again.');
-    }
-    return;
-  }
+  // Auto-continue for Learning Recommendations' two background phases: a "working on it" signpost, then an empty follow-up call.
+  // (The Voluntary Opening's own auto-continue phases are handled in handleVoResult.) LR's content-creation phases dispatch their
+  // Content Writers as background threads and return a placeholder fast, so nothing else would ever fetch the actual training content.
   if (activeTrack === 'learning_recommendations' &&
-      (currentPhase === 'real_situation_content_creation' || currentPhase === 'scenario_content_creation')) {
+      (currentPhase === 'MR_real_situation_content_creation' || currentPhase === 'MR_scenario_content_creation')) {
     showTyping(currentPhase);
     try {
-      const res = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
+      const res = await reportsFetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, session_id: sessionId, skill_name: activeSkillName, message: '' }),
+        body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, message: '' }),
       });
       const nextResult = await res.json().catch(function(){ return {}; });
       if (!res.ok) throw new Error(nextResult.detail || 'Something went wrong continuing the conversation.');
@@ -3465,21 +4463,7 @@ async function handleBackendResult(result) {
     return;
   }
 
-  if (isTrainerClosingPlusFeedback) {
-    // Added 2026-09-08: this pair is now [closing text, "So what, now
-    // what?" prompt] -- not the old [closing text, feedback link]. Render
-    // the commitment form instead of locking immediately; the real lock
-    // now happens inside submitApplicationCommitment, once the user
-    // actually answers it.
-    // Same typing pause that used to happen between the two separate
-    // bubbles (see the loop above) -- kept here, 2026-09-09, so the pacing
-    // is unchanged even though the question now renders inside the form
-    // card instead of its own bubble.
-    showTyping(currentPhase);
-    await sleep(800);
-    removeTyping();
-    renderApplicationCommitmentForm(messages[1], { suppressScroll: holdScrollForPair });
-  } else if (result.show_next_step_buttons) {
+  if (result.show_next_step_buttons) {
     // Kriti's explicit call, 2026-09-14: this check has to come BEFORE the
     // session_complete check below -- the Gross Incongruence reject
     // response sets session_complete: true (correctly -- the LLM turn is
@@ -3697,10 +4681,10 @@ async function submitNextStepChoice(choice, row) {
   isWaiting = true;
   showTyping(currentPhase);
   try {
-    const res = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/next-step`, {
+    const res = await reportsFetch(`${LEARNING_RECS_BASE}/api/skill-introduction/next-step`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, session_id: sessionId, skill_name: activeSkillName, choice: choice }),
+      body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, choice: choice }),
     });
     const result = await res.json().catch(function(){ return {}; });
     removeTyping();
@@ -3752,15 +4736,15 @@ async function submitDriverDiagnosisForm(answers) {
       // endpoint, and it needs skill_name. One endpoint serves both the
       // real-situation and scenario driver forms; the backend dispatches
       // on the session's current phase.
-      const res = await fetch(`${LEARNING_RECS_BASE}/api/driver-diagnostics/submit`, {
+      const res = await reportsFetch(`${LEARNING_RECS_BASE}/api/driver-diagnostics/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, session_id: sessionId, skill_name: activeSkillName, answers: answers }),
+        body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, answers: answers }),
       });
       result = await res.json().catch(function(){ return {}; });
       if (!res.ok) throw new Error(result.detail || 'Something went wrong sending your answers.');
     } else {
-      result = await apiPost('/api/driver-diagnosis/submit', { user_id: userId, session_id: sessionId, answers: answers });
+      result = await apiPost('/api/driver-diagnosis/submit', { session_id: sessionId, answers: answers });
     }
     removeTyping();
     await handleBackendResult(result);
@@ -3776,199 +4760,92 @@ async function submitDriverDiagnosisForm(answers) {
   }
 }
 
-// ─── "SO WHAT, NOW WHAT?" APPLICATION COMMITMENT -- added 2026-09-08 ───────
-// Shown the instant training completes, instead of the old auto-shown
-// feedback-link message (see backend's training_loop.py). Same
-// render-a-form-row-into-the-chat-stream pattern as
-// renderDriverDiagnosisForm above, deliberately NOT the main bottom chat
-// input -- the main input is about to get disabled by lockConversationEnded
-// once this form's own submission finishes, same as every other terminal
-// ending. The real feedback-link message only appears after Submit.
-function renderApplicationCommitmentForm(question, opts) {
-  removeWelcome();
-  const area = document.getElementById('chatMessages');
-  const shouldScroll = !(opts && opts.suppressScroll) && isNearBottom();
+// ─── LEARNING NUDGE NOTIFICATIONS (the bell) ────────────────────────────────
+// Two kinds of item: the application-confirmation forms (one item for each notification waiting) and, for the new slide-based Learning
+// Atom, one red "Application: Commitment submission awaited" item per finished atom whose commitment has not been submitted. The badge on the
+// bell is the number of items waiting (Kriti, 2026-10-15), and it goes down as each one is dealt with.
+let commitmentItems = [];
+let legacyItems = [];
 
-  const wrap = document.createElement('div');
-  wrap.className = 'msg';
-  wrap.id = 'applicationCommitmentRow';
-
-  const avatar = document.createElement('div');
-  avatar.className = 'msg-avatar avatar-ai';
-  const avatarImg = document.createElement('img');
-  avatarImg.src = 'chatphoto.png';
-  avatarImg.alt = 'Kriti';
-  avatar.appendChild(avatarImg);
-
-  const card = document.createElement('div');
-  card.className = 'msg-bubble bubble-ai';
-  // width:100%, but deliberately NO inline max-width override -- Kriti's
-  // explicit call, 2026-09-09: this card used to hold only the
-  // textarea/button, so with no wide content of its own it shrank to fit
-  // (.msg-bubble is display:inline-block by default). width:100% makes it
-  // reach the real cap instead of shrinking, and leaving max-width alone
-  // lets the existing stylesheet rule (.chat-messages .msg > div, 72%)
-  // apply exactly as it already does to every other AI bubble -- an inline
-  // max-width:100% here would have OVERRIDDEN that rule (inline styles
-  // always beat a stylesheet) and made this card wider than the very
-  // "So what, now what?" bubble it's meant to match, not equal to it.
-  card.style.cssText = 'width:100%;box-sizing:border-box;';
-
-  if (question) {
-    const qText = document.createElement('div');
-    qText.style.marginBottom = '0.5rem';
-    qText.innerHTML = formatResponse(question);
-    card.appendChild(qText);
+function renderBell() {
+  const badge = document.getElementById('notifBadge');
+  const realRow = document.getElementById('realNotifRow');
+  const count = legacyItems.length + commitmentItems.length;
+  badge.textContent = count > 9 ? '9+' : String(count);
+  badge.style.display = count > 0 ? 'block' : 'none';
+  realRow.innerHTML = '';
+  if (count === 0) {
+    realRow.innerHTML = '<div class="notif-empty">Nothing waiting on you right now.</div>';
+    return;
   }
-
-  const textarea = document.createElement('textarea');
-  textarea.rows = 3;
-  textarea.placeholder = 'Type your answer here...';
-  // White, not --grey1 -- Kriti's explicit call, 2026-09-09: grey read as a
-  // disabled/dead field. This is the one live, typeable control in this
-  // card, so it gets a real white background, distinct from the grey used
-  // for non-interactive surfaces elsewhere.
-  textarea.style.cssText = 'width:100%;box-sizing:border-box;margin-top:0.3rem;padding:0.55rem 0.7rem;' +
-    'background:var(--white);border:1px solid rgba(22,32,46,0.15);border-radius:4px;color:var(--night2);' +
-    'font-family:Poppins,sans-serif;font-size:0.85rem;resize:vertical;';
-
-  const submitBtn = document.createElement('button');
-  submitBtn.type = 'button';
-  submitBtn.textContent = 'Submit';
-  submitBtn.disabled = true;
-  submitBtn.style.cssText = 'display:block;margin-top:0.6rem;padding:0.6rem 1.4rem;background:var(--green);' +
-    'border:none;border-radius:20px;color:#fff;font-family:Poppins,sans-serif;font-size:0.85rem;' +
-    'font-weight:600;cursor:pointer;opacity:0.5;';
-
-  // Non-empty is the only bar, Kriti's explicit call -- gibberish is fine,
-  // it just can't be blank. Same rule enforced again server-side in
-  // training_loop.submit_application_commitment, not just trusted from here.
-  // 300-character cap, Kriti's call 2026-10-04 (first set to 350, then 300):
-  // the commitment card (learning_nudges/application_commitment_card.py)
-  // shrinks the text and finally cuts it with "..." when it does not fit.
-  // One cap for every language keeps cards from being cut in all but the
-  // widest scripts (Chinese/Japanese in the tightest design fit ~258).
-  // maxLength stops typing/pasting; the oninput trim below is a second
-  // guard for keyboards/IMEs that can step past maxLength. Backend is
-  // deliberately NOT changed -- it still saves whatever it is sent.
-  const COMMITMENT_MAX_CHARS = 300;
-  textarea.maxLength = COMMITMENT_MAX_CHARS;
-
-  const counter = document.createElement('div');
-  counter.style.cssText = 'margin-top:0.25rem;text-align:right;font-family:Poppins,sans-serif;' +
-    'font-size:0.72rem;color:var(--night2);opacity:0.6;';
-  counter.textContent = '0 / ' + COMMITMENT_MAX_CHARS;
-
-  textarea.oninput = function() {
-    if (textarea.value.length > COMMITMENT_MAX_CHARS) {
-      let cut = COMMITMENT_MAX_CHARS;
-      if (/[\uD800-\uDBFF]/.test(textarea.value.charAt(cut - 1))) cut--;  // never split an emoji in half
-      textarea.value = textarea.value.slice(0, cut);
-    }
-    counter.textContent = textarea.value.length + ' / ' + COMMITMENT_MAX_CHARS;
-    const hasText = textarea.value.trim().length > 0;
-    submitBtn.disabled = !hasText;
-    submitBtn.style.opacity = hasText ? '1' : '0.5';
-  };
-  submitBtn.onclick = function() { submitApplicationCommitment(textarea.value); };
-
-  card.appendChild(textarea);
-  card.appendChild(counter);
-  card.appendChild(submitBtn);
-  wrap.appendChild(avatar);
-  wrap.appendChild(card);
-  area.appendChild(wrap);
-  if (shouldScroll) scrollMessagesToBottom();
-  return wrap;
+  function addRow(title, rest, onClick) {
+    const row = document.createElement('div');
+    row.className = 'notif-row urgent-row';
+    row.onclick = onClick;
+    const icon = document.createElement('div');
+    icon.className = 'notif-icon urgent';
+    icon.textContent = '!';
+    const text = document.createElement('div');
+    text.className = 'notif-text';
+    const strong = document.createElement('strong');
+    strong.textContent = title;
+    text.appendChild(strong);
+    text.appendChild(document.createTextNode(rest));
+    row.appendChild(icon);
+    row.appendChild(text);
+    realRow.appendChild(row);
+  }
+  legacyItems.forEach(function(item) {
+    addRow(item.hero_reflector || 'Application Confirmation', ' — application confirmation pending. Confirm now?', function() { openNotification(item); });
+  });
+  commitmentItems.forEach(function(item) {
+    addRow(item.label || 'Application: Commitment submission awaited', item.skill ? ' — ' + item.skill : '', function() { openCommitmentNotification(item); });
+  });
 }
 
-async function submitApplicationCommitment(commitmentText) {
-  // Row itself is never removed (failure OR success) -- Kriti's explicit
-  // call, 2026-09-09: matches submitDriverDiagnosisForm's pattern exactly.
-  // The question + your typed commitment stay visible in the chat (and in
-  // Historical Conversations) permanently. On success, only the Submit
-  // button disappears; the textarea is disabled in place so the typed
-  // answer stays readable but isn't editable. On failure, both re-enable
-  // so the same row can be retried -- nothing strands the user with
-  // nothing to click.
-  const row = document.getElementById('applicationCommitmentRow');
-  const textarea = row ? row.querySelector('textarea') : null;
-  const submitBtn = row ? row.querySelector('button') : null;
-  if (textarea) textarea.disabled = true;
-  if (submitBtn) submitBtn.disabled = true;
-
-  showTyping(currentPhase);
-  try {
-    // apiPost() is hardcoded to API_BASE (Voluntary Opening's own backend)
-    // -- confirmed live bug, 2026-09-16: an LR commitment was silently
-    // posted there instead of LEARNING_RECS_BASE. VO's own backend does
-    // have an identical /api/training/commitment route (this feature was
-    // lifted FROM it), so the request still came back 200 OK -- it just ran
-    // an UPDATE ... WHERE session_id = '<LR session id>' against VO's own
-    // session_summary table, matched zero rows, and silently did nothing.
-    // No error, no sign anything was wrong, right up until the value was
-    // checked directly in the database. Same branch-by-track fix
-    // submitDriverDiagnosisForm() already has.
-    let result;
-    if (activeTrack === 'learning_recommendations') {
-      const res = await fetch(`${LEARNING_RECS_BASE}/api/training/commitment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, session_id: sessionId, commitment_text: commitmentText }),
-      });
-      result = await res.json().catch(function(){ return {}; });
-      if (!res.ok) throw new Error(result.detail || 'Something went wrong sending that.');
-    } else {
-      result = await apiPost('/api/training/commitment', {
-        user_id: userId, session_id: sessionId, commitment_text: commitmentText,
-      });
-    }
-    removeTyping();
-    if (submitBtn) submitBtn.remove();
-    const messages = result.messages || [];
-    if (messages[0]) appendMessage('ai', messages[0]);
-    // The real end of the conversation -- same lock every other terminal
-    // ending already uses, just deferred until this step actually succeeds.
-    lockConversationEnded(false);
-  } catch (err) {
-    removeTyping();
-    if (textarea) textarea.disabled = false;
-    if (submitBtn) submitBtn.disabled = false;
-    appendError('Something went wrong sending that -- please try again.');
-  }
-}
-
-// ─── LEARNING NUDGE NOTIFICATION (the bell) -- real, ported as-is ──────────
 async function checkNotificationBadge() {
   const badge = document.getElementById('notifBadge');
   const realRow = document.getElementById('realNotifRow');
+  currentNotification = null;
+  commitmentItems = [];
+  legacyItems = [];
+  let reached = false;
   try {
     const email = await _getUserEmailForReports();
-    const res = await fetch(`${NOTIFICATION_BASE}/api/notifications/current?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`);
-    const data = await res.json();
-    if (data.has_notification) {
-      currentNotification = data;
-      badge.style.display = 'block';
-      realRow.innerHTML = '<div class="notif-row urgent-row" onclick="openNotification()">' +
-        '<div class="notif-icon urgent">!</div>' +
-        '<div class="notif-text"><strong>' + (data.hero_reflector || 'Application Confirmation') + '</strong> — application confirmation pending. Confirm now?</div>' +
-        '</div>';
-      if (new URLSearchParams(window.location.search).get('notify') === '1') {
-        openNotification();
-      }
-    } else {
-      currentNotification = null;
-      badge.style.display = 'none';
-      realRow.innerHTML = '<div class="notif-empty">Nothing waiting on you right now.</div>';
-    }
-  } catch (err) {
-    currentNotification = null;
+    const query = `user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`;
+    try {
+      const res = await fetch(`${NOTIFICATION_BASE}/api/notifications/awaiting?${query}`);
+      const data = await res.json();
+      reached = true;
+      legacyItems = Array.isArray(data.items) ? data.items : [];
+    } catch (err) { /* the other kind of item can still show */ }
+    try {
+      const res = await fetch(`${NOTIFICATION_BASE}/api/notifications/commitment-awaiting?${query}`);
+      const data = await res.json();
+      reached = true;
+      commitmentItems = Array.isArray(data.items) ? data.items : [];
+    } catch (err) { /* same */ }
+  } catch (err) { /* the e-mail lookup failed: nothing could be asked */ }
+  if (!reached) {
     badge.style.display = 'none';
     realRow.innerHTML = '<div class="notif-empty">Could not reach the notification service.</div>';
+    return;
+  }
+  renderBell();
+  if (new URLSearchParams(window.location.search).get('notify') === '1') {
+    if (legacyItems.length) openNotification(legacyItems[0]);
+    else if (commitmentItems.length === 1) openCommitmentNotification(commitmentItems[0]);
   }
 }
 
-function openNotification() {
+// A "Commitment submission awaited" item opens that finished session in Conversation History, which ends on its commitment slide.
+function openCommitmentNotification(item) {
+  document.getElementById('notifDropdown').classList.remove('open');
+  viewClosedConversation(item.session_id, item.path || 'voluntary_opening');
+}
+
+function openNotification(item) {
+  if (item) currentNotification = item;
   if (!currentNotification) return;
   if (document.getElementById('notificationOverlay').classList.contains('open')) return;
 
@@ -4042,6 +4919,20 @@ function _isoToFriendlyDate(iso) {
   return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 }
 
+// Text between two ** marks is shown in bold (the Learning Atom's title in the notification's first question); everything else is plain text.
+function appendWithBold(el, text) {
+  String(text || '').split('**').forEach(function(part, i) {
+    if (!part) return;
+    if (i % 2 === 1) {
+      const strong = document.createElement('strong');
+      strong.textContent = part;
+      el.appendChild(strong);
+    } else {
+      el.appendChild(document.createTextNode(part));
+    }
+  });
+}
+
 function renderNotificationForm(notification) {
   const area = document.getElementById('notificationOverlayScroll');
 
@@ -4072,7 +4963,7 @@ function renderNotificationForm(notification) {
   q1Block.style.marginBottom = '0.4rem';
   const q1Text = document.createElement('div');
   q1Text.style.marginBottom = '0.5rem';
-  q1Text.textContent = q1.text;
+  appendWithBold(q1Text, q1.text);
   q1Block.appendChild(q1Text);
 
   const restArea = document.createElement('div');
@@ -4090,7 +4981,8 @@ function renderNotificationForm(notification) {
       btn.style.borderColor = selectedStyle.borderColor;
       btn.style.background = selectedStyle.background;
 
-      document.getElementById('notifBadge').style.display = 'none';
+      legacyItems = legacyItems.filter(function(i) { return i !== notification; });
+      renderBell();
 
       restArea.innerHTML = '';
       if (optText === 'No') {
@@ -4117,30 +5009,34 @@ function _renderYesFollowup(container, notification, btnStyle) {
   const answers = { q1_answer: 'Yes' };
   const q2 = notification.questions[1], q3 = notification.questions[2], q4 = notification.questions[3];
 
-  const q2Block = document.createElement('div');
-  q2Block.style.marginTop = '0.9rem';
-  q2Block.style.marginBottom = '0.9rem';
-  const q2Text = document.createElement('div');
-  q2Text.style.marginBottom = '0.5rem';
-  q2Text.textContent = q2.text;
-  q2Block.appendChild(q2Text);
-  q2.options.forEach(function(optText) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = optText;
-    btn.style.cssText = btnStyle;
-    btn.onclick = function() {
-      answers.q2_answer = optText;
-      Array.from(q2Block.querySelectorAll('button')).forEach(function(b) {
-        b.style.borderColor = 'rgba(22,32,46,0.15)';
-        b.style.background = 'var(--white)';
-      });
-      btn.style.borderColor = 'rgba(58,181,74,0.6)';
-      btn.style.background = 'rgba(58,181,74,0.12)';
-      updateSubmitState();
-    };
-    q2Block.appendChild(btn);
-  });
+  function makeChoiceQuestion(q, key, options, firstBlock) {
+    const block = document.createElement('div');
+    block.style.marginTop = firstBlock ? '0.9rem' : '0';
+    block.style.marginBottom = '0.9rem';
+    const text = document.createElement('div');
+    text.style.marginBottom = '0.5rem';
+    text.textContent = q.text;
+    block.appendChild(text);
+    options.forEach(function(optText) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = optText;
+      btn.style.cssText = btnStyle;
+      btn.onclick = function() {
+        answers[key] = optText;
+        Array.from(block.querySelectorAll('button')).forEach(function(b) {
+          b.style.borderColor = 'rgba(22,32,46,0.15)';
+          b.style.background = 'var(--white)';
+        });
+        btn.style.borderColor = 'rgba(58,181,74,0.6)';
+        btn.style.background = 'rgba(58,181,74,0.12)';
+        updateSubmitState();
+      };
+      block.appendChild(btn);
+    });
+    return block;
+  }
+  const q2Block = makeChoiceQuestion(q2, 'q2_answer', q2.options.slice().reverse(), true);
 
   function makeTextQuestion(q, key) {
     const block = document.createElement('div');
@@ -4161,7 +5057,7 @@ function _renderYesFollowup(container, notification, btnStyle) {
     return block;
   }
   const q3Block = makeTextQuestion(q3, 'q3_answer');
-  const q4Block = makeTextQuestion(q4, 'q4_answer');
+  const q4Block = makeChoiceQuestion(q4, 'q4_answer', q4.options, false);
 
   const submitBtn = document.createElement('button');
   submitBtn.type = 'button';
@@ -4299,6 +5195,7 @@ function confirmEnd() {
   currentPhase = 'opening';
   activeTrack = 'voluntary_opening';
   activeSkillName = '';
+  voReset();
   document.getElementById('chatMessages').innerHTML = '';
   const input = document.getElementById('chatInput');
   input.value = 'Hi Kriti';
@@ -4322,6 +5219,7 @@ function parkForLater() {
   currentPhase = 'opening';
   activeTrack = 'voluntary_opening';
   activeSkillName = '';
+  voReset();
   document.getElementById('chatMessages').innerHTML = '';
   const input = document.getElementById('chatInput');
   input.value = 'Hi Kriti';
@@ -4341,12 +5239,12 @@ async function notifyBackendSessionEnded() {
   if (!sessionId || sessionEnded) return;
   try {
     if (activeTrack === 'learning_recommendations') {
-      await fetch(`${LEARNING_RECS_BASE}/api/session/end`, {
+      await reportsFetch(`${LEARNING_RECS_BASE}/api/session/end`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, session_id: sessionId }),
+        body: JSON.stringify({ session_id: sessionId }),
       });
     } else {
-      await apiPost('/api/session/end', { user_id: userId, session_id: sessionId });
+      await apiPost('/api/session/end', { session_id: sessionId });   // not built in the new backend yet: this fails quietly (see the catch)
     }
   } catch (err) {
     console.warn('Could not notify backend the session ended:', err.message);
@@ -4367,7 +5265,7 @@ async function logOut() {
 // ─── UTILITIES ──────────────────────────────────────────────────────────────
 function autoResize(el) {
   el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  el.style.height = Math.min(el.scrollHeight, Math.round(window.innerHeight * 0.4)) + 'px';
 }
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -4438,6 +5336,7 @@ function appendMessage(role, text, opts) {
   msg.appendChild(avatar);
   msg.appendChild(right);
   area.appendChild(msg);
+  if (typeof voKeepNavLast === 'function') voKeepNavLast();   // the Continue button stays below the newest message, whoever wrote it
   if (shouldScroll) scrollMessagesToBottom();
   return bubble;
 }
@@ -4487,22 +5386,30 @@ const PHASE_WORDS = {
     'Getting us started…', 'Thinking that through…', 'Comprehending…',
     'Seeing your perspective…', 'Hearing you…', 'Following the signal…', 'Considering…',
   ],
-  diagnosis: [
+  VO_diagnosis: [
     'Interpreting…', 'Finding the clues…', 'Making notes…', 'Checking the signal…',
     'Thinking that through…', 'Connecting the dots…', 'Weighing what matters…',
     'Identifying patterns…', 'Reflecting…',
   ],
-  reflector_identification: [
+  VO_reflector_identification: [
     'Interpreting…', 'Finding the clues…', 'Making notes…', 'Checking the signal…',
     'Thinking that through…', 'Connecting the dots…', 'Weighing what matters…',
     'Identifying patterns…', 'Reflecting…',
   ],
-  content_creation: [
+  VO_content_creation: [
     'Building your Learning Atom…', 'Shaping your training…', 'Personalizing your Learning Atom…',
     'Almost ready…', 'Working through the final bits…', 'Designing the content…',
     'Making it crisp…', 'Rechecking relevance…',
   ],
 };
+
+// The other new-Voluntary-Opening states reuse these lists; a question typed on a slide gets its own.
+PHASE_WORDS.VO_opening = PHASE_WORDS.opening;
+PHASE_WORDS.VO_reflector_disclosure = PHASE_WORDS.VO_diagnosis;
+PHASE_WORDS.VO_reflector_objection = PHASE_WORDS.VO_diagnosis;
+PHASE_WORDS.VO_rediagnosis = PHASE_WORDS.VO_diagnosis;
+PHASE_WORDS.VO_driver_diagnosis_resolving = PHASE_WORDS.VO_diagnosis;
+PHASE_WORDS.VO_training = ['Thinking that through…', 'Looking at your question…', 'Finding the best answer…'];
 
 // Learning Recommendations' own word lists, per phase -- Kriti's explicit
 // call, 2026-09-14: LR gets its own thinking words, separate from
@@ -4525,47 +5432,47 @@ const PHASE_WORDS = {
 //     written down. Given LR words instead of relying on a fallback that
 //     can't work.
 const LR_PHASE_WORDS = {
-  skill_introduction: [
+  MR_skill_introduction: [
     'Getting us started…', 'Making this relevant…', 'Setting the context…',
     'Bringing this to life…', 'Thinking about your world…',
     'Finding a good place to start…', 'Getting the conversation going…',
   ],
-  real_situation_detailing: [
+  MR_real_situation_detailing: [
     'Getting the full picture…', 'Connecting the dots…', 'Looking a little closer…',
     'Filling in the picture…', 'Following the thread…',
     'Understanding what\'s happening…', 'Putting the pieces together…',
   ],
-  scenario_construction: [
+  MR_scenario_construction: [
     'Building this out…', 'Making it feel real…', 'Shaping the situation…',
     'Adding the right detail…', 'Bringing the scenario to life…',
     'Putting the pieces together…', 'Making this relevant to you…',
   ],
-  real_situation_driver_diagnostics: [
+  MR_real_situation_driver_diagnostics: [
     'Looking beneath the surface…', 'Reading the signals…', 'Looking for clues…',
     'Connecting the dots…', 'Thinking this through…', 'Digging a little deeper…',
     'Working out what\'s getting in the way…',
   ],
-  scenario_driver_diagnostics: [
+  MR_scenario_driver_diagnostics: [
     'Putting you in the situation…', 'Thinking through how this might play out…',
     'Looking beneath the surface…', 'Testing the possibilities…',
     'Exploring what might get in the way…', 'Looking for clues…', 'Digging a little deeper…',
   ],
-  real_situation_content_creation: [
+  MR_real_situation_content_creation: [
     'Building your Learning Atom…', 'Shaping your training…', 'Personalizing your Learning Atom…',
     'Almost ready…', 'Working through the final bits…', 'Designing the content…',
     'Making it crisp…', 'Rechecking relevance…',
   ],
-  scenario_content_creation: [
+  MR_scenario_content_creation: [
     'Building your Learning Atom…', 'Shaping your training…', 'Personalizing your Learning Atom…',
     'Almost ready…', 'Working through the final bits…', 'Designing the content…',
     'Making it crisp…', 'Rechecking relevance…',
   ],
-  real_situation_training: [
+  MR_real_situation_training: [
     'Thinking through your response…', 'Weighing what would help most…',
     'Considering the next step…', 'Working through this with you…',
     'Reflecting on what you shared…', 'Following your train of thought…',
   ],
-  scenario_training: [
+  MR_scenario_training: [
     'Thinking through your response…', 'Weighing what would help most…',
     'Considering the next step…', 'Working through this with you…',
     'Reflecting on what you shared…', 'Following your train of thought…',
@@ -4604,7 +5511,10 @@ function showTyping(phase) {
   // so they fall through to PHASE_WORDS' own words -- Kriti's explicit
   // call. VO is untouched: activeTrack !== 'learning_recommendations' skips
   // straight to PHASE_WORDS, exactly as before this change.
-  const words = (activeTrack === 'learning_recommendations' ? LR_PHASE_WORDS[phase] : null) || PHASE_WORDS[phase];
+  const words = (activeTrack === 'learning_recommendations' ? LR_PHASE_WORDS[phase] : null) || PHASE_WORDS[phase] ||
+    (/^VO_training_slide_/.test(phase || '') ? PHASE_WORDS.VO_training : null) ||
+    (/^MR_real_situation_training_slide_/.test(phase || '') ? LR_PHASE_WORDS.MR_real_situation_training : null) ||
+    (/^MR_scenario_training_slide_/.test(phase || '') ? LR_PHASE_WORDS.MR_scenario_training : null);
   if (words) {
     const wordEl = document.createElement('span');
     wordEl.className = 'typing-word';
@@ -4676,7 +5586,7 @@ function formatResponse(text) {
 // ─── SEND MESSAGE ───────────────────────────────────────────────────────────
 async function sendMessage() {
   if (isWaiting || sessionEnded) return;
-  if (currentPhase === 'driver_diagnosis') return;
+  if (currentPhase === 'VO_driver_diagnosis' || currentPhase === 'VO_complete') return;   // the quiz has its own form; a finished atom only takes its commitment
   stopMicIfActive();
 
   const input = document.getElementById('chatInput');
@@ -4696,42 +5606,35 @@ async function sendMessage() {
   try {
     if (activeTrack === 'learning_recommendations') {
       showTyping(currentPhase);
-      const res = await fetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
+      const res = await reportsFetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, session_id: sessionId, skill_name: activeSkillName, message: text }),
+        body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, message: text }),
       });
       const result = await res.json().catch(function(){ return {}; });
       removeTyping();
       if (!res.ok) {
-        appendError('Something went wrong reaching the server -- please try again.');
+        appendError(result.detail || 'Something went wrong reaching the server -- please try again.');
       } else {
         await handleBackendResult(result);
       }
     } else if (currentPhase === 'opening') {
-      const userName = localStorage.getItem('user_name') || '';
+      // The first message of a new Voluntary Opening: user management starts the session (the account is checked, the session ID and passport
+      // are made), then the Opening conversation begins with that session ID.
       showTyping('opening');
-      const result = await apiPost('/api/opening/message', {
-        user_id: userId, name: userName, message: text,
-        session_id: sessionId || null,
-      });
+      if (!sessionId) sessionId = await startSession('VO');
+      const result = await apiPost('/api/opening/message', { session_id: sessionId, message: text });
       removeTyping();
-      sessionId = result.session_id;
-
-      if (result.backend_tag === 'INITIAL_USER_INPUT') {
-        await handleBackendResult(result);
-      } else if (result.user_facing_response) {
-        appendMessage('ai', result.user_facing_response);
-      }
+      await handleBackendResult(result);
     } else {
       showTyping(currentPhase);
-      const result = await apiPost('/api/message', { user_id: userId, session_id: sessionId, message: text });
+      const result = await apiPost('/api/message', { session_id: sessionId, message: text });
       removeTyping();
       await handleBackendResult(result);
     }
   } catch (err) {
     removeTyping();
-    appendError('Something went wrong reaching the server -- please try again.');
+    appendError(voErrorText(err, 'Something went wrong reaching the server -- please try again.'));
   }
 
   isWaiting = false;
