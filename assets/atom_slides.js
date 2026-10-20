@@ -71,7 +71,7 @@
     gettingReady: 'Getting your slides ready…', letsGo: "Let's go",
     // commitment
     commitHeading: 'So what? Now what?', commitSub: 'You have the idea, the technique and the barriers… What will you actually do with them?',
-    commitSave: 'Submit my commitment', commitPrefix: 'I will… ', commitSaved: 'Saved.', commitSavedSub: 'On its way to future you.',
+    commitSave: 'Submit my commitment', commitPrefix: 'I will… ', commitSaved: 'Saved.', commitSavedSub: 'On its way to the future you.',
     commitVoice: 'Before we call it a day, let’s turn learning into action, because knowing what to do never changed the world. Doing it did. So, what will you do next? Type your commitment for action, and I’ll follow up to keep you on track.',
     readAlong: 'Read along',
     viewLabel: 'Better view', viewHelp: 'Want the slides bigger? Press the expand arrows at the top right of this window, next to the X. For the most room, put your browser in full screen too (Ctrl + Cmd + F on a Mac, F11 on Windows).',
@@ -978,6 +978,7 @@
     var el = node('<div class="atom-root"><div class="slide"><div class="slide-tag">' + esc(tag) + '</div><div class="slide-body atm-pad cmt-body"><div class="cmt-card"></div>'
       + '<div class="cmt-foot"><button type="button" class="ix-btn cmt-go" disabled>' + esc(WORDS.commitSave) + '</button></div>'
       + '<div class="cmt-saved" hidden><b>' + esc(WORDS.commitSaved) + '</b> ' + esc(WORDS.commitSavedSub) + '</div></div></div></div>');
+    el.classList.add('cmt-look-' + look);
     var holder = $q(el, '.cmt-card'), go = $q(el, '.cmt-go'), savedLine = $q(el, '.cmt-saved'), foot = $q(el, '.cmt-foot'), handlers = [], locked = false, box;
 
     function draw(editable, text) {
@@ -995,15 +996,71 @@
       var text = box.value.trim();
       handlers.forEach(function (fn) { fn(text); });
     };
-    function lock(text) {
-      locked = true; draw(false, str(text));
-      foot.hidden = true; savedLine.hidden = false; el.classList.add('is-locked');
+    // The send-off after a save, one for each look; the card and its words stay in place. Words-free, so it reads in every language.
+    // Postcard: a stamp, the card shakes, a shadow of the card is lifted into an envelope that flies away, then the tick.
+    // Airmail: the WOTG stamp, the date stamp, the tick, then the shadow-in-an-envelope flies away.
+    // Chat: the message is delivered with ripples, confetti and a shooting star, and its two ticks turn green.
+    var ENVELOPE = '<svg class="cmt-env" viewBox="0 0 160 112" width="150" height="105"><rect x="4" y="10" width="152" height="98" rx="10" fill="#fffaf0" stroke="#e2d4a0" stroke-width="2"/>'
+      + '<path d="M8 18 L80 70 L152 18" fill="none" stroke="#e2d4a0" stroke-width="2" stroke-linejoin="round"/>'
+      + '<g class="cmt-flap"><path d="M4 12 Q4 10 14 10 L146 10 Q156 10 156 12 L80 66 Z" fill="#f3e7bf" stroke="#e2d4a0" stroke-width="2" stroke-linejoin="round"/></g>'
+      + '<g class="cmt-seal"><circle cx="80" cy="66" r="12" fill="#3ab54a"/><path d="M74 66 l4.5 4.5 l8-9" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></svg>';
+    function shadowToEnvelope(start) {
+      var sparks = '';
+      for (var i = 0; i < 8; i++) {
+        var angle = (i / 8) * 6.2832, dist = 50 + (i % 3) * 16;
+        sparks += '<i class="cmt-spark" style="--dx:' + Math.round(Math.cos(angle) * dist) + 'px;--dy:' + Math.round(Math.sin(angle) * dist) + 'px"></i>';
+      }
+      return '<div class="cmt-flight" style="--t:' + start + 's"><div class="cmt-ghost"></div>' + ENVELOPE + sparks + '</div>';
     }
-    if (meaningful(ctx.saved)) lock(ctx.saved);
+    var STAMP = '<span class="cmt-stamp"><i>WOTG<br>&#10003;</i></span>';
+    function tick(side, delay) { return '<span class="cmt-tick cmt-tick-' + side + '" style="animation-delay:' + delay + 's">&#10003;</span>'; }
+    function celebration() {
+      var colours = ['#E4CA0A', '#3ab54a', '#2f7fb8', '#e0577a', '#ffffff'], confetti = '';
+      for (var i = 0; i < 18; i++) {
+        var angle = -1.2 + (i / 17) * 2.4 - 1.57, dist = 70 + (i * 37 % 60);
+        confetti += '<i class="cmt-conf" style="--dx:' + Math.round(Math.cos(angle) * dist) + 'px;--dy:' + Math.round(Math.sin(angle) * dist) + 'px;--c:' + colours[i % 5] + ';--r:' + (i * 83 % 400) + 'deg;animation-delay:' + (0.45 + (i % 5) * 0.04) + 's"></i>';
+      }
+      return '<span class="cmt-ring"></span><span class="cmt-ring cmt-ring2"></span>' + confetti + '<span class="cmt-comet"></span>';
+    }
+    var SENDOFF = {
+      postcard: function () { return STAMP + shadowToEnvelope(1.1) + tick('left', 3.4); },
+      airmail:  function () { return shadowToEnvelope(1.9) + tick('right', 1.2); },
+      chat:     function () { return celebration(); }
+    };
+    var HOLD_MS = { postcard: 4600, airmail: 5300, chat: 3800 };
+    function sendOff() {
+      var stage = $q(el, '.cmt-card'); if (!stage) return;
+      stage.style.position = 'relative';
+      stage.insertAdjacentHTML('beforeend', '<div class="cmt-fx cmt-fx-' + look + '" aria-hidden="true">' + (SENDOFF[look] || SENDOFF.postcard)() + '</div>');
+    }
+    // live: the save has just gone through (the card is not redrawn with its opening animations again); not live: a saved card shown again.
+    // The line "Saved. On its way to the future you." comes out of the send-off itself (the envelope's seal on the postcard and the airmail, the
+    // shooting star's launch on the chat), small and glowing, and drops down to settle in its place under the card as the envelope flies off.
+    var SENTENCE_AT = { postcard: 2500, airmail: 3300, chat: 1500 };
+    function flySentence() {
+      var stage = $q(el, '.cmt-card');
+      if (!savedLine.animate || !stage || (global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+      var c = stage.getBoundingClientRect(), r = savedLine.getBoundingClientRect();
+      var ox = look === 'chat' ? c.left + c.width * 0.86 : c.left + c.width * 0.5, oy = c.top + c.height * 0.46;
+      var dx = ox - (r.left + r.width / 2), dy = oy - (r.top + r.height / 2);
+      function at(f, scale, opacity, offset) { return { transform: 'translate(' + Math.round(dx * f) + 'px,' + Math.round(dy * f) + 'px) scale(' + scale + ')', opacity: opacity, offset: offset }; }
+      savedLine.classList.add('cmt-flying');
+      var move = savedLine.animate([at(1, 0.25, 0, 0), at(0.93, 0.85, 1, 0.14), at(0.35, 1.3, 1, 0.62), { transform: 'none', opacity: 1, offset: 1 }],
+        { duration: 1900, delay: SENTENCE_AT[look] || 2000, easing: 'cubic-bezier(.35,0,.2,1)', fill: 'backwards' });
+      move.onfinish = function () { savedLine.classList.remove('cmt-flying'); };
+    }
+    function lock(text, live) {
+      locked = true;
+      if (live) { el.style.minHeight = el.offsetHeight + 'px'; el.classList.add('cmt-sent'); }   // the slide never gets shorter, so the page does not jump
+      draw(false, str(text));
+      foot.hidden = true; savedLine.hidden = false; el.classList.add('is-locked');
+      if (live) { sendOff(); flySentence(); }
+    }
+    if (meaningful(ctx.saved)) lock(ctx.saved, false);
     return {
-      el: el, voice: WORDS.commitVoice, look: look,
+      el: el, voice: WORDS.commitVoice, look: look, holdMs: HOLD_MS[look] || 4600,
       onSubmit: function (fn) { handlers.push(fn); },
-      lock: lock,
+      lock: function (text) { lock(text, true); },
       // The save did not go through: give the box back so the person can try again (the page tells them why).
       unlock: function () { if (locked) return; box.disabled = false; go.textContent = WORDS.commitSave; go.disabled = !meaningful(box.value); },
       // The picture of this card with `text` in it, as a JPEG Blob. Rejects when the picture cannot be made.

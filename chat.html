@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/atom_slides.css?v=20261020a">
+<link rel="stylesheet" href="assets/atom_slides.css?v=20261021a">
 <style>
 :root {
   --night:   #041A40;
@@ -164,6 +164,10 @@ header.topbar { background:var(--night); }
 .notif-row.urgent-row { background:rgba(224,48,58,0.08); border-left-color:#e0303a; cursor:pointer; }
 .notif-row.urgent-row:hover { background:rgba(224,48,58,0.16); }
 .notif-row.urgent-row .notif-text strong { color:#e0303a; }
+.notif-row.urgent-row.seen-row { background:rgba(22,32,46,0.04); border-left-color:rgba(22,32,46,0.25); }
+.notif-row.urgent-row.seen-row:hover { background:rgba(22,32,46,0.08); }
+.notif-row.urgent-row.seen-row .notif-text strong { color:inherit; font-weight:600; }
+.notif-icon.urgent.seen { background:rgba(22,32,46,0.1); color:rgba(22,32,46,0.45); }
 .notif-icon {
   width:30px; height:30px; border-radius:8px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
@@ -1410,8 +1414,6 @@ body.first-run #impactCard .rule, body.first-run #impactCard .foot, body.first-r
 .vo-script-label { font-size:0.65em; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--green2); margin-bottom:0.25em; }
 .vo-script-text { font-size:0.92em; line-height:1.6; color:var(--night2); white-space:pre-wrap; }
 .atom-root .cv-tiplab { font-size:0.84rem; font-weight:700; color:var(--night); }
-/* The Trainer's answers on a slide: with the voice on they are spoken, and their words show only while the script is open. */
-#chatMessages.vo-voice-on:not(.vo-cc-on) .msg.vo-trainer-text { display:none; }
 .chat-bar #micBtn.vo-nudge { animation:voNudge 1.2s ease-out 3; }
 @keyframes voNudge { 0%, 100% { box-shadow:0 0 0 0 rgba(58,181,74,0.6); } 50% { box-shadow:0 0 0 10px rgba(58,181,74,0); } }
 @media (max-width: 480px) { .vo-track { margin:0 0.3em; } .vo-player { padding:0.3em 0.4em; } }
@@ -1825,7 +1827,7 @@ body.chat-maximized .chat-bar { position:fixed; left:1rem; right:1rem; bottom:0.
 </div>
 
 <script src="assets/html2canvas.min.js"></script>
-<script src="assets/atom_slides.js?v=20261020a"></script>
+<script src="assets/atom_slides.js?v=20261021a"></script>
 <script>
 // `overflow:hidden` alone locks scroll on desktop (mouse wheel respects
 // it) but iOS Safari ignores it for a touch-drag -- the background page
@@ -2471,7 +2473,9 @@ async function loadHeaderProfilePhoto() {
 // ─── PROFILE DROPDOWN / "COMING SOON" ──────────────────────────────────────
 function toggleNotifications(e) {
   e.preventDefault(); e.stopPropagation();
-  document.getElementById('notifDropdown').classList.toggle('open');
+  const dropdown = document.getElementById('notifDropdown');
+  dropdown.classList.toggle('open');
+  if (dropdown.classList.contains('open')) bellMarkSeen();
 }
 function toggleProfileMenu(e) {
   e.preventDefault(); e.stopPropagation();
@@ -4011,18 +4015,32 @@ function voPlayer(text, quiet) {
   return api;
 }
 
-// What the Trainer says on a slide (a pre-written answer, a reply to a typed question, an activity's response). With the voice on it is spoken and its
-// words show only when the learner has the script (CC) open; with the voice off the words simply show. The Continue button is always moved back
-// below it, so the learner never has to scroll up to find it. opts: quiet (nothing is spoken), alwaysShow (the words show whatever the switches say).
+// What the Trainer says on a slide (a pre-written answer, a reply to a typed question, an activity's response). Its words always show, and with the
+// voice on it is also spoken. Several replies in a row are spoken one after the other, never cutting each other off. The Continue button is always
+// moved back below it, so the learner never has to scroll up to find it. opts: quiet (nothing is spoken).
+let voSayQueue = [];
+let voSayRun = -1;   // Voice.run right after the queue last started a line; any other speech or a stop changes it, which means the queue is no longer playing
+function voSayNext() {
+  const Voice = window.AtomSlides.Voice;
+  const text = voSayQueue.shift();
+  if (text === undefined) { voSayRun = -1; return; }
+  if (!Voice.speak(text, false, { onend: voSayNext, onerror: voSayNext })) { voSayNext(); return; }
+  voSayRun = Voice.run;
+}
+function voSpeakQueued(text) {
+  const Voice = window.AtomSlides.Voice;
+  if (voSayRun === -1 || voSayRun !== Voice.run) {   // nothing of ours is playing
+    voSayQueue = [text];
+    if (voPlayerCurrent) { voPlayerCurrent.reset(); voPlayerCurrent = null; }
+    voSayNext();
+  } else {
+    voSayQueue.push(text);
+  }
+}
 function voTrainerSay(text, opts) {
   opts = opts || {};
   const bubble = appendMessage('ai', text, { suppressScroll: !!opts.suppressScroll });
-  const row = bubble.closest('.msg');
-  if (row && !opts.alwaysShow) row.classList.add('vo-trainer-text');
-  if (!opts.quiet) {
-    if (voPlayerCurrent) { voPlayerCurrent.reset(); voPlayerCurrent = null; }
-    window.AtomSlides.Voice.speak(text);
-  }
+  if (!opts.quiet) voSpeakQueued(text);
   voKeepNavLast();
   return bubble;
 }
@@ -4064,7 +4082,7 @@ function voChips(questions, opts) {
 function voAskOwn() {
   if (voBusy) return;
   voUnpin();
-  const reply = voTrainerSay(window.AtomSlides.words.diffReply, { alwaysShow: true, suppressScroll: true });
+  const reply = voTrainerSay(window.AtomSlides.words.diffReply, { suppressScroll: true });
   voRevealBelow(reply && reply.closest('.msg'));
   const input = document.getElementById('chatInput');
   if (input && !input.disabled) input.focus();
@@ -4080,7 +4098,7 @@ async function voAskPopup(btn, index, text) {
   try {
     const result = await apiPost('/api/training/popup', { session_id: sessionId, question_index: index });
     let lastReply = null;
-    (result.messages || []).forEach(function(m) { if (m) lastReply = voTrainerSay(m, { alwaysShow: true, suppressScroll: true }); });
+    (result.messages || []).forEach(function(m) { if (m) lastReply = voTrainerSay(m, { suppressScroll: true }); });
     voRevealBelow(lastReply && lastReply.closest('.msg'));
   } catch (err) {
     btn.disabled = false;
@@ -4165,8 +4183,7 @@ function voShowActivity(act, saved, quiet) {
 // Messages of the chat with the Trainer, as they were held ({ sender, text } each).
 function voShowChat(messages) {
   (messages || []).forEach(function(m) {
-    const bubble = appendMessage(m.sender === 'user' ? 'user' : 'ai', m.text, { suppressScroll: true });
-    if (m.sender !== 'user') { const row = bubble.closest('.msg'); if (row) row.classList.add('vo-trainer-text'); }
+    appendMessage(m.sender === 'user' ? 'user' : 'ai', m.text, { suppressScroll: true });
   });
 }
 
@@ -4269,6 +4286,7 @@ async function voSaveCommitment(card, text, sid, hooks, base) {
     hooks.error(voErrorText(err, 'Something went wrong sending that -- please try again.'));
   }
 }
+const VO_COMMIT_HOLD_MS = 3500;
 function voShowCommitment(result) {
   const card = window.AtomSlides.renderCommitment(result.slide, { seed: sessionId, apiBase: slideBase(), number: voSlideCount ? voSlideCount + 2 : undefined });
   appendAtomRow(card.el);
@@ -4279,7 +4297,8 @@ function voShowCommitment(result) {
   card.onSubmit(function(text) {
     voSaveCommitment(card, text, sid, {
       error: function(msg) { appendError(msg); },
-      done: function(r) {
+      done: async function(r) {
+        await sleep(card.holdMs || VO_COMMIT_HOLD_MS);   // the saved card stays in view long enough to be seen before the closing message appears
         (r.messages || []).forEach(function(m) { if (m) appendMessage('ai', m); });
         lockConversationEnded(false);
       },
@@ -4387,7 +4406,7 @@ function voRenderHistoryAtom(atom, sid, base) {
   card.onSubmit(function(text) {
     voSaveCommitment(card, text, sid, {
       error: function(msg) { _renderHistoryMessage('ai', msg); },
-      done: function(r) { (r.messages || []).forEach(function(m) { if (m) _renderHistoryMessage('ai', m); }); },
+      done: async function(r) { await sleep(card.holdMs || VO_COMMIT_HOLD_MS); (r.messages || []).forEach(function(m) { if (m) _renderHistoryMessage('ai', m); }); },
     }, base);
   });
   row.scrollIntoView({ block: 'start' });
@@ -4769,24 +4788,53 @@ async function submitDriverDiagnosisForm(answers) {
 let commitmentItems = [];
 let legacyItems = [];
 
-function renderBell() {
+// Which waiting items this device has already shown the learner (opened bell). Kept on the device only: a new device shows everything as new.
+function bellSeenKey() { return 'wotg_seen_notifications_' + userId; }
+function bellSeen() {
+  try { return new Set(JSON.parse(localStorage.getItem(bellSeenKey()) || '[]')); } catch (e) { return new Set(); }
+}
+function bellKeyOf(kind, item) { return kind + ':' + item.session_id; }
+function bellKeys() {
+  return legacyItems.map(function(i) { return bellKeyOf('confirmation', i); }).concat(commitmentItems.map(function(i) { return bellKeyOf('commitment', i); }));
+}
+function bellUnseenCount() {
+  const seen = bellSeen();
+  return bellKeys().filter(function(k) { return !seen.has(k); }).length;
+}
+function bellShowBadge() {
   const badge = document.getElementById('notifBadge');
+  const unseen = bellUnseenCount();
+  badge.textContent = unseen > 9 ? '9+' : String(unseen);
+  badge.style.display = unseen > 0 ? 'block' : 'none';
+}
+// Opening the bell counts every item in it as seen: the rows stay as they are for this opening, and show as seen from the next draw on.
+function bellMarkSeen() {
+  try {
+    const seen = bellSeen();
+    bellKeys().forEach(function(k) { seen.add(k); });
+    localStorage.setItem(bellSeenKey(), JSON.stringify(Array.from(seen)));
+  } catch (e) { /* without storage every item simply stays new */ }
+  bellShowBadge();
+}
+
+function renderBell() {
   const realRow = document.getElementById('realNotifRow');
   const count = legacyItems.length + commitmentItems.length;
-  badge.textContent = count > 9 ? '9+' : String(count);
-  badge.style.display = count > 0 ? 'block' : 'none';
+  const seenKeys = bellSeen();
+  bellShowBadge();
   realRow.innerHTML = '';
   if (count === 0) {
     realRow.innerHTML = '<div class="notif-empty">Nothing waiting on you right now.</div>';
     return;
   }
-  function addRow(title, rest, onClick) {
+  function addRow(title, rest, onClick, key) {
+    const isSeen = seenKeys.has(key);
     const row = document.createElement('div');
-    row.className = 'notif-row urgent-row';
+    row.className = 'notif-row urgent-row' + (isSeen ? ' seen-row' : '');
     row.onclick = onClick;
     const icon = document.createElement('div');
-    icon.className = 'notif-icon urgent';
-    icon.textContent = '!';
+    icon.className = 'notif-icon urgent' + (isSeen ? ' seen' : '');
+    icon.textContent = isSeen ? '•' : '!';
     const text = document.createElement('div');
     text.className = 'notif-text';
     const strong = document.createElement('strong');
@@ -4798,10 +4846,10 @@ function renderBell() {
     realRow.appendChild(row);
   }
   legacyItems.forEach(function(item) {
-    addRow(item.hero_reflector || 'Application Confirmation', ' — application confirmation pending. Confirm now?', function() { openNotification(item); });
+    addRow(item.hero_reflector || 'Application Confirmation', ' — application confirmation pending. Confirm now?', function() { openNotification(item); }, bellKeyOf('confirmation', item));
   });
   commitmentItems.forEach(function(item) {
-    addRow(item.label || 'Application: Commitment submission awaited', item.skill ? ' — ' + item.skill : '', function() { openCommitmentNotification(item); });
+    addRow(item.label || 'Application: Commitment submission awaited', item.skill ? ' — ' + item.skill : '', function() { openCommitmentNotification(item); }, bellKeyOf('commitment', item));
   });
 }
 
@@ -5662,7 +5710,9 @@ window.addEventListener('beforeunload', function(e) {
 
 initSession();
 
-// ─── VOICE INPUT (tap-to-record mic, Web Speech API) -- ported as-is ───────
+// ─── VOICE INPUT (tap-to-record mic, the browser's built-in speech recognition) ───────────────────────────────────────────────────────────────
+// The browser does the listening; this code starts it in the learner's language, keeps the words already said when the browser restarts it, and
+// tells the learner when it cannot hear (a blocked microphone, no network, nothing heard) instead of stopping silently.
 (function(){
   const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
   const micBtn = document.getElementById('micBtn');
@@ -5673,17 +5723,43 @@ initSession();
     return;
   }
 
+  const MIC_LANG = {
+    'English': 'en-US', 'Hinglish': 'en-IN', 'Spanish': 'es-ES', 'French': 'fr-FR', 'German': 'de-DE', 'Portuguese': 'pt-PT',
+    'Italian': 'it-IT', 'Dutch': 'nl-NL', 'Filipino': 'fil-PH', 'Arabizi': 'en-US', 'Hindi': 'hi-IN', 'Tamil': 'ta-IN',
+    'Telugu': 'te-IN', 'Kannada': 'kn-IN', 'Malayalam': 'ml-IN', 'Arabic': 'ar-SA', 'Chinese (Simplified)': 'zh-CN',
+    'Chinese (Traditional)': 'zh-TW', 'Japanese': 'ja-JP', 'Korean': 'ko-KR'
+  };
+  const MIC_NOTHING_HEARD_MS = 10000;
+  // Phones' browsers repeat earlier words when listening runs on without a break, so on a phone each phrase is its own short listening.
+  const onPhone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/i.test(navigator.platform));
+
   let recognition = null;
   let listening = false;
   let baseText = '';
+  let heardAnything = false;
+  let nothingHeardTimer = null;
+
+  function micLanguage() {
+    const voice = window.AtomSlides && window.AtomSlides.Voice;
+    return MIC_LANG[voice && voice.language] || 'en-US';
+  }
+
+  function micMessage(code) {
+    if (code === 'not-allowed' || code === 'service-not-allowed') return 'The microphone is blocked for this page. Allow microphone access in your browser settings, then tap the mic again.';
+    if (code === 'audio-capture') return 'No microphone was found on this device.';
+    if (code === 'network') return 'The voice-to-text service could not be reached. Check your connection and tap the mic again.';
+    return 'The microphone stopped unexpectedly. Please tap the mic and try again.';
+  }
 
   function createRecognition() {
     const r = new SpeechRecognitionAPI();
-    r.continuous = true;
+    r.continuous = !onPhone;
     r.interimResults = true;
-    r.lang = 'en-US';
+    r.lang = micLanguage();
 
     r.onresult = function(event) {
+      heardAnything = true;
+      clearTimeout(nothingHeardTimer);
       let transcript = '';
       for (let i = 0; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript;
@@ -5694,15 +5770,18 @@ initSession();
       autoResize(input);
     };
 
-    r.onerror = function() {
+    r.onerror = function(event) {
+      const code = event && event.error;
+      if (code === 'aborted' || code === 'no-speech') return;   // the browser ending a listening by itself: onend starts the next one
       stopListening();
+      appendError(micMessage(code));
     };
 
     r.onend = function() {
-      if (listening) {
-        recognition = createRecognition();
-        try { recognition.start(); } catch(e) {}
-      }
+      if (!listening) return;
+      baseText = document.getElementById('chatInput').value;   // what has been said so far stays; the new listening adds to it
+      recognition = createRecognition();
+      try { recognition.start(); } catch(e) { stopListening(); appendError(micMessage('')); }
     };
 
     return r;
@@ -5711,14 +5790,22 @@ initSession();
   function startListening() {
     if (listening || micBtn.disabled) return;
     listening = true;
+    heardAnything = false;
     baseText = document.getElementById('chatInput').value;
     micBtn.classList.add('listening');
     micBtn.title = 'Tap to stop';
     recognition = createRecognition();
-    try { recognition.start(); } catch(e) {}
+    try { recognition.start(); } catch(e) { stopListening(); appendError(micMessage('')); return; }
+    nothingHeardTimer = setTimeout(function() {
+      if (listening && !heardAnything) {
+        stopListening();
+        appendError('I could not hear anything. Check that the microphone is allowed for this page, then tap the mic to try again.');
+      }
+    }, MIC_NOTHING_HEARD_MS);
   }
 
   function stopListening() {
+    clearTimeout(nothingHeardTimer);
     if (!listening) return;
     listening = false;
     micBtn.classList.remove('listening');
@@ -5729,10 +5816,36 @@ initSession();
 
   stopMicIfActive = stopListening;
 
+  // The trainer's voice and the microphone must not run together (the microphone would write the trainer's words into the box).
+  const voice = window.AtomSlides && window.AtomSlides.Voice;
+  if (voice) {
+    const speak = voice.speak;
+    voice.speak = function() { stopListening(); return speak.apply(voice, arguments); };
+  }
+
   micBtn.addEventListener('click', function(e){
     e.preventDefault();
     if (listening) { stopListening(); } else { startListening(); }
   });
+})();
+
+// ─── CHAT BOX LOCK while Application Confirmation or Conversation History is open ─────────────────────────────────────────────────────────────
+// Their forms and cards are answered on their own; the message box underneath must not catch keystrokes meanwhile.
+(function(){
+  const bar = document.querySelector('.chat-bar');
+  const overlays = ['notificationOverlay', 'historyOverlay'].map(function(id) { return document.getElementById(id); }).filter(Boolean);
+  if (!bar || !overlays.length) return;
+  function sync() {
+    const open = overlays.some(function(o) { return o.classList.contains('open'); });
+    if (open) {
+      stopMicIfActive();
+      if (document.activeElement && bar.contains(document.activeElement)) document.activeElement.blur();
+    }
+    bar.inert = open;
+    bar.style.opacity = open ? '0.45' : '';
+  }
+  overlays.forEach(function(o) { new MutationObserver(sync).observe(o, { attributes: true, attributeFilter: ['class'] }); });
+  sync();
 })();
 </script>
 
