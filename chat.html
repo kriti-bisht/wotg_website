@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/atom_slides.css?v=20261019n">
+<link rel="stylesheet" href="assets/atom_slides.css?v=20261020a">
 <style>
 :root {
   --night:   #041A40;
@@ -1825,7 +1825,7 @@ body.chat-maximized .chat-bar { position:fixed; left:1rem; right:1rem; bottom:0.
 </div>
 
 <script src="assets/html2canvas.min.js"></script>
-<script src="assets/atom_slides.js?v=20261019n"></script>
+<script src="assets/atom_slides.js?v=20261020a"></script>
 <script>
 // `overflow:hidden` alone locks scroll on desktop (mouse wheel respects
 // it) but iOS Safari ignores it for a touch-drag -- the background page
@@ -3695,6 +3695,8 @@ function voSlideNumberOf(phase) {
 }
 // The backend that holds the session on screen, and its one door for "continue" / "finish" / a typed message.
 function slideBase() { return activeTrack === 'learning_recommendations' ? LEARNING_RECS_BASE : API_BASE; }
+// The voiceover is made by the backend of whichever track is open, for the person who is logged in.
+if (window.AtomSlides) window.AtomSlides.Voice.configure({ base: slideBase, token: _loginToken });
 function slideMessage(message) {
   if (activeTrack === 'learning_recommendations') {
     return apiPost('/api/skill-introduction/message', { session_id: sessionId, skill_name: activeSkillName, message: message });

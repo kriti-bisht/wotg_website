@@ -13,7 +13,7 @@
  *   renderSlide(slide, ctx)         -> { el, voice }                                one Master slide (ctx.number = the number shown)
  *   renderActivity(activity, ctx)   -> { el, voice, response, onDone(fn), isFinished() }          the activity that follows a slide; response = the Master's trainer_response
  *   renderCommitment(slide, ctx)    -> { el, voice, onSubmit(fn(text)), lock(text), unlock() }   the closing "So what? Now what?" slide
- *   Voice                           browser speech for the voiceover (an interim voice; Azure Speech replaces it later)
+ *   Voice                           the voiceover: Azure Speech audio from the active track's backend (configure(), speak(), stop(), ...)
  *   useScriptFont(base, font)       loads the web font for the learner's language
  *   words                           the fixed-words table (Continue / Finish labels and so on)
  *
@@ -86,14 +86,6 @@
     commitTyping: 'Type your commitment here.', commitSaving: 'Submitting…'
   };
 
-  // Language name (as the platform stores it) -> the code the browser's voices use.
-  var LANG_CODES = {
-    'English': 'en-US', 'Hinglish': 'en-IN', 'Spanish': 'es-ES', 'French': 'fr-FR', 'German': 'de-DE', 'Portuguese': 'pt-PT',
-    'Italian': 'it-IT', 'Dutch': 'nl-NL', 'Filipino': 'fil-PH', 'Arabizi': 'en-US', 'Hindi': 'hi-IN', 'Tamil': 'ta-IN',
-    'Telugu': 'te-IN', 'Kannada': 'kn-IN', 'Malayalam': 'ml-IN', 'Arabic': 'ar-SA', 'Chinese (Simplified)': 'zh-CN',
-    'Chinese (Traditional)': 'zh-TW', 'Japanese': 'ja-JP', 'Korean': 'ko-KR'
-  };
-
   // ---------------------------------------------------------------------------------------------------------------------------------
   // Small helpers
   // ---------------------------------------------------------------------------------------------------------------------------------
@@ -148,14 +140,23 @@
   };
 
   // ---------------------------------------------------------------------------------------------------------------------------------
-  // Voice -- the browser's own speech, as an interim voice. Off switch and a test sound live on the cover.
+  // Voice -- Azure Speech, one voice (Ava Multilingual) for every language. The page tells it where to ask (configure); the backend of the
+  // active track answers POST /api/speech with MP3 audio for the text, spoken exactly as written. When the audio cannot be had, nothing is
+  // played and onerror() is called: there is no other voice. Audio already fetched is kept, so playing a slide again costs nothing.
+  // Off switch and a test sound live on the cover.
   // ---------------------------------------------------------------------------------------------------------------------------------
+  var SILENCE = "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==";
   var Voice = {
     enabled: true,
     language: 'English',
     volume: 1,
     listeners: [],
-    supported: function () { return 'speechSynthesis' in global; },
+    source: null,      // { base: function () -> the backend address of the active track, token: function () -> the login token }
+    el: null,          // the ONE audio element, reused, so a browser that only lets a click start sound keeps allowing it
+    cache: {},         // language + text -> the audio already fetched
+    run: 0,            // which speak() call is the current one; an older one finishing late does nothing
+    supported: function () { return !!Voice.source && typeof Audio !== 'undefined'; },
+    configure: function (source) { Voice.source = source || null; },
     setLanguage: function (name) { Voice.language = name || 'English'; },
     // The cover's switch calls this; the player and the chat read Voice.enabled and listen for the change.
     setEnabled: function (on) {
@@ -164,29 +165,45 @@
       Voice.listeners.forEach(function (fn) { try { fn(Voice.enabled); } catch (e) { /* a listener must never break the switch */ } });
     },
     onChange: function (fn) { Voice.listeners.push(fn); },
-    stop: function () { try { if (Voice.supported()) global.speechSynthesis.cancel(); } catch (e) { /* nothing to stop */ } },
-    pause: function () { try { if (Voice.supported()) global.speechSynthesis.pause(); } catch (e) { /* nothing to pause */ } },
-    resume: function () { try { if (Voice.supported()) global.speechSynthesis.resume(); } catch (e) { /* nothing to resume */ } },
+    stop: function () { Voice.run += 1; try { if (Voice.el) Voice.el.pause(); } catch (e) { /* nothing to stop */ } },
+    pause: function () { try { if (Voice.el) Voice.el.pause(); } catch (e) { /* nothing to pause */ } },
+    resume: function () { try { if (Voice.el && Voice.el.src && Voice.el.paused) Voice.el.play(); } catch (e) { /* nothing to resume */ } },
     // force: the cover's test sound and the player's own play button play even when the switch is off, because the person asked for it.
     // handlers (all optional): onstart(), onprogress(fraction 0..1, charIndex), onend(), onerror(). startAt: a character position to begin from.
-    // Returns true when speech was started.
+    // Returns true when speech was started (the audio itself follows once it has arrived).
     speak: function (text, force, handlers, startAt) {
       if ((!Voice.enabled && !force) || !Voice.supported() || !text) return false;
       try {
-        global.speechSynthesis.cancel();
-        var offset = startAt > 0 ? startAt : 0, h = handlers || {};
-        var u = new SpeechSynthesisUtterance(offset ? text.slice(offset) : text);
-        u.lang = LANG_CODES[Voice.language] || 'en-US';
-        u.volume = Voice.volume;
-        var voices = global.speechSynthesis.getVoices() || [];
-        var prefix = u.lang.split('-')[0];
-        var match = voices.filter(function (v) { return v.lang === u.lang; })[0] || voices.filter(function (v) { return v.lang && v.lang.split('-')[0] === prefix; })[0];
-        if (match) u.voice = match;
-        u.onstart = function () { if (h.onstart) h.onstart(); };
-        u.onboundary = function (e) { if (h.onprogress) h.onprogress((offset + e.charIndex) / text.length, offset + e.charIndex); };
-        u.onend = function () { if (h.onend) h.onend(); };
-        u.onerror = function (e) { if (e && (e.error === 'canceled' || e.error === 'interrupted')) return; if (h.onerror) h.onerror(); };
-        global.speechSynthesis.speak(u);
+        var h = handlers || {}, offset = startAt > 0 ? startAt : 0, mine = ++Voice.run;
+        var spoken = offset ? text.slice(offset) : text;
+        var key = Voice.language + '|' + spoken;
+        var el = Voice.el || (Voice.el = new Audio());
+        el.onplaying = el.ontimeupdate = el.onended = el.onerror = null;
+        try { el.pause(); el.src = SILENCE; var unlock = el.play(); if (unlock && unlock.catch) unlock.catch(function () { /* the real audio tries again below */ }); } catch (e) { /* unlocking is a nicety */ }
+        var fail = function () { if (mine === Voice.run && h.onerror) h.onerror(); };
+        var play = function (url) {
+          if (mine !== Voice.run) return;
+          var started = false;
+          el.onplaying = function () { if (mine === Voice.run && !started) { started = true; if (h.onstart) h.onstart(); } };
+          el.ontimeupdate = function () {
+            if (mine !== Voice.run || !h.onprogress || !(el.duration > 0)) return;
+            var f = el.currentTime / el.duration, at = offset + f * spoken.length;
+            h.onprogress(at / text.length, Math.round(at));
+          };
+          el.onended = function () { if (mine === Voice.run && h.onend) h.onend(); };
+          el.onerror = fail;
+          el.volume = Voice.volume;
+          el.src = url;
+          var p = el.play(); if (p && p.catch) p.catch(fail);
+        };
+        if (Voice.cache[key]) { play(Voice.cache[key]); return true; }
+        fetch(Voice.source.base() + '/api/speech', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + Voice.source.token() },
+          body: JSON.stringify({ text: spoken, language: Voice.language })
+        }).then(function (res) { if (!res.ok) throw new Error('voice ' + res.status); return res.blob(); })
+          .then(function (blob) { Voice.cache[key] = URL.createObjectURL(blob); play(Voice.cache[key]); })
+          .catch(fail);
         return true;
       } catch (e) { return false; /* speech is a nicety: the text is always on the page */ }
     }
