@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Wisdom on the Go — Demo</title>
+<title>Wisdom on the GO!</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
@@ -5107,7 +5107,8 @@ function _renderYesFollowup(container, notification, btnStyle) {
     return block;
   }
   const q3Block = makeTextQuestion(q3, 'q3_answer');
-  const q4Block = makeChoiceQuestion(q4, 'q4_answer', q4.options, false);
+  // "No" is shown first (the saved answers are still the same "Yes"/"No" the backend sent).
+  const q4Block = makeChoiceQuestion(q4, 'q4_answer', q4.options.slice().sort(function(x, y) { return (y === 'No') - (x === 'No'); }), false);
 
   const submitBtn = document.createElement('button');
   submitBtn.type = 'button';
