@@ -642,7 +642,8 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 
 /* ---- Reports & Insights hub (Fable's report list) + How Friction Compounds ---- */
 /* the toggle, Filter by Reflector and Drill Down sit side by side: ALL THREE exactly the toggle's height (Kriti, 2026-10-09) */
-.fr-controls-right .period-toggle, .fr-controls-right .rf-inline-trigger, .fr-controls-right .ri-dd-trigger { height:2.1rem; box-sizing:border-box; }
+.fr-controls-right .period-toggle, .fr-controls-right .rf-inline-trigger, .fr-controls-right .ri-dd-trigger, .fr-controls-right .adopt-seg { height:2.1rem; box-sizing:border-box; }
+.fr-controls-right .adopt-seg { align-items:center; }
 .fr-controls-right .rf-inline-trigger, .fr-controls-right .ri-dd-trigger { padding-top:0; padding-bottom:0; }
 .report-list { display:flex; flex-direction:column; gap:1rem; }
 .report-row {
@@ -2600,7 +2601,8 @@ async function ensureFiscalStartMonth() {
 }
 
 async function renderAdoption() {
-  $('#view').innerHTML = `<div class="um-page-head"><div><h1 class="um-title">Adoption Overview</h1></div></div>
+  $('#view').innerHTML = `<div class="um-page-head"><div><h1 class="um-title">Adoption Overview</h1></div><div class="fr-controls-right" id="adoptHeadControls"></div></div>
+    <div id="adoptHeadChip"></div>
     <div id="adoptCards" class="adopt-cards"></div>
     <div id="adoptPanel" class="panel adopt-droptarget"></div>
     <div id="adoptFeedbackPanel" class="panel"></div>`;
@@ -2732,25 +2734,30 @@ async function drawAdoptFeedback() {
   }
 }
 
+// The Month / Quarter / Year toggle, the Filter button and the "Showing" chip sit at the top right of the page, above every card,
+// because they change everything on it (the cards, the panel and the feedback card).
+function drawAdoptControls() {
+  const bar = $('#adoptHeadControls'), chip = $('#adoptHeadChip');
+  if (!bar || !chip) return;
+  bar.innerHTML = `<div class="adopt-seg" id="adoptPeriodSeg">${['month', 'quarter', 'year'].map(p => `<button data-period="${p}" class="${p === S.adopt.period ? 'active' : ''}">${titleCase(p)}</button>`).join('')}</div>
+    ${focusLevels().length || focusIsSet() ? `<button class="ri-dd-trigger" id="adoptFilterTrigger">${icon('filter')} Filter</button>` : ''}`;
+  chip.innerHTML = focusIsSet() ? `<div style="margin-bottom:1rem"><span class="adopt-focus-chip">Showing: <strong>${esc(focusSummary())}</strong><button type="button" id="adoptFocusClear" aria-label="Show everything">×</button></span></div>` : '';
+  $$('[data-period]', $('#adoptPeriodSeg')).forEach(b => b.onclick = () => { S.adopt.period = b.dataset.period; drawAdoptPanel(); drawAdoptCards(); });
+  if ($('#adoptFilterTrigger')) $('#adoptFilterTrigger').onclick = openAdoptFilterDrawer;
+  if ($('#adoptFocusClear')) $('#adoptFocusClear').onclick = () => { S.adopt.focus = null; drawAdoptPanel(); drawAdoptCards(); };
+}
 async function drawAdoptPanel() {
   const key = S.adopt.active, t = ADOPT_TRACKS[key];
   const panel = $('#adoptPanel');
+  drawAdoptControls();
   panel.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.3rem;flex-wrap:wrap">
       <h3 style="font-size:1.05rem;font-weight:700;color:var(--night);text-transform:none;letter-spacing:0">${esc(t.label)}</h3>
       ${key !== 'overall' ? `<button class="adopt-back" id="adoptBackBtn">${icon('out')} Back to Overview</button>` : ''}
     </div>
-    <div class="adopt-controls">
-      <div class="adopt-seg" id="adoptPeriodSeg">${['month', 'quarter', 'year'].map(p => `<button data-period="${p}" class="${p === S.adopt.period ? 'active' : ''}">${titleCase(p)}</button>`).join('')}</div>
-      ${focusLevels().length || focusIsSet() ? `<button class="ri-dd-trigger" id="adoptFilterTrigger">${icon('filter')} Filter</button>` : ''}
-      ${focusIsSet() ? `<span class="adopt-focus-chip">Showing: <strong>${esc(focusSummary())}</strong><button type="button" id="adoptFocusClear" aria-label="Show everything">×</button></span>` : ''}
-    </div>
     <div class="adopt-tabs" id="adoptTabsRow">${ADOPT_TABS.map(tb => `<button data-tab="${tb.key}" class="${tb.key === S.adopt.tab ? 'active' : ''}">${esc(tb.label)}</button>`).join('')}</div>
     <div id="adoptBody" class="loading-block"><div class="spinner"></div></div>`;
   if (key !== 'overall') $('#adoptBackBtn').onclick = () => { S.adopt.active = 'overall'; drawAdoptCards(); drawAdoptPanel(); };
-  $$('[data-period]', $('#adoptPeriodSeg')).forEach(b => b.onclick = () => { S.adopt.period = b.dataset.period; drawAdoptPanel(); drawAdoptCards(); });
-  if ($('#adoptFilterTrigger')) $('#adoptFilterTrigger').onclick = openAdoptFilterDrawer;
-  if ($('#adoptFocusClear')) $('#adoptFocusClear').onclick = () => { S.adopt.focus = null; drawAdoptPanel(); drawAdoptCards(); };
   $$('[data-tab]', $('#adoptTabsRow')).forEach(b => b.onclick = () => { S.adopt.tab = b.dataset.tab; drawAdoptPanel(); drawAdoptCards(); });
   drawAdoptFeedback();   // its own card + its own toggle; a no-op unless the track / drill-down changed
   try {
@@ -2852,7 +2859,7 @@ const LF = (() => {
         <div class="friction-area-ring-wrap"><div class="friction-area-ring ${none ? 'nodata' : ''}" style="background:conic-gradient(${color} 0% ${pct || 0}%, var(--grey1) ${pct || 0}% 100%)"><div class="friction-area-ring-inner" style="color:${color}">${none ? '—' : pct + '%'}</div></div></div>
         <div class="friction-area-text"><h3>${esc(a.label)}</h3><p>${esc(a.description)}</p><span class="friction-area-tag" style="background:${color}22; color:${color}">${none ? 'No data yet' : cardsNote(d)}</span></div>
       </div></div>`;
-    }).join('')}</div>${none || !cards.sessions ? '' : `<div class="fr-footnote" style="margin:0.6rem 0.25rem 0;font-size:0.8rem;color:var(--grey3)">Based on ${cards.sessions} session${cards.sessions === 1 ? '' : 's'} with a friction diagnosis &middot; ${cardsNote(d).replace('Share of friction, ', '')}</div>`}`;
+    }).join('')}</div>${none || !cards.sessions ? '' : `<div class="fr-footnote" style="margin:0.6rem 0.25rem 0;font-size:0.8rem;color:var(--grey3)">Total sessions considered: ${cards.sessions} &middot; ${cardsNote(d).replace('Share of friction, ', '')}</div>`}`;
   }
   function legend(areas) { return `<div class="chart-legend nowrap">${areas.map(a => `<div class="legend-item"><span class="legend-dot" style="background:${COLORS[a.key]}"></span>${esc(a.label)}</div>`).join('')}</div>`; }
   function trendChart(data) {
