@@ -2507,6 +2507,28 @@ async function ensureFocusOptions() {
   catch (e) { S.adopt.focusOptions = {}; }
   return S.adopt.focusOptions;
 }
+// A drawer offers each level only inside what is ticked above it. The keys carry their parents ("company", "company|bu",
+// "company|bu|department"), so a BU is offered only inside the ticked companies and a department only inside the ticked BUs
+// (or, with no BU ticked, the ticked companies). A tick that no longer fits is cleared. Assigner, manager and user are not
+// narrowed here: their keys carry no parent. levelOf(item) names a drawer item's level.
+function narrowDrawerLevels(body, levelOf) {
+  const items = {};
+  body.querySelectorAll('.ri-dd-item').forEach(it => { items[levelOf(it)] = it; });
+  const ticked = l => items[l] ? Array.from(items[l].querySelectorAll('input:checked')).map(i => i.value) : [];
+  const parent = (key, parts) => key.split('|').slice(0, parts).join('|');
+  const narrow = (l, allowed) => {
+    if (!items[l]) return;
+    items[l].querySelectorAll('label').forEach(lab => {
+      const box = lab.querySelector('input'), ok = allowed(box.value);
+      lab.style.display = ok ? '' : 'none';
+      if (!ok) box.checked = false;
+    });
+  };
+  const companies = ticked('company');
+  narrow('bu', k => !companies.length || companies.includes(parent(k, 1)));
+  const bus = ticked('bu');
+  narrow('department', k => (!companies.length || companies.includes(parent(k, 1))) && (!bus.length || bus.includes(parent(k, 2))));
+}
 function openAdoptFilterDrawer() {
   let overlay = $('#adoptDdOverlay'), drawer = $('#adoptDdDrawer');
   if (!drawer) {
@@ -2533,6 +2555,12 @@ function openAdoptFilterDrawer() {
       <button type="button" class="ri-dd-toggle" data-toggle="${l}">${toggleText(l, picked[l].size > 0)}</button>
       <div class="ri-dd-panel">${(opts[l] || []).map(o => `<label><input type="checkbox" data-level="${l}" value="${esc(o.key)}"${picked[l].has(o.key) ? ' checked' : ''}>${esc(o.label)}</label>`).join('')}</div>
     </div>`).join('');
+  const syncPicked = () => levels.forEach(l => {
+    picked[l] = new Set(Array.from(body.querySelectorAll('input[data-level="' + l + '"]:checked')).map(i => i.value));
+    $('[data-toggle="' + l + '"]', body).textContent = toggleText(l, $('[data-item="' + l + '"]', body).classList.contains('open'));
+  });
+  narrowDrawerLevels(body, it => it.dataset.item);
+  syncPicked();
   body.onclick = e => {
     const t = e.target.closest('[data-toggle]');
     if (!t) return;
@@ -2545,6 +2573,8 @@ function openAdoptFilterDrawer() {
     const l = box.dataset.level;
     box.checked ? picked[l].add(box.value) : picked[l].delete(box.value);
     $('[data-toggle="' + l + '"]', body).textContent = toggleText(l, true);
+    narrowDrawerLevels(body, it => it.dataset.item);
+    syncPicked();
   };
   $('#adoptDdGo').onclick = () => {
     const f = {};
@@ -2822,7 +2852,7 @@ const LF = (() => {
         <div class="friction-area-ring-wrap"><div class="friction-area-ring ${none ? 'nodata' : ''}" style="background:conic-gradient(${color} 0% ${pct || 0}%, var(--grey1) ${pct || 0}% 100%)"><div class="friction-area-ring-inner" style="color:${color}">${none ? '—' : pct + '%'}</div></div></div>
         <div class="friction-area-text"><h3>${esc(a.label)}</h3><p>${esc(a.description)}</p><span class="friction-area-tag" style="background:${color}22; color:${color}">${none ? 'No data yet' : cardsNote(d)}</span></div>
       </div></div>`;
-    }).join('')}</div>`;
+    }).join('')}</div>${none || !cards.sessions ? '' : `<div class="fr-footnote" style="margin:0.6rem 0.25rem 0;font-size:0.8rem;color:var(--grey3)">Based on ${cards.sessions} session${cards.sessions === 1 ? '' : 's'} with a friction diagnosis &middot; ${cardsNote(d).replace('Share of friction, ', '')}</div>`}`;
   }
   function legend(areas) { return `<div class="chart-legend nowrap">${areas.map(a => `<div class="legend-item"><span class="legend-dot" style="background:${COLORS[a.key]}"></span>${esc(a.label)}</div>`).join('')}</div>`; }
   function trendChart(data) {
@@ -2974,6 +3004,9 @@ const LF = (() => {
       return `<div class="ri-dd-item ${open ? 'open' : ''}" data-level="${l}"><button class="ri-dd-toggle" data-label="${name}" onclick="LF.toggleDD(this)">${open ? '− ' : '+ '}${name}</button>
         <div class="ri-dd-panel">${st.options[l].map(o => `<label><input type="checkbox" value="${esc(o.key)}" ${state[l].includes(o.key) ? 'checked' : ''}>${esc(o.label)}</label>`).join('')}</div></div>`;
     }).join('') : '<div class="ri-dd-hint">There is nothing to drill into yet — this view has only one choice at every level.</div>';
+    const drawerBody = $('#lfDdBody');
+    drawerBody.onchange = () => narrowDrawerLevels(drawerBody, it => it.dataset.level);
+    narrowDrawerLevels(drawerBody, it => it.dataset.level);
   }
   function reflectorBody() {
     const chosen = st.rfMode === 'wc' ? st.wcReflectors : st.reflectors;
