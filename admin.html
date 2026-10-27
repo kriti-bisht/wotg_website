@@ -501,6 +501,10 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .ri-dd-item.open .ri-dd-panel { max-height:360px; padding:0.7rem 0.4rem 0.2rem; overflow-y:auto; }
 .ri-dd-panel label { display:flex; align-items:center; gap:0.55rem; font-size:0.8rem; color:var(--night2); cursor:pointer; }
 .ri-dd-panel input { accent-color:var(--teal); width:14px; height:14px; flex-shrink:0; }
+.dd-sel-links { font-size:0.74rem; color:var(--night2); }
+.dd-sel-links a { color:#0d8f81; font-weight:600; text-decoration:none; }
+.dd-sel-links a:hover { text-decoration:underline; }
+.dd-pick-msg { background:rgba(179,38,30,0.09); color:#8c1d18; border-radius:10px; padding:0.6rem 0.8rem; font-size:0.82rem; margin-bottom:0.8rem; }
 .adopt-focus-chip { display:inline-flex; align-items:center; gap:0.45rem; font-size:0.84rem; color:var(--grey3); background:rgba(20,184,166,0.12); border-radius:20px; padding:0.35rem 0.5rem 0.35rem 0.85rem; }
 .adopt-focus-chip strong { color:var(--night); font-weight:600; }
 .adopt-focus-chip button { border:none; background:rgba(4,26,64,0.1); color:var(--night); width:20px; height:20px; border-radius:50%; cursor:pointer; line-height:1; font-size:0.9rem; padding:0; }
@@ -2019,6 +2023,11 @@ const ADOPT_TABS = [
 S.adopt = { active: 'overall', tab: 'usage', level: 'company', period: 'month', fiscalStartMonth: null, focus: null, focusOptions: null, fbPeriod: 'month', fbWant: null, fbSig: null };
 
 function fmtHours(n) { return (n || 0).toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' hrs'; }
+// Usage Hours is a small number (one session is 15-20 minutes), so it shows one decimal: 0.3, never a rounded 0.
+// A real but tiny amount shows "<0.1" rather than 0.
+function fmtHrs(n) { n = n || 0; return n > 0 && n < 0.05 ? '<0.1' : (Math.round(n * 10) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 }); }
+// A bar's hover number: counts stay whole, hours (anything fractional) get the one decimal.
+function fmtBarVal(v) { return Number.isInteger(v) ? v.toLocaleString() : fmtHrs(v); }
 // Period keys from the backend are plain sortable strings, never what's shown on screen (Kriti,
 // 2026-10-06: the raw "2026-11-14" / "2026-11" / "2026-Q1" must never appear as a bar label). These turn
 // one into the label she asked for, per period type.
@@ -2177,8 +2186,8 @@ function renderBarChart(cols) {
               const nonZeroTotal = segPx.reduce((s, px, idx) => s + (zeroIdx.includes(idx) ? 0 : px), 0);
               segPx = segPx.map((px, idx) => zeroIdx.includes(idx) ? ZERO_FLOOR : (nonZeroTotal > 0 ? px - (px / nonZeroTotal) * borrowed : px));
             }
-            const plainTip = c.segs.map(s => Math.round(s.value).toLocaleString()).join(' · ');
-            const coloredTip = c.segs.map(s => `<span style="color:${s.color}">${Math.round(s.value).toLocaleString()}</span>`).join(' <span class="adopt-tip-dot">·</span> ');
+            const plainTip = c.segs.map(s => fmtBarVal(s.value)).join(' · ');
+            const coloredTip = c.segs.map(s => `<span style="color:${s.color}">${fmtBarVal(s.value)}</span>`).join(' <span class="adopt-tip-dot">·</span> ');
             return `<div class="adopt-bar-col" style="width:${COLW}px; height:${H}px" title="${esc(c.label || c.period)}: ${plainTip}">
               <div class="adopt-bar-tip">${coloredTip}</div>
               <div class="adopt-bar-stack" style="height:${stackPx.toFixed(1)}px">
@@ -2403,8 +2412,8 @@ function renderUsageTab(series) {
   if (!series.length) return renderBarChart([]);
   const hi = series.reduce((a, b) => b.usageAll > a.usageAll ? b : a), lo = series.reduce((a, b) => b.usageAll < a.usageAll ? b : a);
   const { value, suffix, deltaText } = computeHero(series, S.adopt.period, ADOPT_METRICS.usage.metric, ADOPT_METRICS.usage.unit);
-  return heroBlock(Math.round(value).toLocaleString(), suffix, deltaText,
-      series.length > 1 ? `Highest usage: <strong>${esc(hi.label)} at ${Math.round(hi.usageAll)} hrs</strong> · Lowest: <strong>${esc(lo.label)} at ${Math.round(lo.usageAll)} hrs</strong>` : '')
+  return heroBlock(fmtHrs(value), suffix, deltaText,
+      series.length > 1 ? `Highest usage: <strong>${esc(hi.label)} at ${fmtHrs(hi.usageAll)} hrs</strong> · Lowest: <strong>${esc(lo.label)} at ${fmtHrs(lo.usageAll)} hrs</strong>` : '')
     + renderBarChart(series.map(s => ({ period: s.period, label: s.label, segs: [{ value: s.usageExisting, color: 'var(--night)' }, { value: s.usageNew, color: 'var(--teal)', texture: true }] })))
     + LEGEND_NEW_EXISTING;
 }
@@ -2520,15 +2529,60 @@ function narrowDrawerLevels(body, levelOf) {
   const narrow = (l, allowed) => {
     if (!items[l]) return;
     items[l].querySelectorAll('label').forEach(lab => {
-      const box = lab.querySelector('input'), ok = allowed(box.value);
+      const box = lab.querySelector('input'), ok = allowed(box.value), wasHidden = lab.style.display === 'none';
       lab.style.display = ok ? '' : 'none';
-      if (!ok) box.checked = false;
+      if (!ok) box.checked = false; else if (wasHidden) box.checked = true;   // a parent ticked again brings its children back ticked
     });
   };
   const companies = ticked('company');
   narrow('bu', k => !companies.length || companies.includes(parent(k, 1)));
   const bus = ticked('bu');
   narrow('department', k => (!companies.length || companies.includes(parent(k, 1))) && (!bus.length || bus.includes(parent(k, 2))));
+}
+// Every filter drawer opens with everything ticked, because the report is showing everything the person may see. A level
+// with every visible box ticked means "no narrowing at that level"; a level with none ticked is refused ("Pick at least one").
+// drawerPicks reads the drawer: picks = {level: [keys]} for the narrowed levels only, empty = names of the levels with nothing ticked.
+function drawerPicks(body, levelOf) {
+  const picks = {}, empty = [];
+  body.querySelectorAll('.ri-dd-item').forEach(it => {
+    const boxes = Array.from(it.querySelectorAll('label')).filter(lab => lab.style.display !== 'none').map(lab => lab.querySelector('input'));
+    if (!boxes.length) return;
+    const on = boxes.filter(b => b.checked);
+    if (!on.length) empty.push(((it.querySelector('.ri-dd-toggle') || {}).dataset || {}).label || levelOf(it));
+    else if (on.length < boxes.length) picks[levelOf(it)] = on.map(b => b.value);
+  });
+  return { picks, empty };
+}
+function pickMsg(names) {
+  return names.length === 1 ? `Pick at least one ${names[0].toLowerCase()}.` : `Pick at least one in each section: ${names.join(', ')}.`;
+}
+function drawerSay(body, text) {
+  const old = body.querySelector('.dd-pick-msg'); if (old) old.remove();
+  if (text) { body.insertAdjacentHTML('afterbegin', `<div class="dd-pick-msg" role="alert">${esc(text)}</div>`); body.scrollTop = 0; }
+}
+const DD_LINKS = '<div class="dd-sel-links"><a href="#" data-sel="all">Select all</a> &middot; <a href="#" data-sel="none">Clear</a></div>';
+// Handles a click on a section's "Select all" / "Clear" link; returns true when the click was one of them.
+function drawerLinkClick(e, body, levelOf) {
+  const a = e.target.closest('[data-sel]');
+  if (!a) return false;
+  e.preventDefault();
+  const on = a.dataset.sel === 'all';
+  a.closest('.ri-dd-item').querySelectorAll('label').forEach(lab => { if (lab.style.display !== 'none') lab.querySelector('input').checked = on; });
+  narrowDrawerLevels(body, levelOf);
+  drawerSay(body, '');
+  return true;
+}
+// A person's last applied filter is remembered in this browser, per person (the keys are never shared across logins).
+function rememberSelection(name, keysByLevel) {
+  if (!CURRENT_USER_ID) return;
+  try {
+    const k = `wotg_filter_${name}_${CURRENT_USER_ID}`;
+    if (Object.values(keysByLevel).some(a => a.length)) localStorage.setItem(k, JSON.stringify(keysByLevel)); else localStorage.removeItem(k);
+  } catch (e) { /* storage blocked: the filter simply isn't remembered */ }
+}
+function recallSelection(name) {
+  if (!CURRENT_USER_ID) return {};
+  try { return JSON.parse(localStorage.getItem(`wotg_filter_${name}_${CURRENT_USER_ID}`)) || {}; } catch (e) { return {}; }
 }
 function openAdoptFilterDrawer() {
   let overlay = $('#adoptDdOverlay'), drawer = $('#adoptDdDrawer');
@@ -2548,13 +2602,16 @@ function openAdoptFilterDrawer() {
   const opts = S.adopt.focusOptions || {};
   const levels = focusLevels();
   const picked = {};
-  levels.forEach(l => { picked[l] = new Set(((S.adopt.focus || {})[l] || []).map(o => o.key)); });
+  // Everything is ticked unless a narrower selection is applied; the first section is always open.
+  const narrowed = l => ((S.adopt.focus || {})[l] || []).map(o => o.key);
+  levels.forEach(l => { picked[l] = new Set(narrowed(l).length ? narrowed(l) : (opts[l] || []).map(o => o.key)); });
+  const startsOpen = (l, i) => i === 0 || narrowed(l).length > 0;
   const toggleText = (l, open) => `${open ? '− ' : '+ '}${LEVEL_NAMES[l]}${picked[l].size ? ` (${picked[l].size})` : ''}`;
   const body = $('#adoptDdBody');
-  body.innerHTML = levels.map(l => `
-    <div class="ri-dd-item${picked[l].size ? ' open' : ''}" data-item="${l}">
-      <button type="button" class="ri-dd-toggle" data-toggle="${l}">${toggleText(l, picked[l].size > 0)}</button>
-      <div class="ri-dd-panel">${(opts[l] || []).map(o => `<label><input type="checkbox" data-level="${l}" value="${esc(o.key)}"${picked[l].has(o.key) ? ' checked' : ''}>${esc(o.label)}</label>`).join('')}</div>
+  body.innerHTML = levels.map((l, i) => `
+    <div class="ri-dd-item${startsOpen(l, i) ? ' open' : ''}" data-item="${l}">
+      <button type="button" class="ri-dd-toggle" data-toggle="${l}" data-label="${LEVEL_NAMES[l]}">${toggleText(l, startsOpen(l, i))}</button>
+      <div class="ri-dd-panel">${DD_LINKS}${(opts[l] || []).map(o => `<label><input type="checkbox" data-level="${l}" value="${esc(o.key)}"${picked[l].has(o.key) ? ' checked' : ''}>${esc(o.label)}</label>`).join('')}</div>
     </div>`).join('');
   const syncPicked = () => levels.forEach(l => {
     picked[l] = new Set(Array.from(body.querySelectorAll('input[data-level="' + l + '"]:checked')).map(i => i.value));
@@ -2563,6 +2620,7 @@ function openAdoptFilterDrawer() {
   narrowDrawerLevels(body, it => it.dataset.item);
   syncPicked();
   body.onclick = e => {
+    if (drawerLinkClick(e, body, it => it.dataset.item)) { syncPicked(); return; }
     const t = e.target.closest('[data-toggle]');
     if (!t) return;
     const item = t.parentElement, open = item.classList.toggle('open');
@@ -2576,11 +2634,15 @@ function openAdoptFilterDrawer() {
     $('[data-toggle="' + l + '"]', body).textContent = toggleText(l, true);
     narrowDrawerLevels(body, it => it.dataset.item);
     syncPicked();
+    drawerSay(body, '');
   };
   $('#adoptDdGo').onclick = () => {
+    const { picks, empty } = drawerPicks(body, it => it.dataset.item);
+    if (empty.length) return drawerSay(body, pickMsg(empty));
     const f = {};
-    levels.forEach(l => { const sel = (opts[l] || []).filter(o => picked[l].has(o.key)); if (sel.length) f[l] = sel; });
+    Object.keys(picks).forEach(l => { f[l] = (opts[l] || []).filter(o => picks[l].includes(o.key)); });
     S.adopt.focus = Object.keys(f).length ? f : null;
+    rememberSelection('adopt', picks);
     overlay.classList.remove('open'); drawer.classList.remove('open');
     drawAdoptPanel(); drawAdoptCards();
   };
@@ -2618,6 +2680,12 @@ async function renderAdoption() {
     if (ADOPT_TRACKS[key]) { S.adopt.active = key; drawAdoptCards(); drawAdoptPanel(); }
   };
   await Promise.all([ensureFiscalStartMonth(), ensureFocusOptions()]);   // resolved BEFORE either draw below ever fetches a single row
+  if (!S.adopt.focusRecalled) {   // the person's last applied filter comes back by itself; anything no longer in their access is dropped
+    S.adopt.focusRecalled = true;
+    const saved = recallSelection('adopt'), f = {};
+    ADOPT_LEVELS.forEach(l => { const sel = ((S.adopt.focusOptions || {})[l] || []).filter(o => (saved[l] || []).includes(o.key)); if (sel.length) f[l] = sel; });
+    if (!S.adopt.focus && Object.keys(f).length) S.adopt.focus = f;
+  }
   drawAdoptCards();
   drawAdoptPanel();
 }
@@ -2655,7 +2723,7 @@ function drawAdoptCards() {
       const rows = await reportsApi(`/api/reports/adoption-overview?track=${ADOPT_TRACKS[key].track}&level=${S.adopt.level}&period=${S.adopt.period}${focusQuery()}`);
       const series = seriesFromRows(rows, S.adopt.period, await ensureFiscalStartMonth());
       const { value, suffix } = isDuration ? avgDurationHero(series, S.adopt.period) : computeHero(series, S.adopt.period, tabInfo.metric, tabInfo.unit);
-      if (numEl) numEl.textContent = isDuration ? value.toFixed(1) : Math.round(value).toLocaleString();
+      if (numEl) numEl.textContent = isDuration ? value.toFixed(1) : tabInfo === ADOPT_METRICS.usage ? fmtHrs(value) : Math.round(value).toLocaleString();
       if (subEl) subEl.textContent = suffix;
       if (isApplied) {
         const sr = successRateHero(series, S.adopt.period);
@@ -2744,7 +2812,7 @@ function drawAdoptControls() {
   chip.innerHTML = focusIsSet() ? `<div style="margin-bottom:1rem"><span class="adopt-focus-chip">Showing: <strong>${esc(focusSummary())}</strong><button type="button" id="adoptFocusClear" aria-label="Show everything">×</button></span></div>` : '';
   $$('[data-period]', $('#adoptPeriodSeg')).forEach(b => b.onclick = () => { S.adopt.period = b.dataset.period; drawAdoptPanel(); drawAdoptCards(); });
   if ($('#adoptFilterTrigger')) $('#adoptFilterTrigger').onclick = openAdoptFilterDrawer;
-  if ($('#adoptFocusClear')) $('#adoptFocusClear').onclick = () => { S.adopt.focus = null; drawAdoptPanel(); drawAdoptCards(); };
+  if ($('#adoptFocusClear')) $('#adoptFocusClear').onclick = () => { S.adopt.focus = null; rememberSelection('adopt', {}); drawAdoptPanel(); drawAdoptCards(); };
 }
 async function drawAdoptPanel() {
   const key = S.adopt.active, t = ADOPT_TRACKS[key];
@@ -3006,14 +3074,16 @@ const LF = (() => {
   function drillBody() {
     const wc = st.ddMode === 'wc', state = wc ? st.wc : st.focus;
     const levels = (wc ? WC_LEVELS : LEVELS).filter(([l]) => st.options && (st.options[l] || []).length >= 2);
-    $('#lfDdBody').innerHTML = levels.length ? levels.map(([l, name]) => {
-      const open = state[l].length > 0;
+    // Everything is ticked unless a narrower selection was applied; the first section is always open.
+    $('#lfDdBody').innerHTML = levels.length ? levels.map(([l, name], i) => {
+      const open = i === 0 || state[l].length > 0;
       return `<div class="ri-dd-item ${open ? 'open' : ''}" data-level="${l}"><button class="ri-dd-toggle" data-label="${name}" onclick="LF.toggleDD(this)">${open ? '− ' : '+ '}${name}</button>
-        <div class="ri-dd-panel">${st.options[l].map(o => `<label><input type="checkbox" value="${esc(o.key)}" ${state[l].includes(o.key) ? 'checked' : ''}>${esc(o.label)}</label>`).join('')}</div></div>`;
+        <div class="ri-dd-panel">${DD_LINKS}${st.options[l].map(o => `<label><input type="checkbox" value="${esc(o.key)}" ${!state[l].length || state[l].includes(o.key) ? 'checked' : ''}>${esc(o.label)}</label>`).join('')}</div></div>`;
     }).join('') : '<div class="ri-dd-hint">There is nothing to drill into yet — this view has only one choice at every level.</div>';
-    const drawerBody = $('#lfDdBody');
-    drawerBody.onchange = () => narrowDrawerLevels(drawerBody, it => it.dataset.level);
-    narrowDrawerLevels(drawerBody, it => it.dataset.level);
+    const drawerBody = $('#lfDdBody'), levelOf = it => it.dataset.level;
+    drawerBody.onchange = () => { narrowDrawerLevels(drawerBody, levelOf); drawerSay(drawerBody, ''); };
+    drawerBody.onclick = e => { drawerLinkClick(e, drawerBody, levelOf); };
+    narrowDrawerLevels(drawerBody, levelOf);
   }
   function reflectorBody() {
     const chosen = st.rfMode === 'wc' ? st.wcReflectors : st.reflectors;
@@ -3030,6 +3100,13 @@ const LF = (() => {
       $('#view').innerHTML = '<div id="lfMain"></div>';
       paint();
       if (!st.options) { try { st.options = await reportsApi('/api/reports/driver-report-options'); } catch (e) { st.error = e.message; } }
+      if (st.options && !st.recalled) {   // the last applied drill-down comes back by itself; anything no longer in this person's access is dropped
+        st.recalled = true;
+        [['friction', st.focus], ['friction_wc', st.wc]].forEach(([name, target]) => {
+          const saved = recallSelection(name);
+          Object.keys(target).forEach(l => { target[l] = (saved[l] || []).filter(k => (st.options[l] || []).some(o => o.key === k)); });
+        });
+      }
       load(); loadWc();
     },
     setPeriod(which, k) { if (which === 'wc') { st.wcPeriod = k; loadWc(); } else { st.period = k; load(); } },
@@ -3043,11 +3120,11 @@ const LF = (() => {
       if (open) drillBody();
     },
     applyDrill() {
+      const body = $('#lfDdBody'), { picks, empty } = drawerPicks(body, it => it.dataset.level);
+      if (empty.length) return drawerSay(body, pickMsg(empty));
       const state = st.ddMode === 'wc' ? st.wc : st.focus;
-      (st.ddMode === 'wc' ? WC_LEVELS : LEVELS).forEach(([l]) => {
-        const item = document.querySelector(`#lfDdBody .ri-dd-item[data-level="${l}"]`);
-        if (item) state[l] = Array.from(item.querySelectorAll('input:checked')).map(cb => cb.value);
-      });
+      (st.ddMode === 'wc' ? WC_LEVELS : LEVELS).forEach(([l]) => { state[l] = picks[l] || []; });
+      rememberSelection(st.ddMode === 'wc' ? 'friction_wc' : 'friction', state);
       LF.toggleDrill(); if (st.ddMode === 'wc') loadWc(); else load();
     },
     toggleReflector(mode) {
@@ -3061,8 +3138,8 @@ const LF = (() => {
       const picked = Array.from(document.querySelectorAll('#lfRfBody input:checked')).map(cb => cb.value);
       if (st.rfMode === 'wc') { st.wcReflectors = picked; LF.toggleReflector(); loadWc(); } else { st.reflectors = picked; LF.toggleReflector(); load(); }
     },
-    clearFocus() { LEVELS.forEach(([l]) => st.focus[l] = []); load(); },
-    clearWc() { WC_LEVELS.forEach(([l]) => st.wc[l] = []); loadWc(); },
+    clearFocus() { LEVELS.forEach(([l]) => st.focus[l] = []); rememberSelection('friction', st.focus); load(); },
+    clearWc() { WC_LEVELS.forEach(([l]) => st.wc[l] = []); rememberSelection('friction_wc', st.wc); loadWc(); },
     clearWcReflectors() { st.wcReflectors = []; loadWc(); },
     clearReflectors() { st.reflectors = []; load(); },
     repaint() { if ($('#lfMain') && st.data) paint(); },
