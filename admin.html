@@ -512,7 +512,7 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .dd-overlay { position:fixed; inset:0; background:rgba(4,26,64,0.45); z-index:199; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .dd-overlay.open { opacity:1; pointer-events:auto; }
 .dd-drawer {
-  position:fixed; top:0; right:0; width:320px; height:100vh; z-index:200;
+  position:fixed; top:var(--bar-h, 0px); right:0; width:320px; height:calc(100vh - var(--bar-h, 0px)); z-index:200;
   background:var(--white); display:flex; flex-direction:column;
   transform:translateX(100%); transition:transform 0.25s; box-shadow:-4px 0 24px rgba(0,0,0,0.18);
 }
@@ -757,6 +757,14 @@ const S = {
 
 // ── tiny helpers ──────────────────────────────────────────────────────────
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+// The filter drawers slide in BELOW the blue top bar (never over the person's name and photo): the bar's height is kept in --bar-h.
+(function () {
+  const bar = document.querySelector('header.topbar');
+  if (!bar) return;
+  const set = () => document.documentElement.style.setProperty('--bar-h', bar.offsetHeight + 'px');
+  set(); addEventListener('resize', set);
+  if (window.ResizeObserver) new ResizeObserver(set).observe(bar);
+})();
 function $(sel, root) { return (root || document).querySelector(sel); }
 function $$(sel, root) { return Array.from((root || document).querySelectorAll(sel)); }
 // A stored name can carry the person's pronouns in brackets ("Kriti (She/Her)"): never show or initial those.
@@ -2529,7 +2537,7 @@ function narrowDrawerLevels(body, levelOf) {
   const narrow = (l, allowed) => {
     if (!items[l]) return;
     items[l].querySelectorAll('label').forEach(lab => {
-      const box = lab.querySelector('input'), ok = allowed(box.value), wasHidden = lab.style.display === 'none';
+      const box = lab.querySelector('input'), ok = allowed(box.value, box), wasHidden = lab.style.display === 'none';
       lab.style.display = ok ? '' : 'none';
       if (!ok) box.checked = false; else if (wasHidden) box.checked = true;   // a parent ticked again brings its children back ticked
     });
@@ -2538,7 +2546,20 @@ function narrowDrawerLevels(body, levelOf) {
   narrow('bu', k => !companies.length || companies.includes(parent(k, 1)));
   const bus = ticked('bu');
   narrow('department', k => (!companies.length || companies.includes(parent(k, 1))) && (!bus.length || bus.includes(parent(k, 2))));
+  // Assigners, managers and users carry the places they appear in (data-in: [[company, bu, department], ...], from the
+  // server's focus_options): one is offered only while one of its places is still ticked above it. A part a place lacks ("")
+  // never rules the person out.
+  const depts = ticked('department');
+  const inTicked = (k, box) => {
+    let places = null;
+    try { places = JSON.parse(box.dataset.in || 'null'); } catch (e) { /* no places known: always offered */ }
+    return !places || !places.length || places.some(p =>
+      (!companies.length || !p[0] || companies.includes(p[0])) && (!bus.length || !p[1] || bus.includes(p[1])) && (!depts.length || !p[2] || depts.includes(p[2])));
+  };
+  ['assigner', 'manager', 'user'].forEach(l => narrow(l, inTicked));
 }
+// The checkbox attribute that carries a person's places (see narrowDrawerLevels); nothing for company / BU / department options.
+function placesAttr(o) { return o.in ? ` data-in="${esc(JSON.stringify(o.in))}"` : ''; }
 // Every filter drawer opens with everything ticked, because the report is showing everything the person may see. A level
 // with every visible box ticked means "no narrowing at that level"; a level with none ticked is refused ("Pick at least one").
 // drawerPicks reads the drawer: picks = {level: [keys]} for the narrowed levels only, empty = names of the levels with nothing ticked.
@@ -2611,7 +2632,7 @@ function openAdoptFilterDrawer() {
   body.innerHTML = levels.map((l, i) => `
     <div class="ri-dd-item${startsOpen(l, i) ? ' open' : ''}" data-item="${l}">
       <button type="button" class="ri-dd-toggle" data-toggle="${l}" data-label="${LEVEL_NAMES[l]}">${toggleText(l, startsOpen(l, i))}</button>
-      <div class="ri-dd-panel">${DD_LINKS}${(opts[l] || []).map(o => `<label><input type="checkbox" data-level="${l}" value="${esc(o.key)}"${picked[l].has(o.key) ? ' checked' : ''}>${esc(o.label)}</label>`).join('')}</div>
+      <div class="ri-dd-panel">${DD_LINKS}${(opts[l] || []).map(o => `<label><input type="checkbox" data-level="${l}" value="${esc(o.key)}"${placesAttr(o)}${picked[l].has(o.key) ? ' checked' : ''}>${esc(o.label)}</label>`).join('')}</div>
     </div>`).join('');
   const syncPicked = () => levels.forEach(l => {
     picked[l] = new Set(Array.from(body.querySelectorAll('input[data-level="' + l + '"]:checked')).map(i => i.value));
@@ -3078,7 +3099,7 @@ const LF = (() => {
     $('#lfDdBody').innerHTML = levels.length ? levels.map(([l, name], i) => {
       const open = i === 0 || state[l].length > 0;
       return `<div class="ri-dd-item ${open ? 'open' : ''}" data-level="${l}"><button class="ri-dd-toggle" data-label="${name}" onclick="LF.toggleDD(this)">${open ? '− ' : '+ '}${name}</button>
-        <div class="ri-dd-panel">${DD_LINKS}${st.options[l].map(o => `<label><input type="checkbox" value="${esc(o.key)}" ${!state[l].length || state[l].includes(o.key) ? 'checked' : ''}>${esc(o.label)}</label>`).join('')}</div></div>`;
+        <div class="ri-dd-panel">${DD_LINKS}${st.options[l].map(o => `<label><input type="checkbox" value="${esc(o.key)}"${placesAttr(o)} ${!state[l].length || state[l].includes(o.key) ? 'checked' : ''}>${esc(o.label)}</label>`).join('')}</div></div>`;
     }).join('') : '<div class="ri-dd-hint">There is nothing to drill into yet — this view has only one choice at every level.</div>';
     const drawerBody = $('#lfDdBody'), levelOf = it => it.dataset.level;
     drawerBody.onchange = () => { narrowDrawerLevels(drawerBody, levelOf); drawerSay(drawerBody, ''); };
