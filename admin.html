@@ -57,8 +57,8 @@ button { font-family:'Poppins',sans-serif; }
 .admin-nav-item svg { width:17px; height:17px; flex-shrink:0; }
 .admin-nav-item:hover { background:rgba(255,255,255,0.06); border-left-color:var(--green); }
 .admin-nav-item.active { background:rgba(255,255,255,0.08); border-left-color:var(--green); color:#fff; font-weight:600; }
-.admin-nav-item .soon { font-size:0.55rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--night); background:var(--gold); border-radius:6px; padding:0.1rem 0.4rem; margin-left:auto; }
 .admin-nav-divider { height:1px; background:rgba(255,255,255,0.1); margin:0.6rem 1rem; }
+.admin-nav-item .soon { font-size:0.55rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--night); background:var(--gold); border-radius:6px; padding:0.1rem 0.4rem; margin-left:auto; }
 .admin-main { min-width:0; margin-left:240px; transition:margin-left 0.25s; }
 .admin-main.expanded { margin-left:0; }
 /* ---- Top banner: the same look, size and feel as the user side (chat.html), full width and always visible ---- */
@@ -109,6 +109,7 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 @keyframes notifSlide { from{opacity:0; transform:translateY(-8px);} to{opacity:1; transform:translateY(0);} }
 .admin-profile-text .name { color:#fff; font-weight:600; font-size:0.92rem; }
 .admin-profile-text .title { color:var(--grey2); font-size:0.76rem; }
+.bi-frame { display:block; width:100%; height:calc(100vh - 9rem); min-height:520px; border:0; background:transparent; }
 .admin-content { max-width:1500px; margin:0 auto; padding:1.6rem 2rem 3rem; }
 .footer-credit { text-align:center; font-size:0.7rem; color:var(--grey3); padding:0 1rem 1.6rem; }
 
@@ -304,6 +305,7 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .help label { font-size:0.74rem; }
 
 .btn-done, .btn-done:disabled { background:var(--green2) !important; color:#fff !important; border-color:transparent !important; opacity:1 !important; }
+.btn-saved, .btn-saved:disabled { background:#e7f6ea !important; color:#2b8a3e !important; border:1px solid rgba(58,181,74,0.35) !important; box-shadow:none !important; opacity:1 !important; cursor:default !important; transform:none !important; }   /* saved and unchanged: pale green; for pale yellow use #fdf6d3 / #8a6d0b */
 .btn-danger-outline { color:var(--red); border-color:rgba(224,48,58,0.45); }
 .btn-danger-outline:hover:not(:disabled) { background:rgba(224,48,58,0.08); }
 .btn-danger-outline:disabled { color:var(--grey3); border-color:var(--line); }
@@ -501,6 +503,222 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .ri-dd-item.open .ri-dd-panel { max-height:360px; padding:0.7rem 0.4rem 0.2rem; overflow-y:auto; }
 .ri-dd-panel label { display:flex; align-items:center; gap:0.55rem; font-size:0.8rem; color:var(--night2); cursor:pointer; }
 .ri-dd-panel input { accent-color:var(--teal); width:14px; height:14px; flex-shrink:0; }
+/* Learning Initiative Builder: the two steps, the audience boxes, the reflector cards, and Ask Kriti */
+.in-fs { border:0; padding:0; margin:0; min-width:0; }
+.in-fs:disabled { opacity:0.72; }
+/* the four steps, each with its own color */
+.in-c1 { --acc:#14b8a6; --wash:rgba(20,184,166,0.09); }
+.in-c2 { --acc:#3ab54a; --wash:rgba(58,181,74,0.09); }
+.in-c3 { --acc:#0f6f86; --wash:rgba(15,111,134,0.09); }
+.in-c4 { --acc:#E4CA0A; --wash:rgba(228,202,10,0.12); }
+.in-step { scroll-margin-top:calc(var(--bar-h, 0px) + var(--in-st-h, 60px) + 14px); border-top:6px solid var(--acc); background:linear-gradient(180deg, var(--wash) 0, #fff 170px); }
+.in-stepper { position:sticky; top:var(--bar-h, 0px); z-index:90; display:flex; gap:0.6rem; flex-wrap:wrap; margin:0 -2rem 1.2rem; padding:0.65rem 2rem; background:rgba(251,251,253,0.94); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); border-bottom:1px solid rgba(4,26,64,0.08); box-shadow:0 8px 18px rgba(4,26,64,0.05); }
+@media (max-width:960px) { .in-stepper { margin:0 -1rem 1.2rem; padding:0.65rem 1rem; } }
+.in-c1 { --tint:rgba(20,184,166,0.16); } .in-c2 { --tint:rgba(58,181,74,0.18); } .in-c3 { --tint:rgba(15,111,134,0.16); } .in-c4 { --tint:rgba(228,202,10,0.28); }
+.in-st { display:flex; align-items:center; gap:0.5rem; font-family:'Poppins',sans-serif; font-size:0.78rem; font-weight:600; color:var(--grey3); background:var(--white); border:1px solid rgba(4,26,64,0.1); border-radius:999px; padding:0.4rem 0.9rem 0.4rem 0.45rem; cursor:pointer; transition:background 0.15s, border-color 0.15s, color 0.15s; }
+.in-st-n { width:22px; height:22px; border-radius:50%; background:var(--grey2); color:#fff; font-size:0.7rem; display:flex; align-items:center; justify-content:center; transition:background 0.15s; }
+.in-st.done .in-st-n { font-size:0; background:var(--night2); }
+.in-st.done .in-st-n::before { content:'✓'; font-size:0.78rem; color:#fff; }
+.in-st.lock { opacity:0.65; }
+.in-st.active { color:var(--night); background:var(--tint); border-color:var(--acc); box-shadow:0 6px 16px rgba(4,26,64,0.1); }
+.in-st.active .in-st-n { background:var(--acc); }
+.in-st.active.done .in-st-n::before { color:#fff; }
+.in-c4 .in-sn, .in-st.active.in-c4 .in-st-n { color:var(--night); }
+.in-st.active.in-c4.done .in-st-n::before { color:var(--night); }
+.in-sh { display:flex; gap:0.9rem; align-items:flex-start; margin-bottom:1.1rem; }
+.in-sh h3 { margin:0 0 0.2rem; }
+.in-sn { width:40px; height:40px; border-radius:50%; flex-shrink:0; background:var(--acc); color:#fff; font-size:1.05rem; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(4,26,64,0.18); }
+.in-sn.off { background:var(--grey2); box-shadow:none; }
+.step-tag { display:inline-block; font-size:0.68rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--night2); background:var(--wash, rgba(4,26,64,0.06)); border:1px solid rgba(4,26,64,0.08); border-radius:999px; padding:0.18rem 0.7rem; margin-bottom:0.4rem; }
+.step-tag.off { color:var(--grey3); background:var(--grey1); }
+.in-q { font-size:0.95rem; font-weight:700; color:var(--night); margin:0 0 0.2rem; }
+.in-yb { background:rgba(228,202,10,0.13); border:1px solid rgba(228,202,10,0.38); border-radius:16px; padding:1.1rem 1.2rem 0.4rem; margin-top:1.6rem; }
+.in-callout { background:rgba(228,202,10,0.22); border-left:4px solid var(--gold); border-radius:12px; padding:0.8rem 1.1rem; margin:0 0 1.2rem; font-size:0.9rem; color:var(--night); }
+.in-callout strong { font-weight:600; }
+.in-final { margin-top:1.4rem; display:flex; gap:0.9rem; align-items:center; flex-wrap:wrap; }
+.in-done { display:inline-flex; align-items:center; gap:0.55rem; font-size:0.86rem; font-weight:600; color:var(--night); }
+.in-tick { width:22px; height:22px; border-radius:50%; background:var(--green); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem; }
+.aud-box { background:var(--white); border:1px solid rgba(4,26,64,0.08); border-radius:16px; padding:0.9rem 1rem 1rem; min-width:0; box-shadow:0 8px 24px rgba(4,26,64,0.07); }
+.aud-head { display:flex; align-items:center; gap:0.55rem; font-size:0.86rem; color:var(--night); }
+.aud-head strong { flex:1; font-weight:700; }
+.aud-step { width:22px; height:22px; border-radius:50%; background:linear-gradient(135deg, var(--night), #0f6f86); color:#fff; font-size:0.7rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.aud-state { font-size:0.68rem; font-weight:700; color:var(--night2); background:var(--grey1); border-radius:999px; padding:0.14rem 0.6rem; white-space:nowrap; }
+.aud-state.on { color:#0b6f65; background:rgba(20,184,166,0.15); }
+.aud-state.part { color:#7a6a00; background:rgba(228,202,10,0.25); }
+.aud-links { font-size:0.74rem; color:var(--grey3); min-height:1.3rem; margin:0.35rem 0 0.4rem; }
+.aud-list { max-height:200px; overflow-y:auto; scrollbar-width:thin; display:flex; flex-direction:column; gap:0.1rem; }
+.aud-list label { display:flex; align-items:center; gap:0.55rem; font-size:0.82rem; font-weight:500; padding:0.42rem 0.55rem; border-radius:10px; margin:0; cursor:pointer; transition:background 0.12s; }
+.aud-list label:hover { background:var(--grey1); }
+.aud-list label:has(input:checked) { background:rgba(20,184,166,0.12); font-weight:600; }
+.aud-list input { accent-color:var(--teal); width:15px; height:15px; flex-shrink:0; }
+.aud-list-people { max-height:300px; }
+.aud-secs { display:flex; flex-direction:column; gap:0.6rem; margin-bottom:1rem; }
+.aud-sec { background:var(--white); border:1px solid rgba(4,26,64,0.08); border-radius:14px; box-shadow:0 6px 18px rgba(4,26,64,0.06); overflow:hidden; }
+.aud-sec-head { width:100%; display:flex; align-items:center; gap:0.6rem; padding:0.8rem 1rem; background:none; border:none; cursor:pointer; font:inherit; font-size:0.88rem; color:var(--night); text-align:left; }
+.aud-sec-head strong { flex:1; font-weight:700; }
+.aud-chev { color:var(--grey3); font-size:0.9rem; transition:transform 0.2s; }
+.aud-sec.open .aud-chev { transform:rotate(180deg); }
+.aud-sec-body { display:none; padding:0 1rem 0.9rem; border-top:1px solid rgba(4,26,64,0.07); }
+.aud-sec.open .aud-sec-body { display:block; }
+.aud-sec-body .aud-links { margin-top:0.6rem; }
+.aud-list-cols { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); max-height:230px; }
+.sv-card { display:flex; gap:1rem; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; background:var(--white); border:1px solid rgba(4,26,64,0.1); border-left:5px solid var(--green); border-radius:14px; padding:1rem 1.2rem; box-shadow:0 6px 18px rgba(4,26,64,0.06); margin-top:0.6rem; }
+.sv-top { display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap; }
+.sv-name { font-size:1.05rem; font-weight:700; color:var(--night); }
+.sv-pill { display:inline-flex; align-items:center; gap:0.35rem; font-size:0.72rem; font-weight:700; color:#1f7a31; background:rgba(58,181,74,0.15); border-radius:999px; padding:0.15rem 0.7rem 0.15rem 0.3rem; }
+.sv-pill .in-tick { width:16px; height:16px; font-size:0.62rem; }
+.sv-pill.draft { color:#7a6a00; background:rgba(228,202,10,0.25); padding-left:0.7rem; }
+.def-gl { margin-top:0.7rem; padding-top:0.6rem; border-top:1px dashed rgba(4,26,64,0.16); }
+.def-gl strong { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--green2); }
+.rf-gl { margin-top:0.4rem; font-size:0.78rem; color:var(--night2); }
+.rf-gl summary { cursor:pointer; color:var(--green2); font-weight:600; font-size:0.74rem; }
+.rf-gl div { margin-top:0.3rem; white-space:pre-line; line-height:1.5; }
+.rf-sum { display:flex; justify-content:space-between; gap:1rem; align-items:center; flex-wrap:wrap; background:var(--white); border:1px solid rgba(4,26,64,0.1); border-left:5px solid var(--green); border-radius:14px; padding:0.8rem 1.1rem; margin-top:0.6rem; box-shadow:0 6px 16px rgba(4,26,64,0.05); }
+.sv-meta { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.55rem; }
+.sv-acts { display:flex; gap:0.6rem; align-items:center; }
+.in-st-t { max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.aud-row { flex-wrap:wrap; }
+.aud-av { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg, var(--night), #0f8f86); color:#fff; font-size:0.68rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.aud-who { display:flex; flex-direction:column; min-width:150px; flex:1 1 160px; line-height:1.25; }
+.aud-who strong { font-size:0.84rem; color:var(--night); font-weight:600; }
+.aud-who small { font-size:0.72rem; color:var(--grey3); }
+.aud-tags { display:flex; gap:0.3rem; flex-wrap:wrap; flex:2 1 200px; }
+.aud-chip { font-size:0.68rem; font-weight:600; color:var(--night2); background:rgba(4,26,64,0.06); border-radius:999px; padding:0.1rem 0.6rem; white-space:nowrap; }
+.aud-chip-on { color:#0b6f65; background:rgba(20,184,166,0.16); }
+.rf-top { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; }
+.rf-note { background:rgba(20,184,166,0.08); border:1px solid rgba(20,184,166,0.25); color:#0b6f65; border-radius:12px; padding:0.65rem 0.9rem; font-size:0.8rem; margin-bottom:1rem; }
+.rf-card { border:1px solid rgba(4,26,64,0.1); border-radius:16px; padding:1rem 1.1rem 0.4rem; margin-bottom:1rem; background:var(--white); box-shadow:0 8px 24px rgba(4,26,64,0.06); }
+.rf-card-head { display:flex; justify-content:space-between; gap:1rem; margin-bottom:0.8rem; font-size:0.95rem; color:var(--night); }
+.rf-def { font-size:0.78rem; color:var(--grey3); margin-top:0.2rem; max-width:80ch; font-weight:400; }
+.kriti-tag { font-size:0.72rem; color:var(--grey3); margin:0.35rem 0 0.6rem; font-style:italic; }
+.rf-card .field { margin-bottom:0.9rem; }
+.rf-use { margin-bottom:0.6rem; }
+.rf-use .field { margin-bottom:0; }
+.in-yb-rf { margin:1rem 0 1.1rem; }
+.hint.wide { max-width:none; }
+.rf-use-tag { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; }
+.rf-use-tag small { color:var(--grey3); font-size:0.72rem; }
+.btn-kriti { font-family:'Poppins',sans-serif; font-size:0.86rem; font-weight:600; color:#fff; border:none; cursor:pointer; flex-shrink:0; display:flex; align-items:center; gap:0.55rem; padding:0.62rem 1.3rem 0.62rem 0.85rem; border-radius:999px; background:linear-gradient(135deg, #0a2a5c 0%, #0f8f86 60%, #14b8a6 100%); box-shadow:0 8px 20px rgba(20,184,166,0.32); transition:transform 0.15s, box-shadow 0.15s; }
+.btn-kriti:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(20,184,166,0.42); }
+.kd { width:24px; height:24px; flex-shrink:0; }
+.kd-ring { transform-origin:12px 12px; transform-box:view-box; animation:kdspin 9s linear infinite; }
+@keyframes kdspin { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion:reduce) { .kd-ring { animation:none; } }
+.kc { border:1px solid rgba(20,184,166,0.3); border-radius:16px; background:var(--white); overflow:hidden; box-shadow:0 14px 40px rgba(4,26,64,0.22); }
+.kc-head { display:flex; align-items:center; gap:0.7rem; padding:0.75rem 1rem; background:linear-gradient(135deg, rgba(10,42,92,0.07), rgba(20,184,166,0.16)); }
+.kc-head > div { flex:1; font-size:0.86rem; color:var(--night); }
+.kc-av { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #0a2a5c, #14b8a6); display:flex; align-items:center; justify-content:center; }
+.kc-av .kd { width:22px; height:22px; }
+.kc-sub { font-size:0.72rem; color:var(--grey3); }
+.kc-x { border:none; background:none; font-size:1.3rem; line-height:1; cursor:pointer; color:var(--night2); }
+.kc-msgs { padding:0.9rem 1rem; max-height:340px; overflow-y:auto; display:flex; flex-direction:column; gap:0.6rem; }
+.kc-m { max-width:78%; padding:0.6rem 0.85rem; border-radius:14px; font-size:0.84rem; line-height:1.45; }
+.kc-k { background:var(--white); border:1px solid rgba(20,184,166,0.25); align-self:flex-start; }
+.kc-u { background:linear-gradient(135deg, #0a2a5c, #0f6f86); color:#fff; align-self:flex-end; }
+.kw { position:fixed; right:24px; bottom:24px; width:min(340px, calc(100vw - 32px)); z-index:900; }
+.kw-choices { display:flex; flex-wrap:wrap; gap:0.5rem; padding:0.2rem 1rem 1rem; }
+.kw-num { width:44px; height:44px; border-radius:50%; border:1.5px solid rgba(20,184,166,0.5); background:var(--white); color:#0a2a5c; font:600 0.95rem 'Poppins',sans-serif; cursor:pointer; transition:background 0.15s, color 0.15s, transform 0.15s; }
+.kw-num:hover:not(:disabled) { background:linear-gradient(135deg, #0a2a5c, #14b8a6); color:#fff; transform:translateY(-2px); }
+.kw-num:disabled { opacity:0.45; cursor:default; }
+.kw-num.on { opacity:1; background:linear-gradient(135deg, #0a2a5c, #14b8a6); color:#fff; }
+.kw-wait::after { content:'.'; animation:kwdots 1.2s steps(1) infinite; }
+@keyframes kwdots { 0% { content:'.'; } 33% { content:'..'; } 66% { content:'...'; } }
+.in-ykrow { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+.in-ykrow .in-callout { flex:1; min-width:240px; }
+.btn-kriti.btn-sm { font-size:0.8rem; padding:0.45rem 1.05rem 0.45rem 0.7rem; }
+.btn-kriti:disabled { opacity:0.75; cursor:default; transform:none; }
+.btn-kriti:disabled:not(.is-busy) { background:var(--grey2); box-shadow:none; opacity:1; cursor:not-allowed; }
+.kw-note { font-size:0.78rem; color:#0b6f65; margin:0.5rem 0 0.2rem; }
+.kw-note:empty { display:none; }
+.fit-card { border:1px solid rgba(4,26,64,0.1); border-radius:16px; padding:0.9rem 1.1rem; margin-bottom:0.8rem; background:var(--white); box-shadow:0 8px 24px rgba(4,26,64,0.06); }
+.fit-top { display:flex; justify-content:space-between; align-items:center; gap:0.8rem; flex-wrap:wrap; margin-bottom:0.55rem; }
+.fit-pill { font-size:0.74rem; font-weight:700; letter-spacing:0.02em; padding:0.2rem 0.75rem; border-radius:999px; }
+.fit-pill.fit-good { background:rgba(58,181,74,0.16); color:#1f7a2e; }
+.fit-pill.fit-avg { background:rgba(232,150,10,0.18); color:#9a5f00; }
+.fit-pill.fit-poor { background:rgba(214,59,47,0.15); color:#a8261c; }
+.fit-bar { display:flex; gap:5px; max-width:300px; margin-bottom:0.6rem; }
+.fit-bar span { flex:1; height:12px; border-radius:6px; }
+.fb-poor { background:rgba(214,59,47,0.16); } .fb-avg { background:rgba(232,150,10,0.18); } .fb-good { background:rgba(58,181,74,0.18); }
+.fit-on-poor .fb-poor { background:#d63b2f; box-shadow:0 0 10px rgba(214,59,47,0.55); }
+.fit-on-avg .fb-avg { background:#e8960a; box-shadow:0 0 10px rgba(232,150,10,0.55); }
+.fit-on-good .fb-good { background:#3ab54a; box-shadow:0 0 10px rgba(58,181,74,0.55); }
+.fit-reason { font-size:0.84rem; line-height:1.5; color:var(--night); }
+.fit-wait span { font-size:0.8rem; color:var(--grey3); margin-left:0.6rem; }
+.fit-pill.fit-more { background:rgba(10,42,92,0.1); color:#0a2a5c; }
+.fit-info { background:rgba(10,42,92,0.04); }
+.fit-pill.fit-none { background:rgba(4,26,64,0.07); color:var(--grey3); font-weight:600; }
+.ed-hero { background:linear-gradient(120deg, #0a2a5c 0%, #14508f 100%); color:#fff; border-radius:18px; padding:1.2rem 1.5rem; margin-bottom:1rem; box-shadow:0 10px 28px rgba(10,42,92,0.25); }
+.ed-hero-top { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap; }
+.ed-hero-name { font-size:1.35rem; font-weight:700; }
+.ed-hero-meta { font-size:0.8rem; color:rgba(255,255,255,0.78); margin-top:0.25rem; }
+.ed-num { font-weight:700; color:#E4CA0A; letter-spacing:0.04em; }
+.ed-hero-right { display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap; }
+.ed-pill { font-size:0.72rem; font-weight:700; border-radius:999px; padding:0.25rem 0.85rem; background:#fff; }
+.ed-ongoing { color:#1f7a2e; } .ed-upcoming { color:#0b5568; } .ed-completed { color:#4a5868; } .ed-draft { color:#7a6a00; }
+.ed-del { border:1.5px solid rgba(255,255,255,0.55); background:transparent; color:#fff; border-radius:999px; padding:0.35rem 1rem; font:600 0.8rem 'Poppins',sans-serif; cursor:pointer; }
+.ed-del:hover { background:rgba(214,59,47,0.9); border-color:transparent; }
+.ed-tiles { display:grid; grid-template-columns:repeat(4, 1fr); gap:0.8rem; margin-bottom:1rem; }
+.ed-tile { border-radius:14px; padding:0.9rem 1.1rem; display:flex; flex-direction:column; }
+.ed-tile b { font-size:1.9rem; line-height:1.1; } .ed-tile span { font-size:0.74rem; font-weight:600; letter-spacing:0.03em; opacity:0.85; }
+.ed-t1 { background:#E3F5F2; color:#0b6f65; } .ed-t2 { background:#E6F0FF; color:#1a4f9c; } .ed-t3 { background:#FFF3D6; color:#8a5a00; } .ed-t4 { background:#FDE8E6; color:#a8261c; }
+.ed-sec { background:var(--white); border:1px solid rgba(4,26,64,0.1); border-radius:14px; margin-bottom:0.8rem; overflow:hidden; box-shadow:0 6px 18px rgba(4,26,64,0.05); }
+.ed-sec > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:0.7rem; padding:0.85rem 1.1rem; font-weight:700; font-size:0.95rem; color:var(--night); border-left:6px solid var(--ed-c); background:var(--ed-bg); }
+.ed-sec > summary::-webkit-details-marker { display:none; }
+.ed-sec > summary::after { content:'▾'; margin-left:auto; color:var(--ed-c); transition:transform 0.15s; }
+.ed-sec[open] > summary::after { transform:rotate(180deg); }
+.ed-blue { --ed-c:#1a4f9c; --ed-bg:#EEF4FF; } .ed-teal { --ed-c:#0d8f81; --ed-bg:#E9F8F6; } .ed-amber { --ed-c:#c17d00; --ed-bg:#FFF7E3; }
+.ed-count { font-size:0.72rem; font-weight:700; background:var(--ed-c); color:#fff; border-radius:999px; padding:0.1rem 0.65rem; }
+.ed-sum { font-size:0.78rem; font-weight:500; color:var(--grey3); }
+.ed-body { padding:1rem 1.2rem 1.1rem; }
+.ed-sub { font-size:0.78rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--grey3); margin:0.2rem 0 0.5rem; }
+@media (max-width:760px) { .ed-tiles { grid-template-columns:repeat(2, 1fr); } }
+.ov-bar { display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap; margin-bottom:1.1rem; }
+.ov-filter { border:1.5px solid rgba(4,26,64,0.14); background:var(--white); border-radius:999px; padding:0.35rem 0.95rem; font:600 0.8rem 'Poppins',sans-serif; color:var(--night2); cursor:pointer; }
+.ov-filter.on { background:var(--night); color:#fff; border-color:var(--night); }
+.ov-search { flex:1; min-width:200px; max-width:320px; border:1.5px solid rgba(4,26,64,0.14); border-radius:12px; padding:0.5rem 0.8rem; font:inherit; font-size:0.84rem; }
+.ov-card { background:var(--white); border:1px solid rgba(4,26,64,0.1); border-left:5px solid var(--green); border-radius:16px; padding:1.1rem 1.3rem; margin-bottom:1rem; box-shadow:0 8px 24px rgba(4,26,64,0.06); }
+.ov-card.ov-c-upcoming { border-left-color:#0f6f86; } .ov-card.ov-c-completed { border-left-color:#9aa5b1; } .ov-card.ov-c-draft { border-left-color:#E4CA0A; }
+.ov-top { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap; }
+.ov-name { font-size:1.05rem; font-weight:700; color:var(--night); }
+.ov-meta { font-size:0.78rem; color:var(--grey3); margin-top:0.15rem; }
+.ov-num { font-weight:700; color:var(--night2); letter-spacing:0.03em; }
+.ov-pill { font-size:0.72rem; font-weight:700; border-radius:999px; padding:0.2rem 0.8rem; }
+.ov-ongoing { background:rgba(58,181,74,0.16); color:#1f7a2e; } .ov-upcoming { background:rgba(15,111,134,0.14); color:#0b5568; }
+.ov-completed { background:rgba(4,26,64,0.08); color:var(--night2); } .ov-draft { background:rgba(228,202,10,0.28); color:#7a6a00; }
+.ov-grid { display:flex; gap:2.2rem; flex-wrap:wrap; margin:0.9rem 0 0.6rem; font-size:0.86rem; }
+.ov-l { font-size:0.68rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--grey3); margin-bottom:0.15rem; }
+.ov-row { display:flex; gap:1rem; padding:0.45rem 0; border-top:1px solid rgba(4,26,64,0.06); align-items:baseline; }
+.ov-row .ov-l { width:190px; flex-shrink:0; margin:0; }
+.ov-none { font-size:0.8rem; color:var(--grey3); }
+.ov-acts { display:flex; gap:0.6rem; margin-top:0.8rem; }
+.ov-back { background:none; border:none; color:#0d8f81; font:600 0.84rem 'Poppins',sans-serif; cursor:pointer; padding:0; margin-bottom:0.8rem; }
+.ov-rule { background:rgba(20,184,166,0.08); border:1px solid rgba(20,184,166,0.28); color:#0b6f65; border-radius:12px; padding:0.7rem 1rem; font-size:0.82rem; margin-bottom:1rem; }
+.ov-text { font-size:0.88rem; line-height:1.55; color:var(--night); margin:0.1rem 0 0.9rem; white-space:pre-line; }
+.ov-rf { border:1px solid rgba(4,26,64,0.1); border-radius:14px; padding:0.85rem 1rem; margin-bottom:0.7rem; }
+.ov-rf-top { display:flex; justify-content:space-between; gap:1rem; align-items:center; flex-wrap:wrap; }
+.ov-people { max-height:380px; overflow:auto; border:1px solid rgba(4,26,64,0.1); border-radius:12px; }
+.ov-ask { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; background:rgba(228,202,10,0.13); border:1px solid rgba(228,202,10,0.38); border-radius:12px; padding:0.6rem 0.9rem; margin:0.9rem 0; font-size:0.84rem; font-weight:600; }
+.ov-pick { display:flex; gap:0.7rem; align-items:center; padding:0.5rem 0.9rem; border-bottom:1px solid rgba(4,26,64,0.06); font-size:0.84rem; }
+.ov-pick small { color:var(--grey3); }
+.rf-view { flex-basis:100%; margin-top:0.8rem; padding-top:0.5rem; border-top:1px solid rgba(4,26,64,0.08); font-size:0.84rem; line-height:1.5; max-width:90ch; }
+.rf-view .fw-q { font-size:0.7rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--grey3); margin:0.7rem 0 0.15rem; }
+.fit-need { font-size:0.82rem; margin-top:0.5rem; color:var(--night); }
+.fit-red { border-color:rgba(214,59,47,0.5); background:rgba(214,59,47,0.05); }
+.fit-stop { margin-top:0.7rem; padding:0.75rem 0.9rem; border-radius:12px; background:rgba(214,59,47,0.1); color:#8c1d18; font-size:0.84rem; display:flex; align-items:center; justify-content:space-between; gap:0.8rem; flex-wrap:wrap; }
+.vs-card { border:1px solid rgba(4,26,64,0.1); border-radius:16px; padding:1rem 1.2rem; margin:0.9rem 0 1rem; background:var(--white); box-shadow:0 8px 24px rgba(4,26,64,0.06); }
+.vs-title { font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--grey3); margin-bottom:0.6rem; }
+.vs-row { display:flex; gap:1rem; padding:0.4rem 0; border-top:1px solid rgba(4,26,64,0.06); font-size:0.86rem; align-items:flex-start; }
+.vs-row:first-of-type { border-top:none; }
+.vs-row > span:first-child { width:150px; flex-shrink:0; color:var(--grey3); }
+.vs-chips { display:flex; flex-wrap:wrap; gap:0.4rem; }
+.in-create { margin:1.2rem 0 0.4rem; padding-top:1rem; border-top:1px solid rgba(4,26,64,0.08); }
+.in-create-why { font-size:0.82rem; color:var(--grey3); margin-top:0.6rem; }
+.in-created { background:rgba(58,181,74,0.12); border:1px solid rgba(58,181,74,0.4); color:#1f6b2b; border-radius:12px; padding:0.8rem 1rem; font-size:0.86rem; margin-bottom:1rem; }
+.is-created .btn-link[data-edit], .is-created [data-redit], .is-created [data-rremove], .is-created [data-rdel], .is-created [data-vremove], .is-created [data-rkriti],
+.is-created #rf_pick_field, .is-created #rf_add_row, .is-created #rf_def, .is-created #in_askkriti, .is-created #in_vgo, .is-created .fit-stop button { display:none; }
+.kc-err { background:rgba(214,59,47,0.07); border:1px solid rgba(214,59,47,0.35); align-self:flex-start; max-width:92%; }
+.kc-err ul { margin:0.4rem 0 0.2rem 1.1rem; padding:0; }
+.kc-err .kc-hint { margin-top:0.4rem; font-size:0.78rem; color:var(--grey3); }
 .dd-sel-links { font-size:0.74rem; color:var(--night2); }
 .dd-sel-links a { color:#0d8f81; font-weight:600; text-decoration:none; }
 .dd-sel-links a:hover { text-decoration:underline; }
@@ -660,10 +878,8 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .report-row-text { min-width:0; }
 .report-row-text h3 { font-size:1.22rem; font-weight:700; letter-spacing:-0.01em; color:var(--night); margin-bottom:0.4rem; }
 .report-row-text p { font-size:0.83rem; color:#7e8a9c; line-height:1.65; }
-.report-row.coming-soon { opacity:0.7; }
 .report-row-index { width:92px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:3.8rem; font-weight:700; color:#e2e7ed; }
 .report-row.clickable .report-row-index { color:var(--green); }   /* the live reports: a green number (Kriti, 2026-10-09) */
-.report-soon-tag { position:absolute; top:1.2rem; right:1.4rem; font-size:0.6rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; color:var(--grey3); background:var(--grey1); padding:0.2rem 0.55rem; border-radius:10px; }
 .footprint-list { display:flex; flex-direction:column; gap:0.6rem; margin-bottom:0.9rem; }
 .footprint-row { display:flex; align-items:center; justify-content:space-between; font-size:0.82rem; padding:0.5rem 0.7rem; background:var(--grey1); border-radius:8px; }
 .footprint-name { color:var(--night2); font-weight:600; }
@@ -730,6 +946,9 @@ const _q = new URLSearchParams(location.search);
 // same reasoning, just one more field a local preview can carry.
 const PREVIEW_API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? _q.get('api') : null;
 const API_BASE = PREVIEW_API || 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
+// The Learning Initiative pages talk to their own app (wotg-learning-initiative), not to user management. Same local-preview override as above.
+const PREVIEW_LI_API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? _q.get('liApi') : null;
+const LI_API_BASE = PREVIEW_LI_API || 'https://wotg-learning-initiative.azurewebsites.net';
 if (PREVIEW_API && _q.get('as')) {
   const [uid, acc] = _q.get('as').split(':');
   try {
@@ -816,14 +1035,15 @@ function toast(msg, kind) {
 // ── talking to the server ─────────────────────────────────────────────────
 async function api(path, opts) {
   opts = opts || {};
-  const init = { method: opts.method || 'GET', headers: { 'X-User-Id': CURRENT_USER_ID } };
+  const init = { method: opts.method || 'GET', headers: { 'Authorization': 'Bearer ' + loginToken(), 'X-User-Id': CURRENT_USER_ID } };
   if (opts.json !== undefined) { init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(opts.json); init.method = opts.method || 'POST'; }
   if (opts.form) { init.body = opts.form; init.method = 'POST'; }
   let res;
-  try { res = await fetch(API_BASE + path, init); }
+  try { res = await fetch((path.indexOf('/api/admin/initiative') === 0 ? LI_API_BASE : API_BASE) + path, init); }
   catch (e) { const err = new Error('Could not reach the server. Check your connection and try again.'); err.network = true; throw err; }
   let data = null;
   try { data = await res.json(); } catch (e) { data = null; }
+  if (res.status === 401) { logOut(); throw new Error('Your session has ended. Please sign in again.'); }
   if (!res.ok) {
     const d = data && data.detail;
     const err = new Error(typeof d === 'string' ? d : (Array.isArray(d) ? d.map(x => x.msg).join('; ') : 'Something went wrong. Please try again.'));
@@ -1277,7 +1497,6 @@ async function openEditUser(userId) {
     <div class="field"><label>Is a people manager?</label><div class="radio-row"><label><input type="radio" name="eu_pm" value="yes" ${isMgr ? 'checked' : ''} ${dis}> Yes</label><label><input type="radio" name="eu_pm" value="no" ${u.is_people_manager === false ? 'checked' : ''} ${dis}> No</label></div><div class="help">Yes and the Manager access level always go together.</div></div>
     <div class="full" id="eu_loc"></div>
     <div class="field"><label>Manager's name ${canEdit ? '<span class="req">*</span>' : ''}</label><input type="text" id="eu_mname" value="${esc(u.manager_name)}" ${dis}><div class="err hidden"></div></div><div class="field"><label>Manager's email ${canEdit ? '<span class="req">*</span>' : ''}</label><input type="text" id="eu_memail" data-lower value="${esc(u.manager_email)}" ${dis}><div class="help">Change these if they move teams.</div><div class="err hidden"></div></div>
-    <div class="field full"><label>About the organisation (shown to the learning coach)</label><textarea id="eu_ctx" ${dis}>${esc(u.company_context)}</textarea></div>
     <div class="field full"><label>Job description</label><textarea id="eu_jd" ${dis}>${esc(u.job_description)}</textarea></div>
     <div class="field full"><label>Additional notes</label><textarea id="eu_notes" ${dis}>${esc(u.additional_notes)}</textarea></div>
     <div class="field full"><label>Skills assigned</label><div>${(u.skills_assigned || []).length ? u.skills_assigned.map(s => `<span class="chip">${esc(s.skill)}</span>`).join('') : '<span style="color:var(--grey3);font-size:0.84rem">None yet</span>'}</div><div class="help">Assign or remove skills in the Skill Assignment Center.</div></div>
@@ -1303,7 +1522,7 @@ async function openEditUser(userId) {
     mok = fe('eu_memail', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('#eu_memail').value.trim()) ? '' : "Please enter their manager's email address.") && mok;
     if (!mok) { toast('Manager name and email are needed before this can be saved.', 'warn'); return; }
     const body = {
-      user_id: u.user_id, job_description: $('#eu_jd').value, company_context: $('#eu_ctx').value, is_people_manager: pm === 'yes' ? true : pm === 'no' ? false : null,
+      user_id: u.user_id, job_description: $('#eu_jd').value, is_people_manager: pm === 'yes' ? true : pm === 'no' ? false : null,
       additional_notes: $('#eu_notes').value, access_type: isPlain ? $('#eu_role').value : u.access_type,
       manager_name: $('#eu_mname').value, manager_email: $('#eu_memail').value,
       department: $('#eu_dept').value.trim(), designation: $('#eu_desig').value, country: loc.touched() ? lv.country : u.country,
@@ -1629,7 +1848,7 @@ function setupBulkDelete(people) {
 
 // ════════════ LEARNING MANAGEMENT ════════════
 function lmShell(active) {
-  const tabs = [['assign', 'Skill Assignment Center', ''], ['initiatives', 'Learning Initiative Builder', 'Coming soon'], ['glossary', 'Reflector Glossary', '']];
+  const tabs = [['assign', 'Skill Assignment Center', ''], ['initiatives', 'Learning Initiative Builder', ''], ['overview', 'Learning Initiative Editor', ''], ['glossary', 'Reflector Glossary', '']];
   $('#view').innerHTML = `
     <div class="um-page-head"><div><h1 class="um-title">Learning Management</h1><div class="um-sub">Assign skills to your people and look up what each skill means.</div></div></div>
     <div class="tabs">${tabs.map(t => `<button class="tab ${active === t[0] ? 'active' : ''}" data-tab="${t[0]}">${t[1]}${t[2] ? ` <span class="soon">${t[2]}</span>` : ''}</button>`).join('')}</div><div id="lmBody"></div>`;
@@ -1658,7 +1877,7 @@ function skillPicker(root, gl, multi, onChange) {
     <div class="field"><label>Choose by <span class="req">*</span></label><select class="sp_level"><option value="reflector">Reflector (one skill)</option><option value="capability">Capability (all of its reflectors)</option></select></div>
     <div class="field"><label class="sp_label">Reflector <span class="req">*</span></label><select class="sp_pick"></select>${multi ? '<div style="margin-top:0.5rem"><button class="btn-outline sp_add" type="button">Add to this initiative</button></div>' : ''}</div>
     <div class="full sp_def"></div>
-    ${multi ? '<div class="field full"><label>Skills in this initiative <span class="req">*</span></label><div class="sp_chosen"></div></div>' : ''}
+    ${multi ? '<div class="field full"><label>Reflectors in this initiative <span class="req">*</span></label><div class="sp_chosen"></div></div>' : ''}
   </div>`;
   const level = $('.sp_level', root), pick = $('.sp_pick', root), def = $('.sp_def', root);
   const inCap = c => gl.filter(r => r.capability_name === c);
@@ -1901,76 +2120,910 @@ function setupEditRemove(gl) {
   };
 }
 
-// ── Learning Initiative Builder (picking works; saving waits for the backend) ──────
+// ── Learning Initiatives: every initiative built, what is in each, and the few things that can still be changed on one ──
+// A created initiative's objective, business need and existing reflector answers are fixed. What can still change: its dates, a reflector
+// can be added (validated by Kriti first) or removed (never the last one), and people can be added when their BU and designation are
+// ones the initiative already covers. A completed initiative can no longer be changed.
+const KRITI_TAG = { builder: 'Built by Kriti', detailer: 'Detailed by Kriti' };   // who wrote a reflector's answers, when it was not the admin alone
+// More than this share of Kriti's words changed: the reflector counts as the admin's own work and loses the line. Only judged while Kriti's original is still on the page.
+const KRITI_EDIT_LIMIT = 0.25;
+const answerWords = a => [a.why, a.impact].concat(Object.keys(a.uses || {}).sort().map(k => a.uses[k])).join(' ').toLowerCase().split(/\s+/).filter(Boolean);
+function changedShare(original, now) {
+  const a = answerWords(original), b = answerWords(now);
+  if (!a.length) return 1;
+  let prev = new Array(b.length + 1).fill(0);   // longest run of words kept in order
+  for (let i = 1; i <= a.length; i++) { const cur = [0]; for (let j = 1; j <= b.length; j++) cur[j] = a[i - 1] === b[j - 1] ? prev[j - 1] + 1 : Math.max(prev[j], cur[j - 1]); prev = cur; }
+  return 1 - prev[b.length] / Math.max(a.length, b.length);
+}
+const copyAnswers = a => JSON.parse(JSON.stringify({ why: a.why || '', impact: a.impact || '', uses: a.uses || {} }));
+const kritiTag = who => KRITI_TAG[who] ? `<div class="kriti-tag">${KRITI_TAG[who]}</div>` : '';
+const fmtIso = iso => iso ? new Date(String(iso).slice(0, 10) + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+function iniStatus(i) {
+  if (i.status !== 'created') return ['draft', 'Draft'];
+  const today = new Date().toISOString().slice(0, 10);
+  return today < i.start_date ? ['upcoming', 'Upcoming'] : today > i.end_date ? ['completed', 'Completed'] : ['ongoing', 'Ongoing'];
+}
+const ovChips = arr => arr.length ? arr.map(x => `<span class="chip">${esc(x)}</span>`).join('') : '<span class="ov-none">None yet</span>';
+const buKey = (bu, desig) => String(bu || '').split('/')[0].trim().toLowerCase() + '|' + String(desig || '').trim().toLowerCase();
+const RATING = { 'GOOD FIT': ['good', 'Good fit'], 'AVERAGE FIT': ['avg', 'Average fit'], 'POOR FIT': ['poor', 'Poor fit'] };
+const ratingView = (rating, reason) => {
+  const k = (RATING[rating] || [])[0]; if (!k) return '';
+  return `<div class="fit-bar fit-on-${k}" role="img" aria-label="${RATING[rating][1]}" style="margin-top:0.5rem"><span class="fb-poor"></span><span class="fb-avg"></span><span class="fb-good"></span></div><div class="fit-reason">${esc(reason)}</div>`;
+};
+
+async function renderInitiativeOverview() {
+  lmShell('overview');
+  const body = $('#lmBody');
+  body.innerHTML = '<div class="loading-block"><span class="spinner"></span> Loading…</div>';
+  let list = [];
+  try { list = (await api('/api/admin/initiatives')).initiatives || []; }
+  catch (e) { if (e.status !== 404) { body.innerHTML = `<div class="banner">${esc(e.message)}</div>`; return; } }
+  const view = { filter: 'all', q: '' };
+  const kinds = [['all', 'All'], ['ongoing', 'Ongoing'], ['upcoming', 'Upcoming'], ['completed', 'Completed'], ['draft', 'Draft']];
+  const count = k => list.filter(i => k === 'all' || iniStatus(i)[0] === k).length;
+  body.innerHTML = `<div class="ov-bar">${kinds.map(([k, t]) => `<button type="button" class="ov-filter" data-f="${k}">${t} (${count(k)})</button>`).join('')}
+      <input type="text" class="ov-search" id="ov_q" placeholder="Search by name or number" data-nolimit>
+      <span style="flex:1"></span><button type="button" class="btn-primary-add" id="ov_new">Build a new initiative</button></div><div id="ov_list"></div>`;
+  const draw = () => {
+    $$('.ov-filter', body).forEach(b => b.classList.toggle('on', b.dataset.f === view.filter));
+    const q = view.q.trim().toLowerCase();
+    const rows = list.filter(i => (view.filter === 'all' || iniStatus(i)[0] === view.filter) && (!q || (i.name + ' ' + i.number).toLowerCase().includes(q)));
+    $('#ov_list').innerHTML = !list.length ? '<div class="banner info">No learning initiatives have been built yet. Once you create one, it will appear here.</div>'
+      : !rows.length ? '<div class="banner info">No initiatives match.</div>'
+      : rows.map(i => { const [k, label] = iniStatus(i); return `<div class="ov-card ov-c-${k}" data-id="${esc(i.initiative_id)}">
+        <div class="ov-top"><div><div class="ov-name">${esc(i.name)}</div><div class="ov-meta"><span class="ov-num">${esc(i.number)}</span> · ${esc(i.company_name)} · ${i.delivery === 'wotg' ? 'Wisdom on the GO! only' : 'External'}</div></div><span class="ov-pill ov-${k}">${label}</span></div>
+        <div class="ov-grid"><div><div class="ov-l">Dates</div>${esc(fmtIso(i.start_date))} to ${esc(fmtIso(i.end_date))}</div>
+          <div><div class="ov-l">Created</div>${esc(fmtIso(i.created_at))} by ${esc(i.created_by_name)}</div><div><div class="ov-l">Participants</div>${i.participants}</div></div>
+        <div class="ov-row"><div class="ov-l">Reflectors assigned (${i.reflectors.length})</div><div>${ovChips(i.reflectors)}</div></div>
+        <div class="ov-row"><div class="ov-l">Business units in scope</div><div>${ovChips(i.bus)}</div></div>
+        <div class="ov-row"><div class="ov-l">Departments in scope</div><div>${ovChips(i.departments)}</div></div>
+        <div class="ov-row"><div class="ov-l">Designations in scope</div><div>${ovChips(i.designations)}</div></div>
+        <div class="ov-acts">${k === 'draft' ? '<button type="button" class="btn-outline" data-continue="1">Continue in the builder</button>' : '<button type="button" class="btn-primary-add" data-open="1">' + (k === 'completed' ? 'View' : 'View and edit') + '</button>'}<button type="button" class="btn-outline btn-danger-outline" data-del="1">Delete initiative</button></div></div>`; }).join('');
+  };
+  body.onclick = e => {
+    const f = e.target.closest('[data-f]'); if (f) { view.filter = f.dataset.f; draw(); return; }
+    const cont = e.target.closest('[data-continue]');
+    if (cont) S.resumeInitiative = cont.closest('.ov-card').dataset.id;
+    if (e.target.closest('#ov_new') || cont) { location.hash = '#learning/initiatives'; return; }
+    const o = e.target.closest('[data-open]'); if (o) { renderInitiativeDetail(o.closest('.ov-card').dataset.id); return; }
+    const x = e.target.closest('[data-del]'); if (x) { const id = x.closest('.ov-card').dataset.id; deleteInitiative(list.find(i => i.initiative_id === id), renderInitiativeOverview); }
+  };
+  $('#ov_q').oninput = e => { view.q = e.target.value; draw(); };
+  draw();
+}
+
+// Delete an initiative (the row is kept for history; people stop being given its skills). Nothing is deleted without this warning.
+async function deleteInitiative(i, after) {
+  const draft = i.status !== 'created';
+  const text = draft ? 'This will permanently delete this draft. Nothing has been assigned to anyone from it.'
+    : 'This will permanently delete this initiative. The required skills will stop showing for the users in the learning initiative segment. Historical data will, however, be retained.';
+  if (!(await confirmBox('Delete initiative', `<strong>${esc(i.name)}</strong> (${esc(i.number)})<br><br>${esc(text)}`, 'Delete initiative', true))) return;
+  try { await api('/api/admin/initiatives/' + encodeURIComponent(i.initiative_id) + '/delete', { json: {} }); toast('Initiative deleted.'); after(); }
+  catch (err) { toast(err.message, 'error'); }
+}
+
+async function renderInitiativeDetail(id, scopeOpen) {
+  lmShell('overview');
+  const body = $('#lmBody');
+  body.innerHTML = '<div class="loading-block"><span class="spinner"></span> Loading…</div>';
+  let d; try { d = await api('/api/admin/initiatives/' + encodeURIComponent(id)); } catch (e) { body.innerHTML = `<div class="banner">${esc(e.message)}</div>`; return; }
+  const [k, label] = iniStatus(d), canEdit = k === 'upcoming' || k === 'ongoing', reload = () => renderInitiativeDetail(id, !!$('.ed-amber[open]'));
+  const url = p => '/api/admin/initiatives/' + encodeURIComponent(id) + p;
+  const people = d.users;
+  const tree = {};
+  people.forEach(u => { const key = [u.bu_name || '(no BU)', u.department || '(no department)', u.designation || '(no designation)'].join('\u0001'); tree[key] = (tree[key] || 0) + 1; });
+  const breakdown = Object.keys(tree).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).map(key => { const [bu, dept, des] = key.split('\u0001'); return `<tr><td>${esc(bu)}</td><td>${esc(dept)}</td><td>${esc(des)}</td><td>${tree[key]}</td></tr>`; }).join('');
+  const count = f => new Set(people.map(u => String(f(u) || '').trim().toLowerCase())).size;
+  body.innerHTML = `<button type="button" class="ov-back" id="ov_back">← All initiatives</button>
+    <div class="ed-hero"><div class="ed-hero-top"><div><div class="ed-hero-name">${esc(d.name)}</div>
+        <div class="ed-hero-meta"><span class="ed-num">${esc(d.number)}</span> · ${esc(d.company_name)} · ${d.delivery === 'wotg' ? 'Wisdom on the GO! only' : 'External'} · Created ${esc(fmtIso(d.created_at))} by ${esc(d.created_by_name)}</div></div>
+        <div class="ed-hero-right"><span class="ed-pill ed-${k}">${label}</span><button type="button" class="ed-del" id="ov_del">Delete initiative</button></div></div></div>
+    <div class="ed-tiles"><div class="ed-tile ed-t1"><b>${people.length}</b><span>Participants</span></div><div class="ed-tile ed-t2"><b>${count(u => u.bu_name)}</b><span>Business units</span></div>
+      <div class="ed-tile ed-t3"><b>${count(u => u.designation)}</b><span>Designations</span></div><div class="ed-tile ed-t4"><b>${d.reflectors.length}</b><span>Reflectors</span></div></div>
+    ${canEdit ? '<div class="ov-rule"><strong>What you can change:</strong> the dates, the delivery, add a reflector or remove one, and add or remove people (new people must have a business unit and designation this initiative already covers). The name, the objective, the business need and the answers for existing reflectors cannot be changed.</div>'
+      : k === 'completed' ? '<div class="ov-rule">This initiative is completed, so it can no longer be changed.</div>' : ''}
+    <details class="ed-sec ed-blue" open><summary>About this initiative</summary><div class="ed-body">
+      <div class="ov-l">Overall objective</div><div class="ov-text">${esc(d.objective)}</div>
+      <div class="ov-l">Business need / outcome</div><div class="ov-text">${esc(d.business_need)}</div>
+      <div class="ov-l">Dates</div><div id="ov_dates" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap"><span>${esc(fmtIso(d.start_date))} to ${esc(fmtIso(d.end_date))}</span>${canEdit ? '<button type="button" class="btn-outline" id="ov_chg">Change dates</button>' : ''}</div>
+      <div class="ov-l">Delivery</div><div id="ov_deliv" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap"><span>${d.delivery === 'wotg' ? 'Wisdom on the GO! only' : 'External: instructor-led, e-learning, a course or a program'}</span>${canEdit ? '<button type="button" class="btn-outline" id="ov_cdel">Change delivery</button>' : ''}</div></div></details>
+    <details class="ed-sec ed-teal" open><summary>Reflectors <span class="ed-count">${d.reflectors.length}</span></summary><div class="ed-body">
+      ${canEdit ? '<div style="text-align:right;margin-bottom:0.7rem"><button type="button" class="btn-outline" id="ov_addr">Add a reflector</button></div>' : ''}
+      ${d.reflectors.map(r => `<div class="ov-rf" data-r="${esc(r.reflector_name)}"><div class="ov-rf-top"><div><strong>${esc(r.reflector_name)}</strong> <span class="def-cap">${esc(r.capability_name)}</span>
+          ${r.fit_rating ? `<span class="fit-pill fit-${RATING[r.fit_rating][0]}" style="margin-left:0.5rem">${RATING[r.fit_rating][1]}</span>` : ''}</div>
+          <div class="sv-acts"><button type="button" class="btn-outline" data-rview="1">View</button>${canEdit ? '<button type="button" class="btn-outline btn-danger-outline" data-rrem="1">Remove</button>' : ''}</div></div>
+          ${ratingView(r.fit_rating, r.fit_reason)}
+          <div class="rf-view" hidden><div class="fw-q">Why this skill belongs in this initiative</div><div>${esc(r.why_this_skill)}</div><div class="fw-q">Business impact</div><div>${esc(r.business_impact)}</div>
+            ${Object.keys(r.usage_examples || {}).map(dn => `<div class="fw-q">Where participants can use it · ${esc(dn)}</div><div>${esc(r.usage_examples[dn])}</div>`).join('')}${kritiTag(r.written_by)}</div></div>`).join('')}</div></details>
+    <details class="ed-sec ed-amber"${scopeOpen ? ' open' : ''}><summary>Who is in scope <span class="ed-count">${people.length} ${people.length === 1 ? 'person' : 'people'}</span><span class="ed-sum">${count(u => u.bu_name)} BUs · ${count(u => u.department)} departments · ${count(u => u.designation)} designations</span></summary><div class="ed-body">
+      <div class="ed-sub">By business unit, department and designation</div>
+      <div class="um-table-card" style="margin-bottom:1.2rem"><div class="um-table-scroll"><table class="um-table" style="min-width:0"><thead><tr><th>Business unit</th><th>Department</th><th>Designation</th><th>People</th></tr></thead><tbody>${breakdown}</tbody></table></div></div>
+      <div class="ov-top"><div class="ed-sub" style="margin:0">Participants</div><div style="display:flex;gap:0.6rem;align-items:center"><input type="text" class="ov-search" id="ov_pq" placeholder="Search participants" data-nolimit>${canEdit ? '<button type="button" class="btn-outline" id="ov_addp">Add participants</button>' : ''}</div></div>
+      <div class="ov-people" style="margin-top:0.7rem"><table class="um-table" style="min-width:0"><thead><tr><th>Name</th><th>Business unit</th><th>Department</th><th>Designation</th><th>Country</th>${canEdit ? '<th></th>' : ''}</tr></thead><tbody id="ov_prows"></tbody></table></div></div></details>`;
+  const drawPeople = () => {
+    const q = $('#ov_pq').value.trim().toLowerCase();
+    $('#ov_prows').innerHTML = people.filter(u => !q || (u.name + ' ' + u.bu_name + ' ' + u.department + ' ' + u.designation).toLowerCase().includes(q))
+      .map(u => `<tr><td><strong>${esc(u.name)}</strong></td><td>${esc(u.bu_name)}</td><td>${esc(u.department)}</td><td>${esc(u.designation)}</td><td>${esc(u.country)}</td>${canEdit ? `<td style="text-align:right"><button type="button" class="btn-outline btn-danger-outline" data-prem="${esc(u.user_id)}">Remove</button></td>` : ''}</tr>`).join('') || `<tr><td colspan="${canEdit ? 6 : 5}" style="color:var(--grey3)">Nobody matches.</td></tr>`;
+  };
+  $('#ov_pq').oninput = drawPeople; drawPeople();
+  $('#ov_back').onclick = renderInitiativeOverview;
+  $('#ov_del').onclick = () => deleteInitiative(d, renderInitiativeOverview);
+  body.onclick = async e => {
+    const row = e.target.closest('.ov-rf');
+    if (row && e.target.closest('[data-rview]')) { const v = $('.rf-view', row), b = e.target.closest('[data-rview]'); v.hidden = !v.hidden; b.textContent = v.hidden ? 'View' : 'Hide'; return; }
+    if (row && e.target.closest('[data-rrem]')) {
+      const name = row.dataset.r;
+      if (d.reflectors.length <= 1) { toast('An initiative needs at least one reflector. Add the new one first, then remove this one.', 'warn'); return; }
+      if (!(await confirmBox('Remove reflector', `Remove <strong>${esc(name)}</strong> from this initiative? People will no longer be given it. What they have already done is kept.`, 'Remove', true))) return;
+      try { await api(url('/reflectors/remove'), { json: { reflector_name: name } }); toast('Reflector removed.'); reload(); } catch (err) { toast(err.message, 'error'); }
+      return;
+    }
+    if (e.target.closest('#ov_chg')) {
+      $('#ov_dates').innerHTML = `<input type="date" id="ov_s" value="${esc(d.start_date)}"><span>to</span><input type="date" id="ov_e" value="${esc(d.end_date)}"><button type="button" class="btn-primary-add" id="ov_dsave">Save dates</button><button type="button" class="btn-outline" id="ov_dcancel">Cancel</button><span class="help" id="ov_dmsg" style="color:var(--red)"></span><span class="help" style="flex-basis:100%;margin:0">On the end date the initiative will be completed automatically and will drop off your learners' screens.</span>`;
+      return;
+    }
+    if (e.target.closest('#ov_dcancel')) { reload(); return; }
+    if (e.target.closest('#ov_dsave')) {
+      const st = $('#ov_s').value, en = $('#ov_e').value;
+      if (!st || !en) { $('#ov_dmsg').textContent = 'Please give both dates.'; return; }
+      if (en < st) { $('#ov_dmsg').textContent = 'The end date cannot be before the start date.'; return; }
+      try { await api(url('/dates'), { json: { start_date: st, end_date: en } }); toast('Dates saved.'); reload(); } catch (err) { $('#ov_dmsg').textContent = err.message; }
+      return;
+    }
+    const pr = e.target.closest('[data-prem]');
+    if (pr) {
+      const u = people.find(x => String(x.user_id) === pr.dataset.prem);
+      if (people.length <= 1) { toast('An initiative needs at least one person. Add the new person first, then remove this one.', 'warn'); return; }
+      if (!(await confirmBox('Remove participant', `Remove <strong>${esc(u.name)}</strong> from this initiative? They will no longer be given its reflectors. What they have already done is kept.`, 'Remove', true))) return;
+      try { await api(url('/users/remove'), { json: { user_id: u.user_id } }); toast('Person removed.'); reload(); } catch (err) { toast(err.message, 'error'); }
+      return;
+    }
+    if (e.target.closest('#ov_cdel')) {
+      $('#ov_deliv').innerHTML = `<label><input type="radio" name="ov_dv" value="wotg"${d.delivery === 'wotg' ? ' checked' : ''}> Wisdom on the GO! only</label><label><input type="radio" name="ov_dv" value="external"${d.delivery === 'external' ? ' checked' : ''}> External: instructor-led, e-learning, a course or a program</label><button type="button" class="btn-primary-add" id="ov_dvsave">Save delivery</button><button type="button" class="btn-outline" id="ov_dvcancel">Cancel</button>`;
+      return;
+    }
+    if (e.target.closest('#ov_dvcancel')) { reload(); return; }
+    if (e.target.closest('#ov_dvsave')) {
+      const v = $('input[name=ov_dv]:checked', body);
+      try { await api(url('/delivery'), { json: { delivery: v.value } }); toast('Delivery saved.'); reload(); } catch (err) { toast(err.message, 'error'); }
+      return;
+    }
+    if (e.target.closest('#ov_addp')) addInitiativeParticipants(d, url, reload);
+    if (e.target.closest('#ov_addr')) addInitiativeReflector(d, url, reload);
+  };
+}
+
+// Add people to a created initiative: only people in the admin's scope, in the same company, who are not in it yet, and whose BU and
+// designation are a combination the initiative already covers (its reflector answers were written for those designations).
+async function addInitiativeParticipants(d, url, reload) {
+  try { await loadUsers(false); } catch (e) { toast(e.message, 'error'); return; }
+  const have = new Set(d.users.map(u => u.user_id)), covered = new Set(d.users.map(u => buKey(u.bu_name, u.designation)));
+  const company = String(d.company_name || '').trim().toLowerCase();
+  const mine = S.users.filter(u => (u.allowed || []).indexOf('skills') !== -1 && String(u.company || '').trim().toLowerCase() === company && !have.has(u.user_id));
+  const ok = mine.filter(u => covered.has(buKey(u.business_unit, u.designation))), blocked = mine.length - ok.length;
+  const m = openModal({ title: 'Add participants', sub: d.name, size: 'wide', sticky: true, html: `
+    <div class="ov-rule">Only people whose business unit and designation this initiative already covers can be added here. The reflector answers were written for those designations.</div>
+    ${ok.length ? `<div style="margin-bottom:0.5rem"><a href="#" id="ap_all">Select all</a> · <a href="#" id="ap_none">Clear</a> <span id="ap_n" style="color:var(--grey3);margin-left:0.6rem"></span></div>
+      <div class="ov-people">${ok.map(u => `<label class="ov-pick"><input type="checkbox" value="${esc(u.user_id)}"><span><strong>${esc(u.name)}</strong><br><small>${esc(u.business_unit)} · ${esc(u.department)} · ${esc(u.designation)}</small></span></label>`).join('')}</div>`
+      : '<div class="banner info">Nobody else in your scope has a business unit and designation this initiative covers.</div>'}
+    ${blocked ? `<p style="font-size:0.8rem;color:var(--grey3);margin-top:0.8rem">${blocked} other ${blocked === 1 ? 'person' : 'people'} in your scope cannot be added here: their business unit and designation are not ones this initiative covers.</p>` : ''}` });
+  const boxes = () => $$('input[type=checkbox]', m.body), upd = () => { const n = boxes().filter(b => b.checked).length; if ($('#ap_n', m.body)) $('#ap_n', m.body).textContent = n + ' selected'; };
+  m.body.onchange = upd; upd();
+  if ($('#ap_all', m.body)) { $('#ap_all', m.body).onclick = e => { e.preventDefault(); boxes().forEach(b => { b.checked = true; }); upd(); }; $('#ap_none', m.body).onclick = e => { e.preventDefault(); boxes().forEach(b => { b.checked = false; }); upd(); }; }
+  setFoot(m, [{ label: 'Cancel', onClick() { m.close(); } }, ...(ok.length ? [{ label: 'Add selected', cls: 'btn-primary-add', async onClick(btn) {
+    const ids = boxes().filter(b => b.checked).map(b => b.value);
+    if (!ids.length) { toast('Pick at least one person.', 'warn'); return; }
+    btn.disabled = true;
+    try { await api(url('/users/add'), { json: { user_ids: ids } }); m.close(); toast(ids.length + (ids.length === 1 ? ' person added.' : ' people added.')); reload(); }
+    catch (err) { btn.disabled = false; toast(err.message, 'error'); } } }] : [])]);
+}
+
+// Add one reflector to a created initiative: the same steps as in the builder (choose, answer for each designation, optionally with Ask
+// Kriti, Save reflector, Validate with Kriti). A saved reflector is kept on the server but is not part of the initiative until Kriti has
+// validated it and the admin presses Create initiative; a red one cannot be added. A saved one comes back when the admin returns.
+async function addInitiativeReflector(d, url, reload) {
+  let gl; try { gl = await loadGlossary(); } catch (e) { toast(e.message, 'error'); return; }
+  const have = new Set(d.reflectors.map(r => r.reflector_name)), pend = new Map((d.pending || []).map(r => [r.reflector_name, r]));
+  const labels = Array.from(new Map(d.users.map(u => [String(u.designation || '').trim().toLowerCase(), String(u.designation || '').trim() || '(no designation)'])).values()).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  const caps = Array.from(new Set(gl.map(r => r.capability_name))).sort();
+  const about = () => ({ initiative_id: d.initiative_id, name: d.name, objective: d.objective, need: d.business_need, participants: d.users.map(u => u.user_id) });
+  let touched = false;   // something was saved here, so the page behind is read again when the window closes
+  const m = openModal({ title: 'Add a reflector', sub: d.name, size: 'wide', sticky: true, html: `
+    <div class="field"><label>Reflector <span class="req">*</span></label><select id="ar_pick"><option value="">Select a reflector…</option>${caps.map(c => `<optgroup label="${esc(c)}">${gl.filter(r => r.capability_name === c && !have.has(r.reflector_name)).map(r => `<option value="${esc(r.reflector_name)}">${esc(r.reflector_name)}${pend.has(r.reflector_name) ? ' · saved' : ''}</option>`).join('')}</optgroup>`).join('')}</select></div>
+    <div id="ar_def"></div>
+    <div id="ar_form" hidden>
+      <div class="ov-ask"><span>The answers you give here directly impact your learners' learning experience.</span><button type="button" class="btn-kriti btn-sm" id="ar_ask">${KRITI_DOTS}<span>Ask Kriti</span></button></div>
+      <div class="field full"><label>Why this skill belongs in this initiative <span class="req">*</span></label><textarea id="ar_why" rows="3" data-max-words="100"></textarea></div>
+      <div class="field full"><label>Business Impact <span class="req">*</span></label><textarea id="ar_imp" rows="3" data-max-words="100"></textarea></div>
+      ${labels.map(l => `<div class="field full"><label>Where participants can use it · ${esc(l)} <span class="req">*</span></label><textarea rows="3" data-d="${esc(l)}" data-max-words="150"></textarea></div>`).join('')}
+      <div class="kriti-tag" id="ar_tag" hidden>${KRITI_TAG.detailer}</div>
+    </div><div id="ar_res"></div>`, onClose() { if (touched) reload(); } });
+  const fields = () => $$('#ar_form textarea', m.body), answers = () => ({ why: $('#ar_why', m.body).value.trim(), impact: $('#ar_imp', m.body).value.trim(), uses: Object.fromEntries(fields().filter(t => t.dataset.d).map(t => [t.dataset.d, t.value.trim()])) });
+  let saved = false, verdict = null, writtenBy = null, origin = null;   // saved: the answers on screen are the ones the server holds; writtenBy: 'detailer' once Kriti has filled the answers in; origin: what she wrote
+  const pick = () => $('#ar_pick', m.body).value, res = () => $('#ar_res', m.body);
+  const banner = msg => `<div class="banner" style="margin-top:0.8rem">${esc(msg)}</div>`;
+  const foot = () => setFoot(m, [{ label: 'Cancel', onClick() { m.close(); } },
+    saved ? { label: 'Saved ✓', cls: 'btn-primary-add btn-saved', id: 'ar_save', onClick() {} } : { label: 'Save reflector', cls: 'btn-primary-add', id: 'ar_save', onClick: save },
+    ...(saved ? [{ label: 'Validate with Kriti', cls: 'btn-outline', id: 'ar_val', onClick: validate }] : []),
+    ...(verdict ? [{ label: 'Create initiative', cls: 'btn-primary-add', id: 'ar_add', onClick: add }] : [])]);
+  const stale = () => { saved = false; verdict = null; res().innerHTML = ''; foot(); };
+  const showRating = r => {
+    const k = (RATING[r.fit] || [])[0];
+    res().innerHTML = `<div class="fit-card${k === 'poor' ? ' fit-red' : ''}"><div class="fit-top"><strong>Kriti's rating</strong><span class="fit-pill fit-${k}">${RATING[r.fit][1]}</span></div>${ratingView(r.fit, r.reason)}
+      ${k === 'poor' ? '<div class="fit-stop"><span><strong>This reflector has been identified as having no direct match to the learning initiative.</strong> It cannot be added.</span></div>' : ''}</div>`;
+    verdict = k === 'poor' ? null : r; foot();
+  };
+  $('#ar_pick', m.body).onchange = e => {
+    const r = gl.find(x => x.reflector_name === e.target.value), p = r && pend.get(r.reflector_name);
+    $('#ar_def', m.body).innerHTML = r ? `<div class="def-box"><div class="def-title">${esc(r.reflector_name)} <span class="def-cap">${esc(r.capability_name)}</span></div><div class="def-text">${esc(r.reflector_definition || '')}</div>${r.glossary ? `<div class="def-gl"><strong>Glossary</strong><div class="def-text">${esc(r.glossary)}</div></div>` : ''}</div>` : '';
+    $('#ar_form', m.body).hidden = !r; writtenBy = null; origin = null; saved = false; verdict = null; res().innerHTML = '';
+    $('#ar_tag', m.body).hidden = true; $('#ar_ask', m.body).hidden = false;
+    fields().concat([$('#ar_why', m.body), $('#ar_imp', m.body)]).forEach(t => { t.value = ''; });
+    if (p) {   // saved earlier: bring everything back, including Kriti's rating if she has given one
+      $('#ar_why', m.body).value = p.why_this_skill || ''; $('#ar_imp', m.body).value = p.business_impact || '';
+      fields().filter(t => t.dataset.d).forEach(t => { const k = Object.keys(p.usage_examples || {}).find(x => x.toLowerCase() === t.dataset.d.toLowerCase()); t.value = k ? p.usage_examples[k] : ''; });
+      saved = true;
+      if (p.written_by) { writtenBy = p.written_by; origin = copyAnswers(answers()); $('#ar_tag', m.body).hidden = false; $('#ar_ask', m.body).hidden = true; }
+      if (p.fit_rating) showRating({ fit: p.fit_rating, reason: p.fit_reason });
+    }
+    fields().concat([$('#ar_why', m.body), $('#ar_imp', m.body)]).forEach(t => t.dispatchEvent(new Event('limit-refresh')));
+    foot();
+  };
+  m.body.oninput = e => { if (e.target.id !== 'ar_pick') stale(); };
+  $('#ar_ask', m.body).onclick = () => kritiWidget({ subtitle: 'Writing the answers for ' + pick(), working: 'I am reading the reflector you have assigned and working through the details. Bear with me',
+    run: async () => {
+      const r = await api('/api/admin/initiative-ai/detail', { json: Object.assign(about(), { reflector: pick() }) });
+      if (String(r.status).toUpperCase() === 'MORE_INFORMATION_REQUIRED') return { error: true, title: 'Kriti needs more information', message: r.reason, needs: [r.information_needed], hint: 'The objective and business need of a created initiative cannot be changed, so write the answers yourself.' };
+      const cut = (t, n) => cutToWords(String(t || ''), n);
+      $('#ar_why', m.body).value = cut(r.why_this_skill, 100); $('#ar_imp', m.body).value = cut(r.business_impact, 100);
+      fields().filter(t => t.dataset.d).forEach(t => { const x = (r.where_participants_can_use_it || []).find(y => String(y.designation).trim().toLowerCase() === t.dataset.d.toLowerCase()); t.value = x ? cut((x.examples || []).join('\n'), 150) : ''; });
+      fields().concat([$('#ar_why', m.body), $('#ar_imp', m.body)]).forEach(t => t.dispatchEvent(new Event('limit-refresh')));
+      stale(); writtenBy = 'detailer'; origin = copyAnswers(answers()); $('#ar_tag', m.body).hidden = false; $('#ar_ask', m.body).hidden = true;
+      return 'Done. I have filled in the answers. Read them, change anything you like, then save the reflector.';
+    } });
+  const judged = () => (writtenBy && origin && changedShare(origin, answers()) > KRITI_EDIT_LIMIT) ? null : writtenBy;   // the line goes if more than a quarter was rewritten
+  async function save(btn) {
+    const a = answers(), missing = [];
+    if (!pick()) missing.push('the reflector');
+    if (!a.why) missing.push('why this skill belongs'); if (!a.impact) missing.push('the business impact');
+    Object.keys(a.uses).forEach(l => { if (!a.uses[l]) missing.push('where it can be used (' + l + ')'); });
+    if (missing.length) { res().innerHTML = banner('Still needed: ' + missing.join(', ') + '.'); return; }
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      await api(url('/reflectors/save'), { json: { reflector_name: pick(), why_this_skill: a.why, business_impact: a.impact, usage_examples: a.uses, written_by: judged() } });
+      touched = true; saved = true; verdict = null;
+      res().innerHTML = '<div class="help" style="margin-top:0.8rem">Saved. It is not part of the initiative until Kriti has validated it and you press Create initiative.</div>'; foot();
+    } catch (err) { btn.disabled = false; btn.textContent = 'Save reflector'; res().innerHTML = banner(err.message); }
+  }
+  async function validate(btn) {
+    btn.disabled = true; btn.textContent = 'Kriti is reviewing…';
+    res().innerHTML = '<div class="fit-card fit-wait"><span class="kw-wait" style="margin-left:0">Kriti is reviewing how this reflector fits the initiative. Bear with me</span></div>';
+    try {
+      const r = await api('/api/admin/initiative-ai/assess', { json: { initiative_id: d.initiative_id, reflector: pick() } });
+      btn.disabled = false; btn.textContent = 'Validate with Kriti'; touched = true;
+      if (r.assessment_status === 'MORE_INFORMATION_REQUIRED') { res().innerHTML = `<div class="fit-card fit-info"><div class="fit-top"><strong>More information needed</strong></div><div class="fit-reason">${esc(r.reason)}</div><div class="fit-need"><strong>What to add:</strong> ${esc(r.information_needed)}</div></div>`; return; }
+      showRating(r);
+    } catch (err) { btn.disabled = false; btn.textContent = 'Validate with Kriti'; res().innerHTML = banner(err.message); }
+  }
+  async function add(btn) {
+    btn.disabled = true;
+    try { await api(url('/reflectors/add'), { json: { reflector_name: pick() } }); touched = false; m.close(); toast('Reflector added.'); reload(); }
+    catch (err) { btn.disabled = false; toast(err.message, 'error'); }
+  }
+  foot();
+}
+
+// ── Learning Initiative Builder (the form is live; saving waits for the backend) ──────
+// Step 1: name, dates, how it is delivered, the overall objective and the business need (200 words each), and the target audience
+// (boxes that reduce one another, then the people). "Save and finalize" freezes those. Step 2: reflectors, picked one at a time;
+// for each one, why it belongs and its business impact, and where participants can use it, answered once for each designation
+// among the chosen participants. Ask Kriti (bottom right) picks reflectors and fills them in, a second Ask Kriti fills one reflector's answers, and Validate rates each reflector's fit.
+// A labeled question over a text box. The word limit under it, and the cut-off, come from the site-wide limit rule above
+// (decorateLimit): 200 words unless the box says otherwise with data-max-words.
+function questionBox(id, label, question) {
+  return `<div class="field full"><label>${label} <span class="req">*</span></label>
+    <div class="hint" style="margin:0 0 0.35rem">${question}</div>
+    <textarea id="${id}" rows="4"></textarea></div>`;
+}
+const KRITI_DOTS = '<svg class="kd" viewBox="0 0 24 24" aria-hidden="true"><g class="kd-ring" fill="#fff"><circle cx="12" cy="3.5" r="1.9"/><circle cx="18" cy="6" r="1.7" opacity=".9"/><circle cx="20.5" cy="12" r="1.5" opacity=".75"/><circle cx="18" cy="18" r="1.3" opacity=".6"/><circle cx="12" cy="20.5" r="1.1" opacity=".48"/><circle cx="6" cy="18" r=".95" opacity=".36"/><circle cx="3.5" cy="12" r=".8" opacity=".26"/><circle cx="6" cy="6" r=".7" opacity=".18"/></g><circle cx="12" cy="12" r="2.4" fill="#E4CA0A"/></svg>';
+function initialsOf(name) { const p = String(name || '').trim().split(/\s+/).filter(Boolean); return ((p[0] || '?')[0] + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase(); }
+// The target audience: Company, Business Unit, Department and Designation boxes that reduce one another, then a Usernames box.
+// Everything starts ticked; the admin unticks what they do not want. A box only offers what is still ticked in the boxes before
+// it: untick a company and its business units, departments and people disappear (and are no longer included); tick it again and
+// they come back ticked. Every box has Select all and Clear. `sel` is a Set of the ticked user_ids, kept by the caller.
+function audiencePicker(root, people, sel, onChange, keepSelection) {
+  const buOf = u => String(u.business_unit || '').trim().toLowerCase();
+  const desigOf = u => String(u.designation || '').trim();
+  const coKey = u => { const c = companyByName(u.company); return c ? c.company_code : 'name:' + String(u.company || '').trim().toLowerCase(); };
+  const buKey = u => {
+    if (!buOf(u)) return '';
+    const c = companyByName(u.company), b = c && (c.bus || []).find(x => String(x.bu_name).trim().toLowerCase() === buOf(u));
+    return coKey(u) + '|' + (b ? b.bu_code : 'name:' + buOf(u));
+  };
+  const multiCo = new Set(people.map(coKey)).size > 1, multiBu = new Set(people.map(buKey).filter(Boolean)).size > 1;
+  const rec = people.map(u => {
+    const co = String(u.company || '').trim() || '(no company)', bu = titleCase(buOf(u));
+    const dept = String(u.department || '').trim().replace(/\s+/g, ' ') || '(department not set)';
+    const deptL = (multiBu ? `${dept} — ${bu}` : dept) + (multiCo ? ` — ${co}` : '');
+    return { u, id: u.user_id, co: coKey(u), coL: co, bu: buKey(u), buL: multiCo ? `${bu} — ${co}` : bu,
+      dept: buKey(u) ? buKey(u) + '|' + deptKey(u.department) : '', deptL, desig: desigOf(u).toLowerCase(), desigL: desigOf(u) };
+  });
+  const LV = [['co', 'Company', 'coL'], ['bu', 'Business Unit', 'buL'], ['dept', 'Department', 'deptL'], ['desig', 'Designation', 'desigL']];
+  const T = { co: new Set(), bu: new Set(), dept: new Set(), desig: new Set() };       // ticked, per level
+  const SEEN = { co: new Set(), bu: new Set(), dept: new Set(), desig: new Set() };    // what each box offered last time
+  const OPEN = new Set();                                                              // which sections are expanded
+  let seenU = new Set();                                                               // who the Usernames box showed last time
+  let first = true;                                                                    // keepSelection: the first time, `sel` already holds the chosen people and is not topped up
+  // a person passes a level when they have nothing at that level (no business unit, say) or it is ticked
+  const passes = (r, n) => LV.slice(0, n).every(([k]) => !r[k] || T[k].has(r[k]));
+  const optionsOf = i => {
+    const [k, , lk] = LV[i], m = new Map();
+    rec.filter(r => passes(r, i)).forEach(r => { if (r[k] && !m.has(r[k])) m.set(r[k], r[lk]); });
+    return Array.from(m.entries()).sort((a, b) => a[1].toLowerCase().localeCompare(b[1].toLowerCase()));
+  };
+  const matching = () => rec.filter(r => passes(r, LV.length));
+  // what no longer fits is unticked and dropped; what newly appears (first time, or its parent ticked again) comes in ticked
+  const recompute = () => {
+    LV.forEach(([k], i) => {
+      const keys = new Set(optionsOf(i).map(o => o[0]));
+      Array.from(T[k]).forEach(x => { if (!keys.has(x)) T[k].delete(x); });
+      keys.forEach(x => { if (!SEEN[k].has(x)) T[k].add(x); });
+      SEEN[k] = keys;
+    });
+    const shown = new Set(matching().map(r => r.id));
+    Array.from(sel).forEach(id => { if (!shown.has(id)) sel.delete(id); });
+    shown.forEach(id => { if (!seenU.has(id) && !(keepSelection && first)) sel.add(id); });
+    seenU = shown; first = false;
+  };
+  const syncPeople = () => {
+    $('#aud_state', root).textContent = `${matching().length} shown · ${sel.size} selected`;
+    onChange && onChange();
+  };
+  const draw = () => {
+    recompute();
+    const scrolls = $$('.aud-list', root).map(el => el.scrollTop);
+    const boxes = LV.map(([k, name], i) => {
+      const opts = optionsOf(i), all = opts.length > 0 && T[k].size === opts.length;
+      return `<div class="aud-sec${OPEN.has(k) ? ' open' : ''}"><button type="button" class="aud-sec-head" data-toggle="${k}"><span class="aud-step">${i + 1}</span><strong>${name}</strong><span class="aud-state ${all ? 'on' : 'part'}">${all ? 'All' : T[k].size + ' of ' + opts.length}</span><span class="aud-chev" aria-hidden="true">▾</span></button>
+        <div class="aud-sec-body"><div class="aud-links"><button type="button" class="btn-link" data-all="${k}">Select all</button> · <button type="button" class="btn-link" data-none="${k}">Clear</button></div>
+        <div class="aud-list aud-list-cols">${opts.length ? opts.map(([key, label]) => `<label><input type="checkbox" data-k="${k}" value="${esc(key)}"${T[k].has(key) ? ' checked' : ''}><span>${esc(label)}</span></label>`).join('') : '<div class="combo-empty">Nothing to choose here.</div>'}</div></div></div>`;
+    }).join('');
+    const m = matching();
+    const rows = m.length ? m.map(r => {
+      const chips = [r.buL && titleCase(buOf(r.u)), String(r.u.department || '').trim(), r.desigL].filter(Boolean).map(c => `<span class="aud-chip">${esc(c)}</span>`).join('');
+      return `<label class="aud-row"><input type="checkbox" data-id="${esc(r.id)}"${sel.has(r.id) ? ' checked' : ''}><span class="aud-av">${esc(initialsOf(r.u.name))}</span><span class="aud-who"><strong>${esc(r.u.name)}</strong><small>${esc(r.u.email)}</small></span><span class="aud-tags">${chips}</span></label>`;
+    }).join('') : '<div class="combo-empty">No one is ticked above, so no one is shown.</div>';
+    root.innerHTML = `<div class="aud-secs">${boxes}</div>
+      <div class="aud-box aud-people"><div class="aud-head"><span class="aud-step">5</span><strong>Usernames</strong><span class="aud-state on" id="aud_state"></span></div>
+        <div class="aud-links"><button type="button" class="btn-link" id="aud_all">Select all</button> · <button type="button" class="btn-link" id="aud_none">Clear</button></div>
+        <div class="aud-list aud-list-people">${rows}</div></div>`;
+    $$('.aud-list', root).forEach((el, i) => { if (scrolls[i]) el.scrollTop = scrolls[i]; });
+    syncPeople();
+  };
+  root.onchange = e => {
+    const t = e.target;
+    if (t.dataset.k) { t.checked ? T[t.dataset.k].add(t.value) : T[t.dataset.k].delete(t.value); draw(); }
+    else if (t.dataset.id) { t.checked ? sel.add(t.dataset.id) : sel.delete(t.dataset.id); syncPeople(); }
+  };
+  root.onclick = e => {
+    const tg = e.target.closest('[data-toggle]');
+    if (tg) { const k = tg.dataset.toggle; OPEN.has(k) ? OPEN.delete(k) : OPEN.add(k); tg.closest('.aud-sec').classList.toggle('open'); return; }
+    const a = e.target.closest('[data-all]'), n = e.target.closest('[data-none]');
+    if (a) { optionsOf(LV.findIndex(l => l[0] === a.dataset.all)).forEach(o => T[a.dataset.all].add(o[0])); draw(); }
+    else if (n) { T[n.dataset.none].clear(); draw(); }
+    else if (e.target.id === 'aud_all') { matching().forEach(r => sel.add(r.id)); draw(); }
+    else if (e.target.id === 'aud_none') { matching().forEach(r => sel.delete(r.id)); draw(); }
+  };
+  draw();
+}
+// Kriti's window, at the bottom right. It is not a chat: the person taps a number (or nothing, when the window starts its work at once),
+// Kriti works, and the result goes into the page. o: subtitle, working (the waiting line, with moving dots), run(n) -> the line Kriti
+// shows when done, or {error: true, title, message, needs: [...], hint} to show a problem; greeting + choices (the numbers) when the
+// person picks first; toggle (the same button closes the window). A thrown error is shown as a problem too.
+function kritiWidget(o) {
+  const old = document.getElementById('kw');
+  if (old) { old.remove(); if (o.toggle) return; }
+  const w = document.createElement('div'); w.id = 'kw'; w.className = 'kw';
+  w.innerHTML = `<div class="kc"><div class="kc-head"><span class="kc-av">${KRITI_DOTS}</span><div><strong>Kriti</strong><div class="kc-sub">${esc(o.subtitle)}</div></div><button type="button" class="kc-x" aria-label="Close">×</button></div>
+      <div class="kc-msgs">${o.greeting ? `<div class="kc-m kc-k">${esc(o.greeting)}</div>` : ''}</div>
+      ${o.choices ? `<div class="kw-choices">${o.choices.map(n => `<button type="button" class="kw-num" data-n="${n}">${n}</button>`).join('')}</div>` : ''}</div>`;
+  document.body.appendChild(w);
+  const msgs = $('.kc-msgs', w), row = $('.kw-choices', w), nums = () => row ? $$('.kw-num', row) : [];
+  const say = (cls, html) => { const d = document.createElement('div'); d.className = 'kc-m ' + cls; d.innerHTML = html; msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; return d; };
+  const close = () => { w.remove(); window.removeEventListener('hashchange', close); };
+  window.addEventListener('hashchange', close);
+  $('.kc-x', w).onclick = close;
+  const show = (bubble, r) => {
+    if (r && r.error) {
+      bubble.className = 'kc-m kc-err';
+      bubble.innerHTML = `<strong>${esc(r.title || 'Something went wrong')}</strong><div>${esc(r.message)}</div>`
+        + (r.needs && r.needs.length ? `<ul>${r.needs.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '') + (r.hint ? `<div class="kc-hint">${esc(r.hint)}</div>` : '');
+    } else bubble.textContent = r;
+    if (r && r.error) bubble.scrollIntoView({ block: 'start' }); else msgs.scrollTop = msgs.scrollHeight;   // a problem is read from its top
+  };
+  const go = async n => {
+    const bubble = say('kc-k', `<span class="kw-wait">${esc(o.working)}</span>`);
+    let r;
+    try { r = await o.run(n); }
+    catch (err) {
+      r = err.status === 404 ? { error: true, title: 'Kriti is not connected yet', message: 'This cannot be done for now.' } : { error: true, title: 'Something went wrong', message: err.message };
+    }
+    show(bubble, r);
+    return !(r && r.error);
+  };
+  if (row) {
+    row.onclick = async e => {
+      const b = e.target.closest('.kw-num'); if (!b || b.disabled) return;
+      nums().forEach(x => { x.disabled = true; }); b.classList.add('on');
+      say('kc-u', esc(b.dataset.n));
+      if (!(await go(+b.dataset.n))) { nums().forEach(x => { x.disabled = false; }); b.classList.remove('on'); }
+    };
+  } else go(null);
+}
 async function renderInitiatives() {
   lmShell('initiatives');
   $('#lmBody').innerHTML = '<div class="loading-block"><span class="spinner"></span> Loading…</div>';
   try { await Promise.all([loadUsers(false), loadGlossary()]); } catch (e) { $('#lmBody').innerHTML = `<div class="banner">${esc(e.message)}</div>`; return; }
-  const gl = S.glossary, companies = scopeCompanies();
-  if (!companies.length) { $('#lmBody').innerHTML = '<div class="banner">You have not been given access to a company yet. Ask the person who set you up.</div>'; return; }
+  const gl = S.glossary;
+  if (!scopeCompanies().length) { $('#lmBody').innerHTML = '<div class="banner">You have not been given access to a company yet. Ask the person who set you up.</div>'; return; }
+  const people = S.users.filter(u => (u.allowed || []).indexOf('skills') !== -1);
+  const sel = new Set();
+  // Everything the admin has done so far. s1 / s2: the About and Target audience steps are saved. reflectors: the ones added, in order;
+  // done: the ones saved; server: the ones that exist on the server (a saved reflector that is being edited still does); answers: what was typed for each
+  // (kept here so nothing is lost when a part of the page redraws); kriti: reflector -> 'builder' or 'detailer' for the ones Kriti wrote (each says so under its answers and gets no Ask Kriti button of its own);
+  // fit: Kriti's rating of each saved reflector. id: the initiative's ID once Step 1 is saved.
+  const ini = { id: null, number: null, s1: false, s2: false, created: false, saved: null, audience: null, reflectors: [], answers: {}, done: new Set(), server: new Set(), kriti: new Map(), origin: new Map(), loaded: new Map(), fit: {} };
+  const multiCo = scopeCompanies().length > 1;   // an admin who holds several companies says which one this initiative is for (one company per initiative)
+  const url = p => '/api/admin/initiatives/' + encodeURIComponent(ini.id) + p;
+  const savedBtn = (n, note) => `<button type="button" class="btn-primary-add btn-saved" data-saved="${n}" disabled>Saved ✓</button>${note ? `<span class="help">${note}</span>` : ''}<span class="help in-msg" style="color:var(--red)"></span>`;
+  const openRow = n => `<button type="button" class="btn-primary-add" data-save="${n}">Save</button><span class="help in-msg" style="color:var(--red)"></span>`;
   $('#lmBody').innerHTML = `
-    <div class="banner"><strong>Coming soon.</strong> You can try out the picking below, but initiatives cannot be saved yet. Unlike the Skill Assignment Center, an initiative will include people who join later.</div>
-    <div class="panel"><h3>New learning initiative</h3><div class="hint">Everything marked * will be needed.</div>
-      <div class="form-grid">
-        <div class="field"><label>Initiative name <span class="req">*</span></label><input type="text" id="in_name" placeholder="e.g. Leading through change"></div>
-        <div class="field"><label>Company <span class="req">*</span></label><select id="in_company">${companies.map(c => `<option value="${esc(c.company_code)}">${esc(c.company_name)}</option>`).join('')}</select></div>
-        <div class="field full"><label>Description</label><textarea id="in_desc"></textarea></div>
-        <div class="field"><label>Start date <span class="req">*</span></label><input type="date" id="in_start"></div><div class="field"><label>End date <span class="req">*</span></label><input type="date" id="in_end"></div>
-      </div>
-      <h3 style="margin-top:1.4rem">Skills</h3><div id="in_skills"></div>
-      <h3 style="margin-top:1.4rem">Who is it for?</h3>
-      <div class="radio-row" style="margin-bottom:0.7rem"><label><input type="radio" name="in_who" value="company" checked> Whole company</label><label><input type="radio" name="in_who" value="bus"> Business units</label><label><input type="radio" name="in_who" value="departments"> Departments</label><label><input type="radio" name="in_who" value="designations"> Designations</label><label><input type="radio" name="in_who" value="individuals"> Individuals</label></div>
-      <div id="in_who_box"></div><div class="help" id="in_who_count" style="margin-top:0.5rem"></div>
-      <h3 style="margin-top:1.4rem">Why this learning initiative?</h3><div class="hint">The learning coach reads these answers, so each one is needed.</div>
-      <div class="form-grid">
-        <div class="field full"><label>Why this learning initiative? <span class="req">*</span></label><textarea id="in_why"></textarea></div>
-        <div class="field full"><label>What difference does it make to the business? <span class="req">*</span></label><textarea id="in_impact"></textarea></div>
-        <div class="field full"><label>What's in it for the user? <span class="req">*</span></label><textarea id="in_benefit"></textarea></div>
-        <div class="field full"><label>Where might they actually use it? <span class="req">*</span></label><textarea id="in_examples"></textarea></div>
-      </div>
-      <div style="margin-top:1rem;display:flex;gap:0.9rem;align-items:center;flex-wrap:wrap"><button class="btn-primary-add" disabled>Save initiative</button><span class="help">Saving is not available yet.</span></div></div>
-    <div class="panel"><h3>Edit or remove an initiative</h3><div class="hint">Saved initiatives will be listed here. You will be able to change any of the answers above, or take an initiative away.</div>
-      <div class="banner info" style="margin-top:0.4rem">No initiatives yet. Once initiatives can be saved, they will appear here.</div>
-      <div style="margin-top:0.6rem;display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap"><button class="btn-primary-add" disabled>Save changes</button><button class="btn-outline btn-danger-outline" disabled>Remove initiative</button></div></div>`;
+    <div class="in-stepper" id="in_stepper">${[['in_s1', 'About this learning initiative'], ['in_s2', 'Target audience'], ['in_s3', 'Assign reflectors'], ['in_s4', 'Validate and create']].map(([id, t], i) => `<button type="button" class="in-st in-c${i + 1}" data-go="${id}"><span class="in-st-n">${i + 1}</span><span class="in-st-t">${t}</span></button>`).join('')}</div>
+    <div class="panel in-step in-c1" id="in_s1">
+      <div class="in-sh"><span class="in-sn">1</span><div><div class="step-tag">Step 1 of 4</div><h3 id="in_s1_title">About this learning initiative</h3></div></div>
+      <fieldset class="in-fs">
+        <div class="form-grid">
+          ${multiCo ? `<div class="field full"><label>Company <span class="req">*</span></label><select id="in_company"><option value="">Select a company…</option>${scopeCompanies().map(c => `<option value="${esc(c.company_code)}">${esc(c.company_name)}</option>`).join('')}</select><div class="help">An initiative is for one company. It cannot be changed once the audience is saved.</div></div>` : ''}
+          <div class="field full"><label>Initiative name <span class="req">*</span></label><input type="text" id="in_name" maxlength="50" placeholder="e.g. First Time Manager Journey"></div>
+          <div class="field"><label>Start date <span class="req">*</span></label><input type="date" id="in_start"></div>
+          <div class="field"><label>End date <span class="req">*</span></label><input type="date" id="in_end"><div class="help">On this date the initiative will be completed automatically and will drop off your learners' screens.</div><div class="help" id="in_end_msg" style="color:var(--red)"></div></div>
+        </div>
+        <h4 class="in-q" style="margin-top:1.4rem">How is it delivered? <span class="req">*</span></h4>
+        <div class="hint">Is this learning initiative on Wisdom on the GO! only, or is it external?</div>
+        <div class="radio-row" style="flex-wrap:wrap"><label><input type="radio" name="in_delivery" value="wotg"> Wisdom on the GO! only</label><label><input type="radio" name="in_delivery" value="external"> External: instructor-led, e-learning, a course or a program</label></div>
+        <div class="in-yb">
+          <div class="in-callout"><strong>The answers you give here directly impact your learners' learning experience.</strong></div>
+          <div class="form-grid">
+            ${questionBox('in_obj', 'Overall objective', 'What should participants be able to do differently as a result of this initiative?')}
+            ${questionBox('in_need', 'Business need / outcome', 'What organizational or business problem is this initiative intended to address?')}
+          </div>
+        </div>
+      </fieldset>
+      <div id="in_f1" class="in-final">${openRow(1)}</div>
+    </div>
+    <div class="panel in-step in-c2" id="in_s2">
+      <div class="in-sh"><span class="in-sn">2</span><div><div class="step-tag">Step 2 of 4</div><h3>Target audience <span class="req">*</span></h3></div></div>
+      <fieldset class="in-fs"><div id="in_aud"></div></fieldset>
+      <div id="in_f2" class="in-final">${openRow(2)}</div>
+    </div>
+    <div class="panel in-step in-c3" id="in_s3"></div>
+    <div class="panel in-step in-c4" id="in_s4"></div>
+    <div class="panel"><h3>Edit or remove an initiative</h3><div class="hint">Saved initiatives are listed here. Edit takes you back to its details, and Remove takes it away.</div><div id="in_saved"></div></div>`;
 
-  skillPicker($('#in_skills'), gl, true, null);
-  const sel = new Set(), buSel = new Set(), deptSel = new Set(), desigSel = new Set();
-  const company = () => companies.find(c => c.company_code === $('#in_company').value) || companies[0];
-  const mine = () => S.users.filter(u => String(u.company || '').toLowerCase() === company().company_name.toLowerCase());
-  const buOf = u => String(u.business_unit || '').trim().toLowerCase();
-  const desigOf = u => String(u.designation || '').trim();
-  const who = () => ($('input[name=in_who]:checked') || {}).value;
-  const countNow = () => {
-    const w = who(), ps = mine();
-    const n = w === 'company' ? ps.length : w === 'bus' ? ps.filter(u => buSel.has(buOf(u))).length : w === 'departments' ? ps.filter(u => deptSel.has(deptKey(u.department))).length : w === 'designations' ? ps.filter(u => desigSel.has(desigOf(u).toLowerCase())).length : ps.filter(u => sel.has(u.user_id)).length;
-    $('#in_who_count').textContent = `${n} ${n === 1 ? 'person' : 'people'} would be included today. People who join later in the chosen group would be added automatically.`;
-    if (w === 'individuals') $('#in_who_count').textContent = `${n} ${n === 1 ? 'person' : 'people'} chosen.`;
+  const val = id => ($('#' + id).value || '').trim();
+  const fmtDate = iso => iso ? new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  const msg = (container, text) => { const m = $('.in-msg', container); if (m) m.textContent = text; };
+  const checkDates = () => {
+    const s = $('#in_start').value, e = $('#in_end').value;
+    $('#in_end').min = s || '';
+    $('#in_end_msg').textContent = s && e && e < s ? 'The end date cannot be before the start date.' : '';
   };
-  const checkList = (items, set, keyOf, labelOf) => {
-    const box = $('#in_who_box');
-    box.innerHTML = `<div class="check-list">${items.length ? items.map(i => `<label><input type="checkbox" class="cl" data-k="${esc(keyOf(i))}" ${set.has(keyOf(i)) ? 'checked' : ''}> ${esc(labelOf(i))}</label>`).join('') : '<div class="combo-empty">Nothing to choose from yet.</div>'}</div>
-      <div class="help"><label style="display:inline-flex;gap:0.4rem;align-items:center;font-weight:600"><input type="checkbox" id="cl_all"> Select all</label> · <span id="cl_count"></span></div>`;
-    const sync = () => { $('#cl_all').checked = items.length > 0 && items.every(i => set.has(keyOf(i))); $('#cl_count').textContent = set.size + ' selected'; countNow(); };
-    $$('.cl', box).forEach(c => c.onchange = () => { c.checked ? set.add(c.dataset.k) : set.delete(c.dataset.k); sync(); });
-    $('#cl_all').onchange = e => { items.forEach(i => e.target.checked ? set.add(keyOf(i)) : set.delete(keyOf(i))); $$('.cl', box).forEach(c => c.checked = e.target.checked); sync(); };
-    sync();
+  $('#in_start').onchange = checkDates; $('#in_end').onchange = checkDates;
+  const companyCode = () => multiCo ? ($('#in_company').value || '') : '';
+  const peopleOfCompany = code => people.filter(u => ((companyByName(u.company) || {}).company_code) === code);
+  const drawAudience = keep => {
+    if (multiCo && !companyCode()) { $('#in_aud').innerHTML = '<div class="banner info" style="margin:0">Choose the company in Step 1 first. The people you can pick are the ones in that company.</div>'; return; }
+    audiencePicker($('#in_aud'), multiCo ? peopleOfCompany(companyCode()) : people, sel, () => markUnsaved(2), keep);
   };
-  const drawWho = () => {
-    const w = who(), box = $('#in_who_box');
-    if (w === 'company') { box.innerHTML = `<div class="def-box"><div class="def-text">Everyone in ${esc(company().company_name)}.</div></div>`; countNow(); }
-    else if (w === 'bus') checkList(company().bus, buSel, b => b.bu_name, b => titleCase(b.bu_name));
-    else if (w === 'departments') {
-      const seen = new Map(); mine().forEach(u => { const k = deptKey(u.department); if (k && !seen.has(k)) seen.set(k, String(u.department).trim().replace(/\s+/g, ' ')); });
-      checkList(Array.from(seen.entries()).sort((a, b) => a[1].localeCompare(b[1])), deptSel, d => d[0], d => d[1]);
+  if (multiCo) $('#in_company').onchange = () => { sel.clear(); drawAudience(false); };
+  drawAudience(false);
+
+  // the designations among the chosen participants: "where participants can use it" is answered once for each
+  const designations = () => {
+    const m = new Map();
+    people.filter(u => sel.has(u.user_id)).forEach(u => {
+      const d = String(u.designation || '').trim(), k = d.toLowerCase();
+      if (!m.has(k)) m.set(k, { key: k, label: d || '(no designation)', n: 0 });
+      m.get(k).n++;
+    });
+    return Array.from(m.values()).sort((a, b) => a.label.toLowerCase().localeCompare(b.label.toLowerCase()));
+  };
+  const groups = () => ini.audience ? ini.audience.groups : [];
+  const complete = (name, g) => { const a = ini.answers[name] || {}; return !!(a.why && a.why.trim() && a.impact && a.impact.trim() && g.every(x => ((a.uses || {})[x.key] || '').trim())); };
+  const missing1 = () => {
+    const p = [], s = $('#in_start').value, e = $('#in_end').value;
+    if (multiCo && !companyCode()) p.push('the company');
+    if (!val('in_name')) p.push('the initiative name');
+    if (!s) p.push('the start date');
+    if (!e) p.push('the end date'); else if (s && e < s) p.push('an end date that is not before the start date');
+    if (!$('input[name=in_delivery]:checked')) p.push('how it is delivered');
+    if (!val('in_obj')) p.push('the overall objective');
+    if (!val('in_need')) p.push('the business need');
+    return p;
+  };
+  const unsaved = () => ini.reflectors.length - ini.done.size;
+  const reflectorsOk = () => ini.done.size > 0 && unsaved() === 0;
+
+  // the strip at the top: a saved step shows a tick, and Assign reflectors / Validate stay locked until they can be used
+  const updateStepper = () => {
+    const done = [ini.s1, ini.s2, reflectorsOk(), ini.created], lock = [false, false, !(ini.s1 && ini.s2), !(ini.s1 && ini.s2 && ini.done.size > 0)];
+    $$('.in-st', $('#in_stepper')).forEach((b, i) => { b.classList.toggle('done', done[i]); b.classList.toggle('lock', lock[i] && !done[i]); });
+  };
+  $('#in_stepper').onclick = e => { const g = e.target.closest('[data-go]'); if (g) $('#' + g.dataset.go).scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  // the pinned strip's height (so a step scrolled to starts just below it) and which step is being read (the only one in color)
+  const spy = () => {
+    const bar = $('#in_stepper'); if (!bar) return;
+    document.documentElement.style.setProperty('--in-st-h', bar.offsetHeight + 'px');
+    const line = bar.getBoundingClientRect().bottom + 30;
+    let cur = 0;
+    ['in_s1', 'in_s2', 'in_s3', 'in_s4'].forEach((id, i) => { if ($('#' + id).getBoundingClientRect().top <= line) cur = i; });
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) cur = 3;
+    $$('.in-st', bar).forEach((b, i) => b.classList.toggle('active', i === cur));
+  };
+  if (window._inSpy) { window.removeEventListener('scroll', window._inSpy); window.removeEventListener('resize', window._inSpy); }
+  window._inSpy = spy; window.addEventListener('scroll', spy, { passive: true }); window.addEventListener('resize', spy);
+
+  // ---- the saved initiative, as it will look in the list ----
+  const drawSaved = () => {
+    const box = $('#in_saved'), v = ini.saved;
+    if (!v) { box.innerHTML = '<div class="banner info" style="margin:0.4rem 0 0">No initiatives yet. Once you save one, it will appear here.</div>'; return; }
+    const rf = ini.reflectors.filter(n => ini.done.has(n));
+    box.innerHTML = `<div class="sv-card"><div style="flex:1;min-width:260px">
+        <div class="sv-top"><span class="sv-name">${esc(v.name)}</span><span class="sv-pill${ini.created ? '' : ' draft'}">${ini.created ? '<span class="in-tick">✓</span> Created' : 'Draft'}</span></div>
+        <div class="sv-meta"><span class="aud-chip">${esc(fmtDate(v.start))} to ${esc(fmtDate(v.end))}</span><span class="aud-chip">${v.delivery === 'wotg' ? 'Wisdom on the GO! only' : 'External'}</span>
+          ${ini.audience ? `<span class="aud-chip">${ini.audience.people} participant${ini.audience.people === 1 ? '' : 's'} · ${ini.audience.groups.length} designation${ini.audience.groups.length === 1 ? '' : 's'}</span>` : '<span class="aud-chip">Audience not saved yet</span>'}
+          <span class="aud-chip ${rf.length ? 'aud-chip-on' : ''}">${rf.length ? rf.length + ' reflector' + (rf.length === 1 ? '' : 's') + ' saved' : 'No reflectors saved yet'}</span></div>
+        ${rf.length ? `<div class="sv-meta">${rf.map(n => `<span class="chip">${esc(n)}</span>`).join('')}</div>` : ''}</div>
+      ${ini.created ? '' : '<div class="sv-acts"><button type="button" class="btn-outline" id="sv_edit">Edit</button><button type="button" class="btn-outline btn-danger-outline" id="sv_del">Remove</button></div>'}</div>`;
+    if (!ini.created) $('#sv_edit').onclick = () => $('#in_s1').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!ini.created) $('#sv_del').onclick = async () => {
+      if (!window.confirm('Remove "' + v.name + '"?')) return;
+      try { if (ini.id) await api(url('/delete'), { json: {} }); renderInitiatives(); } catch (err) { toast(err.message, 'error'); }
+    };
+  };
+
+  // ---- Step 3: Assign reflectors ----
+  const defBox = r => `<div class="def-box"><div class="def-title">${esc(r.reflector_name)} <span class="def-cap">${esc(r.capability_name || '')}</span></div><div class="def-text">${esc(r.reflector_definition || '')}</div>${r.glossary ? `<div class="def-gl"><strong>Glossary</strong><div class="def-text">${esc(r.glossary)}</div></div>` : ''}</div>`;
+  const stepHead = (n, name, off, req) => `<div class="in-sh"><span class="in-sn${off ? ' off' : ''}">${n}</span><div><div class="step-tag${off ? ' off' : ''}">Step ${n} of 4</div><h3>${name}${req ? ' <span class="req">*</span>' : ''}</h3></div></div>`;
+  // What Kriti writes goes into the same boxes a person types in, cut to each box's word limit
+  const applyAnswers = (name, r) => {
+    const cur = ini.answers[name] || (ini.answers[name] = { why: '', impact: '', uses: {} });
+    cur.why = cutToWords(String(r.why_this_skill || ''), 100);
+    cur.impact = cutToWords(String(r.business_impact || ''), 100);
+    cur.uses = {};
+    (r.where_participants_can_use_it || []).forEach(x => {
+      const d = String(x.designation || '').trim().toLowerCase(), g = groups().find(y => y.key === d || y.label.toLowerCase() === d);
+      if (g) cur.uses[g.key] = cutToWords((x.examples || []).join('\n'), 150);
+    });
+  };
+  const fillCard = (card, name) => {
+    const a = ini.answers[name] || {};
+    $$('textarea', card).forEach(t => { t.value = t.dataset.q === 'uses' ? ((a.uses || {})[t.dataset.d] || '') : (a[t.dataset.q] || ''); t.dispatchEvent(new Event('limit-refresh')); });
+  };
+  const notConnected = err => err.status === 404 ? 'Kriti is not connected yet, so this cannot be done for now.' : err.message;
+  const aboutInitiative = () => ({ initiative_id: ini.id, name: ini.saved.name, objective: val('in_obj'), need: val('in_need'), participants: Array.from(sel) });
+  // the Ask Kriti window: she picks the reflectors and fills them in
+  const askReflectors = async n => {
+    const r = await api('/api/admin/initiative-ai/recommend', { json: Object.assign(aboutInitiative(), { count: n, exclude: ini.reflectors }) });
+    if (String(r.status).toLowerCase() === 'error') {
+      return { error: true, title: 'Kriti needs more information', message: r.error.message, needs: r.error.needs_clarification,
+               hint: 'Press Edit in Step 1, add the detail above, save, and ask me again.' };
     }
-    else if (w === 'designations') {
-      const seen = new Map(); mine().forEach(u => { const d = desigOf(u); if (d && !seen.has(d.toLowerCase())) seen.set(d.toLowerCase(), d); });
-      checkList(Array.from(seen.values()).sort((a, b) => a.localeCompare(b)), desigSel, d => d.toLowerCase(), d => d);
-    } else { box.innerHTML = '<div id="in_people"></div>'; peoplePicker($('#in_people'), mine().filter(u => (u.allowed || []).indexOf('skills') !== -1), sel, countNow); }
+    const added = [];
+    (r.recommended_reflectors || []).forEach(x => {
+      if (!gl.some(y => y.reflector_name === x.skill_name) || ini.reflectors.indexOf(x.skill_name) !== -1) return;
+      ini.reflectors.push(x.skill_name); ini.kriti.set(x.skill_name, 'builder'); ini.done.delete(x.skill_name); delete ini.fit[x.skill_name]; applyAnswers(x.skill_name, x); ini.origin.set(x.skill_name, copyAnswers(ini.answers[x.skill_name])); added.push(x.skill_name);
+    });
+    if (!added.length) return 'I could not find new reflectors to add. Please choose from the list below.';
+    drawRf();
+    const card = $$('#rf_forms .rf-card').find(c => c.dataset.r === added[0]);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return `Done. I have added ${added.length === 1 ? added[0] : added.length + ' reflectors'} below and filled in the answers. Read them, change anything you like, and press Save reflector on each.`;
   };
-  $$('input[name=in_who]').forEach(r => r.onchange = drawWho);
-  $('#in_company').onchange = () => { sel.clear(); buSel.clear(); deptSel.clear(); desigSel.clear(); drawWho(); };
-  drawWho();
+  // the Ask Kriti button inside one reflector: her window opens, she writes that reflector's answers, and they appear in the boxes
+  const askDetail = (card, name) => {
+    const a = ini.answers[name] || {};
+    if ((a.why || a.impact || Object.values(a.uses || {}).some(Boolean)) && !window.confirm('Kriti will replace what is written for ' + name + '. Continue?')) return;
+    kritiWidget({ subtitle: 'Writing the answers for ' + name, working: 'I am reading the reflector you have assigned and working through the details. Bear with me',
+      run: async () => {
+        const r = await api('/api/admin/initiative-ai/detail', { json: Object.assign(aboutInitiative(), { reflector: name }) });
+        if (String(r.status).toUpperCase() === 'MORE_INFORMATION_REQUIRED') {
+          return { error: true, title: 'Kriti needs more information', message: r.reason, needs: [r.information_needed],
+                   hint: 'Press Edit in Step 1, add the detail above, save, and ask me again.' };
+        }
+        if (!card.isConnected || ini.reflectors.indexOf(name) === -1) return 'That reflector is no longer on the page, so I stopped.';
+        applyAnswers(name, r); delete ini.fit[name]; ini.kriti.set(name, 'detailer'); ini.origin.set(name, copyAnswers(ini.answers[name])); drawRf();
+        return 'Done. I have filled in the answers for ' + name + '. Read them, change anything you like, and press Save reflector.';
+      } });
+  };
+  // what was written for a saved reflector, read-only (the View button in the saved list)
+  const viewBody = n => {
+    const a = ini.answers[n] || {};
+    return `<div class="fw-q">Why this skill belongs in this initiative</div><div>${esc(a.why)}</div>
+      <div class="fw-q">Business impact</div><div>${esc(a.impact)}</div>
+      ${groups().map(g => `<div class="fw-q">Where participants can use it · ${esc(g.label)}</div><div>${esc((a.uses || {})[g.key])}</div>`).join('')}`;
+  };
+  const drawRf = () => {
+    const g = groups(), editing = ini.reflectors.filter(n => !ini.done.has(n)), saved = ini.reflectors.filter(n => ini.done.has(n));
+    const caps = Array.from(new Set(gl.map(r => r.capability_name))).sort();
+    $('#rf_pick').innerHTML = '<option value="">Select a reflector…</option>' + caps.map(c => `<optgroup label="${esc(c)}">${gl.filter(r => r.capability_name === c && ini.reflectors.indexOf(r.reflector_name) === -1).map(r => `<option value="${esc(r.reflector_name)}">${esc(r.reflector_name)}</option>`).join('')}</optgroup>`).join('');
+    $('#rf_def').innerHTML = '';
+    const forms = $('#rf_forms');
+    forms.innerHTML = editing.length ? `<div class="rf-note">Where participants can use it is answered separately for each designation. Your ${ini.audience.people} participants have ${g.length} designation${g.length === 1 ? '' : 's'}, so each reflector has ${g.length} box${g.length === 1 ? '' : 'es'} for that question. Save each reflector when you are done with it.</div>` + editing.map(name => {
+      const r = gl.find(x => x.reflector_name === name) || {};
+      return `<div class="rf-card" data-r="${esc(name)}"><div class="rf-card-head"><div><strong>${esc(name)}</strong> <span class="def-cap">${esc(r.capability_name || '')}</span><div class="rf-def">${esc(r.reflector_definition || '')}</div>${r.glossary ? `<details class="rf-gl"><summary>Glossary</summary><div>${esc(r.glossary)}</div></details>` : ''}</div><button type="button" class="btn-link" data-rdel="1">Remove</button></div>
+        <div class="in-yb in-yb-rf"><div class="in-ykrow"><div class="in-callout"><strong>The answers you give here directly impact your learners' learning experience.</strong></div>
+            ${ini.kriti.has(name) ? '' : `<button type="button" class="btn-kriti btn-sm" data-rkriti="1">${KRITI_DOTS}<span>Ask Kriti</span></button>`}</div>
+          <div class="field full"><label>Why this skill belongs in this initiative <span class="req">*</span></label><div class="hint wide">How will demonstrating this skill help achieve the overall objective of the initiative?</div><textarea rows="4" data-q="why" data-max-words="100"></textarea></div>
+          <div class="field full"><label>Business Impact <span class="req">*</span></label><div class="hint wide">What difference will demonstrating this skill make to the business/team outcomes?</div><textarea rows="4" data-q="impact" data-max-words="100"></textarea></div></div>
+        <div class="in-yb in-yb-rf"><div class="field full"><label>Where participants can use it <span class="req">*</span></label><div class="hint wide">Give 2–4 examples of real work situations where participants can demonstrate this skill.</div></div>
+          ${g.map(x => `<div class="rf-use"><div class="rf-use-tag"><span class="aud-chip aud-chip-on">${esc(x.label)}</span><small>${x.n} ${x.n === 1 ? 'person' : 'people'}</small></div><div class="field full"><textarea rows="4" data-q="uses" data-d="${esc(x.key)}" data-max-words="150"></textarea></div></div>`).join('')}</div>
+        ${kritiTag(ini.kriti.get(name))}
+        <div class="in-final" style="margin:0.2rem 0 1rem"><button type="button" class="btn-primary-add" data-rsave="1">Save reflector</button><span class="help in-msg" style="color:var(--red)"></span></div></div>`;
+    }).join('') : '';
+    $$('.rf-card', forms).forEach(card => {   // set before the limit helper reads them, so the counts are right
+      const a = ini.answers[card.dataset.r] || {};
+      $$('textarea', card).forEach(t => { t.value = t.dataset.q === 'uses' ? ((a.uses || {})[t.dataset.d] || '') : (a[t.dataset.q] || ''); });
+    });
+    $('#rf_saved').innerHTML = saved.length ? `<h4 class="in-q" style="margin-top:1.4rem">Saved reflectors</h4>` + saved.map(name => {
+      const r = gl.find(x => x.reflector_name === name) || {};
+      return `<div class="rf-sum" data-r="${esc(name)}"><div><strong>${esc(name)}</strong> <span class="def-cap">${esc(r.capability_name || '')}</span> <span class="sv-pill"><span class="in-tick">✓</span> Saved</span><div class="rf-def">Why it belongs, its business impact, and where it is used for ${g.length} designation${g.length === 1 ? '' : 's'}.</div>${kritiTag(ini.kriti.get(name))}<div class="rf-view" hidden>${viewBody(name)}</div></div>
+        <div class="sv-acts"><button type="button" class="btn-outline" data-rview="1">View</button><button type="button" class="btn-outline" data-redit="1">Edit</button><button type="button" class="btn-outline btn-danger-outline" data-rremove="1">Remove</button></div></div>`;
+    }).join('') : '';
+    updateStepper(); drawSaved(); drawStep4();
+  };
+  const drawStep3 = () => {
+    const st = $('#in_s3');
+    if (!(ini.s1 && ini.s2)) {
+      st.innerHTML = stepHead(3, 'Assign reflectors', true) + `<div class="banner info" style="margin:0.4rem 0 0">You must finalize 'About the Initiative' and 'Target audience' sections to assign reflectors.</div>`;
+      return;
+    }
+    st.innerHTML = `<div class="rf-top">${stepHead(3, 'Assign reflectors', false, true)}
+        <button type="button" class="btn-kriti" id="in_askkriti">${KRITI_DOTS}<span>Ask Kriti</span></button></div>
+      <div class="field" id="rf_pick_field"><label>Reflector <span class="req">*</span></label><select id="rf_pick"></select></div>
+      <div id="rf_def"></div>
+      <div id="rf_add_row" style="margin:0.6rem 0 1.2rem"><button type="button" class="btn-outline" id="rf_add">Add this reflector</button></div>
+      <div id="rf_forms"></div><div id="rf_saved"></div>`;
+    $('#in_askkriti').onclick = () => kritiWidget({ toggle: true, subtitle: 'Helps you choose reflectors', choices: [1, 2, 3, 4, 5], working: 'Reading your initiative',
+      greeting: "Sure, I'll help you identify the reflectors here. How many reflectors are you hoping to select?", run: askReflectors });
+    $('#rf_pick').onchange = () => { const r = gl.find(x => x.reflector_name === $('#rf_pick').value); $('#rf_def').innerHTML = r ? defBox(r) : ''; };
+    $('#rf_add').onclick = () => {
+      const v = $('#rf_pick').value;
+      if (!v) { toast('Choose a reflector first.', 'warn'); return; }
+      ini.reflectors.push(v); if (!ini.answers[v]) ini.answers[v] = { why: '', impact: '', uses: {} };
+      drawRf();
+    };
+    const forms = $('#rf_forms');
+    forms.oninput = e => {
+      const t = e.target, a = ini.answers[(t.closest('.rf-card') || {}).dataset && t.closest('.rf-card').dataset.r];
+      if (!a) return;
+      if (t.dataset.q === 'uses') a.uses[t.dataset.d] = t.value; else a[t.dataset.q] = t.value;
+    };
+    forms.onclick = e => {
+      const card = e.target.closest('.rf-card'); if (!card) return;
+      const name = card.dataset.r;
+      if (e.target.closest('[data-rdel]')) { dropReflector(name).catch(err => toast(err.message, 'error')); return; }
+      if (e.target.closest('[data-rkriti]')) { askDetail(card, name); return; }
+      const btn = e.target.closest('[data-rsave]'); if (!btn) return;
+      const g = groups(), a = ini.answers[name], p = [];
+      if (!(a.why || '').trim()) p.push('why this skill belongs in this initiative');
+      if (!(a.impact || '').trim()) p.push('the business impact');
+      g.forEach(x => { if (!((a.uses || {})[x.key] || '').trim()) p.push('where participants can use it (' + x.label + ')'); });
+      if (p.length) { msg(card, 'Still needed: ' + p.join(', ') + '.'); return; }
+      msg(card, '');
+      runSave(btn, () => saveReflector(name), () => drawRf(), card);
+    };
+    $('#rf_saved').onclick = e => {
+      const row = e.target.closest('.rf-sum'); if (!row) return;
+      const name = row.dataset.r;
+      if (e.target.closest('[data-rview]')) {
+        const view = $('.rf-view', row), btn = e.target.closest('[data-rview]');
+        view.hidden = !view.hidden; btn.textContent = view.hidden ? 'View' : 'Hide';
+      }
+      else if (e.target.closest('[data-redit]')) { ini.done.delete(name); delete ini.fit[name]; drawRf(); }
+      else if (e.target.closest('[data-rremove]') && window.confirm('Remove "' + name + '"?')) { dropReflector(name).catch(err => toast(err.message, 'error')); }
+    };
+    drawRf();
+  };
+
+  // ---- Step 4: Validate and create. Kriti rates how well each saved reflector fits (required), a red one must be removed, and only
+  // then can the initiative be created, after which nothing in it can change ----
+  const FIT = { 'GOOD FIT': ['good', 'Good fit'], 'AVERAGE FIT': ['avg', 'Average fit'], 'POOR FIT': ['poor', 'Poor fit'] };
+  const NO_MATCH = 'This reflector has been identified as having no direct match to the learning initiative.';
+  const fitOf = n => {
+    const f = ini.fit[n];
+    if (!f) return null;
+    return f.assessment_status === 'MORE_INFORMATION_REQUIRED' ? 'more' : (FIT[f.fit] || [])[0] || null;
+  };
+  const fitHead = (n, pill) => {
+    const r = gl.find(x => x.reflector_name === n) || {};
+    return `<div class="fit-top"><div><strong>${esc(n)}</strong> <span class="def-cap">${esc(r.capability_name || '')}</span></div>${pill}</div>`;
+  };
+  const fitCard = n => {
+    const f = ini.fit[n], k = fitOf(n);
+    if (!k) return `<div class="fit-card">${fitHead(n, '<span class="fit-pill fit-none">Not validated yet</span>')}${ini.done.has(n) ? '' : '<div class="fit-reason">You are editing this reflector. Save it in Step 3, then validate it.</div>'}</div>`;
+    if (k === 'more') {
+      return `<div class="fit-card fit-info">${fitHead(n, '<span class="fit-pill fit-more">More information needed</span>')}
+        <div class="fit-reason">${esc(f.reason)}</div><div class="fit-need"><strong>What to add:</strong> ${esc(f.information_needed)}</div></div>`;
+    }
+    return `<div class="fit-card${k === 'poor' ? ' fit-red' : ''}">${fitHead(n, `<span class="fit-pill fit-${k}">${FIT[f.fit][1]}</span>`)}
+      <div class="fit-bar fit-on-${k}" role="img" aria-label="${FIT[f.fit][1]}"><span class="fb-poor"></span><span class="fb-avg"></span><span class="fb-good"></span></div>
+      <div class="fit-reason">${esc(f.reason)}</div>
+      ${k === 'poor' ? `<div class="fit-stop"><span><strong>${NO_MATCH}</strong> Remove it to continue.</span><button type="button" class="btn-outline btn-danger-outline" data-vremove="${esc(n)}">Remove reflector</button></div>` : ''}</div>`;
+  };
+  const runCheck = async () => {
+    const btn = $('#in_vgo'), names = ini.reflectors.filter(n => ini.done.has(n) && !ini.fit[n]);   // only the ones with no rating: the others were rated and not edited since
+    if (!names.length) return;
+    btn.disabled = true; btn.classList.add('is-busy'); $('span', btn).textContent = 'Kriti is reviewing…'; $('#in_vmsg').textContent = '';
+    $('#in_vres').insertAdjacentHTML('afterbegin', '<div class="fit-card fit-wait"><span class="kw-wait" style="margin-left:0">Kriti is reviewing how each reflector fits this initiative. Bear with me</span></div>');
+    try {
+      await Promise.all(names.map(async n => {
+        const a = ini.answers[n] || {};
+        ini.fit[n] = await api('/api/admin/initiative-ai/assess', { json: Object.assign(aboutInitiative(), { reflector: n, why: a.why, impact: a.impact, uses: a.uses }) });
+      }));
+      drawStep4();
+    } catch (err) { drawStep4(); $('#in_vmsg').textContent = notConnected(err); }
+  };
+  const drawStep4 = () => {
+    const st = $('#in_s4');
+    if (!(ini.s1 && ini.s2 && ini.done.size > 0)) {
+      st.innerHTML = stepHead(4, 'Validate and create', true) + '<div class="banner info" style="margin:0.4rem 0 0">Save the steps above first. Then Kriti will check how well each reflector fits, and you can create the initiative.</div>';
+      updateStepper(); return;
+    }
+    const names = ini.reflectors.filter(n => ini.done.has(n)), listed = ini.reflectors.filter(n => ini.done.has(n) || ini.server.has(n)), v = ini.saved, au = ini.audience;   // listed also holds a saved reflector that is being edited
+    const unrated = names.filter(n => !ini.fit[n]), poor = names.filter(n => fitOf(n) === 'poor'), more = names.filter(n => fitOf(n) === 'more');
+    const why = unsaved() ? 'Save every reflector you are working on first. Then validate it.'
+      : unrated.length ? 'Validate with Kriti first: every reflector must be rated before you can create the initiative.'
+      : poor.length ? `Remove the reflector${poor.length === 1 ? '' : 's'} marked red to continue. A reflector with no direct match to the learning initiative cannot be used.`
+      : more.length ? 'Kriti needs more information before she can rate a reflector. Read the note on it.' : '';
+    st.innerHTML = stepHead(4, 'Validate and create', false)
+      + (ini.created ? '<div class="in-created"><strong>This initiative has been created.</strong> It can no longer be changed.</div>' : '')
+      + `<div class="vs-card"><div class="vs-title">Summary</div>
+          <div class="vs-row"><span>Initiative</span><strong>${esc(v.name)}</strong></div>
+          <div class="vs-row"><span>Dates</span><span>${esc(fmtDate(v.start))} to ${esc(fmtDate(v.end))}</span></div>
+          <div class="vs-row"><span>Delivered</span><span>${v.delivery === 'wotg' ? 'Wisdom on the GO! only' : 'External'}</span></div>
+          <div class="vs-row"><span>Participants</span><span>${au.people} participant${au.people === 1 ? '' : 's'} across ${au.groups.length} designation${au.groups.length === 1 ? '' : 's'}</span></div>
+          <div class="vs-row"><span>Reflectors</span><span>${listed.length} assigned, listed below</span></div>
+        </div>
+        <div class="hint wide">Kriti rates how well each reflector fits this initiative, and says why. Green is a good fit, amber is average, and red means no direct match. This check is required before the initiative can be created.</div>
+        <div class="in-final" style="margin:0.7rem 0 1.1rem"><button type="button" class="btn-kriti" id="in_vgo" ${names.some(n => !ini.fit[n]) && !ini.created ? '' : 'disabled'}>${KRITI_DOTS}<span>Validate with Kriti</span></button><span class="help" id="in_vmsg" style="color:var(--red)"></span></div>
+        <div class="vs-title" style="margin:1.1rem 0 0.5rem">Reflectors to validate</div><div id="in_vres">${listed.map(fitCard).join('')}</div>
+        ${ini.created ? '' : `<div class="in-create"><button type="button" class="btn-primary-add" id="in_create" ${why ? 'disabled' : ''}>Create initiative</button><div class="in-create-why">${esc(why) || 'All reflectors are rated. Once you create the initiative, it can no longer be changed.'}</div></div>`}`;
+    $('#in_vgo').onclick = runCheck;
+    $('#in_vres').onclick = e => {
+      const r = e.target.closest('[data-vremove]'); if (!r) return;
+      const name = r.dataset.vremove;
+      if (!window.confirm('Remove "' + name + '" from this initiative?')) return;
+      dropReflector(name).catch(err => toast(err.message, 'error'));
+    };
+    if ($('#in_create')) $('#in_create').onclick = async () => {
+      if (!window.confirm('Once created, this initiative can no longer be changed. Create it now?')) return;
+      try { await api(url('/submit'), { json: {} }); ini.created = true; refresh(); toast('Initiative created.'); } catch (err) { toast(err.message, 'error'); }
+    };
+    updateStepper();
+  };
+
+  // ---- saving a step, unlocking it, and the Saving… / Saved ✓ button. `action` does the real saving on the server; if it is refused, the
+  // server's plain message appears under the button and nothing on the page changes ----
+  const runSave = (btn, action, then, errBox, delay) => {
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Saving…';
+    Promise.resolve().then(action).then(() => { btn.textContent = 'Saved ✓'; btn.classList.add('btn-saved'); setTimeout(then, delay === undefined ? 900 : delay); },
+      err => { btn.disabled = false; btn.textContent = label; msg(errBox || btn.parentElement, err.message); });
+  };
+  const refresh = () => {
+    ['in_s1', 'in_s2', 'in_s3', 'in_s4'].forEach(id => $('#' + id).classList.toggle('is-created', ini.created));
+    $$('#in_s1 .in-fs, #in_s2 .in-fs').forEach(f => { f.disabled = ini.created; });   // a created initiative can no longer be changed
+    updateStepper(); drawStep3(); drawStep4(); drawSaved();
+  };
+  const stepTitle = name => { $('#in_s1_title').textContent = name; $('.in-st-t', $('#in_stepper')).textContent = name; };
+  const step1Saved = () => { ini.s1 = true; $('#in_f1').innerHTML = savedBtn(1); };
+  const step2Saved = () => {
+    const au = ini.audience;
+    ini.s2 = true; $('#in_f2').innerHTML = savedBtn(2, `${au.people} participant${au.people === 1 ? '' : 's'} across ${au.groups.length} designation${au.groups.length === 1 ? '' : 's'}`);
+    if (multiCo) $('#in_company').disabled = true;   // the company cannot change once the audience is saved
+  };
+  // any edit in a saved step turns its button back into Save, and the steps that depend on it wait for the new save
+  const markUnsaved = n => { if (!ini['s' + n]) return; ini['s' + n] = false; $('#in_f' + n).innerHTML = openRow(n); refresh(); };
+  $('#in_s1').addEventListener('input', () => markUnsaved(1)); $('#in_s1').addEventListener('change', () => markUnsaved(1));
+  const saveStep = (n, btn) => {
+    const box = $('#in_f' + n);
+    if (n === 1) {
+      const p = missing1();
+      if (p.length) { msg(box, 'Still needed: ' + p.join(', ') + '.'); return; }
+      msg(box, '');
+      runSave(btn, async () => {
+        const body = { name: val('in_name'), start_date: $('#in_start').value, end_date: $('#in_end').value, delivery: ($('input[name=in_delivery]:checked') || {}).value,
+          objective: val('in_obj'), business_need: val('in_need') };
+        if (multiCo) body.company_code = companyCode();
+        if (ini.id) { await api(url('/details'), { json: body }); takeReflectors(await api(url(''))); }   // a changed objective or business need clears the ratings
+        else { const r = await api('/api/admin/initiatives', { json: body }); ini.id = r.initiative_id; ini.number = r.number; }
+        ini.saved = { name: body.name, start: body.start_date, end: body.end_date, delivery: body.delivery };
+        stepTitle(ini.saved.name); drawSaved();   // the Step 1 title takes the initiative's name, and it lands in the list below
+      }, () => { step1Saved(); refresh(); }, box, 0);
+    } else {
+      if (!sel.size) { msg(box, 'Pick at least one participant.'); return; }
+      msg(box, '');
+      runSave(btn, async () => {
+        await api(url('/audience'), { json: { user_ids: Array.from(sel) } });
+        ini.audience = { people: sel.size, groups: designations() };
+        takeReflectors(await api(url('')));   // a new audience can send a saved reflector back to be finished, so the page takes what the server now holds
+        drawSaved();
+      }, () => { step2Saved(); refresh(); }, box, 0);
+    }
+  };
+
+  // ---- reflectors: saved on the server one at a time; what the server holds is the truth for what is saved and rated ----
+  const keyOfLabel = label => label === '(no designation)' ? '' : String(label || '').trim().toLowerCase();
+  const saveReflector = async name => {
+    const a = ini.answers[name];
+    // the line goes when more than a quarter of Kriti's words changed; if her original is no longer on the page (the draft was reopened), any change at all drops it
+    if (ini.kriti.has(name)) {
+      const base = ini.origin.get(name) || ini.loaded.get(name);
+      if (!base || changedShare(base, a) > (ini.origin.has(name) ? KRITI_EDIT_LIMIT : 0)) { ini.kriti.delete(name); ini.origin.delete(name); ini.loaded.delete(name); }
+    }
+    await api(url('/reflectors/save'), { json: { reflector_name: name, why_this_skill: a.why, business_impact: a.impact,
+      usage_examples: Object.fromEntries(groups().map(x => [x.label, (a.uses || {})[x.key] || ''])), written_by: ini.kriti.get(name) || null } });
+    ini.done.add(name); ini.server.add(name); delete ini.fit[name];
+  };
+  const dropReflector = async name => {
+    if (ini.server.has(name)) { await api(url('/reflectors/remove'), { json: { reflector_name: name } }); ini.server.delete(name); }
+    ini.reflectors.splice(ini.reflectors.indexOf(name), 1); ini.kriti.delete(name); ini.origin.delete(name); ini.loaded.delete(name); ini.done.delete(name); delete ini.answers[name]; delete ini.fit[name]; drawRf();
+  };
+  const takeReflectors = d => {
+    const have = new Set();
+    d.reflectors.forEach(r => {
+      const n = r.reflector_name; have.add(n);
+      const cur = ini.answers[n] || (ini.answers[n] = { why: '', impact: '', uses: {} });
+      // a reflector the person is in the middle of editing keeps what they have typed; for every other one the server's text is taken
+      const editing = ini.reflectors.indexOf(n) !== -1 && !ini.done.has(n) && !!(cur.why || cur.impact || Object.values(cur.uses || {}).some(Boolean));
+      if (ini.reflectors.indexOf(n) === -1) ini.reflectors.push(n);
+      ini.server.add(n);
+      if (editing) { delete ini.fit[n]; return; }
+      if (r.written_by) ini.kriti.set(n, r.written_by); else ini.kriti.delete(n);
+      const uses = {}; Object.keys(r.usage_examples || {}).forEach(l => { uses[keyOfLabel(l)] = r.usage_examples[l]; });
+      cur.why = r.why_this_skill; cur.impact = r.business_impact; cur.uses = uses;
+      if (r.written_by && !ini.origin.has(n)) ini.loaded.set(n, copyAnswers(cur));
+      if (r.saved) ini.done.add(n); else ini.done.delete(n);
+      if (r.fit_rating) ini.fit[n] = { assessment_status: 'ASSESSED', fit: r.fit_rating, reason: r.fit_reason }; else delete ini.fit[n];
+    });
+    Array.from(ini.server).forEach(n => { if (!have.has(n)) ini.server.delete(n); });
+  };
+  // a draft opened from the Editor ("Continue in the builder"): the page is filled from what was saved
+  const resume = async id => {
+    const d = await api('/api/admin/initiatives/' + encodeURIComponent(id));
+    ini.id = d.initiative_id; ini.number = d.number;
+    if (multiCo) { $('#in_company').value = d.company_code || ''; drawAudience(false); }   // the people of that company are offered
+    $('#in_name').value = d.name; $('#in_start').value = d.start_date; $('#in_end').value = d.end_date;
+    const radio = $('input[name=in_delivery][value=' + d.delivery + ']'); if (radio) radio.checked = true;
+    $('#in_obj').value = d.objective; $('#in_need').value = d.business_need;
+    ['in_obj', 'in_need'].forEach(i => $('#' + i).dispatchEvent(new Event('limit-refresh')));
+    checkDates();
+    if (d.step1_saved) { ini.saved = { name: d.name, start: d.start_date, end: d.end_date, delivery: d.delivery }; stepTitle(d.name); step1Saved(); }
+    if (d.audience_saved) {
+      sel.clear(); d.users.forEach(u => sel.add(u.user_id)); drawAudience(true);
+      ini.audience = { people: sel.size, groups: designations() }; step2Saved();
+      if (multiCo) $('#in_company').disabled = true;
+    }
+    takeReflectors(d);
+  };
+  $('#lmBody').onclick = e => {
+    const sv = e.target.closest('[data-save]');
+    if (sv) saveStep(+sv.dataset.save, sv);
+  };
+  const resumeId = S.resumeInitiative; S.resumeInitiative = null;
+  if (resumeId) { try { await resume(resumeId); } catch (err) { toast(err.message, 'error'); } }
+  spy(); refresh();
 }
 
 // ── Reflector Glossary ────────────────────────────────────────────────────
@@ -3170,7 +4223,7 @@ let _lfResize; addEventListener('resize', () => { clearTimeout(_lfResize); _lfRe
 
 // ════════════ REPORTS & INSIGHTS (the list of reports) ════════════
 // Fable's report list (productdemo/reports_insights.html, level 1) with Adoption Overview moved in as 01 (Kriti,
-// 2026-10-09). Only the live reports are links (a green number); the rest are faded with a gray "Coming Soon" tag.
+// 2026-10-09). Every row looks live (a green number, lifts on hover); a row with no hash yet opens nothing (Kriti, 2026-11-02).
 const REPORTS_BACK = '<button class="ri-back-btn" onclick="location.hash=\'#reports\'" style="margin-bottom:0.7rem;">&larr; Reports &amp; Insights</button>';
 const REPORT_ROWS = [
   { label: 'Adoption Overview', desc: 'See who is using Wisdom on the GO!, how often, and where adoption is growing.', hash: '#reports/adoption' },
@@ -3183,10 +4236,9 @@ const REPORT_ROWS = [
 function renderReportsHub() {
   $('#view').innerHTML = `<div class="um-page-head"><div><h1 class="um-title">Reports &amp; Insights</h1></div></div>
     <div class="report-list">${REPORT_ROWS.map((r, i) => `
-      <div class="report-row ${r.hash ? 'clickable' : 'coming-soon'}" style="border-left-color:${i % 2 === 0 ? 'var(--green)' : 'var(--night)'}" ${r.hash ? `onclick="location.hash='${r.hash}'" role="link" tabindex="0"` : ''}>
+      <div class="report-row clickable" style="border-left-color:${i % 2 === 0 ? 'var(--green)' : 'var(--night)'}" ${r.hash ? `onclick="location.hash='${r.hash}'" role="link" tabindex="0"` : ''}>
         <div class="report-row-index">${String(i + 1).padStart(2, '0')}</div>
         <div class="report-row-text"><h3>${esc(r.label)}</h3><p>${esc(r.desc)}</p></div>
-        ${r.hash ? '' : '<span class="report-soon-tag">Coming Soon</span>'}
       </div>`).join('')}</div>`;
 }
 
@@ -3195,14 +4247,13 @@ const NAV = [
   { key: 'users', label: 'User Management', icon: 'users', hash: '#users' },
   { key: 'learning', label: 'Learning Management', icon: 'book', hash: '#learning/assign' },
   { key: 'reports', label: 'Reports & Insights', icon: 'chart', hash: '#reports' },
-  { key: 'impact', label: 'Business Impact', icon: 'trend', hash: '#soon/impact', soon: true },
+  { key: 'impact', label: 'Business Impact', icon: 'trend', hash: '#impact', soon: true },   // a made-up demo view, so it keeps its Soon badge (Kriti, 2026-11-02)
 ];
 function drawNav(activeKey) {
   $('#adminNav').innerHTML = NAV.map(n => `<button class="admin-nav-item ${n.key === activeKey ? 'active' : ''}" data-hash="${n.hash}">${icon(n.icon)} ${esc(n.label)}${n.soon ? '<span class="soon">Soon</span>' : ''}</button>`).join('') +
     `<div class="admin-nav-divider"></div>
-     <button class="admin-nav-item" id="navHelp">${icon('help')} Help &amp; information <span class="soon">Soon</span></button>`;
+     <button class="admin-nav-item" id="navHelp">${icon('help')} Help &amp; information</button>`;   // Help & information looks live and opens nothing yet (Kriti, 2026-11-02); Log out lives ONLY in the photo drop-down (Kriti, 2026-10-03), exactly like the user page
   $$('[data-hash]', $('#adminNav')).forEach(b => b.onclick = () => { location.hash = b.dataset.hash; if (window.innerWidth <= 960) $('#adminSidebar').classList.remove('open'); });
-  $('#navHelp').onclick = openHelp;  // Log out lives ONLY in the photo drop-down (Kriti, 2026-10-03), exactly like the user page
 }
 // Company Settings (new 2026-10-06): one setting, right now -- which month this company's fiscal
 // year starts in. Lives in the profile drop-down, never under User Management (Kriti's explicit call:
@@ -3245,10 +4296,6 @@ async function openCompanySettings(e) {
   ]);
 }
 
-function openHelp() {
-  const m = openModal({ title: 'Help & information', size: 'narrow', html: `<div class="banner"><strong>Raise a ticket — coming soon.</strong> Soon you will be able to ask for help, or request a change such as a new Company Admin, right from here.</div><p style="font-size:0.88rem;color:var(--night2)">Until then, email <a href="mailto:inquiry@korporatewisdom.com" style="text-decoration:underline">inquiry@korporatewisdom.com</a>.</p>` });
-  setFoot(m, [{ label: 'Close', cls: 'btn-primary-add', onClick: () => m.close() }]);
-}
 function logOut() {
   // Kill the login keycard on the server too (best effort -- logging out must never get stuck on a network error).
   let token = ''; try { token = localStorage.getItem('login_token') || ''; } catch (e) {}
@@ -3256,10 +4303,9 @@ function logOut() {
   ['user_name', 'user_email', 'user_company', 'user_id', 'access_type', 'login_token', 'remembered_user_id', 'remembered_name', 'remembered_email', 'remembered_access_type', 'remembered_token'].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
   location.href = 'login.html';
 }
-function renderSoon(which) {
-  const names = { adoption: 'Adoption Overview', reports: 'Reports & Insights', impact: 'Business Impact' };
-  const blurb = { adoption: 'See who is using Wisdom on the GO!, how often, and where adoption is growing.', reports: 'Reflector insights, learning friction and more — sliced by your companies, business units and departments.', impact: 'Connect learning to business results.' };
-  $('#view').innerHTML = `<div class="um-page-head"><div><h1 class="um-title">${names[which] || 'Coming soon'}</h1></div></div><div class="panel soon-card"><div class="big">Coming soon</div><p>${esc(blurb[which] || '')} Everything here will respect the companies and departments you manage.</p></div>`;
+// Business Impact: the product demo's working view (business_impact_illustrative.html), every number made up, so the menu item keeps its Soon badge and the page says "(illustrative)"
+function renderBusinessImpact() {
+  $('#view').innerHTML = '<iframe class="bi-frame" src="business_impact_illustrative.html" title="Business Impact (illustrative)"></iframe>';
 }
 async function route() {
   $$('.menu').forEach(x => x.remove());
@@ -3273,11 +4319,12 @@ async function route() {
   if (parts[0] === 'bulk') { drawNav('users'); return renderBulk(); }
   if (parts[0] === 'learning') {
     drawNav('learning');
+    if (parts[1] === 'overview') return renderInitiativeOverview();
     if (parts[1] === 'initiatives') return renderInitiatives();
     if (parts[1] === 'glossary') return renderGlossary();
     return renderAssign(params);
   }
-  if (parts[0] === 'soon') { drawNav(parts[1]); return renderSoon(parts[1]); }
+  if (parts[0] === 'impact') { drawNav('impact'); return renderBusinessImpact(); }
   if (parts[0] === 'adoption') { location.replace('#reports/adoption'); return; }   // Adoption Overview now lives inside Reports & Insights (Kriti, 2026-10-09); old links still land there
   if (parts[0] === 'reports') {
     drawNav('reports');
@@ -3299,7 +4346,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { const d = 
 // the page (like the user page's header photo): if it fails or there is none, the circle just stays empty.
 async function loadProfilePhoto() {
   try {
-    const res = await fetch(API_BASE + '/api/my-profile?user_id=' + encodeURIComponent(CURRENT_USER_ID));
+    const res = await fetch(API_BASE + '/api/my-profile?user_id=' + encodeURIComponent(CURRENT_USER_ID), { headers: { 'Authorization': 'Bearer ' + loginToken() } });
     if (!res.ok) return;
     const p = await res.json();
     if (p.photo_base64) { const img = $('#profPhoto'); img.src = 'data:image/jpeg;base64,' + p.photo_base64; img.classList.add('has-photo'); }
