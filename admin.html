@@ -243,6 +243,17 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .combo-item.free { color:var(--green2); font-weight:600; border-top:1px solid var(--line); }
 .combo-empty { padding:0.6rem 0.8rem; font-size:0.8rem; color:var(--grey3); }
 
+/* ---- The people check pop-up: who stops the launch ---- */
+.pc-group { margin:1rem 0 0; }
+.pc-group h3 { font-size:0.92rem; font-weight:700; display:flex; align-items:center; gap:0.5rem; }
+.pc-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; background:var(--red); }
+.pc-dot.amber { background:var(--amber); }
+.pc-note { font-size:0.82rem; color:var(--grey3); margin:0.3rem 0 0.6rem; line-height:1.5; }
+.pc-list { list-style:none; margin:0; padding:0; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+.pc-list li { display:flex; justify-content:space-between; align-items:baseline; gap:1.2rem; padding:0.6rem 0.9rem; font-size:0.85rem; border-bottom:1px solid var(--line); }
+.pc-list li:last-child { border-bottom:none; }
+.pc-list li span { color:var(--grey3); text-align:right; font-size:0.8rem; }
+
 /* ---- Modal / toast ---- */
 .modal-backdrop { position:fixed; inset:0; background:rgba(4,26,64,0.52); z-index:500; display:flex; align-items:flex-start; justify-content:center; padding:4vh 1rem; overflow-y:auto; }
 .modal { background:#fff; border-radius:16px; width:100%; max-width:720px; box-shadow:0 30px 70px rgba(4,26,64,0.4); display:flex; flex-direction:column; max-height:92vh; }
@@ -320,7 +331,8 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .hist-list li { padding:0.3rem 0; border-bottom:1px solid var(--line); }
 
 /* ---- Adoption Overview ---- */
-.adopt-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:1.1rem; margin-bottom:1.4rem; }
+.adopt-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:1.1rem; margin-bottom:1.4rem; }
+@media (max-width: 1100px) { .adopt-cards { grid-template-columns:repeat(2,1fr); } }
 /* Kriti, 2026-10-06, after the floating Fable-style bar wasn't what she wanted: "you have created that
    accent design in the observation [.adopt-insight, below] -- why can't you replicate it on the cards."
    Same technique exactly -- a flush border-left, not an inset floating bar -- night-sky instead of teal. */
@@ -1047,7 +1059,7 @@ async function api(path, opts) {
   if (!res.ok) {
     const d = data && data.detail;
     const err = new Error(typeof d === 'string' ? d : (Array.isArray(d) ? d.map(x => x.msg).join('; ') : 'Something went wrong. Please try again.'));
-    err.status = res.status; throw err;
+    err.status = res.status; if (data && data.people) err.people = data.people; if (data && data.audience) err.audience = data.audience; throw err;
   }
   return data;
 }
@@ -2151,6 +2163,42 @@ const ratingView = (rating, reason) => {
   return `<div class="fit-bar fit-on-${k}" role="img" aria-label="${RATING[rating][1]}" style="margin-top:0.5rem"><span class="fb-poor"></span><span class="fb-avg"></span><span class="fb-good"></span></div><div class="fit-reason">${esc(reason)}</div>`;
 };
 
+// ── The people check pop-up. The same check runs when a draft is created, when a created initiative is saved, and when either is opened: everyone saved in
+// the initiative must still be in the scope of the person looking, and must fit what the initiative covers. This names each person who does not, and
+// says how to resolve it. It changes nothing. o: mode ('open' a draft, 'launch' = the Create button, 'editor' = a created initiative), goLabel, onGo.
+function peopleCheckModal(p, o) {
+  const out = p.out_of_scope || [], none = p.no_example || [], off = p.not_covered || [];
+  if (!out.length && !none.length && !off.length) return;
+  const editor = o.mode === 'editor';
+  const ctl = openModal({ title: 'Some people need your attention', sticky: true,
+    sub: o.mode === 'launch' ? 'The initiative has not been created.'
+      : editor ? 'Something has changed since this initiative was saved. Changes cannot be saved unless this is resolved.'
+      : 'Something has changed since you saved this draft. The initiative cannot be created unless this is resolved.' });
+  const group = (dot, title, note, items) => `<div class="pc-group"><h3><span class="pc-dot ${dot}"></span>${title}</h3><div class="pc-note">${note}</div><ul class="pc-list">${items}</ul></div>`;
+  ctl.body.innerHTML =
+    (out.length ? group('', `No longer in your scope (${out.length})`,
+      editor ? 'These people are in this initiative, but they are no longer in your scope. To keep saving changes, remove them from the initiative, or ask your company admin to give you access to them.'
+        : 'These people are in this initiative, but they are no longer in your scope. To create the initiative, deselect them, or ask your company admin to give you access to them.',
+      out.map(x => `<li><strong>${esc(x.name)}</strong><span>${esc(x.now)}</span></li>`).join('')) : '')
+    + (off.length ? group('amber', `Business unit and designation this initiative does not cover (${off.length})`,
+      'These people now have a business unit and designation this initiative was not built for, so it has no examples that fit them and it is not showing for them. Remove them from the initiative.',
+      off.map(x => `<li><strong>${esc(x.name)}</strong><span>${esc(x.now)}</span></li>`).join('')) : '')
+    + (none.length ? group('amber', `No example written for their designation (${none.length})`,
+      'These people have a designation that has no example of use written for it in the skills below. Go back to Step 2 and save the audience again: each skill will then ask for an example for that designation. Write it, validate each skill with Kriti again, and then create the initiative.',
+      none.map(x => `<li><strong>${esc(x.name)}</strong><span>${esc(x.designation)}: missing in ${x.skills.map(esc).join(', ')}</span></li>`).join('')) : '');
+  setFoot(ctl, [{ label: 'Close', cls: 'btn-outline', onClick: () => ctl.close() }, { label: o.goLabel, cls: 'btn-primary-add', onClick: () => { ctl.close(); o.onGo(); } }]);
+}
+// What the editor page passes: the button takes the admin to the participants, where each person can be removed.
+function peopleEditorOpts() {
+  return { mode: 'editor', goLabel: 'Go to the participants', onGo: () => { const sec = document.querySelector('.ed-amber'); if (sec) { sec.open = true; sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } };
+}
+// A refused save of a created initiative: when the reason is the people check, show the pop-up and say so (true); otherwise the caller shows its own message.
+function showedPeopleCheck(err) {
+  if (!err || !err.people) return false;
+  peopleCheckModal(err.people, peopleEditorOpts());
+  return true;
+}
+
 async function renderInitiativeOverview() {
   lmShell('overview');
   const body = $('#lmBody');
@@ -2248,6 +2296,7 @@ async function renderInitiativeDetail(id, scopeOpen) {
   $('#ov_pq').oninput = drawPeople; drawPeople();
   $('#ov_back').onclick = renderInitiativeOverview;
   $('#ov_del').onclick = () => deleteInitiative(d, renderInitiativeOverview);
+  if (canEdit && d.people_check) peopleCheckModal(d.people_check, peopleEditorOpts());
   body.onclick = async e => {
     const row = e.target.closest('.ov-rf');
     if (row && e.target.closest('[data-rview]')) { const v = $('.rf-view', row), b = e.target.closest('[data-rview]'); v.hidden = !v.hidden; b.textContent = v.hidden ? 'View' : 'Hide'; return; }
@@ -2255,7 +2304,7 @@ async function renderInitiativeDetail(id, scopeOpen) {
       const name = row.dataset.r;
       if (d.reflectors.length <= 1) { toast('An initiative needs at least one reflector. Add the new one first, then remove this one.', 'warn'); return; }
       if (!(await confirmBox('Remove reflector', `Remove <strong>${esc(name)}</strong> from this initiative? People will no longer be given it. What they have already done is kept.`, 'Remove', true))) return;
-      try { await api(url('/reflectors/remove'), { json: { reflector_name: name } }); toast('Reflector removed.'); reload(); } catch (err) { toast(err.message, 'error'); }
+      try { await api(url('/reflectors/remove'), { json: { reflector_name: name } }); toast('Reflector removed.'); reload(); } catch (err) { if (!showedPeopleCheck(err)) toast(err.message, 'error'); }
       return;
     }
     if (e.target.closest('#ov_chg')) {
@@ -2267,7 +2316,7 @@ async function renderInitiativeDetail(id, scopeOpen) {
       const st = $('#ov_s').value, en = $('#ov_e').value;
       if (!st || !en) { $('#ov_dmsg').textContent = 'Please give both dates.'; return; }
       if (en < st) { $('#ov_dmsg').textContent = 'The end date cannot be before the start date.'; return; }
-      try { await api(url('/dates'), { json: { start_date: st, end_date: en } }); toast('Dates saved.'); reload(); } catch (err) { $('#ov_dmsg').textContent = err.message; }
+      try { await api(url('/dates'), { json: { start_date: st, end_date: en } }); toast('Dates saved.'); reload(); } catch (err) { if (!showedPeopleCheck(err)) $('#ov_dmsg').textContent = err.message; }
       return;
     }
     const pr = e.target.closest('[data-prem]');
@@ -2285,7 +2334,7 @@ async function renderInitiativeDetail(id, scopeOpen) {
     if (e.target.closest('#ov_dvcancel')) { reload(); return; }
     if (e.target.closest('#ov_dvsave')) {
       const v = $('input[name=ov_dv]:checked', body);
-      try { await api(url('/delivery'), { json: { delivery: v.value } }); toast('Delivery saved.'); reload(); } catch (err) { toast(err.message, 'error'); }
+      try { await api(url('/delivery'), { json: { delivery: v.value } }); toast('Delivery saved.'); reload(); } catch (err) { if (!showedPeopleCheck(err)) toast(err.message, 'error'); }
       return;
     }
     if (e.target.closest('#ov_addp')) addInitiativeParticipants(d, url, reload);
@@ -2315,7 +2364,7 @@ async function addInitiativeParticipants(d, url, reload) {
     if (!ids.length) { toast('Pick at least one person.', 'warn'); return; }
     btn.disabled = true;
     try { await api(url('/users/add'), { json: { user_ids: ids } }); m.close(); toast(ids.length + (ids.length === 1 ? ' person added.' : ' people added.')); reload(); }
-    catch (err) { btn.disabled = false; toast(err.message, 'error'); } } }] : [])]);
+    catch (err) { btn.disabled = false; if (!showedPeopleCheck(err)) toast(err.message, 'error'); } } }] : [])]);
 }
 
 // Add one reflector to a created initiative: the same steps as in the builder (choose, answer for each designation, optionally with Ask
@@ -2408,7 +2457,7 @@ async function addInitiativeReflector(d, url, reload) {
   async function add(btn) {
     btn.disabled = true;
     try { await api(url('/reflectors/add'), { json: { reflector_name: pick() } }); touched = false; m.close(); toast('Reflector added.'); reload(); }
-    catch (err) { btn.disabled = false; toast(err.message, 'error'); }
+    catch (err) { btn.disabled = false; if (!showedPeopleCheck(err)) toast(err.message, 'error'); }
   }
   foot();
 }
@@ -2546,7 +2595,9 @@ function kritiWidget(o) {
     let r;
     try { r = await o.run(n); }
     catch (err) {
-      r = err.status === 404 ? { error: true, title: 'Kriti is not connected yet', message: 'This cannot be done for now.' } : { error: true, title: 'Something went wrong', message: err.message };
+      r = err.status === 404 ? { error: true, title: 'Kriti is not connected yet', message: 'This cannot be done for now.' }
+        : err.audience ? { error: true, title: err.message, message: '', needs: err.audience.lines, hint: err.audience.hint }   // people in the audience changed: say who, and what to do
+        : { error: true, title: 'Something went wrong', message: err.message };
     }
     show(bubble, r);
     return !(r && r.error);
@@ -2621,6 +2672,8 @@ async function renderInitiatives() {
   $('#in_start').onchange = checkDates; $('#in_end').onchange = checkDates;
   const companyCode = () => multiCo ? ($('#in_company').value || '') : '';
   const peopleOfCompany = code => people.filter(u => ((companyByName(u.company) || {}).company_code) === code);
+  // defined before the audience picker is first drawn, because the picker calls it (an admin who holds one company has no company step to wait for)
+  const markUnsaved = n => { if (!ini['s' + n]) return; ini['s' + n] = false; $('#in_f' + n).innerHTML = openRow(n); refresh(); };
   const drawAudience = keep => {
     if (multiCo && !companyCode()) { $('#in_aud').innerHTML = '<div class="banner info" style="margin:0">Choose the company in Step 1 first. The people you can pick are the ones in that company.</div>'; return; }
     audiencePicker($('#in_aud'), multiCo ? peopleOfCompany(companyCode()) : people, sel, () => markUnsaved(2), keep);
@@ -2908,7 +2961,7 @@ async function renderInitiatives() {
     };
     if ($('#in_create')) $('#in_create').onclick = async () => {
       if (!window.confirm('Once created, this initiative can no longer be changed. Create it now?')) return;
-      try { await api(url('/submit'), { json: {} }); ini.created = true; refresh(); toast('Initiative created.'); } catch (err) { toast(err.message, 'error'); }
+      try { await api(url('/submit'), { json: {} }); ini.created = true; refresh(); toast('Initiative created.'); } catch (err) { if (err.people) showPeopleCheck(err.people, true); else toast(err.message, 'error'); }
     };
     updateStepper();
   };
@@ -2934,7 +2987,6 @@ async function renderInitiatives() {
     if (multiCo) $('#in_company').disabled = true;   // the company cannot change once the audience is saved
   };
   // any edit in a saved step turns its button back into Save, and the steps that depend on it wait for the new save
-  const markUnsaved = n => { if (!ini['s' + n]) return; ini['s' + n] = false; $('#in_f' + n).innerHTML = openRow(n); refresh(); };
   $('#in_s1').addEventListener('input', () => markUnsaved(1)); $('#in_s1').addEventListener('change', () => markUnsaved(1));
   const saveStep = (n, btn) => {
     const box = $('#in_f' + n);
@@ -3000,6 +3052,11 @@ async function renderInitiatives() {
     Array.from(ini.server).forEach(n => { if (!have.has(n)) ini.server.delete(n); });
   };
   // a draft opened from the Editor ("Continue in the builder"): the page is filled from what was saved
+  // ---- the people check pop-up (peopleCheckModal, below): named on Create, and when a draft is opened
+  const showPeopleCheck = (p, fromLaunch) => peopleCheckModal(p, {
+    mode: fromLaunch ? 'launch' : 'open', goLabel: (p.out_of_scope || []).length ? 'Deselect them and go to Step 2' : 'Go to Step 2',
+    onGo: () => { S.resumeInitiative = ini.id; S.resumeFixAudience = true; renderInitiatives(); }   // reloads the page's people as their profiles are today, then reopens this draft at Step 2
+  });
   const resume = async id => {
     const d = await api('/api/admin/initiatives/' + encodeURIComponent(id));
     ini.id = d.initiative_id; ini.number = d.number;
@@ -3016,12 +3073,15 @@ async function renderInitiatives() {
       if (multiCo) $('#in_company').disabled = true;
     }
     takeReflectors(d);
+    if (fixAudience) { markUnsaved(2); $('#in_s2').scrollIntoView({ block: 'start' }); }
+    else if (d.people_check) showPeopleCheck(d.people_check, false);
   };
   $('#lmBody').onclick = e => {
     const sv = e.target.closest('[data-save]');
     if (sv) saveStep(+sv.dataset.save, sv);
   };
   const resumeId = S.resumeInitiative; S.resumeInitiative = null;
+  const fixAudience = S.resumeFixAudience; S.resumeFixAudience = false;   // coming back from the people check's "go to Step 2": reopen Step 2 and say nothing more
   if (resumeId) { try { await resume(resumeId); } catch (err) { toast(err.message, 'error'); } }
   spy(); refresh();
 }
@@ -3062,16 +3122,19 @@ async function reportsApi(path, opts) {
   return res.json();
 }
 
-// Self-Initiated = Voluntary Opening, Recommended = Learning Recommendation, Overall = both tracks summed
-// (Kriti, 2026-10-05). The assigner is one of the Filter drawer's levels like the others; only Recommended sessions
-// have one, so the drawer lists assigners only when the data in scope has at least two.
+// Self-Initiated = Voluntary Opening, Recommended = Learning Recommendation, Learning Initiatives = Learning Initiative,
+// Overall = the three tracks summed (Kriti, 2026-10-05). The assigner is one of the Filter drawer's levels like the others; only
+// Recommended sessions have one, so the drawer lists assigners only when the data in scope has at least two. The initiative is a
+// filter level too (never a grouping level): only Learning Initiative sessions belong to one, so ticking some initiatives leaves
+// just their sessions, and the drawer lists them only when the data in scope has at least two.
 const ADOPT_TRACKS = {
   vo: { track: 'voluntary_opening', label: 'Self-Initiated', icon: 'selfInit', iconClass: 'teal' },
   mr: { track: 'learning_recommendations', label: 'Recommended', icon: 'recommended', iconClass: 'gold' },
+  li: { track: 'learning_initiative', label: 'Learning Initiatives', icon: 'book', iconClass: 'green' },
   overall: { track: 'overall', label: 'Overall', icon: 'globe', iconClass: 'navy' },
 };
-const ADOPT_LEVELS = ['company', 'bu', 'department', 'assigner', 'manager', 'user'];   // broadest to narrowest
-const LEVEL_NAMES = { company: 'Company', bu: 'Business Unit', department: 'Department', manager: 'Manager', user: 'User', assigner: 'Assigner' };
+const ADOPT_LEVELS = ['company', 'bu', 'department', 'assigner', 'initiative', 'manager', 'user'];   // broadest to narrowest
+const LEVEL_NAMES = { company: 'Company', bu: 'Business Unit', department: 'Department', manager: 'Manager', user: 'User', assigner: 'Assigner', initiative: 'Learning Initiative' };
 // Four tabs, Kriti's explicit call, 2026-10-05 -- one at a time, each its OWN chart, never four tiles
 // shown at once. No NPS, no Learning Application/top-2-box anywhere on this page -- a different kind of
 // report (satisfaction), not adoption; dropped entirely, not just hidden.
@@ -3081,7 +3144,7 @@ const ADOPT_TABS = [
   { key: 'applied', label: 'Applied Learning' },
   { key: 'duration', label: 'Average Duration' },
 ];
-S.adopt = { active: 'overall', tab: 'usage', level: 'company', period: 'month', fiscalStartMonth: null, focus: null, focusOptions: null, fbPeriod: 'month', fbWant: null, fbSig: null };
+S.adopt = { active: 'overall', tab: 'usage', view: 'all', level: 'company', period: 'month', fiscalStartMonth: null, focus: null, focusOptions: null, fbPeriod: 'month', fbWant: null, fbSig: null };
 
 function fmtHours(n) { return (n || 0).toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' hrs'; }
 // Usage Hours is a small number (one session is 15-20 minutes), so it shows one decimal: 0.3, never a rounded 0.
@@ -3580,9 +3643,56 @@ async function ensureFocusOptions() {
 }
 // A drawer offers each level only inside what is ticked above it. The keys carry their parents ("company", "company|bu",
 // "company|bu|department"), so a BU is offered only inside the ticked companies and a department only inside the ticked BUs
-// (or, with no BU ticked, the ticked companies). A tick that no longer fits is cleared. Assigner, manager and user are not
+// (or, with no BU ticked, the ticked companies). A tick that no longer fits is cleared. Assigner, initiative, manager and user are not
 // narrowed here: their keys carry no parent. levelOf(item) names a drawer item's level.
+// With the server's combinations (the reply's "combos": every combination of the seven levels that exists on a row), EVERY section is
+// narrowed by what is ticked in any other, and nothing has to be picked first: all lists start full. A section narrows the others only
+// while some, but not all, of the options it offers are ticked. An option is offered while some row has it together with a tick in
+// every other narrowed section; a row that a narrowed section rules out still counts for that section's own list, so you can always
+// widen it again. A box that gets hidden keeps its tick, so it comes back as it was. Without "combos" (an older server) the drawer
+// narrows the way it always did (narrowByPlaces).
+const FACET_MODELS = new WeakMap();
+function facetModel(opts) {
+  if (!opts || !Array.isArray(opts.combos) || !Array.isArray(opts.combo_levels)) return null;
+  if (!FACET_MODELS.has(opts)) {
+    const col = {}, keys = {}, pos = {};
+    opts.combo_levels.forEach((l, c) => { col[l] = c; keys[l] = (opts[l] || []).map(o => o.key); pos[l] = new Map(keys[l].map((k, i) => [k, i])); });
+    FACET_MODELS.set(opts, { rows: opts.combos, col, keys, pos });
+  }
+  return FACET_MODELS.get(opts);
+}
 function narrowDrawerLevels(body, levelOf) {
+  if (!body._facet) return narrowByPlaces(body, levelOf);
+  const model = body._facet, items = {};
+  body.querySelectorAll('.ri-dd-item').forEach(it => { items[levelOf(it)] = it; });
+  const levels = Object.keys(items).filter(l => l in model.col);
+  const all = {}, visible = {};
+  levels.forEach(l => { all[l] = Array.from(items[l].querySelectorAll('label')).map(lab => ({ lab, box: lab.querySelector('input') })); visible[l] = new Set(all[l].map(x => x.box.value)); });
+  let shownNow = visible;
+  for (let pass = 0; pass < 6; pass++) {
+    const limit = {};
+    levels.forEach(l => {
+      const shown = all[l].filter(x => shownNow[l].has(x.box.value)), on = shown.filter(x => x.box.checked);
+      if (on.length && on.length < shown.length) limit[l] = new Set(on.map(x => model.pos[l].get(x.box.value)));
+    });
+    const next = {}; levels.forEach(l => { next[l] = new Set(); });
+    const limited = Object.keys(limit);
+    model.rows.forEach(row => {
+      let failing = null;
+      for (const l of limited) {
+        if (limit[l].has(row[model.col[l]])) continue;
+        if (failing) return;   // two narrowed sections rule this row out: it counts for no list
+        failing = l;
+      }
+      levels.forEach(l => { if (!failing || failing === l) { const i = row[model.col[l]]; if (i >= 0) next[l].add(model.keys[l][i]); } });
+    });
+    const same = levels.every(l => next[l].size === shownNow[l].size && Array.from(next[l]).every(k => shownNow[l].has(k)));
+    shownNow = next;
+    if (same) break;
+  }
+  levels.forEach(l => all[l].forEach(x => { x.lab.style.display = shownNow[l].has(x.box.value) ? '' : 'none'; }));
+}
+function narrowByPlaces(body, levelOf) {
   const items = {};
   body.querySelectorAll('.ri-dd-item').forEach(it => { items[levelOf(it)] = it; });
   const ticked = l => items[l] ? Array.from(items[l].querySelectorAll('input:checked')).map(i => i.value) : [];
@@ -3599,7 +3709,7 @@ function narrowDrawerLevels(body, levelOf) {
   narrow('bu', k => !companies.length || companies.includes(parent(k, 1)));
   const bus = ticked('bu');
   narrow('department', k => (!companies.length || companies.includes(parent(k, 1))) && (!bus.length || bus.includes(parent(k, 2))));
-  // Assigners, managers and users carry the places they appear in (data-in: [[company, bu, department], ...], from the
+  // Assigners, initiatives, managers and users carry the places they appear in (data-in: [[company, bu, department], ...], from the
   // server's focus_options): one is offered only while one of its places is still ticked above it. A part a place lacks ("")
   // never rules the person out.
   const depts = ticked('department');
@@ -3609,7 +3719,7 @@ function narrowDrawerLevels(body, levelOf) {
     return !places || !places.length || places.some(p =>
       (!companies.length || !p[0] || companies.includes(p[0])) && (!bus.length || !p[1] || bus.includes(p[1])) && (!depts.length || !p[2] || depts.includes(p[2])));
   };
-  ['assigner', 'manager', 'user'].forEach(l => narrow(l, inTicked));
+  ['assigner', 'initiative', 'manager', 'user'].forEach(l => narrow(l, inTicked));
 }
 // The checkbox attribute that carries a person's places (see narrowDrawerLevels); nothing for company / BU / department options.
 function placesAttr(o) { return o.in ? ` data-in="${esc(JSON.stringify(o.in))}"` : ''; }
@@ -3687,8 +3797,9 @@ function openAdoptFilterDrawer() {
       <button type="button" class="ri-dd-toggle" data-toggle="${l}" data-label="${LEVEL_NAMES[l]}">${toggleText(l, startsOpen(l, i))}</button>
       <div class="ri-dd-panel">${DD_LINKS}${(opts[l] || []).map(o => `<label><input type="checkbox" data-level="${l}" value="${esc(o.key)}"${placesAttr(o)}${picked[l].has(o.key) ? ' checked' : ''}>${esc(o.label)}</label>`).join('')}</div>
     </div>`).join('');
+  body._facet = facetModel(opts);
   const syncPicked = () => levels.forEach(l => {
-    picked[l] = new Set(Array.from(body.querySelectorAll('input[data-level="' + l + '"]:checked')).map(i => i.value));
+    picked[l] = new Set(Array.from(body.querySelectorAll('input[data-level="' + l + '"]:checked')).filter(i => i.parentElement.style.display !== 'none').map(i => i.value));
     $('[data-toggle="' + l + '"]', body).textContent = toggleText(l, $('[data-item="' + l + '"]', body).classList.contains('open'));
   });
   narrowDrawerLevels(body, it => it.dataset.item);
@@ -3881,12 +3992,34 @@ async function drawAdoptFeedback() {
 function drawAdoptControls() {
   const bar = $('#adoptHeadControls'), chip = $('#adoptHeadChip');
   if (!bar || !chip) return;
-  bar.innerHTML = `<div class="adopt-seg" id="adoptPeriodSeg">${['month', 'quarter', 'year'].map(p => `<button data-period="${p}" class="${p === S.adopt.period ? 'active' : ''}">${titleCase(p)}</button>`).join('')}</div>
+  bar.innerHTML = `<div class="adopt-seg" id="adoptViewSeg">${[['all', 'Overview'], ['user', 'By user']].map(([v, label]) => `<button data-view="${v}" class="${v === S.adopt.view ? 'active' : ''}">${label}</button>`).join('')}</div>
+    <div class="adopt-seg" id="adoptPeriodSeg">${['month', 'quarter', 'year'].map(p => `<button data-period="${p}" class="${p === S.adopt.period ? 'active' : ''}">${titleCase(p)}</button>`).join('')}</div>
     ${focusLevels().length || focusIsSet() ? `<button class="ri-dd-trigger" id="adoptFilterTrigger">${icon('filter')} Filter</button>` : ''}`;
   chip.innerHTML = focusIsSet() ? `<div style="margin-bottom:1rem"><span class="adopt-focus-chip">Showing: <strong>${esc(focusSummary())}</strong><button type="button" id="adoptFocusClear" aria-label="Show everything">×</button></span></div>` : '';
   $$('[data-period]', $('#adoptPeriodSeg')).forEach(b => b.onclick = () => { S.adopt.period = b.dataset.period; drawAdoptPanel(); drawAdoptCards(); });
+  $$('[data-view]', $('#adoptViewSeg')).forEach(b => b.onclick = () => { S.adopt.view = b.dataset.view; drawAdoptPanel(); });
   if ($('#adoptFilterTrigger')) $('#adoptFilterTrigger').onclick = openAdoptFilterDrawer;
   if ($('#adoptFocusClear')) $('#adoptFocusClear').onclick = () => { S.adopt.focus = null; rememberSelection('adopt', {}); drawAdoptPanel(); drawAdoptCards(); };
+}
+// "By user": one row per person, adding up everything the chosen period shows (the same window as the chart). Names come from the
+// Filter's own list; the success rate is worked out from the summed raw counts, never by averaging percentages.
+function adoptByUserHtml(rows) {
+  const names = {};
+  (((S.adopt.focusOptions || {}).user) || []).forEach(o => { names[o.key] = o.label; });
+  const by = {};
+  rows.forEach(r => {
+    const k = (r.level_key || [])[0];
+    if (!k) return;
+    const a = by[k] = by[k] || { hours: 0, completed: 0, notCompleted: 0, applied: 0, top: 0, scored: 0 };
+    a.hours += r.all.usage_hours || 0; a.completed += r.all.completed_count || 0; a.notCompleted += r.all.not_completed_count || 0; a.applied += r.all.applied_count || 0;
+    a.top += r.all.top2box_percent.top_box || 0; a.scored += r.all.top2box_percent.scored || 0;
+  });
+  const people = Object.keys(by).map(k => ({ name: names[k] || k, ...by[k] })).sort((x, y) => y.hours - x.hours || x.name.localeCompare(y.name));
+  if (!people.length) return '<div class="banner info">No one has used this track in the period shown.</div>';
+  const num = n => (n || 0).toLocaleString();
+  return `<div class="um-table-card"><div class="um-table-scroll"><table class="um-table" style="min-width:0"><thead><tr><th>User</th><th>Usage hours</th><th>Completed</th><th>Not completed</th><th>Applied</th><th>Success rate</th></tr></thead><tbody>
+    ${people.map(u => `<tr><td>${esc(u.name)}</td><td>${fmtHrs(u.hours)}</td><td>${num(u.completed)}</td><td>${num(u.notCompleted)}</td><td>${num(u.applied)}</td><td>${u.scored ? Math.round((u.top / u.scored) * 100) + '%' : '—'}</td></tr>`).join('')}
+    </tbody></table></div></div>`;
 }
 async function drawAdoptPanel() {
   const key = S.adopt.active, t = ADOPT_TRACKS[key];
@@ -3897,20 +4030,21 @@ async function drawAdoptPanel() {
       <h3 style="font-size:1.05rem;font-weight:700;color:var(--night);text-transform:none;letter-spacing:0">${esc(t.label)}</h3>
       ${key !== 'overall' ? `<button class="adopt-back" id="adoptBackBtn">${icon('out')} Back to Overview</button>` : ''}
     </div>
-    <div class="adopt-tabs" id="adoptTabsRow">${ADOPT_TABS.map(tb => `<button data-tab="${tb.key}" class="${tb.key === S.adopt.tab ? 'active' : ''}">${esc(tb.label)}</button>`).join('')}</div>
+    ${S.adopt.view === 'user' ? '' : `<div class="adopt-tabs" id="adoptTabsRow">${ADOPT_TABS.map(tb => `<button data-tab="${tb.key}" class="${tb.key === S.adopt.tab ? 'active' : ''}">${esc(tb.label)}</button>`).join('')}</div>`}
     <div id="adoptBody" class="loading-block"><div class="spinner"></div></div>`;
   if (key !== 'overall') $('#adoptBackBtn').onclick = () => { S.adopt.active = 'overall'; drawAdoptCards(); drawAdoptPanel(); };
-  $$('[data-tab]', $('#adoptTabsRow')).forEach(b => b.onclick = () => { S.adopt.tab = b.dataset.tab; drawAdoptPanel(); drawAdoptCards(); });
+  if (S.adopt.view !== 'user') $$('[data-tab]', $('#adoptTabsRow')).forEach(b => b.onclick = () => { S.adopt.tab = b.dataset.tab; drawAdoptPanel(); drawAdoptCards(); });
   drawAdoptFeedback();   // its own card + its own toggle; a no-op unless the track / drill-down changed
   try {
     const fiscalStartMonth = await ensureFiscalStartMonth();   // same cached fact the cards now also wait on
-    let path = `/api/reports/adoption-overview?track=${t.track}&level=${S.adopt.level}&period=${S.adopt.period}${focusQuery()}`;
+    const byUser = S.adopt.view === 'user';
+    let path = `/api/reports/adoption-overview?track=${t.track}&level=${byUser ? 'user' : S.adopt.level}&period=${S.adopt.period}${focusQuery()}`;
     const rows = await reportsApi(path);
     // loading-block's own 3rem padding (meant only for the spinner) was being left on this div after
     // real content replaced it -- the dead space Kriti flagged, 2026-10-06, between the tabs and the
     // hero number. Real content gets this div's padding back to normal.
     $('#adoptBody').classList.remove('loading-block');
-    $('#adoptBody').innerHTML = ADOPT_TAB_RENDER[S.adopt.tab](seriesFromRows(rows, S.adopt.period, fiscalStartMonth));
+    $('#adoptBody').innerHTML = byUser ? adoptByUserHtml(rows) : ADOPT_TAB_RENDER[S.adopt.tab](seriesFromRows(rows, S.adopt.period, fiscalStartMonth));
   } catch (e) {
     $('#adoptBody').innerHTML = `<div class="banner">${esc(e.message)}</div>`;
   }
@@ -3922,23 +4056,23 @@ async function drawAdoptPanel() {
 // never decides who may see what: the backend only ever answers inside the caller's own scope.
 // TOP HALF (cards, Friction Share Over Time, Key Insights, How Friction Compounds): two independent Month/Quarter/Year
 // toggles (the four cards, and the chart -- Compounds follows the chart), one Filter by Reflector and one Drill Down.
-// BOTTOM HALF ("Friction x Workplace Challenge"): its OWN toggle, Filter by Reflector and Drill Down (company, // business unit and department only -- never manager, user or assigner, privacy) and its OWN request; the top half never touches it.
+// BOTTOM HALF ("Friction x Workplace Challenge"): its OWN toggle, Filter by Reflector and Drill Down (company, business unit, department and learning initiative only -- never manager, user or assigner, privacy) and its OWN request; the top half never touches it.
 // All names live in this one object so nothing here can collide with the Adoption Overview code.
 const LF = (() => {
   const COLORS = { confidence: '#0F766E',   // the deep teal (Kriti, 2026-10-09: the brighter teal was too bright for the eyes -- reverted)
      mindset: '#E45756', situation: '#D97706', knowledge: '#4A6FA5' };   // knowledge: a duller steel blue (Kriti, 2026-10-09: the old #2563EB was too sharp)
   const COMBO_COLORS = { one: '#D5E8D4', two: '#79C174', three_plus: '#3D7A3C' };   // three shades of one green, light -> dark as friction compounds: Fable's own ladder (Kriti, 2026-10-09; blue was taken by Knowledge & Skill Application)
   const PERIODS = [['month', 'Month'], ['quarter', 'Quarter'], ['year', 'Year']];
-  const LEVELS = [['company', 'Company'], ['bu', 'Business Unit'], ['department', 'Department'], ['assigner', 'Assigner'], ['manager', 'Manager'], ['user', 'User']];
-  const WC_LEVELS = [['company', 'Company'], ['bu', 'Business Unit'], ['department', 'Department']];
+  const LEVELS = [['company', 'Company'], ['bu', 'Business Unit'], ['department', 'Department'], ['assigner', 'Assigner'], ['initiative', 'Learning Initiative'], ['manager', 'Manager'], ['user', 'User']];
+  const WC_LEVELS = [['company', 'Company'], ['bu', 'Business Unit'], ['department', 'Department'], ['initiative', 'Learning Initiative']];
   const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const DD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="4 4 20 4 14 12.5 14 19 10 21 10 12.5 4 4"/></svg>';
   const DD_TOOLTIP = '<div class="dd-tooltip"><strong>Reveal Insights from Every Angle</strong><span>Analyze learning insights across different organizational dimensions. Slice data vertically and horizontally to uncover trends, compare groups, and identify where capability gaps and strengths exist.</span></div>';
   const RF_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
   const BUBBLE_MIN = 22, BUBBLE_MAX = 60, PCT_MIN = 12, PCT_MAX = 44;
   const st = { period: 'month',   // ONE toggle for the whole Learning Friction section: the cards, the chart and Compounds move together (Kriti, 2026-10-09)
-                focus: { company: [], bu: [], department: [], manager: [], user: [], assigner: [] },
-               wc: { company: [], bu: [], department: [] }, reflectors: [], options: null, data: null, error: null, loading: true, ddMode: 'page',
+                focus: { company: [], bu: [], department: [], manager: [], user: [], assigner: [], initiative: [] },
+               wc: { company: [], bu: [], department: [], initiative: [] }, reflectors: [], options: null, data: null, error: null, loading: true, ddMode: 'page',
                wcPeriod: 'month', wcReflectors: [], wcData: null, wcError: null, wcLoading: true, rfMode: 'page' };
   let seq = 0, wcSeq = 0;
 
@@ -4051,7 +4185,8 @@ const LF = (() => {
     const w = st.wcData, d = st.data, areas = (w && w.areas) || (d && d.areas) || [];
     const wcTag = WC_LEVELS.flatMap(([l]) => st.wc[l].map(k => { const o = ((st.options && st.options[l]) || []).find(x => x.key === k); return o ? o.label : k; }));
     const head = `<div class="rh-graph-controls" style="align-items:center;"><h3 class="rh-section-title" style="margin-bottom:0;">Friction &times; Workplace Challenge</h3>${wcControls()}</div>
-      ${wcTag.length ? `<div class="fr-filter-tag" id="wcTag">Filtered by: ${wcTag.map(esc).join(', ')} <button onclick="LF.clearWc()">&times;</button></div>` : ''}
+      ${wcTag.length ? `<div class="fr-filter-tag" id="wcTag">Filtered by: ${wcTag.map(esc).join(', ')} <button onclick="LF.clearWc()">&times;</button></div>`
+        : (focusSummary().length ? `<div class="fr-filter-tag" id="wcScopeNote">The Drill Down above does not apply to this block. It shows everything you can see, unless you use its own Drill Down.</div>` : '')}
       ${st.wcReflectors.length ? `<div class="fr-filter-tag" id="wcRefTag">Reflectors: ${st.wcReflectors.length <= 3 ? st.wcReflectors.map(esc).join(', ') : st.wcReflectors.length + ' chosen'} <button onclick="LF.clearWcReflectors()">&times;</button></div>` : ''}
       <p class="rh-subnote">Which friction area shows up most within which workplace challenge. Hover a bubble to see the situations behind it.</p>`;
     if (!w) return `<div class="rh-graph-card" id="wcCard" style="margin-top:1.8rem;">${head}<div class="fr-chart-empty">${st.wcError ? esc(friendly(st.wcError)) : 'Loading…'}</div></div>`;
@@ -4155,6 +4290,7 @@ const LF = (() => {
         <div class="ri-dd-panel">${DD_LINKS}${st.options[l].map(o => `<label><input type="checkbox" value="${esc(o.key)}"${placesAttr(o)} ${!state[l].length || state[l].includes(o.key) ? 'checked' : ''}>${esc(o.label)}</label>`).join('')}</div></div>`;
     }).join('') : '<div class="ri-dd-hint">There is nothing to drill into yet — this view has only one choice at every level.</div>';
     const drawerBody = $('#lfDdBody'), levelOf = it => it.dataset.level;
+    drawerBody._facet = facetModel(st.options);
     drawerBody.onchange = () => { narrowDrawerLevels(drawerBody, levelOf); drawerSay(drawerBody, ''); };
     drawerBody.onclick = e => { drawerLinkClick(e, drawerBody, levelOf); };
     narrowDrawerLevels(drawerBody, levelOf);

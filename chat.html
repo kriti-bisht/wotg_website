@@ -5,7 +5,7 @@
 <title>Wisdom on the GO!</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/atom_slides.css?v=20261022a">
 <style>
 :root {
@@ -2024,6 +2024,13 @@ async function reportsFetch(url, options) {
 const NOTIFICATION_BASE = LOCAL_TEST ? _localBase(8003) : 'https://wotg-notifications.azurewebsites.net';
 const LEARNING_RECS_BASE = LOCAL_TEST ? _localBase(8004) : 'https://wotg-learning-recommendations.azurewebsites.net';
 const LEARNING_INITIATIVE_BASE = LOCAL_TEST ? _localBase(8005) : 'https://wotg-learning-initiative.azurewebsites.net';
+// A learning initiative's session behaves exactly like a Recommended one (activeTrack stays 'learning_recommendations'); the only difference is which
+// app answers. activeIsInitiative is true while the open session is an initiative's, and lrBase() is the address of whichever app holds it.
+// LEARNING_INITIATIVE_BASE is the initiative ADMIN app (the learner's initiatives box); the conversations themselves are the initiative LEARNER app.
+const LEARNING_INITIATIVE_SESSION_BASE = LOCAL_TEST ? _localBase(8006) : 'https://wotg-learning-initiative-learner.azurewebsites.net';
+let activeIsInitiative = false;
+function lrBase() { return activeIsInitiative ? LEARNING_INITIATIVE_SESSION_BASE : LEARNING_RECS_BASE; }
+const INITIATIVE_ENDED_TEXT = 'This session has ended because its learning initiative has ended.';
 const NOTIFICATION_BUBBLE_WIDTH = '675px';  // +25% over the old 540px -- Kriti's call, 2026-09-10: 540 looked too narrow sitting in the full chat panel. max-width:100% on the card keeps it responsive on mobile.
 
 let userId = '';
@@ -3147,7 +3154,7 @@ async function loadHeroLearningRecs() {
 
 // ─── HERO: LEARNING INITIATIVES (the initiatives this person is in, and the skills under each) ───────────────
 // One initiative loads open; two or more load closed. A person in no initiative sees a blank box. Clicking an initiative opens or closes its
-// skills. A skill looks clickable and opens nothing yet: learning for an initiative's skills will be its own app, to be built.
+// skills. Clicking a skill starts that skill's conversation in the initiative app (startInitiativeSkillSession).
 let _heroInitiatives = [], _heroInitiativesClosed = {};
 function renderHeroInitiatives() {
   const list = document.getElementById('learningInitiativesList');
@@ -3162,7 +3169,7 @@ function renderHeroInitiatives() {
   _heroInitiatives.forEach(function(i) {
     const closed = !!_heroInitiativesClosed[i.initiative_id];
     row('li-init-row' + (closed ? ' closed' : ''), i.name, { init: i.initiative_id });
-    if (!closed) i.skills.forEach(function(skill) { row('li-skill-row', skill, { skill: skill }); });
+    if (!closed) i.skills.forEach(function(skill) { row('li-skill-row', skill, { skill: skill, initof: i.initiative_id }); });
   });
   _fitHeroRows();
 }
@@ -3170,6 +3177,7 @@ document.getElementById('learningInitiativesList').addEventListener('click', fun
   const li = e.target.closest('li');
   if (!li) return;
   if (li.dataset.init) { _heroInitiativesClosed[li.dataset.init] = !_heroInitiativesClosed[li.dataset.init]; renderHeroInitiatives(); }
+  else if (li.dataset.skill && li.dataset.initof) startInitiativeSkillSession(li.dataset.initof, li.dataset.skill);
 });
 async function loadHeroInitiatives() {
   try {
@@ -3362,12 +3370,13 @@ async function startLearningGoalSession(skillName) {
   // reads the wrong word list for this very first wait. previousTrack is
   // restored on failure below so a failed LR start never leaves an
   // in-progress VO session misrouted.
-  const previousTrack = activeTrack;
+  const previousTrack = activeTrack, previousIsInitiative = activeIsInitiative;
   activeTrack = 'learning_recommendations';
+  activeIsInitiative = false;
   showTyping('MR_skill_introduction');
   try {
     const newSessionId = await startSession('MR');
-    const res = await reportsFetch(`${LEARNING_RECS_BASE}/api/skill-introduction/start`, {
+    const res = await reportsFetch(`${lrBase()}/api/skill-introduction/start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_id: newSessionId, skill_name: skillName }),
@@ -3375,7 +3384,7 @@ async function startLearningGoalSession(skillName) {
     const data = await res.json().catch(function(){ return {}; });
     removeTyping();
     if (!res.ok) {
-      activeTrack = previousTrack;
+      activeTrack = previousTrack; activeIsInitiative = previousIsInitiative;
       appendError('Could not start that conversation -- please try again.');
       return;
     }
@@ -3385,8 +3394,55 @@ async function startLearningGoalSession(skillName) {
     await handleBackendResult(data);
   } catch (err) {
     removeTyping();
-    activeTrack = previousTrack;
+    activeTrack = previousTrack; activeIsInitiative = previousIsInitiative;
     appendError(voErrorText(err, 'Could not reach the server to start that conversation.'));
+  }
+}
+
+// ─── LEARNING INITIATIVES: a click on a skill under an initiative ──────────────────────────────────────────────
+// Same as a Recommended start, with track LI: user management makes the session ID and the passport, then the initiative app starts the
+// conversation (it checks again that this person is in the initiative). Its first answer is the Communicator's words or, once it has
+// offered the choice, the two buttons.
+async function startInitiativeSkillSession(initiativeId, skillName) {
+  if (document.getElementById('sidePanel').classList.contains('open')) toggleSidePanel();
+  removeWelcome();
+  voReset();
+  document.getElementById('chatMessages').innerHTML = '';
+  const inputBox = document.getElementById('chatInput');
+  inputBox.value = '';
+  autoResize(inputBox);
+  document.getElementById('chatPanelLabel').textContent = 'Live conversation — ' + skillName;
+  const previousTrack = activeTrack, previousIsInitiative = activeIsInitiative;
+  activeTrack = 'learning_recommendations';
+  activeIsInitiative = true;
+  showTyping('MR_skill_introduction');
+  isWaiting = true;   // nothing can be typed while the session is still being made
+  inputBox.disabled = true; document.getElementById('sendBtn').disabled = true;
+  try {
+    const newSessionId = await startSession('LI');
+    const res = await reportsFetch(`${LEARNING_INITIATIVE_SESSION_BASE}/api/skill-introduction/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: newSessionId, skill_name: skillName, initiative_id: initiativeId }),
+    });
+    const data = await res.json().catch(function(){ return {}; });
+    removeTyping();
+    if (!res.ok) {
+      activeTrack = previousTrack; activeIsInitiative = previousIsInitiative;
+      appendError(res.status === 410 ? (data.detail || INITIATIVE_ENDED_TEXT) : 'Could not start that conversation -- please try again.');
+      return;
+    }
+    sessionEnded = false;
+    activeSkillName = skillName;
+    sessionId = data.session_id;
+    await handleBackendResult(data);
+  } catch (err) {
+    removeTyping();
+    activeTrack = previousTrack; activeIsInitiative = previousIsInitiative;
+    appendError(voErrorText(err, 'Could not reach the server to start that conversation.'));
+  } finally {
+    isWaiting = false;
+    if (!sessionEnded && !document.querySelector('#initiativeChoiceRow[data-waiting]')) { inputBox.disabled = false; document.getElementById('sendBtn').disabled = false; }
   }
 }
 
@@ -3479,7 +3535,8 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
   // Lot but broke the moment you clicked one (wrong backend, wrong endpoint
   // shape, no skill_name). path defaults to VO so an old link/cache without
   // it keeps behaving exactly as before.
-  const isLR = path === 'learning_recommendations';
+  const isLI = path === 'learning_initiative';
+  const isLR = path === 'learning_recommendations' || isLI;
   voReset();
   if (document.getElementById('sidePanel').classList.contains('open')) toggleSidePanel();
   removeWelcome();
@@ -3515,17 +3572,18 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
     if (!res.ok || !data.ok) {
       appendError(data && data.reason === 'slides_missing'
         ? 'The slides for that conversation could not be reloaded -- please start a new conversation.'
-        : 'Could not resume that conversation -- it may have already ended.');
+        : (data && data.reason === 'initiative_ended' ? INITIATIVE_ENDED_TEXT : 'Could not resume that conversation -- it may have already ended.'));
       return;
     }
     sessionEnded = false;
     activeTrack = isLR ? 'learning_recommendations' : 'voluntary_opening';
+    activeIsInitiative = isLI;
     if (isLR) {
       activeSkillName = data.skill_name || skillName || '';
       if (activeSkillName) document.getElementById('chatPanelLabel').textContent = 'Live conversation — ' + activeSkillName;
     }
     sessionId = clickedSessionId;
-    currentPhase = data.phase;
+    currentPhase = isLI && typeof data.phase === 'string' ? data.phase.replace(/^LI_/, 'MR_') : data.phase;   // an initiative's "LI_" states are read as the "MR_" ones they mirror
 
     // A session parked mid-driver-diagnostics never auto-continues (it's
     // genuinely waiting on a real answer, not on the system) -- resume_
@@ -3553,12 +3611,14 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
       voRestoreThread(data);
     }
 
-    if (data.auto_continue && !isLR) {
+    if (isLI && data.choice_pending) {
+      await resumeInitiativeChoice();   // the two buttons were showing when the learner left: the initiative app says so and gives their words again
+    } else if (data.auto_continue && !isLR) {
       await voAutoContinue();
     } else if (data.auto_continue) {
       showTyping(currentPhase);
       try {
-        const res2 = await reportsFetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
+        const res2 = await reportsFetch(`${lrBase()}/api/skill-introduction/message`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, message: '' }),
@@ -3661,7 +3721,7 @@ async function viewClosedConversation(clickedSessionId, path) {
       }
       _renderHistoryMessage(m.sender === 'user' ? 'user' : 'ai', m.text);
     });
-    if (data.atom && Array.isArray(data.atom.slides) && data.atom.slides.length) voRenderHistoryAtom(data.atom, clickedSessionId, path === 'learning_recommendations' ? LEARNING_RECS_BASE : API_BASE);
+    if (data.atom && Array.isArray(data.atom.slides) && data.atom.slides.length) voRenderHistoryAtom(data.atom, clickedSessionId, path === 'learning_initiative' ? LEARNING_INITIATIVE_SESSION_BASE : (path === 'learning_recommendations' ? LEARNING_RECS_BASE : API_BASE));
   } catch (err) {
     _renderHistoryMessage('ai', 'Something went wrong loading that conversation -- please try again.');
   }
@@ -3732,14 +3792,15 @@ let voBusy = false;
 let voAutoMaxDone = false;   // the window is made big once per conversation, when its slides first show; after that it is the learner's choice
 
 function isVoPhase(phase) { return typeof phase === 'string' && phase.indexOf('VO_') === 0; }
-// The slides are drawn by the same code for both tracks. The Voluntary Opening's states are VO_training_slide_<n>; Manager Recommendation's are
-// MR_real_situation_training_slide_<n> and MR_scenario_training_slide_<n>. The cover is slide 1 and has no state.
+// The slides are drawn by the same code for every track. The Voluntary Opening's states are VO_training_slide_<n>; Manager Recommendation's are
+// MR_real_situation_training_slide_<n> and MR_scenario_training_slide_<n>; Learning Initiative's are LI_real_situation_training_slide_<n> and
+// LI_scenario_training_slide_<n>. The cover is slide 1 and has no state.
 function voSlideNumberOf(phase) {
-  const m = /^(?:VO|MR_real_situation|MR_scenario)_training_slide_(\d+)$/.exec(phase || '');
+  const m = /^(?:VO|MR_real_situation|MR_scenario|LI_real_situation|LI_scenario)_training_slide_(\d+)$/.exec(phase || '');
   return m ? parseInt(m[1], 10) : 0;
 }
 // The backend that holds the session on screen, and its one door for "continue" / "finish" / a typed message.
-function slideBase() { return activeTrack === 'learning_recommendations' ? LEARNING_RECS_BASE : API_BASE; }
+function slideBase() { return activeTrack === 'learning_recommendations' ? lrBase() : API_BASE; }
 // The voiceover is made by the backend of whichever track is open, for the person who is logged in.
 if (window.AtomSlides) window.AtomSlides.Voice.configure({ base: slideBase, token: _loginToken });
 function slideMessage(message) {
@@ -3748,8 +3809,9 @@ function slideMessage(message) {
   }
   return apiPost('/api/message', { session_id: sessionId, message: message });
 }
-// A result the slide code draws: every Voluntary Opening result, and a Manager Recommendation result that carries a slide (the cover, a training slide).
-function isSlideResult(result) { return isVoPhase(result.phase) || (activeTrack === 'learning_recommendations' && !!result.slide); }
+// A result the slide code draws: every Voluntary Opening result, a result that carries a slide (the cover, a training slide), and any result on a training
+// slide -- the Trainer's answer to a typed or spoken question carries no slide, and it must be shown and spoken like every other line on a slide.
+function isSlideResult(result) { return isVoPhase(result.phase) || voSlideNumberOf(result.phase) > 0 || (activeTrack === 'learning_recommendations' && !!result.slide); }
 function voReset() {
   voCover = null; voHeld = null; voSlideNumber = 0; voSlideCount = 0; voLastSlide = false; voBusy = false; voAutoMaxDone = false;
   if (window.AtomSlides) window.AtomSlides.Voice.stop();
@@ -4340,7 +4402,7 @@ function voShowCommitment(result) {
       error: function(msg) { appendError(msg); },
       done: async function(r) {
         await sleep(card.holdMs || VO_COMMIT_HOLD_MS);   // the saved card stays in view long enough to be seen before the closing message appears
-        (r.messages || []).forEach(function(m) { if (m) appendMessage('ai', m); });
+        (r.messages || []).forEach(function(m) { if (m) voTrainerSay(m); });
         lockConversationEnded(false);
       },
     }, base);
@@ -4472,6 +4534,8 @@ async function apiPost(path, body, base) {
 const TERMINAL_PHASES = ['MR_scope_session_end', 'objection_session_end'];
 
 async function handleBackendResult(result) {
+  // A learning initiative's states start with "LI_"; everything below was written for the Recommended track's "MR_" names, which they mirror.
+  if (activeIsInitiative && result && typeof result.phase === 'string') result.phase = result.phase.replace(/^LI_/, 'MR_');
   if (isSlideResult(result)) return handleVoResult(result);   // the slide code: the new Voluntary Opening (every state name starts with "VO_") and a Manager Recommendation result with a slide
   currentPhase = result.phase;
   pendingForm = result.form || null;
@@ -4493,6 +4557,11 @@ async function handleBackendResult(result) {
     }
   }
 
+  if (result.choice_offered && Array.isArray(result.choices) && result.choices.length) {
+    renderInitiativeChoiceButtons(result.choices, holdScrollForPair);   // the Communicator offered the choice: its own words are never shown, only these two buttons
+    return;
+  }
+
   if (pendingForm) {
     const formRow = renderDriverDiagnosisForm(pendingForm, { suppressScroll: holdScrollForPair });
     if (holdScrollForPair && !firstPairEl) firstPairEl = formRow;
@@ -4509,7 +4578,7 @@ async function handleBackendResult(result) {
       (currentPhase === 'MR_real_situation_content_creation' || currentPhase === 'MR_scenario_content_creation')) {
     showTyping(currentPhase);
     try {
-      const res = await reportsFetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
+      const res = await reportsFetch(`${lrBase()}/api/skill-introduction/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, message: '' }),
@@ -4673,6 +4742,96 @@ function renderDriverDiagnosisForm(form, opts) {
   return wrap;
 }
 
+// ─── LEARNING INITIATIVES: THE TWO CHOICE BUTTONS ──────────────────────────────────────────────────────────────
+// After the Communicator's introduction the initiative app answers with choice_offered and the two buttons' words (already in the learner's
+// language): "user_situation" (tell about a real situation) and "scenario_required" (build a scenario together). Typing is locked until one is clicked.
+function renderInitiativeChoiceButtons(choices, suppressScroll) {
+  removeWelcome();
+  const area = document.getElementById('chatMessages');
+  const old = document.getElementById('initiativeChoiceRow');
+  if (old) old.remove();
+  const shouldScroll = !suppressScroll && isNearBottom();
+  const wrap = document.createElement('div');
+  wrap.className = 'msg';
+  wrap.id = 'initiativeChoiceRow';
+  wrap.dataset.waiting = '1';   // while this is set the typing box stays locked
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar avatar-ai';
+  const avatarImg = document.createElement('img');
+  avatarImg.src = 'chatphoto.png';
+  avatarImg.alt = 'Kriti';
+  avatar.appendChild(avatarImg);
+  const card = document.createElement('div');
+  card.style.cssText = 'display:flex;flex-direction:column;gap:0.6rem;max-width:88%;';
+  choices.forEach(function(c, i) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'next-step-btn ' + (i === 0 ? 'next-step-btn-primary' : 'next-step-btn-secondary');
+    btn.textContent = c.label;
+    btn.onclick = function() { submitInitiativeChoice(c.choice, c.label, wrap); };
+    card.appendChild(btn);
+  });
+  wrap.appendChild(avatar);
+  wrap.appendChild(card);
+  area.appendChild(wrap);
+  if (shouldScroll) scrollMessagesToBottom();
+  document.getElementById('chatInput').disabled = true;
+  document.getElementById('sendBtn').disabled = true;
+  return wrap;
+}
+
+async function submitInitiativeChoice(choice, label, row) {
+  delete row.dataset.waiting;
+  Array.from(row.querySelectorAll('.next-step-btn')).forEach(function(b) {
+    b.disabled = true;
+    b.style.cursor = 'default';
+    if (b.textContent !== label) b.style.opacity = '0.4';
+  });
+  isWaiting = true;
+  showTyping(currentPhase);
+  try {
+    const res = await reportsFetch(`${LEARNING_INITIATIVE_SESSION_BASE}/api/skill-introduction/choice`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, choice: choice }),
+    });
+    const result = await res.json().catch(function(){ return {}; });
+    removeTyping();
+    if (res.status === 410) {
+      appendError(result.detail || INITIATIVE_ENDED_TEXT);
+      lockConversationEnded();
+    } else if (!res.ok) {
+      appendError('Something went wrong -- please try again.');
+      row.dataset.waiting = '1';
+      Array.from(row.querySelectorAll('.next-step-btn')).forEach(function(b) { b.disabled = false; b.style.cursor = ''; b.style.opacity = ''; });
+    } else {
+      await handleBackendResult(result);
+    }
+  } catch (err) {
+    removeTyping();
+    appendError('Could not reach the server -- please try again.');
+    row.dataset.waiting = '1';
+    Array.from(row.querySelectorAll('.next-step-btn')).forEach(function(b) { b.disabled = false; b.style.cursor = ''; b.style.opacity = ''; });
+  }
+  isWaiting = false;
+  if (!sessionEnded && !document.querySelector('#initiativeChoiceRow[data-waiting]')) {
+    document.getElementById('chatInput').disabled = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+// A session reopened from the Parking Lot while the two buttons were waiting: the initiative app says whether they still are.
+async function resumeInitiativeChoice() {
+  try {
+    const res = await reportsFetch(`${LEARNING_INITIATIVE_SESSION_BASE}/api/skill-introduction/choice-pending?session_id=${encodeURIComponent(sessionId)}`);
+    const data = await res.json().catch(function(){ return {}; });
+    if (res.status === 410) { appendError(data.detail || INITIATIVE_ENDED_TEXT); lockConversationEnded(); return; }
+    if (res.ok && data.pending && Array.isArray(data.choices)) renderInitiativeChoiceButtons(data.choices);
+  } catch (err) {
+    appendError('Could not reach the server to resume that conversation.');
+  }
+}
+
 // ─── GROSS INCONGRUENCE REJECT-PATH BUTTONS ─────────────────────────────────
 // Shown when the backend returns show_next_step_buttons: true. The backend
 // endpoint (/api/skill-introduction/next-step) and both choices have been
@@ -4743,7 +4902,7 @@ async function submitNextStepChoice(choice, row) {
   isWaiting = true;
   showTyping(currentPhase);
   try {
-    const res = await reportsFetch(`${LEARNING_RECS_BASE}/api/skill-introduction/next-step`, {
+    const res = await reportsFetch(`${lrBase()}/api/skill-introduction/next-step`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, choice: choice }),
@@ -4798,7 +4957,7 @@ async function submitDriverDiagnosisForm(answers) {
       // endpoint, and it needs skill_name. One endpoint serves both the
       // real-situation and scenario driver forms; the backend dispatches
       // on the session's current phase.
-      const res = await reportsFetch(`${LEARNING_RECS_BASE}/api/driver-diagnostics/submit`, {
+      const res = await reportsFetch(`${lrBase()}/api/driver-diagnostics/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, answers: answers }),
@@ -5331,7 +5490,7 @@ async function notifyBackendSessionEnded() {
   if (!sessionId || sessionEnded) return;
   try {
     if (activeTrack === 'learning_recommendations') {
-      await reportsFetch(`${LEARNING_RECS_BASE}/api/session/end`, {
+      await reportsFetch(`${lrBase()}/api/session/end`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId }),
       });
@@ -5698,14 +5857,17 @@ async function sendMessage() {
   try {
     if (activeTrack === 'learning_recommendations') {
       showTyping(currentPhase);
-      const res = await reportsFetch(`${LEARNING_RECS_BASE}/api/skill-introduction/message`, {
+      const res = await reportsFetch(`${lrBase()}/api/skill-introduction/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, message: text }),
       });
       const result = await res.json().catch(function(){ return {}; });
       removeTyping();
-      if (!res.ok) {
+      if (res.status === 410 && activeIsInitiative) {
+        appendError(result.detail || INITIATIVE_ENDED_TEXT);
+        lockConversationEnded();
+      } else if (!res.ok) {
         appendError(result.detail || 'Something went wrong reaching the server -- please try again.');
       } else {
         await handleBackendResult(result);
@@ -5730,7 +5892,7 @@ async function sendMessage() {
   }
 
   isWaiting = false;
-  if (!sessionEnded) {
+  if (!sessionEnded && !document.querySelector('#initiativeChoiceRow[data-waiting]')) {   // the two choice buttons keep the typing box locked until one is clicked
     input.disabled = false;
     document.getElementById('sendBtn').disabled = false;
     const micBtn1 = document.getElementById('micBtn');

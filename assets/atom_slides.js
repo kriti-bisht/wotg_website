@@ -43,6 +43,10 @@
     compassPulled: 'Where you may be pulled', compassNorth: 'Your true north', compassWhy: 'Holding this lets you:',
     // fork
     forkNow: 'The road you are on', forkChosen: 'The road you choose', forkChanges: 'What changes:',
+    // spectrum, zoom out, scales, and the closing lines of the newer Technique looks
+    spectrumNow: 'Where you are now', spectrumAim: 'Where to aim', zoomClose: 'Up close', zoomWide: 'Zoomed out', zoomNotice: 'What you notice:',
+    scalesNow: 'What you weigh now', scalesWorth: 'Worth weighing too', scalesTips: 'What tips it:',
+    tlWhy: 'Why it helps:', sbHow: 'How to say it:', stHow: 'How it works:',
     // if / then
     ifLabel: 'IF', thenLabel: 'THEN',
     // branch map
@@ -60,6 +64,7 @@
     strongerKey: 'Green is the stronger version of each part. Amber is where you picked the weaker one.',
     // cover
     coverEyebrow: 'Your learning atom · about 6 minutes', coverHi: 'Hi,', coverAsk: 'You came here to sort out',
+    liYour: 'Your learning initiative', liInit: 'Learning initiative', liSkill: 'Skill', liToday: 'Today\'s skill:', liMinutes: 'Learning atom · about 8 to 10 minutes',
     coverSkill: 'Skill you will unlock', coverBoarding: 'Learning atom · boarding now', coverMinutes: 'minutes',
     exSlidesB: 'Slides', exSlidesT: 'Short slides, one idea at a time', exAudioB: 'Read or listen', exAudioT: 'Your trainer speaks, or read along',
     exAskB: 'Ask anytime', exAskT: 'Type or speak a question', exBackB: 'Go back', exBackT: 'Revisit any slide at your pace',
@@ -138,6 +143,9 @@
     star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.7 1.5 6.8L12 17l-6.2 3.5 1.5-6.8L2.2 9l6.9-.7z"/></svg>',
     bulb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>'
   };
+  ICON.person = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg>';
+  ICON.flag = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3v18h2v-7h11l-2.5-4.5L19 5H8V3z"/></svg>';
+  ICON.zoom = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>';
 
   // ---------------------------------------------------------------------------------------------------------------------------------
   // Voice -- Azure Speech, one voice (Ava Multilingual) for every language. The page tells it where to ask (configure); the backend of the
@@ -414,6 +422,70 @@
   };
 
   // ---------------------------------------------------------------------------------------------------------------------------------
+  // Shared by the newer Mindset and Technique looks.
+  // ---------------------------------------------------------------------------------------------------------------------------------
+  // A text field may arrive as plain sentences or as bullet points: a list of strings, or lines that each begin with a bullet mark.
+  function bulletsOf(v) {
+    var mark = /^([-*•–]|\d+[.)])\s+/, items = null;
+    if (Array.isArray(v)) items = v.map(function (x) { return str(x).trim(); }).filter(Boolean);
+    else {
+      var lines = str(v).split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+      if (lines.length > 1 && lines.every(function (l) { return mark.test(l); })) items = lines.map(function (l) { return l.replace(mark, ''); });
+    }
+    return items && items.length ? items : null;
+  }
+  function rich(v) {
+    var b = bulletsOf(v);
+    return b ? '<ul class="atm-bul">' + b.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : esc(str(v));
+  }
+  function noteStrip(label, text) { return str(text).trim() ? '<div class="mn-foot"><b>' + esc(label) + '</b> ' + esc(str(text)) + '</div>' : ''; }
+  // These looks begin in a starting pose and settle once, two seconds after the slide appears. A slide being looked back at (readonly), or a
+  // person who asked for reduced motion, sees the finished slide at once.
+  function settleLater(root, ctx) {
+    var sl = $q(root, '.slide');
+    if (!sl || (ctx && ctx.readonly) || (global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    sl.classList.add('pre');
+    setTimeout(function () { sl.classList.remove('pre'); }, 2000);
+  }
+
+  // spectrum   on_screen_text: { title, left_end, right_end, now_at 1..9, aim_at 1..9, where_now, where_aim, what_it_lets_you_do }
+  SLIDES.spectrum = function (slide, ctx) {
+    var t = obj(slide.on_screen_text);
+    var pos = function (v, d) { var n = Math.round(Number(v)); return n >= 1 && n <= 9 ? n : d; };
+    var now = pos(t.now_at, 3) * 10, aim = pos(t.aim_at, 8) * 10;
+    return {
+      body: subTitle(slide, t.title) + '<div class="mn-main"><div class="mn-ends"><span>' + esc(str(t.left_end)) + '</span><span>' + esc(str(t.right_end)) + '</span></div>'
+        + '<div class="mn-bar" style="--now:' + now + '%;--aim:' + aim + '%;--lo:' + Math.min(now, aim) + '%;--hi:' + Math.max(now, aim) + '%"><i class="mn-span"></i><span class="mn-pin now">' + ICON.person + '</span><span class="mn-pin aim">' + ICON.flag + '</span></div>'
+        + '<div class="mn-cards"><div class="mn-card now"><small>' + esc(WORDS.spectrumNow) + '</small>' + rich(t.where_now) + '</div><div class="mn-card aim"><small>' + esc(WORDS.spectrumAim) + '</small>' + rich(t.where_aim) + '</div></div></div>'
+        + noteStrip(WORDS.lensLets, t.what_it_lets_you_do),
+      after: function (root) { settleLater(root, ctx); }
+    };
+  };
+
+  // zoom_out   on_screen_text: { title, close_up, zoom_out, what_you_notice }
+  SLIDES.zoom_out = function (slide, ctx) {
+    var t = obj(slide.on_screen_text), c = '<i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>';
+    return {
+      body: subTitle(slide, t.title) + '<div class="mn-main"><div class="mn-zoom"><div class="mn-vf close">' + c + '<small>' + esc(WORDS.zoomClose) + '</small>' + rich(t.close_up) + '</div><div class="mn-zarrow">' + ICON.zoom + '</div>'
+        + '<div class="mn-vf wide">' + c + '<small>' + esc(WORDS.zoomWide) + '</small>' + rich(t.zoom_out) + '<span class="ghost"></span></div></div></div>'
+        + noteStrip(WORDS.zoomNotice, t.what_you_notice),
+      after: function (root) { settleLater(root, ctx); }
+    };
+  };
+
+  // scales   on_screen_text: { title, weighs_now, worth_weighing, what_tips_it }
+  SLIDES.scales = function (slide, ctx) {
+    var t = obj(slide.on_screen_text);
+    return {
+      body: subTitle(slide, t.title) + '<div class="mn-main"><div class="mn-scales"><div class="mn-post"></div><div class="mn-base"></div><div class="mn-beam"></div><div class="mn-hub"></div>'
+        + '<div class="mn-pan l"><div class="mn-weight"><small>' + esc(WORDS.scalesNow) + '</small>' + rich(t.weighs_now) + '</div></div>'
+        + '<div class="mn-pan r"><div class="mn-weight"><small>' + esc(WORDS.scalesWorth) + '</small>' + rich(t.worth_weighing) + '</div></div></div></div>'
+        + noteStrip(WORDS.scalesTips, t.what_tips_it),
+      after: function (root) { settleLater(root, ctx); }
+    };
+  };
+
+  // ---------------------------------------------------------------------------------------------------------------------------------
   // SEGMENT 2 -- HOW TO APPLY (one technique).
   // ---------------------------------------------------------------------------------------------------------------------------------
   var FWCOL = { 2: ['#041A40', '#2d9640'], 3: ['#041A40', '#4F5F79', '#3ab54a'], 4: ['#041A40', '#2A3C5D', '#2d9640', '#3ab54a'], 5: ['#041A40', '#2A3C5D', '#4F5F79', '#2d9640', '#3ab54a'] };
@@ -450,7 +522,7 @@
   };
 
   // grid_2x2   on_screen_text: { title, x_axis [left, right], y_axis [top, bottom], boxes [ { name, line } x4 ] in reading order
-  //            (top-left, top-right, bottom-left, bottom-right), aim_for 1..4 }
+  //            (top-left, top-right, bottom-left, bottom-right), aim_for 1..4 }. y_axis is top label first, then bottom label.
   SLIDES.grid_2x2 = function (slide) {
     var t = obj(slide.on_screen_text), x = arr(t.x_axis).map(str), y = arr(t.y_axis).map(str);
     var boxes = arr(t.boxes).map(function (b) { return [str(obj(b).name), str(obj(b).line)]; });
@@ -460,7 +532,7 @@
       return '<div class="gd-c' + (aim === i + 1 ? ' hot' : '') + '" style="--i:' + i + '" data-hot="' + esc(WORDS.yourMove) + '"><b>' + esc(b[0]) + '</b>' + esc(b[1]) + '</div>';
     };
     return {
-      body: subTitle(slide, t.title) + '<div class="gd"><div class="gd-y"><span>' + esc(y[0] || '') + '</span><span>' + esc(y[1] || '') + '</span></div>'
+      body: subTitle(slide, t.title) + '<div class="gd"><div class="gd-y"><span>' + esc(y[1] || '') + '</span><span>' + esc(y[0] || '') + '</span></div>'
         + cell(0) + cell(1) + '<div class="gd-y" style="visibility:hidden"></div>' + cell(2) + cell(3)
         + '<div class="gd-x"><span>' + esc(x[0] || '') + '</span><span>' + esc(x[1] || '') + '</span></div></div>'
     };
@@ -498,6 +570,44 @@
         return '<div class="it-row" style="--i:' + i + '"><div class="it-if">' + (startsWithWord(x[0], WORDS.ifLabel) ? '' : '<small>' + esc(WORDS.ifLabel) + '</small><br>') + esc(x[0])
           + '</div><div class="it-ar">&#10140;</div><div class="it-then">' + (startsWithWord(x[1], WORDS.thenLabel) ? '' : '<small>' + esc(WORDS.thenLabel) + '</small><br>') + esc(x[1]) + '</div></div>';
       }).join('') + '</div>'
+    };
+  };
+
+  // timeline   on_screen_text: { title, moments: [ { label, line } ] in time order, closing_note }
+  SLIDES.timeline = function (slide, ctx) {
+    var t = obj(slide.on_screen_text);
+    var m = arr(t.moments).map(function (x) { return [str(obj(x).label), str(obj(x).line)]; }).filter(function (x) { return x[0] || x[1]; }).slice(0, 4), n = Math.max(1, m.length);
+    return {
+      body: subTitle(slide, t.title) + '<div class="mn-main"><div class="tl" style="--n:' + n + '"><div class="tl-line"><i class="tl-fill"></i><span class="tl-mark"></span></div><ol class="tl-stops">'
+        + m.map(function (x, i) { return '<li style="--t:' + (n > 1 ? (i / (n - 1) * 3.6).toFixed(2) : 0) + 's"><span class="tl-dot">' + (i + 1) + '</span><b>' + esc(x[0]) + '</b>' + esc(x[1]) + '</li>'; }).join('')
+        + '</ol></div></div>' + noteStrip(WORDS.tlWhy, t.closing_note),
+      after: function (root) { settleLater(root, ctx); }
+    };
+  };
+
+  // sentence_builder   on_screen_text: { title, parts: [ { label, words } ] that read together as one sentence, closing_note }
+  SLIDES.sentence_builder = function (slide, ctx) {
+    var t = obj(slide.on_screen_text);
+    var p = arr(t.parts).map(function (x) { return [str(obj(x).label), str(obj(x).words)]; }).filter(function (x) { return x[0] || x[1]; }).slice(0, 5);
+    return {
+      body: subTitle(slide, t.title) + '<div class="mn-main"><div class="sb"><div class="sb-bubble">'
+        + p.map(function (x, i) { return '<span class="sb-chip" style="--k:' + i + '"><small>' + esc(x[0]) + '</small>' + esc(x[1]) + '</span>'; }).join('')
+        + '</div></div></div>' + noteStrip(WORDS.sbHow, t.closing_note),
+      after: function (root) { settleLater(root, ctx); }
+    };
+  };
+
+  // stack   on_screen_text: { title, levels: [ { label, line } ] listed from the base up, closing_note }
+  SLIDES.stack = function (slide, ctx) {
+    var t = obj(slide.on_screen_text);
+    var l = arr(t.levels).map(function (x) { return [str(obj(x).label), str(obj(x).line)]; }).filter(function (x) { return x[0] || x[1]; }).slice(0, 4), n = Math.max(1, l.length), rows = '';
+    for (var i = n - 1; i >= 0; i--) {          // the top level is drawn first, the base last
+      var r = n - 1 - i, h0 = (r / n) * 50, h1 = ((r + 1) / n) * 50;
+      rows += '<li><span class="st-tier" style="--k:' + i + ';--h0:' + h0.toFixed(1) + '%;--h1:' + h1.toFixed(1) + '%">' + (i + 1) + '</span><div class="st-txt"><b>' + esc(l[i][0]) + '</b>' + esc(l[i][1]) + '</div></li>';
+    }
+    return {
+      body: subTitle(slide, t.title) + '<div class="mn-main"><ol class="st">' + rows + '</ol></div>' + noteStrip(WORDS.stHow, t.closing_note),
+      after: function (root) { settleLater(root, ctx); }
     };
   };
 
@@ -803,7 +913,8 @@
   }
 
   // ---------------------------------------------------------------------------------------------------------------------------------
-  // COVER (slide 1) -- made by code. cover: { first_name, situation_title, skill_name, language, font }.
+  // COVER (slide 1) -- made by code. cover: { first_name, situation_title, skill_name, language, font }, or for a Learning Initiative session
+  // { first_name, initiative_name, skill_name, language, font } (the initiative's name typed on, the skill as the subtitle; see liTop below).
   // Three looks (welcome / ticket / split) chosen from the session ID; a long situation line always gets the split look, which has the most room.
   // It shows the time ("about 6 minutes") and never a count of steps or slides, because the number is not known yet.
   // ---------------------------------------------------------------------------------------------------------------------------------
@@ -816,11 +927,64 @@
     + '<svg class="dec d6" viewBox="0 0 60 20"><path d="M2 10 Q 9 0 16 10 T 30 10 T 44 10 T 58 10" fill="none" stroke="#E4CA0A" stroke-width="4" stroke-linecap="round"/></svg>';
   var EXPECT = [['slides', 'exSlidesB', 'exSlidesT'], ['audio', 'exAudioB', 'exAudioT'], ['ask', 'exAskB', 'exAskT'], ['back', 'exBackB', 'exBackT']];
 
+  // The Learning Initiative cover: the initiative's name is typed on by code, the skill is its subtitle, and the situation is never shown. Seven looks
+  // (marquee, title page, search bar, notebook, sticky notes, horizon, magazine) chosen from the session like the other covers' looks.
+  var LI_ATOM = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2"><ellipse cx="24" cy="24" rx="20" ry="8"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)"/><circle cx="24" cy="24" r="4" fill="currentColor" stroke="none"/><circle cx="44" cy="24" r="2.4" fill="currentColor" stroke="none"/><circle cx="14" cy="41.3" r="2.4" fill="currentColor" stroke="none"/><circle cx="14" cy="6.7" r="2.4" fill="currentColor" stroke="none"/></svg>';
+  var LI_SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>';
+  var LI_HILLS = '<svg class="lc-hills" viewBox="0 0 1000 120" preserveAspectRatio="none"><path d="M0 70 C 150 20, 300 30, 450 66 S 750 100, 1000 40 L1000 120 L0 120Z" fill="#1b3a6e"/><path d="M0 96 C 200 62, 380 100, 560 84 S 860 62, 1000 90 L1000 120 L0 120Z" fill="#041A40"/></svg>';
+  var LI_LOOKS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+  function reducedMotion() { return !!(global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  function liChars(text) {
+    if (global.Intl && global.Intl.Segmenter) return Array.from(new global.Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text), function (x) { return x.segment; });
+    return Array.from(text);
+  }
+  function liTop(look, hi, name, skill) {
+    var long = name.length > 60 ? ' lc-long' : '';
+    var nm = '<div class="lc-name" role="heading" aria-level="1" aria-label="' + esc(name) + '"><span class="lc-tw"></span><i class="lc-cur"></i></div>';
+    var mins = '<div class="lc-mins">' + esc(WORDS.liMinutes) + '</div>', sk = esc(skill), H = '<div class="lc-hi">' + hi + '</div>';
+    var wrap = function (cls, inner) { return '<div class="lc lc' + cls + long + '">' + inner + '</div>'; };
+    if (look === 'A') return wrap('A', '<div class="lc-lights t"></div><div class="lc-lights b"></div>' + H + '<div class="lc-mid"><div class="lc-lab">' + esc(WORDS.liYour) + '</div>' + nm
+      + '<div class="lc-sub"><div class="lc-skill"><span>&#9733;</span><span>' + sk + '</span></div></div></div><div class="lc-foot">' + mins + '</div>');
+    if (look === 'B') return wrap('B', '<div class="lc-spine">' + LI_ATOM + '</div><div class="lc-page">' + H + '<div class="lc-lab" style="margin-top:0.7rem">' + esc(WORDS.liInit) + '</div>' + nm
+      + '<div class="lc-rule"></div><div class="lc-sub lc-skill">' + esc(WORDS.liToday) + ' <b>' + sk + '</b></div><div class="lc-foot">' + mins + '</div></div>');
+    if (look === 'C') return wrap('C', H + '<div class="lc-mid"><div class="lc-lab">' + esc(WORDS.liYour) + '</div><div class="lc-bar">' + LI_SEARCH + nm + '</div>'
+      + '<div class="lc-chips lc-sub"><span class="lc-chip"><span class="lc-st">&#9733;</span><span><small>' + esc(WORDS.liSkill) + '</small><br><span>' + sk + '</span></span></span></div></div><div class="lc-foot">' + mins + '</div>');
+    if (look === 'D') return wrap('D', '<div class="lc-holes"><i></i><i></i><i></i><i></i></div>' + H + '<div class="lc-lab" style="margin-top:1.2rem">' + esc(WORDS.liInit) + '</div>' + nm
+      + '<div class="lc-sub lc-skill">' + esc(WORDS.liSkill) + ': <span>' + sk + '</span></div><div class="lc-foot">' + mins + '</div>');
+    if (look === 'E') return wrap('E', H + '<div class="lc-board"><div class="lc-n1"><div class="lc-lab">' + esc(WORDS.liInit) + '</div>' + nm
+      + '</div><div class="lc-n2 lc-sub"><small>' + esc(WORDS.coverSkill) + '</small><b>' + sk + '</b></div></div><div class="lc-foot">' + mins + '</div>');
+    if (look === 'F') return wrap('F', '<div class="lc-sun"></div>' + LI_HILLS + H + '<div class="lc-lab">' + esc(WORDS.liYour) + '</div>' + nm + '<div class="lc-sub">&#9733; <span>' + sk + '</span></div><div class="lc-foot">' + mins + '</div>');
+    return wrap('G', '<div class="lc-head">' + H + '<div class="lc-lab">' + esc(WORDS.liInit) + '</div>' + nm + '</div><div class="lc-strip lc-sub"><small>' + esc(WORDS.coverSkill) + '</small><b>' + sk + '</b></div><div class="lc-rest">' + mins + '</div>');
+  }
+  // The name is written letter by letter, then the skill appears. Whatever happens, the whole name is on the page a moment later; reduced motion or a slide being
+  // looked back at shows it at once.
+  function liTypeOn(el, text, instant) {
+    var top = $q(el, '.lc'), tw = $q(el, '.lc-tw');
+    if (!top || !tw) return;
+    function finish() { tw.textContent = text; top.classList.add('lc-typed'); }
+    if (instant) { top.classList.add('lc-reduced'); finish(); return; }
+    var parts = liChars(text), step = Math.max(22, Math.min(55, 2200 / parts.length)), shown = '';
+    parts.forEach(function (part, i) { setTimeout(function () { shown += part; tw.textContent = shown; }, 350 + i * step); });
+    setTimeout(finish, 350 + parts.length * step + 250);
+  }
+  // Slides, Read or listen, Ask anytime and Go back each wiggle once, 1.4 seconds apart, then round again until the learner presses Begin.
+  function liNudge(el, isStarted) {
+    if (reducedMotion()) return;
+    var seen = false, waits = 0;
+    function round() {
+      if (isStarted()) return;
+      if (el.isConnected) seen = true; else if (seen || ++waits > 10) return;
+      $all(el, '.cv-ex').forEach(function (e, i) { setTimeout(function () { if (isStarted()) return; e.classList.remove('wig'); void e.offsetWidth; e.classList.add('wig'); }, i * 1400); });
+      setTimeout(round, 5 * 1400);
+    }
+    setTimeout(round, 1800);
+  }
+
   function renderCover(cover, ctx) {
     noteRotation(cover);
     cover = obj(cover); ctx = ctx || {};
     prepareLanguage(cover, ctx);
-    var name = str(cover.first_name).trim(), title = str(cover.situation_title).trim(), skill = str(cover.skill_name).trim();
+    var name = str(cover.first_name).trim(), title = str(cover.situation_title).trim(), skill = str(cover.skill_name).trim(), iname = str(cover.initiative_name).trim();
     var readonly = !!ctx.readonly;
     var long = title.length > 60;
     var look = long ? 'split' : seedPick(ctx, ['welcome', 'ticket', 'split'], 'cover');
@@ -839,7 +1003,9 @@
       + '<button type="button" class="cv-start fun-start" disabled>' + esc(WORDS.gettingReady) + '</button></div>';
 
     var body;
-    if (look === 'welcome') {
+    if (iname) {
+      body = liTop(seedPick(ctx, LI_LOOKS, 'licover'), hi, iname, skill) + '<div class="slide-body atm-pad">' + expectCards + (readonly ? '' : sound + viewTip + foot) + '</div>';
+    } else if (look === 'welcome') {
       body = '<div class="cv-hero fun-hero">' + DECO + '<div class="eyebrow">' + esc(WORDS.coverEyebrow) + '</div><h1 class="cv-hi">' + hi + '</h1>' + ask + sticker + '</div>' + expectCards;
     } else if (look === 'ticket') {
       var route = title
@@ -855,11 +1021,12 @@
         }).join('') + '</ul></div></div>';
     }
 
-    var el = node('<div class="atom-root"><div class="slide"><div class="slide-tag">' + esc(fill(WORDS.slideTag, { n: ctx.number != null ? ctx.number : 1 }))
-      + '</div><div class="slide-body atm-pad">' + body + (readonly ? '' : sound + viewTip + foot) + '</div></div></div>');
+    var el = node('<div class="atom-root"><div class="slide' + (iname ? ' li-cover' : '') + '"><div class="slide-tag">' + esc(fill(WORDS.slideTag, { n: ctx.number != null ? ctx.number : 1 }))
+      + '</div>' + (iname ? body : '<div class="slide-body atm-pad">' + body + (readonly ? '' : sound + viewTip + foot) + '</div>') + '</div></div>');
 
     var startHandlers = [], started = false;
     var btn = $q(el, '.cv-start');
+    var stopWig = function () { $all(el, '.cv-ex').forEach(function (e) { e.classList.remove('wig'); }); };
     if (!readonly) {
       var sw = $q(el, '.cv-sw'), lab = $q(el, '.cv-swlab'), bars = $q(el, '.bars'), test = $q(el, '.cv-test');
       var flip = function () {
@@ -878,9 +1045,13 @@
       };
       btn.onclick = function () {
         if (btn.disabled || started) return;
-        started = true; btn.disabled = true;
+        started = true; btn.disabled = true; stopWig();
         startHandlers.forEach(function (fn) { fn(); });
       };
+    }
+    if (iname) {
+      liTypeOn(el, iname, readonly || reducedMotion());
+      if (!readonly) liNudge(el, function () { return started; });
     }
     return {
       el: el, voice: '',
@@ -896,7 +1067,7 @@
         if (readonly || started) return;
         $all(el, '.cv-steps li').forEach(function (li) { li.className = 'done'; });
         btn.classList.add('ready'); btn.innerHTML = esc(WORDS.letsGo) + ICON.arrow;
-        started = true; btn.disabled = true;
+        started = true; btn.disabled = true; stopWig();
       }
     };
   }
@@ -1088,7 +1259,8 @@
   // Older spellings of the activity types, folded onto the Slide Menu names.
   var TYPE_ALIASES = {
     pick_a_card: 'pick', choose_your_move: 'pick', spot_the_barrier: 'pick', pressure_test: 'pick', before_after: 'pick',
-    finish_the_thought: 'finish_thought', build_your_response: 'build_response', rank: 'rank_it'
+    finish_the_thought: 'finish_thought', build_your_response: 'build_response', rank: 'rank_it',
+    sentence: 'sentence_builder', zoom: 'zoom_out', scale: 'scales'
   };
   function normType(t) {
     var k = str(t).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');

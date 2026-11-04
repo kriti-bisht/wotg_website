@@ -327,13 +327,8 @@
       <h1>Let's get <em>started.</em></h1>
       <p class="card-sub">Tell us a little about yourself before we begin the session.</p>
 
-      <!-- MAIN LOGIN/SIGNUP STATE -->
+      <!-- MAIN LOGIN STATE -->
       <div class="state-panel active" id="authState">
-        <div class="tabs">
-          <button type="button" class="tab-btn active" id="tabLogin">Log In</button>
-          <button type="button" class="tab-btn" id="tabSignup">New Here</button>
-        </div>
-
         <!-- LOG IN -->
         <div class="form-panel active" id="panelLogin">
           <form id="loginForm">
@@ -358,96 +353,6 @@
           </form>
         </div>
 
-        <!-- SIGN UP -->
-        <div class="form-panel" id="panelSignup">
-          <form id="signupForm">
-            <div class="form-group">
-              <label for="name">Your Name</label>
-              <input type="text" id="name" maxlength="100" placeholder="e.g. Jane" required />
-            </div>
-            <div class="form-group">
-              <label for="signupPronouns">Pronouns</label>
-              <select id="signupPronouns" required onchange="togglePronounOther('signupPronouns')">
-                <option value="">Choose…</option>
-                <option value="she/her">she/her</option>
-                <option value="he/him">he/him</option>
-                <option value="they/them">they/them</option>
-                <option value="__other__">Other (type your own)</option>
-              </select>
-              <input type="text" id="signupPronounsOther" placeholder="e.g. ze/zir" maxlength="40" style="display:none; margin-top:0.5rem;" />
-            </div>
-            <div class="form-group">
-              <label for="signupEmail">Email</label>
-              <input type="email" id="signupEmail" maxlength="254" placeholder="e.g. jane@company.com" required autocomplete="email" />
-            </div>
-            <div class="form-group">
-              <label for="designation">Designation</label>
-              <input type="text" id="designation" maxlength="100" placeholder="e.g. Product Manager" required />
-            </div>
-            <div class="form-group">
-              <label>Are you a people manager?</label>
-              <div class="radio-row"><label><input type="radio" name="peopleManager" value="yes" /> Yes</label><label><input type="radio" name="peopleManager" value="no" /> No</label></div>
-            </div>
-            <div class="form-group">
-              <label for="managerName">Your manager's name</label>
-              <input type="text" id="managerName" maxlength="100" placeholder="Who you report to" required />
-              <div style="font-size:0.74rem;opacity:0.7;margin-top:0.25rem;">If nobody is above you, enter your own name and email.</div>
-            </div>
-            <div class="form-group">
-              <label for="managerEmail">Your manager's email</label>
-              <input type="email" id="managerEmail" maxlength="254" placeholder="manager@company.com" required />
-            </div>
-            <div class="form-group">
-              <label for="company">Company / Organisation</label>
-              <select id="company" required>
-                <option value="">Loading companies…</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="businessUnit">Business unit</label>
-              <select id="businessUnit" required disabled>
-                <option value="">Select a company first</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="department">Department</label>
-              <input type="text" id="department" maxlength="100" placeholder="Type your department, e.g. Sales" autocomplete="off" required />
-            </div>
-            <div class="form-group">
-              <label for="country">Country of Location</label>
-              <select id="country" required><option value="">Select your country</option></select>
-            </div>
-            <div class="form-group">
-              <label for="city">City</label>
-              <div class="combo">
-                <input type="text" id="city" placeholder="Choose a country first" autocomplete="off" disabled />
-                <div class="combo-list" id="cityList" style="display:none;"></div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="signupUsername">Your Username</label>
-              <input type="text" id="signupUsername" placeholder="Same as your email" readonly tabindex="-1" autocomplete="username" style="opacity:0.75;cursor:not-allowed;" />
-              <div style="font-size:0.74rem;opacity:0.7;margin-top:0.25rem;">Your username is always your email address. It can't be changed.</div>
-            </div>
-            <div class="form-group">
-              <label for="signupPassword">Choose a Password</label>
-              <div class="password-field">
-                <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password" />
-                <button type="button" class="password-toggle-btn" aria-label="Show password" onclick="togglePasswordVisibility('signupPassword', this)"></button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="confirmPassword">Confirm Password</label>
-              <div class="password-field">
-                <input type="password" id="confirmPassword" placeholder="••••••••" required autocomplete="new-password" />
-                <button type="button" class="password-toggle-btn" aria-label="Show password" onclick="togglePasswordVisibility('confirmPassword', this)"></button>
-              </div>
-            </div>
-
-            <button type="submit" class="btn" id="signupBtn">Create My Account →</button>
-            <p class="error-msg" id="signupError">Something went wrong. Please try again.</p>
-          </form>
-        </div>
       </div>
 
       <!-- FORGOT PASSWORD: REQUEST STATE -->
@@ -508,129 +413,10 @@
     // Points at user_management_api.py -- accounts (signup/login/password
     // reset) live in their own App Service now, separate from the
     // Opening-conversation backend. Change this if the service ever moves.
-    (() => { const lower = id => { const el = document.getElementById(id); if (el) el.addEventListener('input', () => { if (el.value !== el.value.toLowerCase()) { const a = el.selectionStart, b = el.selectionEnd; el.value = el.value.toLowerCase(); try { el.setSelectionRange(a, b); } catch (_) {} } }); }; lower('signupEmail'); lower('managerEmail'); })();
-    (() => { const wire = () => { const e = document.getElementById('signupEmail'), u = document.getElementById('signupUsername'); if (e && u) { const m = () => { u.value = e.value.trim(); }; e.addEventListener('input', m); e.addEventListener('change', m); m(); } }; if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire(); })();
     // Opened from this computer (localhost), the page talks to the user management service running on this computer (local_dev/); from anywhere
     // else it talks to the real one. The password is only ever sent to the address chosen here.
     const LOCAL_TEST = ['localhost', '127.0.0.1'].indexOf(window.location.hostname) !== -1;
     const API_BASE = LOCAL_TEST ? 'http://' + window.location.hostname + ':8001' : 'https://wotg-user-management-cvhte3fvcjb9dnfg.canadacentral-01.azurewebsites.net';
-
-    // COMPANY/BUSINESS UNIT DROPDOWNS: nobody signs up by typing their company or
-    // business unit, only by picking from what's registered in company_bu_store.py.
-    // Business unit is cascading -- disabled and empty until a company is
-    // picked, then repopulated to just that company's own business units.
-    // Both dropdowns show full names only, never the short codes -- the
-    // codes are a backend concern, picked automatically off whichever full
-    // name gets submitted. Department is typed by the person (free text).
-    function titleCase(s) {
-      return s.replace(/\w\S*/g, t => t[0].toUpperCase() + t.slice(1));
-    }
-
-    const companySelect = document.getElementById('company');
-    const businessUnitSelect = document.getElementById('businessUnit');
-
-    async function loadCompanies() {
-      try {
-        const res = await fetch(`${API_BASE}/api/companies`);
-        const data = await res.json();
-        companySelect.innerHTML = '<option value="">Select your company</option>';
-        (data.companies || []).forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c.company_name;
-          opt.dataset.code = c.company_code;
-          opt.textContent = c.company_name;
-          companySelect.appendChild(opt);
-        });
-      } catch (e) {
-        companySelect.innerHTML = '<option value="">Could not load companies -- please refresh</option>';
-      }
-    }
-
-    async function loadBusinessUnitsFor(companyCode) {
-      businessUnitSelect.disabled = true;
-      businessUnitSelect.innerHTML = '<option value="">Loading business units…</option>';
-      try {
-        const res = await fetch(`${API_BASE}/api/companies/${encodeURIComponent(companyCode)}/bus`);
-        const data = await res.json();
-        const bus = data.bus || [];
-        businessUnitSelect.innerHTML = bus.length
-          ? '<option value="">Select your business unit</option>'
-          : '<option value="">No business units listed for this company yet</option>';
-        bus.forEach(b => {
-          const opt = document.createElement('option');
-          opt.value = b.bu_name;  // stored lowercased -- exact match for the session-start lookup later
-          opt.textContent = titleCase(b.bu_name);
-          businessUnitSelect.appendChild(opt);
-        });
-        businessUnitSelect.disabled = bus.length === 0;
-      } catch (e) {
-        businessUnitSelect.innerHTML = '<option value="">Could not load business units -- please refresh</option>';
-      }
-    }
-
-    companySelect.addEventListener('change', () => {
-      const chosen = companySelect.selectedOptions[0];
-      const code = chosen ? chosen.dataset.code : null;
-      if (code) {
-        loadBusinessUnitsFor(code);
-      } else {
-        businessUnitSelect.disabled = true;
-        businessUnitSelect.innerHTML = '<option value="">Select a company first</option>';
-      }
-    });
-
-    loadCompanies();
-
-    // ---- LOCATION: country first, then a searchable list of that country's cities ----
-    // Data: GeoNames (CC BY 4.0), shipped as a static file -- no outside calls. Free typing is
-    // allowed through the "my city isn't listed" choice. (Kriti, 2026-10-01)
-    const countrySelect = document.getElementById('country');
-    const cityInput = document.getElementById('city');
-    const cityList = document.getElementById('cityList');
-    let worldCountries = [];
-    let countryCities = [];
-    let cityChosen = false;
-
-    async function loadWorld() {
-      const urls = ['assets/world_locations.json'];
-      for (const u of urls) {
-        try {
-          const r = await fetch(u);
-          if (r.ok) { const j = await r.json(); worldCountries = j.countries.map(c => ({ code: c[0], name: c[1], cities: c[2] })); break; }
-        } catch (e) {}
-      }
-      countrySelect.innerHTML = '<option value="">Select your country</option>' +
-        worldCountries.map(c => '<option value="' + c.code + '">' + c.name.replace(/&/g, '&amp;') + '</option>').join('');
-    }
-    function renderCities() {
-      const v = cityInput.value.trim().toLowerCase();
-      const starts = countryCities.filter(c => c.toLowerCase().startsWith(v));
-      const has = v ? countryCities.filter(c => !c.toLowerCase().startsWith(v) && c.toLowerCase().includes(v)) : [];
-      const shown = starts.concat(has).slice(0, 60);
-      const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-      let html = shown.map(c => '<div class="combo-item" data-v="' + esc(c) + '">' + esc(c) + '</div>').join('');
-      if (!shown.length) html = '<div class="combo-empty">' + (countryCities.length ? 'No match in the list.' : 'No city list for this country — just type your city.') + '</div>';
-      if (v && !countryCities.some(c => c.toLowerCase() === v)) html += '<div class="combo-item free" data-free="1">My city isn\'t listed — use “' + esc(cityInput.value.trim()) + '”</div>';
-      cityList.innerHTML = html;
-      cityList.style.display = 'block';
-    }
-    countrySelect.addEventListener('change', () => {
-      const c = worldCountries.find(x => x.code === countrySelect.value);
-      countryCities = c ? c.cities : [];
-      cityInput.value = ''; cityChosen = false;
-      cityInput.disabled = !c;
-      cityInput.placeholder = !c ? 'Choose a country first' : (countryCities.length ? 'Start typing your city…' : 'Type your city');
-    });
-    cityInput.addEventListener('input', () => { cityChosen = !countryCities.length && cityInput.value.trim() !== ''; renderCities(); });
-    cityInput.addEventListener('focus', () => { if (!cityInput.disabled && countryCities.length) renderCities(); });
-    cityInput.addEventListener('blur', () => setTimeout(() => { cityList.style.display = 'none'; }, 120));
-    cityList.addEventListener('mousedown', e => {
-      const it = e.target.closest('.combo-item'); if (!it) return;
-      e.preventDefault();
-      if (!it.dataset.free) cityInput.value = it.dataset.v;
-      cityChosen = true; cityList.style.display = 'none';
-    });
-    loadWorld();
 
     // PASSWORD VISIBILITY TOGGLE -- Kriti's explicit call, 2026-08-14.
     // Two small inline icons (no external dependency), swapped on click.
@@ -647,37 +433,6 @@
     // Start every toggle button showing the "eye" icon (password hidden, click to reveal).
     document.querySelectorAll('.password-toggle-btn').forEach(btn => { btn.innerHTML = EYE_ICON; });
 
-
-    // Pronouns picker -- mandatory since 2026-09-30, Kriti's explicit call
-    // (every LLM actor now uses them to inflect gendered languages). A
-    // dropdown of the three standard forms plus "Other", which reveals a
-    // free-text box. The backend (user_accounts.normalize_pronouns) is the
-    // real gate; this just gives a readable message before the round trip.
-    function togglePronounOther(id) {
-      const show = document.getElementById(id).value === '__other__';
-      const other = document.getElementById(id + 'Other');
-      other.style.display = show ? 'block' : 'none';
-      if (show) other.focus();
-    }
-    function readPronouns(id) {
-      const v = document.getElementById(id).value;
-      return v === '__other__' ? document.getElementById(id + 'Other').value.trim() : v;
-    }
-
-    const tabLogin  = document.getElementById('tabLogin');
-    const tabSignup = document.getElementById('tabSignup');
-    const panelLogin  = document.getElementById('panelLogin');
-    const panelSignup = document.getElementById('panelSignup');
-
-    function showTab(which) {
-      const loginActive = which === 'login';
-      tabLogin.classList.toggle('active', loginActive);
-      tabSignup.classList.toggle('active', !loginActive);
-      panelLogin.classList.toggle('active', loginActive);
-      panelSignup.classList.toggle('active', !loginActive);
-    }
-    tabLogin.addEventListener('click', () => showTab('login'));
-    tabSignup.addEventListener('click', () => showTab('signup'));
 
     // ---- TOP-LEVEL STATE SWITCHING (auth form / forgot password / forced password change) ----
     const authState      = document.getElementById('authState');
@@ -816,92 +571,6 @@
         errorMsg.style.display = 'block';
         btn.disabled = false;
         btn.textContent = 'Log In →';
-      }
-    });
-
-    // ---- SIGN UP ----
-    document.getElementById('signupForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
-      const btn = document.getElementById('signupBtn');
-      const errorMsg = document.getElementById('signupError');
-      errorMsg.style.display = 'none';
-
-      const password = document.getElementById('signupPassword').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
-      if (password !== confirmPassword) {
-        errorMsg.textContent = 'Passwords do not match.';
-        errorMsg.style.display = 'block';
-        return;
-      }
-
-      if (!readPronouns('signupPronouns')) {
-        errorMsg.textContent = 'Please choose your pronouns.';
-        errorMsg.style.display = 'block';
-        return;
-      }
-
-      const pmChoice = document.querySelector('input[name="peopleManager"]:checked');
-      if (!pmChoice) {
-        errorMsg.textContent = 'Please tell us whether you are a people manager.';
-        errorMsg.style.display = 'block';
-        return;
-      }
-      if (!document.getElementById('managerName').value.trim()) {
-        errorMsg.textContent = "Please enter your manager's name.";
-        errorMsg.style.display = 'block';
-        return;
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('managerEmail').value.trim())) {
-        errorMsg.textContent = "Please enter your manager's email address.";
-        errorMsg.style.display = 'block';
-        return;
-      }
-      if (!countrySelect.value) {
-        errorMsg.textContent = 'Please choose your country.';
-        errorMsg.style.display = 'block';
-        return;
-      }
-      if (!cityInput.value.trim() || !cityChosen) {
-        errorMsg.textContent = cityInput.value.trim() ? 'Please pick your city from the list, or choose “My city isn’t listed”.' : 'Please choose your city.';
-        errorMsg.style.display = 'block';
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = 'Creating account...';
-
-      const payload = {
-        username: document.getElementById('signupEmail').value.trim(),
-        email: document.getElementById('signupEmail').value.trim(),
-        password: password,
-        name: document.getElementById('name').value.trim().replace(/\b\w/g, c => c.toUpperCase()),
-        pronouns: readPronouns('signupPronouns'),
-        designation: document.getElementById('designation').value.trim(),
-        business_unit: document.getElementById('businessUnit').value.trim(),
-        department: document.getElementById('department').value.trim(),
-        company: document.getElementById('company').value.trim(),
-        country: (worldCountries.find(c => c.code === countrySelect.value) || {}).name || '',
-        city: cityInput.value.trim(),
-        is_people_manager: pmChoice.value === 'yes',
-        manager_name: document.getElementById('managerName').value.trim(),
-        manager_email: document.getElementById('managerEmail').value.trim(),
-      };
-
-      try {
-        const res = await fetch(`${API_BASE}/api/signup`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Could not create your account.');
-
-        goToChat(data.user_id, data.name, data.access_type, data.email || payload.email, data.token);
-      } catch (err) {
-        errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
-        errorMsg.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Create My Account →';
       }
     });
 
