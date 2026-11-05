@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/atom_slides.css?v=20261022a">
+<link rel="stylesheet" href="assets/atom_slides.css?v=20261105b">
 <style>
 :root {
   --night:   #041A40;
@@ -1829,7 +1829,7 @@ body.chat-maximized .chat-bar { position:fixed; left:1rem; right:1rem; bottom:0.
 </div>
 
 <script src="assets/html2canvas.min.js"></script>
-<script src="assets/atom_slides.js?v=20261022a"></script>
+<script src="assets/atom_slides.js?v=20261105b"></script>
 <script>
 // `overflow:hidden` alone locks scroll on desktop (mouse wheel respects
 // it) but iOS Safari ignores it for a touch-drag -- the background page
@@ -3176,7 +3176,11 @@ function renderHeroInitiatives() {
 document.getElementById('learningInitiativesList').addEventListener('click', function(e) {
   const li = e.target.closest('li');
   if (!li) return;
-  if (li.dataset.init) { _heroInitiativesClosed[li.dataset.init] = !_heroInitiativesClosed[li.dataset.init]; renderHeroInitiatives(); }
+  if (li.dataset.init) {
+    _heroInitiativesClosed[li.dataset.init] = !_heroInitiativesClosed[li.dataset.init]; renderHeroInitiatives();
+    const picked = _heroInitiatives.find(function(i) { return i.initiative_id === li.dataset.init; });
+    openInitiativeOverview(li.dataset.init, picked ? picked.name : '');
+  }
   else if (li.dataset.skill && li.dataset.initof) startInitiativeSkillSession(li.dataset.initof, li.dataset.skill);
 });
 async function loadHeroInitiatives() {
@@ -3396,6 +3400,35 @@ async function startLearningGoalSession(skillName) {
     removeTyping();
     activeTrack = previousTrack; activeIsInitiative = previousIsInitiative;
     appendError(voErrorText(err, 'Could not reach the server to start that conversation.'));
+  }
+}
+
+// ─── LEARNING INITIATIVES: a click on an initiative's NAME shows its Overview slide ─────────────────────────────
+// Made by code, no AI, nothing saved. It opens in the same pop-up as a conversation; the typing box stays locked until a skill is picked, and a click
+// on one of its skills starts that skill's conversation (startInitiativeSkillSession).
+async function openInitiativeOverview(initiativeId, initiativeName) {
+  if (document.getElementById('sidePanel').classList.contains('open')) toggleSidePanel();
+  removeWelcome();
+  voReset();
+  document.getElementById('chatMessages').innerHTML = '';
+  const inputBox = document.getElementById('chatInput');
+  inputBox.value = ''; autoResize(inputBox);
+  inputBox.disabled = true; document.getElementById('sendBtn').disabled = true;
+  document.getElementById('chatPanelLabel').textContent = 'Learning initiative — ' + initiativeName;
+  showTyping('MR_skill_introduction');
+  try {
+    const res = await reportsFetch(`${LEARNING_INITIATIVE_BASE}/api/learner/initiatives/${encodeURIComponent(initiativeId)}/overview`);
+    const data = await res.json().catch(function(){ return {}; });
+    removeTyping();
+    if (!res.ok) { appendError('This learning initiative could not be opened right now -- please try again.'); return; }
+    const card = window.AtomSlides.renderInitiativeOverview(data, {
+      apiBase: LEARNING_INITIATIVE_SESSION_BASE,
+      onPickSkill: function(skillName) { startInitiativeSkillSession(initiativeId, skillName); },
+    });
+    appendAtomRow(card.el);
+  } catch (err) {
+    removeTyping();
+    appendError(voErrorText(err, 'Could not reach the server to open this learning initiative.'));
   }
 }
 

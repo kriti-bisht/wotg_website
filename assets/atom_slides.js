@@ -64,6 +64,9 @@
     strongerKey: 'Green is the stronger version of each part. Amber is where you picked the weaker one.',
     // cover
     coverEyebrow: 'Your learning atom · about 6 minutes', coverHi: 'Hi,', coverAsk: 'You came here to sort out',
+    ovTag: 'Learning Initiative', ovWelcome: 'Welcome to your learning initiative', ovStarts: 'Starts', ovEnds: 'Ends', ovSkills: 'Skills',
+    ovObjective: 'Objective', ovNeed: 'Business need', ovSkillsTitle: 'Skills you will learn in this initiative',
+    ovFootBold: 'Click any skill to begin learning.', ovFootRest: 'You can come back here and pick another one any time.',
     liYour: 'Your learning initiative', liInit: 'Learning initiative', liSkill: 'Skill', liToday: 'Today\'s skill:', liMinutes: 'Learning atom · about 8 to 10 minutes',
     coverSkill: 'Skill you will unlock', coverBoarding: 'Learning atom · boarding now', coverMinutes: 'minutes',
     exSlidesB: 'Slides', exSlidesT: 'Short slides, one idea at a time', exAudioB: 'Read or listen', exAudioT: 'Your trainer speaks, or read along',
@@ -341,7 +344,7 @@
   // ---------------------------------------------------------------------------------------------------------------------------------
   SLIDES.agenda = function (slide, ctx) {
     var t = obj(slide.on_screen_text), items = arr(t.items).map(str).filter(Boolean);
-    var look = seedPick(ctx, ['summit', 'road', 'stones', 'stars'], 'agenda');
+    var look = seedPick(ctx, ['summit', 'road'], 'agenda');
     return {
       body: subTitle(slide, t.title) + '<div class="ag-scene">' + uniqueNames(agSceneSvg(look)) + '</div><ol class="ag-items" style="--n:' + items.length + '">'
         + items.map(function (x, i) { return '<li style="--i:' + i + '">' + esc(x) + '</li>'; }).join('') + '</ol>',
@@ -913,6 +916,39 @@
   }
 
   // ---------------------------------------------------------------------------------------------------------------------------------
+  // LEARNING INITIATIVE OVERVIEW -- the slide a learner sees after clicking the NAME of a learning initiative. Made by code, no AI, nothing saved.
+  // overview: { initiative_name, start_date, end_date (ISO text), objective, business_need, skills [names], language, font }
+  // ctx: { apiBase (where the fonts are served), onPickSkill(skillName) }. Returns { el }.
+  // ---------------------------------------------------------------------------------------------------------------------------------
+  function overviewDate(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(str(iso));
+    if (!m) return str(iso);
+    var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    try { return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return str(iso); }
+  }
+  function renderInitiativeOverview(overview, ctx) {
+    overview = obj(overview); ctx = ctx || {};
+    prepareLanguage(overview, ctx);
+    var skills = arr(overview.skills).map(str).filter(Boolean);
+    var chip = function (label, value) { return '<span class="iw-chip"><small>' + esc(label) + '</small> ' + esc(value) + '</span>'; };
+    var box = function (label, text) { return str(text).trim() ? '<div class="iw-box"><h3>' + esc(label) + '</h3><p>' + esc(str(text)) + '</p></div>' : ''; };
+    var about = box(WORDS.ovObjective, overview.objective) + box(WORDS.ovNeed, overview.business_need);
+    var html = '<div class="atom-root"><div class="slide"><div class="slide-tag">' + esc(WORDS.ovTag) + '</div><div class="slide-body atm-pad">'
+      + '<div class="cv-hero fun-hero"><div class="eyebrow">' + esc(WORDS.ovWelcome) + '</div><h1>' + esc(str(overview.initiative_name)) + '</h1>'
+      + '<div class="iw-dates">' + chip(WORDS.ovStarts, overviewDate(overview.start_date)) + chip(WORDS.ovEnds, overviewDate(overview.end_date)) + chip(WORDS.ovSkills, String(skills.length)) + '</div></div>'
+      + (about ? '<div class="iw-about">' + about + '</div>' : '')
+      + (skills.length ? '<div class="iw-skills"><h3>' + esc(WORDS.ovSkillsTitle) + '</h3><div class="iw-grid">'
+        + skills.map(function (s, i) { return '<button type="button" class="iw-skill" data-skill="' + esc(s) + '"><span class="n">' + (i + 1) + '</span>' + esc(s) + '<span class="go">&rsaquo;</span></button>'; }).join('')
+        + '</div><p class="iw-foot"><b>' + esc(WORDS.ovFootBold) + '</b> ' + esc(WORDS.ovFootRest) + '</p></div>' : '')
+      + '</div></div></div>';
+    var el = node(html);
+    Array.prototype.forEach.call(el.querySelectorAll('.iw-skill'), function (b) {
+      b.onclick = function () { if (typeof ctx.onPickSkill === 'function') ctx.onPickSkill(b.getAttribute('data-skill')); };
+    });
+    return { el: el };
+  }
+
+  // ---------------------------------------------------------------------------------------------------------------------------------
   // COVER (slide 1) -- made by code. cover: { first_name, situation_title, skill_name, language, font }, or for a Learning Initiative session
   // { first_name, initiative_name, skill_name, language, font } (the initiative's name typed on, the skill as the subtitle; see liTop below).
   // Three looks (welcome / ticket / split) chosen from the session ID; a long situation line always gets the split look, which has the most room.
@@ -1324,7 +1360,7 @@
   }
 
   global.AtomSlides = {
-    renderCover: renderCover, renderSlide: renderSlide, renderActivity: renderActivity, renderCommitment: renderCommitment,
+    renderCover: renderCover, renderInitiativeOverview: renderInitiativeOverview, renderSlide: renderSlide, renderActivity: renderActivity, renderCommitment: renderCommitment,
     Voice: Voice, useScriptFont: useScriptFont, words: WORDS
   };
 })(window);
