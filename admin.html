@@ -608,6 +608,7 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .rf-use .field { margin-bottom:0; }
 .in-yb-rf { margin:1rem 0 1.1rem; }
 .hint.wide { max-width:none; }
+.q-points { margin:0; padding-left:1.3rem; line-height:1.55; } .q-points li { margin:0 0 0.15rem; } .q-points li::marker { font-weight:700; color:var(--night); }
 .rf-use-tag { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; }
 .rf-use-tag small { color:var(--grey3); font-size:0.72rem; }
 .btn-kriti { font-family:'Poppins',sans-serif; font-size:0.86rem; font-weight:600; color:#fff; border:none; cursor:pointer; flex-shrink:0; display:flex; align-items:center; gap:0.55rem; padding:0.62rem 1.3rem 0.62rem 0.85rem; border-radius:999px; background:linear-gradient(135deg, #0a2a5c 0%, #0f8f86 60%, #14b8a6 100%); box-shadow:0 8px 20px rgba(20,184,166,0.32); transition:transform 0.15s, box-shadow 0.15s; }
@@ -2469,10 +2470,12 @@ async function addInitiativeReflector(d, url, reload) {
 // among the chosen participants. Ask Kriti (bottom right) picks reflectors and fills them in, a second Ask Kriti fills one reflector's answers, and Validate rates each reflector's fit.
 // A labeled question over a text box. The word limit under it, and the cut-off, come from the site-wide limit rule above
 // (decorateLimit): 200 words unless the box says otherwise with data-max-words.
-function questionBox(id, label, question) {
+function questionBox(id, label, question, rows) {
+  // `question` is one line, or a list of lines shown as numbered points (still one answer box)
+  const q = Array.isArray(question) ? `<ol class="q-points">${question.map(x => `<li>${x}</li>`).join('')}</ol>` : question;
   return `<div class="field full"><label>${label} <span class="req">*</span></label>
-    <div class="hint" style="margin:0 0 0.35rem">${question}</div>
-    <textarea id="${id}" rows="4"></textarea></div>`;
+    <div class="hint${Array.isArray(question) ? ' wide' : ''}" style="margin:0 0 0.35rem">${q}</div>
+    <textarea id="${id}" rows="${rows || 4}"></textarea></div>`;
 }
 const KRITI_DOTS = '<svg class="kd" viewBox="0 0 24 24" aria-hidden="true"><g class="kd-ring" fill="#fff"><circle cx="12" cy="3.5" r="1.9"/><circle cx="18" cy="6" r="1.7" opacity=".9"/><circle cx="20.5" cy="12" r="1.5" opacity=".75"/><circle cx="18" cy="18" r="1.3" opacity=".6"/><circle cx="12" cy="20.5" r="1.1" opacity=".48"/><circle cx="6" cy="18" r=".95" opacity=".36"/><circle cx="3.5" cy="12" r=".8" opacity=".26"/><circle cx="6" cy="6" r=".7" opacity=".18"/></g><circle cx="12" cy="12" r="2.4" fill="#E4CA0A"/></svg>';
 function initialsOf(name) { const p = String(name || '').trim().split(/\s+/).filter(Boolean); return ((p[0] || '?')[0] + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase(); }
@@ -2645,7 +2648,7 @@ async function renderInitiatives() {
         <div class="in-yb">
           <div class="in-callout"><strong>The answers you give here directly impact your learners' learning experience.</strong></div>
           <div class="form-grid">
-            ${questionBox('in_obj', 'Overall objective', 'What should participants be able to do differently as a result of this initiative?')}
+            ${questionBox('in_obj', 'Overall objective', ['What should participants be able to do differently as a result of this initiative?', 'Any key frameworks, methodologies or techniques taught? (include a brief explanation)'], 5)}
             ${questionBox('in_need', 'Business need / outcome', 'What organizational or business problem is this initiative intended to address?')}
           </div>
         </div>

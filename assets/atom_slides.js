@@ -50,7 +50,7 @@
     // if / then
     ifLabel: 'IF', thenLabel: 'THEN',
     // branch map
-    wayThrough: 'Way through', evSupported: 'Well supported', evPartly: 'Partly assumed', evWatch: 'Worth watching',
+    wayThrough: 'Way through', evSupported: 'Well supported', evPartly: 'Partly assumed', evWatch: 'Worth watching', bxBarrier: 'Barrier', bxEvidence: 'Evidence', bxWays: 'Ways through',
     // activities
     kindFinish: 'Finish the thought', kindBuild: 'Build your response', kindRank: 'Rank it', kindStory: 'Mini story',
     kindRole: 'Role play', kindView: 'Your view', kindGut: 'Gut check', kindSpot: 'Spot it',
@@ -66,7 +66,7 @@
     coverEyebrow: 'Your learning atom · about 6 minutes', coverHi: 'Hi,', coverAsk: 'You came here to sort out',
     ovTag: 'Learning Initiative', ovWelcome: 'Welcome to your learning initiative', ovStarts: 'Starts', ovEnds: 'Ends', ovSkills: 'Skills',
     ovObjective: 'Objective', ovNeed: 'Business need', ovSkillsTitle: 'Skills you will learn in this initiative',
-    ovHear: 'Click to hear audio', ovStop: 'Stop audio', ovMore: 'Read more \u25be', ovLess: 'Show less \u25b4',
+    ovHear: 'Click to hear audio', ovBegin: 'Begin', ovSkillOne: 'skill', ovSkillMany: 'skills', ovNotStarted: 'Not started yet', ovFinished: 'Finished', ovWeekLeft: '1 week to go', ovWeeksLeft: 'weeks to go', ovStop: 'Stop audio', ovMore: 'Read more \u25be', ovLess: 'Show less \u25b4',
     ovFootBold: 'Click any skill to begin learning.', ovFootRest: 'You can come back here and pick another one any time.',
     liYour: 'Your learning initiative', liInit: 'Learning initiative', liSkill: 'Skill', liToday: 'Today\'s skill:', liMinutes: 'Learning atom · about 8 to 10 minutes',
     coverSkill: 'Skill you will unlock', coverBoarding: 'Learning atom · boarding now', coverMinutes: 'minutes',
@@ -85,7 +85,7 @@
     readAlong: 'Read along',
     viewLabel: 'Better view', viewHelp: 'Want the slides bigger? Press the expand arrows at the top right of this window, next to the X. For the most room, put your browser in full screen too (Ctrl + Cmd + F on a Mac, F11 on Windows).',
     // the player under each slide, and the extra question button
-    playLabel: 'Play', pauseLabel: 'Pause', replayLabel: 'Play again', volumeLabel: 'Volume', ccLabel: 'Read along', ccHide: 'Hide the read-along text',
+    playLabel: 'Play', pauseLabel: 'Pause', replayLabel: 'Play again', volumeLabel: 'Volume', muteLabel: 'Mute', unmuteLabel: 'Unmute', ccLabel: 'Read along', ccHide: 'Hide the read-along text',
     ccShow: 'Show the read-along text', expandLabel: 'Expand the window', shrinkLabel: 'Shrink the window', smallLabel: 'Smaller slide', normalLabel: 'Normal size slide',
     diffQuestion: 'I have a different question',
     diffReply: 'Sure, what’s on your mind? (You can click the mic icon and speak your question, or type it in the box below.)',
@@ -162,6 +162,8 @@
     enabled: true,
     language: 'English',
     volume: 1,
+    muted: false,      // the learner's mute: every sound stays silent while it is on (the audio keeps running, so the bar and the read-along carry on); a new visit starts unmuted
+    muteListeners: [],
     listeners: [],
     source: null,      // { base: function () -> the backend address of the active track, token: function () -> the login token }
     el: null,          // the ONE audio element, reused, so a browser that only lets a click start sound keeps allowing it
@@ -177,11 +179,21 @@
       Voice.listeners.forEach(function (fn) { try { fn(Voice.enabled); } catch (e) { /* a listener must never break the switch */ } });
     },
     onChange: function (fn) { Voice.listeners.push(fn); },
+    // The ONE mute for the whole page: every slide's player, every trainer response and every track read it. Pressing a speaker anywhere calls this.
+    setMuted: function (on) {
+      Voice.muted = !!on;
+      if (Voice.el) Voice.el.muted = Voice.muted;
+      Voice.muteListeners.forEach(function (fn) { try { fn(Voice.muted); } catch (e) { /* a listener must never break the mute */ } });
+    },
+    onMute: function (fn) { Voice.muteListeners.push(fn); },
+    // The loudness changes at once, even in the middle of a sentence.
+    setVolume: function (v) { Voice.volume = Math.max(0, Math.min(1, +v || 0)); if (Voice.el) Voice.el.volume = Voice.volume; },
     stop: function () { Voice.run += 1; try { if (Voice.el) Voice.el.pause(); } catch (e) { /* nothing to stop */ } },
     pause: function () { try { if (Voice.el) Voice.el.pause(); } catch (e) { /* nothing to pause */ } },
     resume: function () { try { if (Voice.el && Voice.el.src && Voice.el.paused) Voice.el.play(); } catch (e) { /* nothing to resume */ } },
     // force: the cover's test sound and the player's own play button play even when the switch is off, because the person asked for it.
-    // handlers (all optional): onstart(), onprogress(fraction 0..1, charIndex), onend(), onerror(). startAt: a character position to begin from.
+    // handlers (all optional): onstart(), onprogress(fraction 0..1, charIndex), onend(), onerror(); ignoreMute: true makes this one sound audible whatever the mute is
+    // (the cover's test sound and the overview's own play button; they never change the mute). startAt: a character position to begin from.
     // Returns true when speech was started (the audio itself follows once it has arrived).
     speak: function (text, force, handlers, startAt) {
       if ((!Voice.enabled && !force) || !Voice.supported() || !text) return false;
@@ -205,6 +217,7 @@
           el.onended = function () { if (mine === Voice.run && h.onend) h.onend(); };
           el.onerror = fail;
           el.volume = Voice.volume;
+          el.muted = h.ignoreMute ? false : Voice.muted;
           el.src = url;
           var p = el.play(); if (p && p.catch) p.catch(fail);
         };
@@ -243,7 +256,7 @@
   // spec = what a renderer returned: { body, bodyClass, noTitle }. A slide whose design carries its own title (the recap) sets noTitle.
   function frame(slide, ctx, spec) {
     var title = spec.noTitle ? '' : str(slide.slide_title).trim();
-    return '<div class="atom-root"><div class="slide"><div class="slide-tag">' + esc(fill(WORDS.slideTag, { n: ctx.number != null ? ctx.number : '' })) + '</div>'
+    return '<div class="atom-root"><div class="slide' + (spec.slideClass ? ' ' + spec.slideClass : '') + '"><div class="slide-tag">' + esc(fill(WORDS.slideTag, { n: ctx.number != null ? ctx.number : '' })) + '</div>'
       + '<div class="slide-body' + (spec.bodyClass ? ' ' + spec.bodyClass : '') + '">' + (title ? '<h2>' + esc(title) + '</h2>' : '') + spec.body + '</div></div></div>';
   }
   // A heading inside the template, shown only when it adds something to the slide title.
@@ -267,7 +280,6 @@
     });
     return svg;
   }
-  var STARS = [[60,40,1],[130,95,2],[210,30,3],[300,70,1],[380,25,2],[520,50,3],[610,20,1],[690,80,2],[770,35,3],[850,60,1],[930,28,2],[40,150,3],[470,200,1],[560,150,2],[820,170,3],[960,190,1],[250,200,2],[110,205,1]];
   function agSceneSvg(kind){
     var head = '<svg viewBox="0 0 1000 240" preserveAspectRatio="xMidYMid slice">', foot = '<g data-atm="marks"></g></svg>', b = '';
     if (kind === 'summit') {
@@ -279,24 +291,13 @@
         + '<polygon points="420,240 700,40 970,240" fill="#2A3C5D"/><polygon points="700,40 664,92 688,80 706,104 724,80 748,92" fill="#fff"/>'
         + '<polygon points="0,240 0,208 160,188 330,212 520,198 700,218 1000,204 1000,240" fill="#2d9640"/><polygon points="0,240 0,228 200,216 420,232 640,222 1000,230 1000,240" fill="#3ab54a"/>'
         + '<path data-atm="route" class="ag-route-draw" d="M72 212 C 170 186, 250 210, 340 176 S 520 170, 585 130 S 660 92, 700 48" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="2 11" stroke-linecap="round"/>';
-    } else if (kind === 'road') {
+    } else {
       b = '<defs><linearGradient id="skyB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe6f7"/><stop offset="1" stop-color="#fff6d6"/></linearGradient></defs><rect width="1000" height="240" fill="url(#skyB)"/>'
         + '<circle cx="120" cy="52" r="26" fill="#E4CA0A"/><g fill="#fff" opacity=".9"><ellipse cx="420" cy="44" rx="48" ry="12"/><ellipse cx="460" cy="36" rx="30" ry="10"/><ellipse cx="820" cy="58" rx="42" ry="11"/></g>'
         + '<path d="M0 150 C 150 90, 300 150, 450 120 S 800 70, 1000 110 L1000 240 L0 240Z" fill="#9fd29a"/><path d="M0 190 C 200 150, 380 200, 560 170 S 860 140, 1000 170 L1000 240 L0 240Z" fill="#3ab54a"/>'
         + '<g fill="#2d9640"><polygon points="250,170 268,128 286,170"/><polygon points="620,150 636,110 652,150"/><polygon points="890,130 904,96 918,130"/></g><g fill="#6b4a2a"><rect x="265" y="170" width="6" height="12"/><rect x="633" y="150" width="6" height="12"/><rect x="901" y="130" width="6" height="12"/></g>'
         + '<path d="M30 204 C 180 124, 330 236, 520 156 S 820 96, 970 146" fill="none" stroke="#2A3C5D" stroke-width="30" stroke-linecap="round"/>'
         + '<path data-atm="route" class="ag-route-draw" d="M30 204 C 180 124, 330 236, 520 156 S 820 96, 970 146" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="14 12" stroke-linecap="round"/>';
-    } else if (kind === 'stones') {
-      b = '<defs><linearGradient id="skyC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe6f7"/><stop offset="1" stop-color="#fff2cc"/></linearGradient><linearGradient id="wat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fc3e8"/><stop offset="1" stop-color="#2f7fb8"/></linearGradient></defs>'
-        + '<rect width="1000" height="240" fill="url(#skyC)"/><circle cx="500" cy="52" r="34" fill="#E4CA0A" opacity=".9"/><g fill="#fff" opacity=".9"><ellipse cx="200" cy="48" rx="46" ry="12"/><ellipse cx="800" cy="60" rx="44" ry="11"/></g>'
-        + '<rect y="120" width="1000" height="120" fill="url(#wat)"/><g fill="none" stroke="#fff" stroke-width="2" opacity=".55"><path d="M40 160 q 20 -10 40 0 t 40 0 t 40 0"/><path d="M300 200 q 20 -10 40 0 t 40 0 t 40 0"/><path d="M560 168 q 20 -10 40 0 t 40 0 t 40 0"/><path d="M780 210 q 20 -10 40 0 t 40 0 t 40 0"/></g>'
-        + '<path d="M0 120 C 60 100, 120 110, 170 130 L170 240 L0 240Z" fill="#3ab54a"/><path d="M830 128 C 880 104, 950 100, 1000 112 L1000 240 L830 240Z" fill="#3ab54a"/>'
-        + '<path data-atm="route" d="M120 172 Q 500 205 890 168" fill="none" stroke="none"/>';
-    } else {
-      var dots = STARS.map(function(s){ return '<circle class="ag-svg-twinkle t' + s[2] + '" cx="' + s[0] + '" cy="' + s[1] + '" r="' + (s[2] === 2 ? 2 : 1.4) + '" fill="#fff"/>'; }).join('');
-      b = '<defs><linearGradient id="skyD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#041A40"/><stop offset="1" stop-color="#16407a"/></linearGradient></defs><rect width="1000" height="240" fill="url(#skyD)"/>'
-        + '<circle cx="90" cy="56" r="26" fill="#fff6c9"/><circle cx="102" cy="50" r="24" fill="#0a2a5c"/>' + dots
-        + '<path data-atm="route" class="ag-route-draw" d="M110 176 C 220 96, 330 196, 470 124 S 700 60, 890 112" fill="none" stroke="#E4CA0A" stroke-width="2.5" stroke-dasharray="6 7" stroke-linecap="round"/>';
     }
     return head + b + foot;
   }
@@ -307,49 +308,80 @@
       var pt = path.getPointAtLength(len * (n === 1 ? 1 : i / (n - 1))), x = pt.x.toFixed(1), y = pt.y.toFixed(1), last = i === n - 1, num = i + 1;
       if (kind === 'summit') {
         h += '<g transform="translate(' + x + ' ' + y + ')"><line x1="0" y1="0" x2="0" y2="-34" stroke="#041A40" stroke-width="3" stroke-linecap="round"/><path d="M0 -34 L' + (last ? 34 : 26) + ' -25 L0 -16Z" fill="' + (last ? '#E4CA0A' : '#3ab54a') + '"/><circle r="12" fill="#fff" stroke="#041A40" stroke-width="2.5"/><text y="4.5" text-anchor="middle" font-size="13" font-weight="700" font-family="Fredoka,Poppins,sans-serif" fill="#041A40">' + num + '</text></g>';
-      } else if (kind === 'road') {
-        h += '<g transform="translate(' + x + ' ' + y + ')"><path d="M0 0 C -4 -10, -18 -16, -18 -30 a18 18 0 1 1 36 0 C 18 -16, 4 -10, 0 0Z" fill="' + (last ? '#E4CA0A' : '#3ab54a') + '" stroke="#041A40" stroke-width="2.5"/><circle cy="-30" r="11" fill="#fff"/><text y="-25.5" text-anchor="middle" font-size="13" font-weight="700" font-family="Fredoka,Poppins,sans-serif" fill="#041A40">' + num + '</text></g>';
-      } else if (kind === 'stones') {
-        if (last) { h += '<g transform="translate(' + x + ' ' + (+y - 4) + ')"><line x1="0" y1="0" x2="0" y2="-46" stroke="#041A40" stroke-width="3.5" stroke-linecap="round"/><path d="M0 -46 L38 -34 L0 -22Z" fill="#E4CA0A"/><circle r="13" fill="#fff" stroke="#041A40" stroke-width="2.5"/><text y="5" text-anchor="middle" font-size="14" font-weight="700" font-family="Fredoka,Poppins,sans-serif" fill="#041A40">' + num + '</text></g>'; }
-        else { h += '<g transform="translate(' + x + ' ' + y + ')"><ellipse cy="6" rx="36" ry="14" fill="#6f7f93"/><ellipse rx="36" ry="14" fill="#c9d0da"/><ellipse cy="-3" rx="26" ry="8" fill="#e6eaf0"/><text y="5" text-anchor="middle" font-size="15" font-weight="700" font-family="Fredoka,Poppins,sans-serif" fill="#041A40">' + num + '</text></g>'; }
       } else {
-        var r = last ? 17 : 12, pts = [];
-        for (var k = 0; k < 10; k++) { var a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * 0.45 : r; pts.push((Math.cos(a) * rr).toFixed(1) + ',' + (Math.sin(a) * rr).toFixed(1)); }
-        h += '<g transform="translate(' + x + ' ' + y + ')"><circle r="' + (r + 8) + '" fill="#E4CA0A" opacity=".22"/><polygon points="' + pts.join(' ') + '" fill="#E4CA0A"/><text x="' + (r + 10) + '" y="5" font-size="15" font-weight="700" font-family="Fredoka,Poppins,sans-serif" fill="#fff">' + num + '</text></g>';
+        h += '<g transform="translate(' + x + ' ' + y + ')"><path d="M0 0 C -4 -10, -18 -16, -18 -30 a18 18 0 1 1 36 0 C 18 -16, 4 -10, 0 0Z" fill="' + (last ? '#E4CA0A' : '#3ab54a') + '" stroke="#041A40" stroke-width="2.5"/><circle cy="-30" r="11" fill="#fff"/><text y="-25.5" text-anchor="middle" font-size="13" font-weight="700" font-family="Fredoka,Poppins,sans-serif" fill="#041A40">' + num + '</text></g>';
       }
     }
     g.innerHTML = h;
   }
 
-  function barArt(skin){
-    var h = '<svg viewBox="0 0 1000 92" preserveAspectRatio="xMidYMid slice">';
-    if (skin === 'road') {
-      h += '<rect width="1000" height="92" fill="#cfe6f7"/><path d="M0 60 C 200 40, 400 66, 600 50 S 900 44, 1000 54 L1000 92 L0 92Z" fill="#9fd29a"/><rect y="62" width="1000" height="30" fill="#2A3C5D"/><path d="M0 78 H1000" stroke="#fff" stroke-width="3" stroke-dasharray="18 14"/>'
-        + '<g transform="translate(560 40)"><rect x="-4" y="0" width="8" height="34" fill="#6f7f93"/><rect x="-60" y="-4" width="120" height="18" fill="#fff" stroke="#041A40" stroke-width="2"/><path d="M-56 -4 L-36 14 M-28 -4 L-8 14 M0 -4 L20 14 M28 -4 L48 14" stroke="#E4CA0A" stroke-width="9"/></g>'
-        + '<g transform="translate(700 62)"><polygon points="0,-26 14,0 -14,0" fill="#ff8a1f"/><rect x="-18" y="0" width="36" height="5" fill="#041A40"/></g><circle cx="900" cy="22" r="14" fill="#E4CA0A"/>';
-    } else if (skin === 'storm') {
-      h += '<defs><linearGradient id="stg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4F5F79"/><stop offset="1" stop-color="#b8c0cc"/></linearGradient></defs><rect width="1000" height="92" fill="url(#stg)"/>'
-        + '<g fill="#e3e8f0"><ellipse cx="180" cy="34" rx="90" ry="26"/><ellipse cx="260" cy="26" rx="60" ry="22"/><ellipse cx="560" cy="30" rx="110" ry="28"/><ellipse cx="660" cy="22" rx="64" ry="22"/></g><g fill="#2A3C5D" opacity=".75"><ellipse cx="380" cy="40" rx="80" ry="22"/><ellipse cx="820" cy="38" rx="90" ry="24"/></g>'
-        + '<path d="M330 50 L312 78 L330 76 L318 92 L352 62 L334 64Z" fill="#E4CA0A"/><circle cx="930" cy="76" r="24" fill="#E4CA0A" opacity=".9"/><g stroke="#fff" stroke-width="2" opacity=".5"><path d="M120 60 l-8 18 M150 56 l-8 18 M470 62 l-8 18 M500 58 l-8 18 M720 64 l-8 18"/></g>';
-    } else {
-      h += '<rect width="1000" height="92" fill="#e8e1d6"/><g stroke="#a89d8f" stroke-width="2" fill="none"><path d="M0 23 H1000 M0 46 H1000 M0 69 H1000"/><path d="M60 0 V23 M180 0 V23 M300 0 V23 M420 0 V23 M540 0 V23 M660 0 V23 M780 0 V23 M900 0 V23 M120 23 V46 M240 23 V46 M360 23 V46 M480 23 V46 M600 23 V46 M720 23 V46 M840 23 V46 M60 46 V69 M180 46 V69 M300 46 V69 M420 46 V69 M540 46 V69 M660 46 V69 M780 46 V69 M900 46 V69 M120 69 V92 M240 69 V92 M360 69 V92 M480 69 V92 M600 69 V92 M720 69 V92 M840 69 V92"/></g>'
-        + '<g transform="translate(470 8)"><path d="M0 84 V34 a30 30 0 0 1 60 0 V84Z" fill="#3ab54a" stroke="#041A40" stroke-width="3"/><circle cx="46" cy="58" r="4" fill="#E4CA0A"/></g>';
-    }
-    return h + '</svg>';
-  }
-  function brSvgTree(n){ var ys = n === 1 ? [50] : [25,75]; return '<svg viewBox="0 0 100 100" preserveAspectRatio="none">' + ys.map(function(y){ return '<path d="M0 50 C 55 50, 45 ' + y + ', 100 ' + y + '"/>'; }).join('') + '</svg>'; }
-  function brSvgDrop(n){ var xs = n === 1 ? [50] : [25,75]; return '<svg viewBox="0 0 100 100" preserveAspectRatio="none">' + xs.map(function(x){ return '<path d="M50 0 C 50 60, ' + x + ' 40, ' + x + ' 100"/>'; }).join('') + '</svg>'; }
 
   // ---------------------------------------------------------------------------------------------------------------------------------
   // SEGMENT 0 -- AGENDA.   on_screen_text: { title, items[] }
   // ---------------------------------------------------------------------------------------------------------------------------------
+  // Six looks: Summit and Road (a scene with markers and a row of tiles) and four more (Metro line, Playlist, Big numerals, Clipboard). Every look shows its
+  // points one at a time, 2 seconds apart; a slide drawn read-only (history) and a learner who asked for less motion get every point at once.
+  var AGENDA_LOOKS = ['summit', 'road', 'metro', 'playlist', 'numerals', 'clipboard'];
+  var AG_STEP_MS = 2000;
+  var AG_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg>';
+  var AG_ATOM = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4"><ellipse cx="24" cy="24" rx="20" ry="8"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)"/><circle cx="24" cy="24" r="4" fill="currentColor" stroke="none"/></svg>';
+  var AG_TICK = '<svg viewBox="0 0 34 34"><path d="M7 18 L14 25 L28 8"/></svg>';
+  var AG_BODY = {
+    metro: function (items) {
+      return '<ol class="agn-metro">' + items.map(function (t, i) { return '<li class="agp" style="--i:' + i + '"><span class="n">' + (i + 1) + '</span>' + esc(t) + '</li>'; }).join('') + '</ol>';
+    },
+    playlist: function (items) {
+      return '<div class="agn-pl"><div class="hd"><div class="art">' + AG_ATOM + '</div><div class="prog"><i></i></div><div class="play">' + AG_PLAY + '</div></div><ol>'
+        + items.map(function (t, i) {
+          return '<li class="agp' + (i === 0 ? ' on' : '') + '" style="--i:' + i + '"><span class="no">' + (i + 1) + '</span><span class="tx">' + esc(t) + '</span><span class="ic">'
+            + (i === 0 ? '<span class="eq"><i></i><i></i><i></i></span>' : AG_PLAY) + '</span></li>';
+        }).join('') + '</ol></div>';
+    },
+    numerals: function (items) {
+      return '<ol class="agn-ch" data-n="' + items.length + '">' + items.map(function (t, i) { return '<li class="agp" style="--i:' + i + '"><span class="nn">' + (i + 1) + '</span>' + esc(t) + '</li>'; }).join('') + '</ol>';
+    },
+    clipboard: function (items) {
+      return '<div class="agn-cb"><div class="clip"></div><div class="paper"><ul>' + items.map(function (t, i) {
+        return '<li class="agp" style="--i:' + i + '"><span class="box">' + AG_TICK + '</span><span class="tx">' + esc(t) + '</span></li>';
+      }).join('') + '</ul></div></div>';
+    }
+  };
+  // The pieces that belong to point i, in every look.
+  function agPoints(root) {
+    var out = [], own = $all(root, '.agp');
+    if (own.length) { own.forEach(function (e, i) { out[i] = [e]; }); return out; }
+    $all(root, '.ag-items li').forEach(function (e, i) { out[i] = [e]; });
+    $all(root, '[data-atm="marks"] > g').forEach(function (g, i) { if (out[i]) out[i].push(g); });
+    return out;
+  }
+  function agReveal(root, ctx) {
+    if ((ctx && ctx.readonly) || (global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    var pts = agPoints(root), ticks = !!root.querySelector('.agn-cb');
+    $all(root, '.agn-metro, .agn-pl').forEach(function (e) { e.classList.add('hid'); setTimeout(function () { e.classList.remove('hid'); }, 150); });
+    pts.forEach(function (pc, i) {
+      pc.forEach(function (e) { e.classList.add('hid'); if (ticks) e.classList.add('unt'); });
+      setTimeout(function () {
+        pc.forEach(function (e) { e.classList.remove('hid'); if (ticks) setTimeout(function () { e.classList.remove('unt'); }, 900); });
+      }, AG_STEP_MS * (i + 1));
+    });
+    // Whatever happens, every point is on screen soon after the last one was due.
+    setTimeout(function () { $all(root, '.hid, .unt').forEach(function (e) { e.classList.remove('hid'); e.classList.remove('unt'); }); }, AG_STEP_MS * (pts.length + 1) + 2000);
+  }
   SLIDES.agenda = function (slide, ctx) {
     var t = obj(slide.on_screen_text), items = arr(t.items).map(str).filter(Boolean);
-    var look = seedPick(ctx, ['summit', 'road'], 'agenda');
+    var look = seedPick(ctx, AGENDA_LOOKS, 'agenda');
+    if (AG_BODY[look]) {
+      return {
+        // The slide is exactly as tall as the Summit/Road slide would be with the same points: an invisible copy of that layout sits under the chosen look.
+        body: subTitle(slide, t.title) + '<div class="agn-stack"><div class="agn-ghost" aria-hidden="true"><div class="ag-scene"></div><ol class="ag-items" style="--n:' + items.length + '">'
+          + items.map(function (x, i) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol></div><div class="agn-real">' + AG_BODY[look](items) + '</div></div>', slideClass: 'agn',
+        after: function (root) { agReveal(root, ctx); }
+      };
+    }
     return {
       body: subTitle(slide, t.title) + '<div class="ag-scene">' + uniqueNames(agSceneSvg(look)) + '</div><ol class="ag-items" style="--n:' + items.length + '">'
         + items.map(function (x, i) { return '<li style="--i:' + i + '">' + esc(x) + '</li>'; }).join('') + '</ol>',
-      after: function (root) { agMarkers(root, look, items.length); }
+      after: function (root) { agMarkers(root, look, items.length); agReveal(root, ctx); }
     };
   };
 
@@ -376,21 +408,17 @@
         return '<div class="flip" onclick="this.classList.toggle(\'on\')"><div class="flip-in"><div class="face front"><span>' + esc(r[0]) + '</span><span class="tapme">' + esc(WORDS.tapToFlip) + '</span></div><div class="face back"><span>' + esc(r[1]) + '</span><span class="tapme">' + esc(WORDS.tapToFlipBack) + '</span></div></div></div>';
       }).join('') + '</div>';
     }
-    return { body: body };
+    return { body: body, after: function (root) { calm(root, ctx); } };
   };
 
-  // lens   on_screen_text: { title, wrong_reading, right_reading, what_it_lets_you_do }
-  SLIDES.lens = function (slide) {
-    var t = obj(slide.on_screen_text);
-    return {
-      body: subTitle(slide, t.title) + '<div class="lens"><div class="lens-side"><div class="lens-ring old">' + esc(str(t.wrong_reading)) + '</div><div class="lens-cap">' + esc(WORDS.lensNow) + '</div></div>'
-        + '<div class="lens-bridge"><span>' + ICON.arrow + '</span></div><div class="lens-side n"><div class="lens-ring new">' + esc(str(t.right_reading)) + '</div><div class="lens-cap">' + esc(WORDS.lensClear) + '</div></div></div>'
-        + (str(t.what_it_lets_you_do) ? '<div class="lens-foot"><b>' + esc(WORDS.lensLets) + '</b> ' + esc(str(t.what_it_lets_you_do)) + '</div>' : '')
-    };
+  // Atoms saved before the Lens was retired still open: a lens is drawn as a thought swap (the old reading and the new one).
+  SLIDES.lens = function (slide, ctx) {
+    var x = obj(slide.on_screen_text);
+    return SLIDES.from_to({ on_screen_text: { title: x.title, pairs: [{ wrong: str(x.wrong_reading), right: str(x.right_reading) }] } }, ctx);
   };
 
   // compass   on_screen_text: { title, pulled_toward, true_north, why }
-  SLIDES.compass = function (slide) {
+  SLIDES.compass = function (slide, ctx) {
     var t = obj(slide.on_screen_text), ticks = '';
     for (var i = 0; i < 24; i++) {
       var a = i * 15 * Math.PI / 180, r1 = i % 6 === 0 ? 86 : 94, r2 = 102;
@@ -402,26 +430,29 @@
     return {
       body: subTitle(slide, t.title) + '<div class="cp"><div class="cp-card pull"><small>' + esc(WORDS.compassPulled) + '</small>' + esc(str(t.pulled_toward)) + '</div>' + svg
         + '<div class="cp-card north"><small>' + esc(WORDS.compassNorth) + '</small>' + esc(str(t.true_north)) + '</div></div>'
-        + (str(t.why) ? '<div class="cp-foot"><b>' + esc(WORDS.compassWhy) + '</b> ' + esc(str(t.why)) + '</div>' : '')
+        + (str(t.why) ? '<div class="cp-foot"><b>' + esc(WORDS.compassWhy) + '</b> ' + esc(str(t.why)) + '</div>' : ''),
+      after: function (root) { settleLater(root, ctx); }
     };
   };
 
   // fork   on_screen_text: { title, road_now, road_chosen, what_changes }
-  SLIDES.fork = function (slide) {
+  SLIDES.fork = function (slide, ctx) {
     var t = obj(slide.on_screen_text);
     var roads = '<svg viewBox="0 0 400 60" preserveAspectRatio="none"><path d="M200 60 C 200 30, 90 36, 30 4" stroke="#b8c0cc" stroke-width="14" fill="none" stroke-linecap="round"/><path d="M200 60 C 200 30, 310 36, 370 4" stroke="#3ab54a" stroke-width="14" fill="none" stroke-linecap="round"/><path d="M200 60 C 200 30, 310 36, 370 4" stroke="#fff" stroke-width="2.5" stroke-dasharray="8 8" fill="none"/></svg>';
     return {
       body: subTitle(slide, t.title) + '<div class="fk"><div class="fk-sign l"><small>' + esc(WORDS.forkNow) + '</small>' + esc(str(t.road_now)) + '</div><div class="fk-post"><i></i></div><div class="fk-sign r"><small>' + esc(WORDS.forkChosen) + '</small>' + esc(str(t.road_chosen)) + '</div></div><div class="fk-roads">' + roads + '</div>'
-        + (str(t.what_changes) ? '<div class="fk-foot"><b>' + esc(WORDS.forkChanges) + '</b> ' + esc(str(t.what_changes)) + '</div>' : '')
+        + (str(t.what_changes) ? '<div class="fk-foot"><b>' + esc(WORDS.forkChanges) + '</b> ' + esc(str(t.what_changes)) + '</div>' : ''),
+      after: function (root) { settleLater(root, ctx); }
     };
   };
 
   // key_idea   on_screen_text: { idea, example }
-  SLIDES.key_idea = function (slide) {
+  SLIDES.key_idea = function (slide, ctx) {
     var t = obj(slide.on_screen_text);
     return {
       body: '<div class="idea"><div class="k">' + esc(WORDS.ideaLabel) + '</div><div class="big">' + esc(str(t.idea)) + '</div></div>'
-        + (str(t.example) ? '<div class="example"><div class="q">&ldquo;</div><div class="bub"><b>' + esc(WORDS.exampleLabel) + '</b>' + esc(str(t.example)) + '</div></div>' : '')
+        + (str(t.example) ? '<div class="example"><div class="q">&ldquo;</div><div class="bub"><b>' + esc(WORDS.exampleLabel) + '</b>' + esc(str(t.example)) + '</div></div>' : ''),
+      after: function (root) { settleLater(root, ctx); }
     };
   };
 
@@ -445,9 +476,17 @@
   function noteStrip(label, text) { return str(text).trim() ? '<div class="mn-foot"><b>' + esc(label) + '</b> ' + esc(str(text)) + '</div>' : ''; }
   // These looks begin in a starting pose and settle once, two seconds after the slide appears. A slide being looked back at (readonly), or a
   // person who asked for reduced motion, sees the finished slide at once.
+  function reducedMotion() { return !!(global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  // A slide drawn read-only or for a person who asked for less motion is marked still: its finished state, nothing moves.
+  function calm(root, ctx) {
+    var sl = $q(root, '.slide');
+    if (!sl) return false;
+    if ((ctx && ctx.readonly) || reducedMotion()) { sl.classList.add('still'); return true; }
+    return false;
+  }
   function settleLater(root, ctx) {
     var sl = $q(root, '.slide');
-    if (!sl || (ctx && ctx.readonly) || (global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    if (!sl || calm(root, ctx)) return;
     sl.classList.add('pre');
     setTimeout(function () { sl.classList.remove('pre'); }, 2000);
   }
@@ -522,7 +561,20 @@
         return '<div class="row"><div class="dot" style="background:' + cols[i % cols.length] + '">' + esc(mark(i)) + '</div><div class="box"><div class="t">' + esc(s[0]) + '</div><div class="d">' + esc(s[1]) + '</div></div></div>';
       }).join('') + '</div>';
     }
-    return { body: subTitle(slide, t.name) + out };
+    return {
+      body: subTitle(slide, t.name) + out, slideClass: 'fwa',
+      after: function (root) {
+        settleLater(root, ctx);
+        // Chevrons and cards: the steps appear one at a time, 2 seconds apart, each with a small shake as it arrives.
+        var seq = $all(root, '.fw-h .col, .cards .pc');
+        if (!seq.length || (ctx && ctx.readonly) || reducedMotion()) return;
+        seq.forEach(function (el, i) {
+          el.classList.add('hid');
+          setTimeout(function () { el.classList.remove('hid'); el.classList.add('appear'); }, 2000 * (i + 1));
+        });
+        setTimeout(function () { seq.forEach(function (el) { el.classList.remove('hid'); }); }, 2000 * (seq.length + 1) + 1500);
+      }
+    };
   };
 
   // grid_2x2   on_screen_text: { title, x_axis [left, right], y_axis [top, bottom], boxes [ { name, line } x4 ] in reading order
@@ -619,22 +671,86 @@
   // SEGMENT 3 -- BARRIERS.   branch_map   on_screen_text: { title, barriers: [ { barrier, evidence, ways_through [] } ] }
   // evidence is supported | partly_assumed | worth_watching (from the risk assessment)
   // ---------------------------------------------------------------------------------------------------------------------------------
+  // Seven looks, all in the frozen preview (do-not-push-live/learning_atom_barriers_preview.html): Hurdles, Locks and keys, Yes-but (a conversation), Risk register,
+  // Risk radar, Branches and Drops. Every word on them is the Master's (the barrier, its evidence from the risk assessment, its ways through) plus the page's own
+  // fixed labels. They begin in a starting pose and play once, two seconds after the slide appears (settleLater).
+  var BX_LOOKS = ['hurdles', 'locks', 'chat', 'register', 'radar', 'branches', 'drops'];
+  var BX_EVN = { supported: 3, partly_assumed: 2, worth_watching: 1 };
+  var BX_LOCK = '<svg class="bx-lock" viewBox="0 0 24 24"><path class="sh" d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="#E4CA0A" stroke-width="2.2" stroke-linecap="round"/><rect x="5" y="11" width="14" height="10" rx="2.2" fill="#E4CA0A"/><circle cx="12" cy="16" r="1.5" fill="#041A40"/></svg>';
+  var BX_KEY = '<svg viewBox="0 0 24 24" fill="none" stroke="#041A40" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v4M21 12v3"/></svg>';
+  function bxEvText(ev) { return ev === 'supported' ? WORDS.evSupported : ev === 'worth_watching' ? WORDS.evWatch : WORDS.evPartly; }
+  function bxPips(b) {
+    var n = BX_EVN[b.evidence] || 2;
+    return '<span class="bx-ev"><span class="bx-pp">' + [1, 2, 3].map(function (i) { return '<i class="' + (i <= n ? 'on' : '') + '" style="--j:' + i + '"></i>'; }).join('') + '</span><b>' + esc(bxEvText(b.evidence)) + '</b></span>';
+  }
+  function bxWay(w) { return '<p>' + esc(w) + '</p>'; }
+  function bxTag(w, j) { return '<div class="bx-tag" style="--j:' + j + '"><span class="bx-sm">' + esc(WORDS.wayThrough) + ' ' + (j + 1) + '</span>' + esc(w) + '</div>'; }
+  var BX_BODY = {
+    hurdles: function (R) {
+      var n = R.length;
+      return '<div class="bx-hd' + (n === 1 ? ' one' : '') + '" style="--n:' + n + '">' + R.map(function (b, k) {
+        return '<div class="bx-col" style="--k:' + k + '"><div class="bx-card">' + bxPips(b) + esc(b.barrier) + '</div><div class="bx-trk"><span class="bx-hurdle"><i></i></span><span class="bx-run"><span class="bx-arc"></span></span></div><div class="bx-ways">' + b.ways_through.map(bxWay).join('') + '</div></div>';
+      }).join('') + '</div>';
+    },
+    locks: function (R) {
+      return '<div class="bx-lk">' + R.map(function (b, k) {
+        return '<div class="bx-lr" style="--k:' + k + '"><div class="bx-lo">' + BX_LOCK + '<div>' + bxPips(b) + esc(b.barrier) + '</div></div><span class="bx-key">' + BX_KEY + '</span><div class="bx-ko">' + b.ways_through.map(bxWay).join('') + '</div></div>';
+      }).join('') + '</div>';
+    },
+    chat: function (R) {
+      return '<div class="bx-chat">' + R.map(function (b, k) {
+        return '<div class="bx-grp" style="--k:' + k + '"><div class="bx-bub me"><span class="bx-av">?</span><div>' + bxPips(b) + esc(b.barrier) + '</div></div><div class="bx-bub you"><div>' + b.ways_through.map(bxWay).join('') + '</div><span class="bx-av">&#10003;</span></div></div>';
+      }).join('') + '</div>';
+    },
+    register: function (R) {
+      return '<div class="bx-reg"><div class="bx-rh"><span>' + esc(WORDS.bxBarrier) + '</span><span>' + esc(WORDS.bxEvidence) + '</span><span>' + esc(WORDS.bxWays) + '</span></div>' + R.map(function (b, k) {
+        return '<div class="bx-rw" style="--k:' + k + '"><div class="bx-rb"><span class="bx-nb">' + (k + 1) + '</span><span>' + esc(b.barrier) + '</span></div>' + bxPips(b) + '<div>' + b.ways_through.map(bxWay).join('') + '</div></div>';
+      }).join('') + '</div>';
+    },
+    radar: function (R) {
+      var ang = R.length === 1 ? [100] : R.length === 2 ? [70, 250] : [75, 160, 285], rr = { 3: 0.26, 2: 0.5, 1: 0.76 }, tt = 3.6;
+      var blips = R.map(function (b, k) {
+        var r = rr[BX_EVN[b.evidence] || 2], a = ang[k] * Math.PI / 180;
+        return '<span class="bx-blip" style="left:' + (50 + r * 50 * Math.sin(a)).toFixed(1) + '%;top:' + (50 - r * 50 * Math.cos(a)).toFixed(1) + '%;--t:' + (0.3 + ang[k] / 360 * tt).toFixed(2) + 's">' + (k + 1) + '</span>';
+      }).join('');
+      var rings = [3, 2, 1].map(function (v) {
+        var d = rr[v] * 100;
+        return '<span class="bx-ring" style="width:' + d + '%;height:' + d + '%"></span><span class="bx-rlab" style="top:calc(' + (50 - d / 2) + '% - 7px)">' + esc(bxEvText({ 3: 'supported', 2: 'partly_assumed', 1: 'worth_watching' }[v])) + '</span>';
+      }).join('');
+      return '<div class="bx-rd"><div class="bx-radar"><i class="bx-ax v"></i><i class="bx-ax h"></i>' + rings + '<span class="bx-sweep"></span>' + blips + '</div><ol class="bx-rl">' + R.map(function (b, k) {
+        return '<li style="--t:' + (0.3 + ang[k] / 360 * tt).toFixed(2) + 's"><span class="bx-nb">' + (k + 1) + '</span><div>' + bxPips(b) + '<b>' + esc(b.barrier) + '</b>' + b.ways_through.map(bxWay).join('') + '</div></li>';
+      }).join('') + '</ol></div>';
+    },
+    branches: function (R) {
+      var curves = function (n) { var ys = n === 1 ? [50] : [24, 76]; return '<svg viewBox="0 0 100 100" preserveAspectRatio="none">' + ys.map(function (y) { return '<path d="M0 50 C 55 50, 45 ' + y + ', 100 ' + y + '"/>'; }).join('') + '</svg>'; };
+      return '<div class="bx-br">' + R.map(function (b, k) {
+        return '<div class="bx-brow" style="--k:' + k + '"><div class="bx-sign">' + bxPips(b) + esc(b.barrier) + '</div><div class="bx-cn">' + curves(b.ways_through.length) + '</div><div class="bx-bw">' + b.ways_through.map(bxTag).join('') + '</div></div>';
+      }).join('') + '</div>';
+    },
+    drops: function (R) {
+      var n = R.length;
+      return '<div class="bx-dr' + (n === 1 ? ' one' : '') + '" style="--n:' + n + '">' + R.map(function (b, k) {
+        return '<div class="bx-dcol" style="--k:' + k + '"><div class="bx-sign">' + bxPips(b) + esc(b.barrier) + '</div><div class="bx-rail">' + b.ways_through.map(bxTag).join('') + '</div></div>';
+      }).join('') + '</div>';
+    }
+  };
   SLIDES.branch_map = function (slide, ctx) {
     var t = obj(slide.on_screen_text);
-    var tagOf = { supported: ['real', WORDS.evSupported], partly_assumed: ['assumed', WORDS.evPartly], worth_watching: ['watch', WORDS.evWatch] };
     var R = arr(t.barriers).slice(0, 3).map(function (b) {
-      var tag = tagOf[str(obj(b).evidence).trim()] || ['assumed', ''];
-      return { tag: tag[0], tagText: tag[1], risk: str(obj(b).barrier), opts: arr(obj(b).ways_through).map(str).filter(Boolean).slice(0, 2) };
-    });
-    var skin = seedPick(ctx, ['road', 'storm', 'wall'], 'skin');
-    var look = R.length === 1 ? 'tree' : seedPick(ctx, ['tree', 'cols'], 'layout');
-    var box = function (r) { return '<div class="bm-risk">' + (r.tagText ? '<span class="tag ' + r.tag + '">' + esc(r.tagText) + '</span>' : '') + '<b>' + esc(r.risk) + '</b></div>'; };
-    var opt = function (o, k) { return '<div class="bm-opt" style="--k:' + k + '"><small>' + esc(WORDS.wayThrough) + ' ' + (k + 1) + '</small>' + esc(o) + '</div>'; };
-    var body = look === 'tree'
-      ? '<div class="bm-tree">' + R.map(function (r) { return '<div class="bm-trow">' + box(r) + '<div class="bm-link">' + brSvgTree(r.opts.length) + '</div><div class="bm-opts">' + r.opts.map(opt).join('') + '</div></div>'; }).join('') + '</div>'
-      : '<div class="bm-cols" style="--c:' + R.length + '">' + R.map(function (r) { return '<div class="bm-col">' + box(r) + '<div class="bm-drop">' + brSvgDrop(r.opts.length) + '</div><div class="bm-oprow" style="--o:' + r.opts.length + '">' + r.opts.map(opt).join('') + '</div></div>'; }).join('') + '</div>';
-    return { bodyClass: 'sk-' + skin, body: subTitle(slide, t.title) + '<div class="bar-art">' + uniqueNames(barArt(skin)) + '</div>' + body };
+      var ev = str(obj(b).evidence).trim();
+      return { barrier: str(obj(b).barrier), evidence: BX_EVN[ev] ? ev : 'partly_assumed', ways_through: arr(obj(b).ways_through).map(str).filter(Boolean).slice(0, 2) };
+    }).filter(function (b) { return b.barrier || b.ways_through.length; });
+    if (!R.length) return null;
+    var look = seedPick(ctx, BX_LOOKS, 'barrier');
+    return {
+      body: subTitle(slide, t.title) + '<div class="bx-main">' + BX_BODY[look](R) + '</div>', slideClass: 'bx',
+      after: function (root) { settleLater(root, ctx); }
+    };
   };
+  // The Slide Menu now calls these thought_swap, ordered_steps and barriers; atoms saved earlier carry the old names, so both draw the same slide.
+  SLIDES.thought_swap = SLIDES.from_to;
+  SLIDES.ordered_steps = SLIDES.framework;
+  SLIDES.barriers = SLIDES.branch_map;
 
   // ---------------------------------------------------------------------------------------------------------------------------------
   // SEGMENT 4 -- RECAP (the Master's last slide).   on_screen_text: { segments: [ { heading, lines [] } ] }, one or two segments.
@@ -710,18 +826,43 @@
     $all(root, sel).forEach(function (b) { b.onclick = function () { $all(root, sel).forEach(function (x) { x.classList.remove('on'); }); b.classList.add('on'); onPick(b); }; });
   }
 
-  // pick   activity_content: { kind (card | move | pressure | barrier), question, scenario, twist, cards: [ { emoji, text, reaction } ] }
+  // pick   activity_content: { kind (card | move | pressure | barrier), question, scenario, other_says, twist, cards: [ { emoji, text, reaction } ] }
+  // Three looks: the fanned deck, the scenario list, and a conversation (used whenever the Master wrote other_says, the other person's words).
+  var PK_PERSON = '<svg viewBox="0 0 24 24" fill="none" stroke="#041A40" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-4 3.2-6 7-6s7 2 7 6"/></svg>';
   ACTIVITIES.pick = function (activity, ctx) {
     var c = obj(activity.activity_content), cards = arr(c.cards).map(function (x) { return { emoji: str(obj(x).emoji), text: str(obj(x).text), reaction: str(obj(x).reaction) }; });
     cards = shuffled(cards, ctx, 'pick');
-    var look = seedPick(ctx, ['deck', 'tiles', 'scenario'], 'pick');
-    var cls = look === 'deck' ? 'pk-deck' : (look === 'tiles' ? 'pk-tiles' : 'pk-scn-l'), rots = ['-2.5deg', '1.5deg', '-1deg', '2.5deg'];
-    var html = '<div class="atom-root"><div class="slide"><div class="slide-tag">' + esc(WORDS.activityTag) + '</div><div class="slide-body">'
+    var other = str(c.other_says).trim();
+    var head = '<div class="atom-root"><div class="slide"><div class="slide-tag">' + esc(WORDS.activityTag) + '</div><div class="slide-body">'
       + (str(c.scenario) ? '<div class="pk-scn">' + esc(str(c.scenario)) + '</div>' : '') + (str(c.twist) ? '<div class="pk-twist">' + esc(str(c.twist)) + '</div>' : '')
-      + '<div class="pk-q">' + esc(str(c.question)) + '</div><div class="pk-cards ' + cls + '" style="--n:' + cards.length + '">'
+      + '<div class="pk-q">' + esc(str(c.question)) + '</div>';
+    if (other) {
+      var html = head + '<div class="ch"><div class="ch-b them"><span class="ch-av">' + PK_PERSON + '</span><div>' + esc(other) + '</div></div><div class="ch-opts">'
+        + cards.map(function (x, i) { return '<button class="ch-opt" data-i="' + i + '">' + esc(x.text) + '</button>'; }).join('') + '</div></div><div class="pk-out"></div></div></div></div>';
+      return { html: html, after: function (root, done, report, saved) {
+        var box = $q(root, '.ch'), opts = $q(root, '.ch-opts'), still = !!(saved || (ctx && ctx.readonly) || reducedMotion());
+        $all(root, '.ch-opt').forEach(function (b) {
+          b.onclick = function () {
+            if (opts.classList.contains('locked')) return;
+            opts.classList.add('locked'); b.classList.add('on');
+            var pick = +b.dataset.i, me = document.createElement('div'); me.className = 'ch-b me'; me.innerHTML = '<div>' + esc(cards[pick].text) + '</div>'; box.insertBefore(me, opts);
+            var them = document.createElement('div'); them.className = 'ch-b them';
+            var reply = '<span class="ch-av">' + PK_PERSON + '</span><div>' + esc(cards[pick].reaction) + '</div>';
+            if (still) { them.innerHTML = reply; box.insertBefore(them, opts); done({ picked: pick }); return; }
+            them.innerHTML = '<span class="ch-av">' + PK_PERSON + '</span><span class="ch-ty"><i></i><i></i><i></i></span>';
+            setTimeout(function () { box.insertBefore(them, opts); }, 500);
+            setTimeout(function () { them.innerHTML = reply; done({ picked: pick }); }, 1700);
+          };
+        });
+        var back = saved && saved.picked != null && $q(root, '.ch-opt[data-i="' + saved.picked + '"]'); if (back) back.click();
+      } };
+    }
+    var look = seedPick(ctx, ['deck', 'scenario'], 'pick');
+    var cls = look === 'deck' ? 'pk-deck' : 'pk-scn-l', rots = ['-2.5deg', '1.5deg', '-1deg', '2.5deg'];
+    var html2 = head + '<div class="pk-cards ' + cls + '" style="--n:' + cards.length + '">'
       + cards.map(function (x, i) { return '<button class="pkc" style="--r:' + rots[i % 4] + '" data-i="' + i + '"><span class="em">' + esc(x.emoji) + '</span><span class="tx">' + esc(x.text) + '</span></button>'; }).join('')
       + '</div><div class="pk-out"></div></div></div></div>';
-    return { html: html, after: function (root, done, report, saved) {
+    return { html: html2, after: function (root, done, report, saved) {
       var out = $q(root, '.pk-out');
       single(root, '.pkc', function (b) { out.innerHTML = bubble(WORDS.leadsTo, cards[+b.dataset.i].reaction); done({ picked: +b.dataset.i }); });
       var back = saved && saved.picked != null && $q(root, '.pkc[data-i="' + saved.picked + '"]'); if (back) back.click();
@@ -963,6 +1104,17 @@
     var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
     try { return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return str(iso); }
   }
+  var OV_LOOKS = ['navy', 'journey', 'teal'];
+  // Option B's time pill and bar: how far through the initiative it is today. Unknown dates show neither.
+  function ovTime(ov) {
+    var p = function (iso) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(str(iso)); return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime() : null; };
+    var a = p(ov.start_date), z = p(ov.end_date), now = Date.now(), DAY = 86400000;
+    if (a === null || z === null || z <= a) return { known: false, pct: 0, text: '' };
+    if (now < a) return { known: true, pct: 0, text: WORDS.ovNotStarted };
+    if (now > z + DAY) return { known: true, pct: 100, text: WORDS.ovFinished };
+    var weeks = Math.max(1, Math.ceil((z + DAY - now) / (7 * DAY)));
+    return { known: true, pct: Math.max(4, Math.min(100, Math.round((now - a) / (z - a) * 100))), text: weeks === 1 ? WORDS.ovWeekLeft : weeks + ' ' + WORDS.ovWeeksLeft };
+  }
   var OV_SPEAKER = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
   function renderInitiativeOverview(overview, ctx) {
     overview = obj(overview); ctx = ctx || {};
@@ -970,25 +1122,53 @@
     var skills = arr(overview.skills).map(str).filter(Boolean);
     var chip = function (label, value) { return '<span class="iw-chip"><small>' + esc(label) + '</small> ' + esc(value) + '</span>'; };
     // a long text (more than about 50 words) shows its first lines and opens in place with Read more
+    var isLong = function (text) { return str(text).trim().split(/\s+/).length > 50; };
+    var more = function (text) { return isLong(text) ? '<button type="button" class="iw-more">' + esc(WORDS.ovMore) + '</button>' : ''; };
     var box = function (label, text) {
       text = str(text).trim();
       if (!text) return '';
-      var long = text.split(/\s+/).length > 50;
-      return '<div class="iw-box"><h3 data-say>' + esc(label) + '</h3><p' + (long ? ' class="iw-clamp"' : '') + ' data-say>' + esc(text) + '</p>'
-        + (long ? '<button type="button" class="iw-more">' + esc(WORDS.ovMore) + '</button>' : '') + '</div>';
+      return '<div class="iw-box"><h3 data-say>' + esc(label) + '</h3><p' + (isLong(text) ? ' class="iw-clamp"' : '') + ' data-say>' + esc(text) + '</p>' + more(text) + '</div>';
     };
-    var about = box(WORDS.ovObjective, overview.objective) + box(WORDS.ovNeed, overview.business_need);
-    var html = '<div class="atom-root"><div class="slide"><div class="slide-body atm-pad iw-scope">'
-      + '<div class="cv-hero fun-hero"><div class="eyebrow" data-say>' + esc(WORDS.ovWelcome) + '</div><h1 data-say>' + esc(str(overview.initiative_name)) + '</h1>'
-      + '<div class="iw-top"><div class="iw-dates">' + chip(WORDS.ovStarts, overviewDate(overview.start_date)) + chip(WORDS.ovEnds, overviewDate(overview.end_date)) + chip(WORDS.ovSkills, String(skills.length)) + '</div>'
-      + '<button type="button" class="iw-say">' + OV_SPEAKER + '<span class="lab">' + esc(WORDS.ovHear) + '</span></button></div></div>'
-      + (about ? '<div class="iw-about">' + about + '</div>' : '')
-      + (skills.length ? '<div class="iw-skills"><h3 data-say>' + esc(WORDS.ovSkillsTitle) + '</h3><div class="iw-grid">'
-        + skills.map(function (s, i) { return '<button type="button" class="iw-skill" data-skill="' + esc(s) + '"><span class="n">' + (i + 1) + '</span><span data-say>' + esc(s) + '</span><span class="go">&rsaquo;</span></button>'; }).join('')
-        + '</div><p class="iw-foot"><b>' + esc(WORDS.ovFootBold) + '</b> ' + esc(WORDS.ovFootRest) + '</p></div>' : '')
-      + '</div></div></div>';
+    var hear = function (cls) { return '<button type="button" class="iw-say' + (cls ? ' ' + cls : '') + '">' + OV_SPEAKER + '<span class="lab">' + esc(WORDS.ovHear) + '</span></button>'; };
+    ctx = Object.assign({}, ctx, { seed: str(ctx.seed) || str(overview.initiative_name) });   // the same initiative always gets the same look
+    var obj_ = str(overview.objective).trim(), need_ = str(overview.business_need).trim(), name = str(overview.initiative_name);
+    var look = seedPick(ctx, OV_LOOKS, 'overview'), body;
+    if (look === 'journey') {
+      // Option B: the initiative as a path -- how far through it is, the "why" in one panel, the skills as milestones on a line
+      var t = ovTime(overview);
+      var why = (obj_ ? '<dt data-say>' + esc(WORDS.ovObjective) + '</dt><dd class="' + (isLong(obj_) ? 'iw-clamp l3' : '') + '" data-say>' + esc(obj_) + '</dd>' + more(obj_) : '')
+        + (need_ ? '<dt data-say>' + esc(WORDS.ovNeed) + '</dt><dd class="' + (isLong(need_) ? 'iw-clamp l3' : '') + '" data-say>' + esc(need_) + '</dd>' + more(need_) : '');
+      body = '<div class="iwb-wrap"><div class="iwb-top"><div><div class="iwb-eyebrow" data-say>' + esc(WORDS.ovWelcome) + '</div><div class="iwb-title" data-say>' + esc(name) + '</div></div>'
+        + '<div class="iwb-right">' + (t.text ? '<span class="iwb-left">' + esc(t.text) + '</span>' : '') + hear('b') + '</div></div>'
+        + (t.known ? '<div class="iwb-bar"><i style="width:' + t.pct + '%"></i></div><div class="iwb-dates"><span>' + esc(WORDS.ovStarts) + ' ' + esc(overviewDate(overview.start_date)) + '</span><span>' + esc(WORDS.ovEnds) + ' ' + esc(overviewDate(overview.end_date)) + '</span></div>' : '')
+        + (why ? '<dl class="iwb-why">' + why + '</dl>' : '')
+        + (skills.length ? '<div class="iwb-sk"><h3 data-say>' + esc(WORDS.ovSkillsTitle) + '</h3><div class="iwb-path">'
+          + skills.map(function (sk, i) { return '<button type="button" class="iwb-stone" data-skill="' + esc(sk) + '"><span class="dot">' + (i + 1) + '</span><span data-say>' + esc(sk) + '</span></button>'; }).join('')
+          + '</div></div><p class="iwb-foot">' + esc(WORDS.ovFootBold) + '</p>' : '') + '</div>';
+    } else if (look === 'teal') {
+      // Option C: what the initiative is and why on the left, the skills as a list on the right
+      var day = function (iso) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(str(iso)); if (!m) return null; var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])); try { return [d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }), String(m[1])]; } catch (e) { return [str(iso), '']; } };
+      var tile = function (label, iso) { var d = day(iso); return d ? '<div class="iwc-tile"><small>' + esc(label) + '</small><b>' + esc(d[0]) + '</b><span>' + esc(d[1]) + '</span></div>' : ''; };
+      var cText = function (label, text) { return text ? '<h4 data-say>' + esc(label) + '</h4><p class="' + (isLong(text) ? 'iw-clamp' : '') + '" data-say>' + esc(text) + '</p>' + more(text) : ''; };
+      body = '<div class="iwc-wrap"><div class="iwc-left"><div class="iwc-eyebrow" data-say>' + esc(WORDS.ovWelcome) + '</div><div class="iwc-title" data-say>' + esc(name) + '</div>' + hear('c')
+        + '<div class="iwc-dates">' + tile(WORDS.ovStarts, overview.start_date) + tile(WORDS.ovEnds, overview.end_date) + '</div>' + cText(WORDS.ovObjective, obj_) + cText(WORDS.ovNeed, need_) + '</div>'
+        + '<div class="iwc-right">' + (skills.length ? '<h3 data-say>' + esc(WORDS.ovSkillsTitle) + '</h3><div class="sub">' + skills.length + ' ' + esc(skills.length === 1 ? WORDS.ovSkillOne : WORDS.ovSkillMany) + '</div>'
+          + skills.map(function (sk, i) { return '<button type="button" class="iwc-row" data-skill="' + esc(sk) + '"><span class="n">' + (i + 1) + '</span><span data-say>' + esc(sk) + '</span><span class="begin">' + esc(WORDS.ovBegin) + ' &rsaquo;</span></button>'; }).join('')
+          + '<p class="iwc-foot">' + esc(WORDS.ovFootBold) + '</p>' : '') + '</div></div>';
+    } else {
+      // Option A: a navy welcome banner, the two boxes side by side, the skills as cards
+      var about = box(WORDS.ovObjective, overview.objective) + box(WORDS.ovNeed, overview.business_need);
+      body = '<div class="cv-hero fun-hero"><div class="eyebrow" data-say>' + esc(WORDS.ovWelcome) + '</div><h1 data-say>' + esc(name) + '</h1>'
+        + '<div class="iw-top"><div class="iw-dates">' + chip(WORDS.ovStarts, overviewDate(overview.start_date)) + chip(WORDS.ovEnds, overviewDate(overview.end_date)) + chip(WORDS.ovSkills, String(skills.length))
+        + '</div>' + hear('') + '</div></div>'
+        + (about ? '<div class="iw-about">' + about + '</div>' : '')
+        + (skills.length ? '<div class="iw-skills"><h3 data-say>' + esc(WORDS.ovSkillsTitle) + '</h3><div class="iw-grid">'
+          + skills.map(function (s, i) { return '<button type="button" class="iw-skill" data-skill="' + esc(s) + '"><span class="n">' + (i + 1) + '</span><span data-say>' + esc(s) + '</span><span class="go">&rsaquo;</span></button>'; }).join('')
+          + '</div><p class="iw-foot"><b>' + esc(WORDS.ovFootBold) + '</b> ' + esc(WORDS.ovFootRest) + '</p></div>' : '');
+    }
+    var html = '<div class="atom-root"><div class="slide"><div class="slide-body atm-pad iw-scope">' + body + '</div></div></div>';
     var el = node(html);
-    Array.prototype.forEach.call(el.querySelectorAll('.iw-skill'), function (b) {
+    Array.prototype.forEach.call(el.querySelectorAll('[data-skill]'), function (b) {
       b.onclick = function () { Voice.stop(); if (typeof ctx.onPickSkill === 'function') ctx.onPickSkill(b.getAttribute('data-skill')); };
     });
     Array.prototype.forEach.call(el.querySelectorAll('.iw-more'), function (b) {
@@ -1007,7 +1187,7 @@
       Voice.source = { base: function () { return str(ctx.apiBase); }, token: saved.token };   // speak() reads these at once; the page's own setting is put straight back
       var started = false;
       try {
-        started = Voice.speak(parts.join(' '), true, { onend: rest, onerror: rest });
+        started = Voice.speak(parts.join(' '), true, { onend: rest, onerror: rest, ignoreMute: true });
       } finally { Voice.source = saved; }
       if (started) { say.classList.add('playing'); lab.textContent = WORDS.ovStop; }
     };
@@ -1142,7 +1322,7 @@
       sw.onkeydown = function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } };
       test.onclick = function () {
         if (!Voice.supported()) { test.textContent = WORDS.testNone; return; }
-        Voice.speak(fill(WORDS.testLine, { name: name }), true);
+        Voice.speak(fill(WORDS.testLine, { name: name }), true, { ignoreMute: true });
         test.textContent = WORDS.testPlayed;
       };
       btn.onclick = function () {
@@ -1380,6 +1560,28 @@
     return out;
   }
 
+  // A type the page no longer draws (or a slide that could not be drawn) is not shown as plain text: its words are put into one of the approved designs.
+  // A slide becomes a key idea (its first line as the idea, the rest as the example); an activity becomes "your view" (its question, and any short choices it carried).
+  function textsOf(value, out) {
+    out = out || [];
+    if (typeof value === 'string') { if (value.trim()) out.push(value.trim()); }
+    else if (Array.isArray(value)) value.forEach(function (v) { textsOf(v, out); });
+    else if (value && typeof value === 'object') Object.keys(value).forEach(function (k) { textsOf(value[k], out); });
+    return out;
+  }
+  function asKeyIdea(slide) {
+    var t = textsOf(obj(slide).on_screen_text), title = str(obj(obj(slide).on_screen_text).title).trim();
+    if (title) t = t.filter(function (x) { return x !== title; });
+    return { slide_type: 'key_idea', title: slide && slide.title, voiceover: slide && slide.voiceover, on_screen_text: { idea: t[0] || title || '', example: t.slice(1).join(' ') } };
+  }
+  function asYourView(activity) {
+    var c = obj(activity.activity_content), list = [];
+    Object.keys(c).forEach(function (k) { if (Array.isArray(c[k])) c[k].forEach(function (v) { var x = typeof v === 'string' ? v : textsOf(v)[0]; if (x && x.length <= 120) list.push(x); }); });
+    var q = str(c.question).trim() || str(c.title).trim() || str(c.stem).trim() || str(activity.activity_instruction).trim();
+    return { activity_type: 'your_view', activity_instruction: activity.activity_instruction, activity_voiceover: activity.activity_voiceover, trainer_response: activity.trainer_response,
+      activity_content: { question: q, choices: list.slice(0, 4) } };
+  }
+
   function renderSlide(slide, ctx) {
     noteRotation(slide);
     slide = obj(slide); ctx = ctx || {};
@@ -1389,7 +1591,10 @@
     } else {
       console.warn('atom_slides: unknown slide type "' + slide.slide_type + '", showing its text plainly');
     }
-    if (!spec || typeof spec.body !== 'string') spec = { body: plainBody(slide.on_screen_text) };
+    if (!spec || typeof spec.body !== 'string') {
+      try { spec = SLIDES.key_idea(asKeyIdea(slide), ctx); } catch (e) { spec = null; }
+      if (!spec || typeof spec.body !== 'string') spec = { body: plainBody(slide.on_screen_text) };
+    }
     var el = node(frame(slide, ctx, spec));
     if (typeof spec.after === 'function') { try { spec.after(el); } catch (e) { console.warn('atom_slides: a slide could not finish drawing', e); } }
     return { el: el, voice: str(slide.voiceover) };
@@ -1404,6 +1609,9 @@
       console.warn('atom_slides: unknown activity type "' + activity.activity_type + '", showing its instruction with a Done button');
     }
     var instr = str(activity.activity_instruction).trim();
+    if (!spec || typeof spec.html !== 'string') {
+      try { spec = ACTIVITIES.your_view(asYourView(activity), ctx); } catch (e) { spec = null; }
+    }
     if (!spec || typeof spec.html !== 'string') {
       spec = {
         html: '<div class="atom-root"><div class="slide"><div class="slide-tag">' + esc(WORDS.activityTag) + '</div><div class="slide-body"><div class="ix">'

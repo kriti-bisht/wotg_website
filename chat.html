@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/atom_slides.css?v=20261105d">
+<link rel="stylesheet" href="assets/atom_slides.css?v=20261106b">
 <style>
 :root {
   --night:   #041A40;
@@ -1413,10 +1413,21 @@ body.first-run #impactCard .rule, body.first-run #impactCard .foot, body.first-r
 .vo-readalong-btn:hover { border-color:var(--night2); }
 .vo-readalong-btn.on { color:var(--green2); border-color:var(--green); background:rgba(58,181,74,0.12); }
 .vo-fill { height:100%; width:0; background:var(--green); border-radius:0.2em; transition:width 0.4s linear; }
-.vo-volwrap { position:relative; display:flex; }
-.vo-vol-pop { display:none; position:absolute; bottom:2.8em; left:50%; transform:translateX(-50%); background:var(--night); padding:0.55em 0.75em; border-radius:0.5em; z-index:5; }
-.vo-player.vol-open .vo-vol-pop { display:block; }
-.vo-vol-pop input { width:6em; accent-color:var(--green); display:block; }
+.vo-volwrap { display:flex; align-items:center; }
+/* mute: the speaker is the mute button (crossed out and gold when muted); the slim slider beside it is always visible on a wide player, behind the small arrow on a narrow one */
+.vo-vol-btn .ic-off { display:none; } .muted .vo-vol-btn .ic-on { display:none; } .muted .vo-vol-btn .ic-off { display:block; }
+.muted .vo-vol-btn { background:rgba(228,202,10,0.16); color:#7d6f05; box-shadow:inset 0 0 0 1.5px var(--gold2); }
+.vo-slim { -webkit-appearance:none; appearance:none; height:0.28em; border-radius:0.2em; outline:none; width:5.2em; margin:0 0.35em 0 0.15em; cursor:pointer; background:linear-gradient(to right,var(--green) var(--p,100%),rgba(22,32,46,0.14) var(--p,100%)); }
+.vo-slim::-webkit-slider-thumb { -webkit-appearance:none; width:0.95em; height:0.95em; border-radius:50%; background:#fff; border:2px solid var(--green); box-shadow:0 1px 3px rgba(22,32,46,0.25); }
+.vo-slim::-moz-range-thumb { width:0.8em; height:0.8em; border-radius:50%; background:#fff; border:2px solid var(--green); }
+.muted .vo-slim { opacity:0.45; }
+.vo-vol-more { display:none; width:1.1em; height:2.1em; border:none; background:none; color:var(--night3); cursor:pointer; padding:0; align-items:center; justify-content:center; margin-left:-0.1em; }
+.vo-vol-more svg { width:0.8em; height:0.8em; }
+.vo-pbox { container-type:inline-size; }
+@container (max-width:520px) { .vo-slim { display:none; width:4.2em; } .vo-vol-more { display:flex; } .vo-player.vol-open .vo-slim { display:block; } }
+/* the trainer's response bubble carries the same speaker, at its right end */
+.chat-messages .msg-bubble.vo-trb > .vo-vol-btn { float:inline-end; margin-inline-start:0.6rem; margin-top:-0.15rem; width:1.9em; height:1.9em; }
+.chat-messages .msg-bubble.vo-trb > .vo-vol-btn svg { width:1.05em; height:1.05em; }
 /* The script (Read along): hidden until the learner opens it, or shown from the start when the voice is off. */
 .vo-script { display:none; border-top:1px solid rgba(22,32,46,0.1); padding:0.7em 1em 0.85em; }
 #chatMessages.vo-cc-on .vo-script { display:block; }
@@ -1434,6 +1445,9 @@ body.chat-maximized header.topbar { display:none; }
 body.chat-maximized .chat-messages > * { max-width:var(--vo-stack-w, none); margin-left:auto; margin-right:auto; }
 body.chat-maximized .chat-panel.active { position:fixed; top:0; left:0; right:0; bottom:var(--vo-bar-h, 100px); margin:0; height:auto; max-height:none; min-height:0; border-radius:0; box-shadow:none; z-index:900; }
 body.chat-maximized .chat-bar { position:fixed; left:1rem; right:1rem; bottom:0.9rem; margin:0; z-index:901; }
+/* The normal (not maximized) view: the message box keeps its bottom edge and grows upward as the person types; the chat window above it takes the height that is left on the
+   screen (chatFit() in the page script sets --chat-fit-h; on a phone the screen is what is left above the keyboard). */
+body.chat-fit #chatPanel.active { height:var(--chat-fit-h); min-height:0; max-height:none; }
 .chat-head-right { display:flex; align-items:center; gap:0.3rem; }
 .chat-panel-expand { background:none; border:none; color:#fff; cursor:pointer; width:36px; height:36px; border-radius:6px; display:flex; align-items:center; justify-content:center; padding:0; }
 .chat-panel-expand svg { width:19px; height:19px; }
@@ -1767,7 +1781,7 @@ body.chat-maximized .chat-bar { position:fixed; left:1rem; right:1rem; bottom:0.
       <div class="grow spread">
         <div class="streak-hero">
           <svg class="flame" viewBox="0 0 24 24"><path d="M13.5 2c.6 3.5-2.6 4.8-3.8 7.3C8.6 11.4 9 13 10.3 14c.8.6 1.9.4 2.4-.4.5-.8.3-1.6-.2-2.1 2.1.6 3.5 2.7 3.5 4.8 0 3.1-2.5 5.7-5.6 5.7S4.8 19.4 4.8 16.3c0-4.6 3.7-6.1 5.4-9.2 1-1.9 1.3-3.2.9-5.1 1 .5 2.1 1.3 2.4 0Z"/></svg>
-          <div><div class="big" id="lmStreak">--</div><div class="small">Current streak</div></div>
+          <div><div class="big" id="lmStreak">--</div><div class="small" id="lmStreakLabel">Longest streak this quarter</div></div>
         </div>
         <div class="lm-firstrun">Finish your first Learning Atom to start your numbers.</div>
         <div class="lm-mid">
@@ -1830,7 +1844,7 @@ body.chat-maximized .chat-bar { position:fixed; left:1rem; right:1rem; bottom:0.
 </div>
 
 <script src="assets/html2canvas.min.js"></script>
-<script src="assets/atom_slides.js?v=20261105d"></script>
+<script src="assets/atom_slides.js?v=20261106b"></script>
 <script>
 // `overflow:hidden` alone locks scroll on desktop (mouse wheel respects
 // it) but iOS Safari ignores it for a touch-drag -- the background page
@@ -2325,6 +2339,8 @@ async function loadLearningMomentum(period) {
     if (!res.ok || !data.ok) return;
 
     document.getElementById('lmStreak').textContent = data.streak_days + (data.streak_days === 1 ? ' day' : ' days');
+    // the number is the longest run of active days inside the chosen period, so the label says so
+    document.getElementById('lmStreakLabel').textContent = 'Longest streak this ' + (learningMomentumPeriod === 'year' ? 'year' : 'quarter');
     document.getElementById('lmAtomsDone').textContent = data.learning_atoms_completed;
     document.getElementById('lmAtomsTotal').textContent = data.learning_atoms_total;
     const atomsBar = document.getElementById('lmAtomsBar');
@@ -3936,6 +3952,9 @@ const VO_ICON = {
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
   replay: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
   volume: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  volumeOn: '<svg class="ic-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  volumeOff: '<svg class="ic-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
+  volumeMore: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
   mute: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M22 9l-6 6M16 9l6 6"/></svg>',
   cc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10.5 10.2a2.3 2.3 0 1 0 0 3.6M17 10.2a2.3 2.3 0 1 0 0 3.6"/></svg>',
   zoomOut: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6"/></svg>',
@@ -4088,6 +4107,65 @@ function voFitSlidesNow() {
   });
 })();
 
+// The normal view keeps the message box's bottom edge where it is and lets its top edge rise as the text grows: the chat window above takes the height that is
+// left on the screen (on a phone: above the keyboard), and stays scrolled to the latest message if it was. The maximized view has its own layout and is left alone.
+var chatFitQueued = false;
+function chatFitSoon() {
+  if (chatFitQueued) return;
+  chatFitQueued = true;
+  requestAnimationFrame(function() { chatFitQueued = false; chatFit(); });
+}
+function chatFit() {
+  const panel = document.getElementById('chatPanel'), bar = document.querySelector('.chat-bar'), area = document.getElementById('chatMessages');
+  const on = !!(panel && bar && panel.classList.contains('active') && !document.body.classList.contains('chat-maximized'));
+  if (!on) { if (document.body.classList.contains('chat-fit')) document.body.classList.remove('chat-fit'); document.documentElement.style.removeProperty('--chat-fit-h'); return; }
+  const vv = window.visualViewport;
+  const visibleBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+  const bs = getComputedStyle(bar), ps = getComputedStyle(panel);
+  const barBlock = bar.offsetHeight + (parseFloat(bs.marginTop) || 0) + (parseFloat(bs.marginBottom) || 0);
+  const h = Math.max(160, Math.floor(visibleBottom - panel.getBoundingClientRect().top - barBlock - (parseFloat(ps.marginBottom) || 0)));
+  const atBottom = !!area && (area.scrollTop + area.clientHeight >= area.scrollHeight - 40);
+  document.documentElement.style.setProperty('--chat-fit-h', h + 'px');
+  if (!document.body.classList.contains('chat-fit')) document.body.classList.add('chat-fit');
+  if (atBottom && area) area.scrollTop = area.scrollHeight;
+}
+(function() {
+  window.addEventListener('resize', chatFitSoon);
+  if (window.visualViewport) { window.visualViewport.addEventListener('resize', chatFitSoon); window.visualViewport.addEventListener('scroll', chatFitSoon); }
+  document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('chatPanel'), bar = document.querySelector('.chat-bar');
+    if (panel) new MutationObserver(chatFitSoon).observe(panel, { attributes: true, attributeFilter: ['class'] });
+    new MutationObserver(chatFitSoon).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    if (bar && window.ResizeObserver) new ResizeObserver(chatFitSoon).observe(bar);
+    chatFitSoon();
+  });
+})();
+
+// The ONE mute of the page (Voice.muted in atom_slides.js). Every slide player's speaker and every trainer response's speaker call these, so pressing any of them mutes
+// or unmutes everything, on every track; a slide or a response that arrives later reads the same setting. It starts off (sound on) on every visit.
+let voMuteReady = false;
+function voMuteInit() { if (voMuteReady) return; voMuteReady = true; window.AtomSlides.Voice.onMute(voSyncMute); }
+function voToggleMute() {
+  const V = window.AtomSlides.Voice;
+  if (V.muted) { if (V.volume === 0) V.setVolume(0.8); V.setMuted(false); } else { V.setMuted(true); }
+}
+function voSetVolume(v) {
+  const V = window.AtomSlides.Voice;
+  V.setVolume(v);
+  if (V.volume === 0) V.setMuted(true); else if (V.muted) V.setMuted(false);
+  voSyncMute();
+}
+function voSyncMute() {
+  const V = window.AtomSlides.Voice, W = window.AtomSlides.words;
+  Array.prototype.forEach.call(document.querySelectorAll('#chatMessages .vo-player, #chatMessages .vo-trb'), function(el) {
+    el.classList.toggle('muted', V.muted);
+    const b = el.querySelector('.vo-vol-btn');
+    if (b) { const t = V.muted ? W.unmuteLabel : W.muteLabel; b.title = t; b.setAttribute('aria-label', t); }
+    const r = el.querySelector('.vo-slim');
+    if (r) { r.value = String(V.volume); r.style.setProperty('--p', Math.round(V.volume * 100) + '%'); }
+  });
+}
+
 // text: the voiceover (also the script). quiet: nothing starts by itself (a resumed or earlier slide).
 function voPlayer(text, quiet) {
   const AS = window.AtomSlides, W = AS.words, Voice = AS.Voice;
@@ -4098,8 +4176,9 @@ function voPlayer(text, quiet) {
     '<button type="button" class="vo-pbtn vo-play"></button>' +
     '<div class="vo-track"><div class="vo-fill"></div></div>' +
     '<button type="button" class="vo-pbtn vo-replay-btn" title="' + W.replayLabel + '" aria-label="' + W.replayLabel + '">' + VO_ICON.replay + '</button>' +
-    '<span class="vo-volwrap"><button type="button" class="vo-pbtn vo-vol-btn" title="' + W.volumeLabel + '" aria-label="' + W.volumeLabel + '">' + VO_ICON.volume + '</button>' +
-    '<span class="vo-vol-pop"><input type="range" min="0" max="1" step="0.05" aria-label="' + W.volumeLabel + '"></span></span>' +
+    '<span class="vo-volwrap"><button type="button" class="vo-pbtn vo-vol-btn" title="' + W.muteLabel + '" aria-label="' + W.muteLabel + '">' + VO_ICON.volumeOn + VO_ICON.volumeOff + '</button>' +
+    '<button type="button" class="vo-vol-more" title="' + W.volumeLabel + '" aria-label="' + W.volumeLabel + '">' + VO_ICON.volumeMore + '</button>' +
+    '<input class="vo-slim" type="range" min="0" max="1" step="0.05" aria-label="' + W.volumeLabel + '"></span>' +
     '<button type="button" class="vo-readalong-btn vo-cc-btn" aria-pressed="false">' + W.readAlong + '</button>';
   const script = document.createElement('div');
   script.className = 'vo-script';
@@ -4122,7 +4201,7 @@ function voPlayer(text, quiet) {
   if (slideRow && slideRow.nextElementSibling === playerWrap) { slideRow.classList.add('vo-has-player'); playerWrap.classList.add('vo-attached'); }
 
   const q = function(sel) { return bar.querySelector(sel); };
-  const fill = q('.vo-fill'), playBtn = q('.vo-play'), volBtn = q('.vo-vol-btn'), volRange = q('.vo-vol-pop input');
+  const fill = q('.vo-fill'), playBtn = q('.vo-play'), volBtn = q('.vo-vol-btn'), moreBtn = q('.vo-vol-more'), volRange = q('.vo-slim');
   let state = 'idle', token = 0, lastChar = 0, timer = null;
   const hasText = !!(text && String(text).trim());
   const api = { reset: function() { token += 1; clearTimer(); setFill(0); setState('idle'); lastChar = 0; } };
@@ -4167,17 +4246,14 @@ function voPlayer(text, quiet) {
     else { begin(0, true); }
   };
   q('.vo-replay-btn').onclick = function() { if (hasText) begin(0, true); };
-  volRange.value = String(Voice.volume);
-  volBtn.onclick = function() { bar.classList.toggle('vol-open'); };
-  volRange.oninput = function() {
-    Voice.volume = parseFloat(volRange.value);
-    Array.prototype.forEach.call(document.querySelectorAll('#chatMessages .vo-vol-btn'), function(b) { b.innerHTML = Voice.volume === 0 ? VO_ICON.mute : VO_ICON.volume; });
-    if (state === 'playing') begin(lastChar, true);   // the voice cannot change loudness mid-sentence, so it carries on from the last word with the new volume
-  };
+  volBtn.onclick = voToggleMute;
+  moreBtn.onclick = function() { bar.classList.toggle('vol-open'); };
+  volRange.oninput = function() { voSetVolume(parseFloat(volRange.value)); };
   q('.vo-cc-btn').onclick = function(ev) { voCcUser = !(voCcUser === null ? !voVoiceHeard() : voCcUser); voHoldView(voSyncViewNow, ev.currentTarget); };
 
   setState('idle');
   voSyncView();
+  voMuteInit(); voSyncMute();   // a new slide takes on the mute that is already set
   if (!quiet && Voice.enabled) begin(0, false);
   return api;
 }
@@ -4207,6 +4283,13 @@ function voSpeakQueued(text) {
 function voTrainerSay(text, opts) {
   opts = opts || {};
   const bubble = appendMessage('ai', text, { suppressScroll: !!opts.suppressScroll });
+  if (bubble) {   // every trainer response carries a small speaker: the same one mute as the slide's
+    const W = window.AtomSlides.words, btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'vo-pbtn vo-vol-btn'; btn.title = W.muteLabel; btn.setAttribute('aria-label', W.muteLabel);
+    btn.innerHTML = VO_ICON.volumeOn + VO_ICON.volumeOff; btn.onclick = voToggleMute;
+    bubble.classList.add('vo-trb'); bubble.insertBefore(btn, bubble.firstChild);
+    voMuteInit(); voSyncMute();
+  }
   if (!opts.quiet) voSpeakQueued(text);
   voKeepNavLast();
   return bubble;
@@ -5565,7 +5648,9 @@ async function logOut() {
 // ─── UTILITIES ──────────────────────────────────────────────────────────────
 function autoResize(el) {
   el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, Math.round(window.innerHeight * 0.4)) + 'px';
+  const visibleH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  el.style.height = Math.min(el.scrollHeight, Math.round(visibleH * 0.4)) + 'px';
+  if (typeof chatFitSoon === 'function') chatFitSoon();
 }
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
