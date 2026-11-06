@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/atom_slides.css?v=20261105b">
+<link rel="stylesheet" href="assets/atom_slides.css?v=20261105d">
 <style>
 :root {
   --night:   #041A40;
@@ -593,7 +593,8 @@ header.topbar { background:var(--night); }
 #impactCard .out .pct { font-size:1.05rem; font-weight:700; color:var(--night); line-height:1.1; }
 #impactCard .out .what { font-size:0.62rem; color:var(--night2); line-height:1.25; margin-top:0.12rem; }
 #impactCard .out .n { font-size:0.58rem; color:var(--grey3); margin-top:0.1rem; }
-#impactCard .foot { font-size:0.64rem; color:var(--night3); font-style:italic; margin-top:0.5rem; text-align:center; }
+#impactCard .foot { margin-top:0.6rem; text-align:center; font-size:0.8rem; line-height:1.3; color:#000; font-weight:700; }
+#impactCard .foot span { background:linear-gradient(transparent 58%, rgba(228,202,10,0.65) 58%); padding:0 0.25em; }
 #impactCard .waiting { font-size:0.72rem; color:var(--grey3); }
 @keyframes imHalo { 0%,100% { transform:scale(1); opacity:.9 } 50% { transform:scale(1.08); opacity:.3 } }
 @keyframes imPop { to { opacity:1; transform:scale(1); } }
@@ -1820,7 +1821,7 @@ body.chat-maximized .chat-bar { position:fixed; left:1rem; right:1rem; bottom:0.
         <div class="rule"></div>
         <div class="sub sub-reported">Impact reported</div>
         <div id="impactReported"></div>
-        <div class="foot">Because showing up is everything.</div>
+        <div class="foot"><span>Because showing up is everything</span></div>
       </div>
       <div class="period-toggle period-toggle-bottom" id="impactToggle"></div><!-- filled from the one shared template, see _fillPeriodToggle() -->
     </div>
@@ -1829,7 +1830,7 @@ body.chat-maximized .chat-bar { position:fixed; left:1rem; right:1rem; bottom:0.
 </div>
 
 <script src="assets/html2canvas.min.js"></script>
-<script src="assets/atom_slides.js?v=20261105b"></script>
+<script src="assets/atom_slides.js?v=20261105d"></script>
 <script>
 // `overflow:hidden` alone locks scroll on desktop (mouse wheel respects
 // it) but iOS Safari ignores it for a touch-drag -- the background page
@@ -2050,6 +2051,38 @@ let pendingForm = null;
 let currentNotification = null;
 let stopMicIfActive = function(){};
 let typingWordInterval = null;
+
+// The ONE place that locks or unlocks what the learner answers with: the typing box, the Send button and the microphone always go together.
+// Every spot that used to switch them one by one calls this instead.
+const CHAT_INPUT_PLACEHOLDER = 'Describe your situation...';
+function setChatInputEnabled(enabled, placeholder) {
+  const input = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const micBtn = document.getElementById('micBtn');
+  if (!enabled) stopMicIfActive();   // a locked box must not keep listening
+  input.disabled = !enabled;
+  if (sendBtn) sendBtn.disabled = !enabled;
+  if (micBtn) micBtn.disabled = !enabled;
+  if (placeholder !== undefined) input.placeholder = placeholder;
+  else if (enabled) input.placeholder = CHAT_INPUT_PLACEHOLDER;
+}
+// True while the learner must NOT type or speak. It is a turn-taking machine: nothing can be sent while an answer is being waited for (a message
+// just sent, an answer to the driver questions, a button click, a slide step, a conversation being made or resumed), and nothing while the conversation
+// has ended, the driver questions are waiting for their answers, the commitment card is open, or the two "Share a different situation / Build a
+// scenario together" buttons are waiting for a click. (The two sticky choice buttons never hold it.)
+let chatWaits = 0;
+let chatHeldByCommitment = false;
+function chatWaitBegin() { chatWaits++; setChatInputEnabled(false); }
+function chatWaitEnd() { chatWaits = Math.max(0, chatWaits - 1); unlockChatInput(); }
+function chatInputHeldLocked() {
+  if (sessionEnded || pendingForm || isWaiting || voBusy || chatWaits > 0 || chatHeldByCommitment) return true;
+  const row = document.getElementById('nextStepButtonsRow');
+  return !!(row && row.querySelector('.next-step-btn:not([disabled])'));
+}
+// Unlock after a request is over -- unless something above still holds it locked.
+function unlockChatInput() {
+  if (!chatInputHeldLocked()) setChatInputEnabled(true);
+}
 
 function computeInitials(name) {
   if (!name) return 'U';
@@ -3377,6 +3410,7 @@ async function startLearningGoalSession(skillName) {
   const previousTrack = activeTrack, previousIsInitiative = activeIsInitiative;
   activeTrack = 'learning_recommendations';
   activeIsInitiative = false;
+  chatWaitBegin();
   showTyping('MR_skill_introduction');
   try {
     const newSessionId = await startSession('MR');
@@ -3400,6 +3434,8 @@ async function startLearningGoalSession(skillName) {
     removeTyping();
     activeTrack = previousTrack; activeIsInitiative = previousIsInitiative;
     appendError(voErrorText(err, 'Could not reach the server to start that conversation.'));
+  } finally {
+    chatWaitEnd();
   }
 }
 
@@ -3413,8 +3449,8 @@ async function openInitiativeOverview(initiativeId, initiativeName) {
   document.getElementById('chatMessages').innerHTML = '';
   const inputBox = document.getElementById('chatInput');
   inputBox.value = ''; autoResize(inputBox);
-  inputBox.disabled = true; document.getElementById('sendBtn').disabled = true;
-  document.getElementById('chatPanelLabel').textContent = 'Learning initiative — ' + initiativeName;
+  setChatInputEnabled(false);
+  document.getElementById('chatPanelLabel').textContent = 'Learning Initiative Overview';
   showTyping('MR_skill_introduction');
   try {
     const res = await reportsFetch(`${LEARNING_INITIATIVE_BASE}/api/learner/initiatives/${encodeURIComponent(initiativeId)}/overview`);
@@ -3450,7 +3486,7 @@ async function startInitiativeSkillSession(initiativeId, skillName) {
   activeIsInitiative = true;
   showTyping('MR_skill_introduction');
   isWaiting = true;   // nothing can be typed while the session is still being made
-  inputBox.disabled = true; document.getElementById('sendBtn').disabled = true;
+  setChatInputEnabled(false);
   try {
     const newSessionId = await startSession('LI');
     const res = await reportsFetch(`${LEARNING_INITIATIVE_SESSION_BASE}/api/skill-introduction/start`, {
@@ -3475,7 +3511,7 @@ async function startInitiativeSkillSession(initiativeId, skillName) {
     appendError(voErrorText(err, 'Could not reach the server to start that conversation.'));
   } finally {
     isWaiting = false;
-    if (!sessionEnded && !document.querySelector('#initiativeChoiceRow[data-waiting]')) { inputBox.disabled = false; document.getElementById('sendBtn').disabled = false; }
+    unlockChatInput();
   }
 }
 
@@ -3592,6 +3628,7 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
   // goes through this function at all, so it's untouched -- neither track
   // ever shows a name before one is actually known.
   document.getElementById('chatPanelLabel').textContent = skillName ? 'Live conversation — ' + skillName : 'Live conversation';
+  chatWaitBegin();
   showTyping(isLR ? 'MR_skill_introduction' : 'opening');
   const email = await _getUserEmailForReports();
   try {
@@ -3668,6 +3705,8 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
   } catch (err) {
     removeTyping();
     appendError('Could not reach the server to resume that conversation.');
+  } finally {
+    chatWaitEnd();
   }
 }
 
@@ -3722,10 +3761,7 @@ async function viewClosedConversation(clickedSessionId, path) {
   // not nothing. History is read-only by definition, so lock it
   // unconditionally the instant it opens; closeHistoryOverlay() below
   // restores the correct state for whatever's actually still live.
-  document.getElementById('chatInput').disabled = true;
-  document.getElementById('sendBtn').disabled = true;
-  const micBtnLock = document.getElementById('micBtn');
-  if (micBtnLock) micBtnLock.disabled = true;
+  setChatInputEnabled(false);
   const email = await _getUserEmailForReports();
   try {
     const res = await reportsFetch(
@@ -3770,13 +3806,7 @@ function closeHistoryOverlay() {
   // this tab (stays disabled, matches lockConversationEnded()'s own
   // placeholder), or no session ever started (sessionEnded's own default,
   // false -- re-enables, same as a fresh page load).
-  const input = document.getElementById('chatInput');
-  const sendBtn = document.getElementById('sendBtn');
-  const micBtn = document.getElementById('micBtn');
-  input.disabled = sessionEnded;
-  sendBtn.disabled = sessionEnded;
-  if (micBtn) micBtn.disabled = sessionEnded;
-  input.placeholder = sessionEnded ? 'Conversation ended.' : 'Describe your situation...';
+  setChatInputEnabled(!chatInputHeldLocked(), sessionEnded ? 'Conversation ended.' : CHAT_INPUT_PLACEHOLDER);
 }
 
 function _renderHistoryMessage(role, text) {
@@ -3846,6 +3876,7 @@ function slideMessage(message) {
 // slide -- the Trainer's answer to a typed or spoken question carries no slide, and it must be shown and spoken like every other line on a slide.
 function isSlideResult(result) { return isVoPhase(result.phase) || voSlideNumberOf(result.phase) > 0 || (activeTrack === 'learning_recommendations' && !!result.slide); }
 function voReset() {
+  chatHeldByCommitment = false;
   voCover = null; voHeld = null; voSlideNumber = 0; voSlideCount = 0; voLastSlide = false; voBusy = false; voAutoMaxDone = false;
   if (window.AtomSlides) window.AtomSlides.Voice.stop();
 }
@@ -4229,6 +4260,7 @@ async function voAskPopup(btn, index, text) {
   if (voBusy) return;
   voUnpin();
   voBusy = true;
+  chatWaitBegin();
   btn.disabled = true;
   appendMessage('user', text, { suppressScroll: true });
   try {
@@ -4241,6 +4273,7 @@ async function voAskPopup(btn, index, text) {
     appendError(voErrorText(err, 'Something went wrong reaching the server -- please try again.'));
   }
   voBusy = false;
+  chatWaitEnd();
 }
 
 function voStepButton(label, onClick, className) {
@@ -4259,6 +4292,7 @@ function voNavButton() {
 async function voAdvance(wrap, btn) {
   if (voBusy) { btn.disabled = false; return; }
   voBusy = true;
+  chatWaitBegin();
   try {
     await voProgressChain;   // the server files progress under the slide it is on, so every save must land before it moves on
     const result = await slideMessage(voLastSlide ? 'finish' : 'continue');
@@ -4270,6 +4304,8 @@ async function voAdvance(wrap, btn) {
     voBusy = false;
     btn.disabled = false;
     appendError(voErrorText(err, 'Something went wrong reaching the server -- please try again.'));
+  } finally {
+    chatWaitEnd();
   }
 }
 
@@ -4384,12 +4420,8 @@ function voShowCover(result) {
 }
 
 function disableChatInput(placeholder) {
-  const input = document.getElementById('chatInput');
-  input.disabled = true;
-  input.placeholder = placeholder;
-  document.getElementById('sendBtn').disabled = true;
-  const micBtn = document.getElementById('micBtn');
-  if (micBtn) micBtn.disabled = true;
+  chatHeldByCommitment = true;
+  setChatInputEnabled(false, placeholder);
 }
 
 // The picture of the commitment card with the learner's words in it, as base64 text for the server (card.snapshot makes the JPEG).
@@ -4462,6 +4494,7 @@ function voRetry(text, again) {
 }
 // The page's automatic follow-up (empty message) for the phases that work in the background.
 async function voAutoContinue() {
+  chatWaitBegin();
   if (!voCover) showTyping(currentPhase);
   try {
     const next = await slideMessage('');
@@ -4470,6 +4503,8 @@ async function voAutoContinue() {
   } catch (err) {
     removeTyping();
     voRetry(voErrorText(err, 'Something went wrong continuing the conversation.'), voAutoContinue);
+  } finally {
+    chatWaitEnd();
   }
 }
 
@@ -4591,7 +4626,7 @@ async function handleBackendResult(result) {
   }
 
   if (result.choice_offered && Array.isArray(result.choices) && result.choices.length) {
-    renderInitiativeChoiceButtons(result.choices, holdScrollForPair);   // the Communicator offered the choice: its own words are never shown, only these two buttons
+    renderInitiativeChoiceButtons(result.choices, holdScrollForPair);   // the choice is offered: the Communicator's words were just shown above, and these two buttons come under them
     return;
   }
 
@@ -4646,12 +4681,7 @@ function lockConversationEnded(suppressScroll) {
   if (sessionEnded) return;
   sessionEnded = true;
 
-  const input = document.getElementById('chatInput');
-  input.disabled = true;
-  input.placeholder = 'Conversation ended.';
-  document.getElementById('sendBtn').disabled = true;
-  const micBtn = document.getElementById('micBtn');
-  if (micBtn) micBtn.disabled = true;
+  setChatInputEnabled(false, 'Conversation ended.');
   const closeBtnWrap = document.getElementById('closeBtnWrap');
   if (closeBtnWrap) closeBtnWrap.classList.add('ready-to-close');
 
@@ -4772,12 +4802,14 @@ function renderDriverDiagnosisForm(form, opts) {
   wrap.appendChild(card);
   area.appendChild(wrap);
   if (shouldScroll) scrollMessagesToBottom();
+  setChatInputEnabled(false);   // the answers are clicked, never typed or spoken
   return wrap;
 }
 
 // ─── LEARNING INITIATIVES: THE TWO CHOICE BUTTONS ──────────────────────────────────────────────────────────────
-// After the Communicator's introduction the initiative app answers with choice_offered and the two buttons' words (already in the learner's
-// language): "user_situation" (tell about a real situation) and "scenario_required" (build a scenario together). Typing is locked until one is clicked.
+// Once the Communicator has offered the choice, every reply of the initiative app carries choice_offered and the two buttons' words (already in the
+// learner's language): "user_situation" (tell about a real situation) and "scenario_required" (build a scenario together). They sit under the reply,
+// the buttons of the reply before are replaced, and typing stays open: a typed message is answered and the buttons come again, until one is clicked.
 function renderInitiativeChoiceButtons(choices, suppressScroll) {
   removeWelcome();
   const area = document.getElementById('chatMessages');
@@ -4787,7 +4819,6 @@ function renderInitiativeChoiceButtons(choices, suppressScroll) {
   const wrap = document.createElement('div');
   wrap.className = 'msg';
   wrap.id = 'initiativeChoiceRow';
-  wrap.dataset.waiting = '1';   // while this is set the typing box stays locked
   const avatar = document.createElement('div');
   avatar.className = 'msg-avatar avatar-ai';
   const avatarImg = document.createElement('img');
@@ -4808,19 +4839,17 @@ function renderInitiativeChoiceButtons(choices, suppressScroll) {
   wrap.appendChild(card);
   area.appendChild(wrap);
   if (shouldScroll) scrollMessagesToBottom();
-  document.getElementById('chatInput').disabled = true;
-  document.getElementById('sendBtn').disabled = true;
   return wrap;
 }
 
 async function submitInitiativeChoice(choice, label, row) {
-  delete row.dataset.waiting;
   Array.from(row.querySelectorAll('.next-step-btn')).forEach(function(b) {
     b.disabled = true;
     b.style.cursor = 'default';
     if (b.textContent !== label) b.style.opacity = '0.4';
   });
   isWaiting = true;
+  setChatInputEnabled(false);
   showTyping(currentPhase);
   try {
     const res = await reportsFetch(`${LEARNING_INITIATIVE_SESSION_BASE}/api/skill-introduction/choice`, {
@@ -4835,7 +4864,6 @@ async function submitInitiativeChoice(choice, label, row) {
       lockConversationEnded();
     } else if (!res.ok) {
       appendError('Something went wrong -- please try again.');
-      row.dataset.waiting = '1';
       Array.from(row.querySelectorAll('.next-step-btn')).forEach(function(b) { b.disabled = false; b.style.cursor = ''; b.style.opacity = ''; });
     } else {
       await handleBackendResult(result);
@@ -4843,14 +4871,10 @@ async function submitInitiativeChoice(choice, label, row) {
   } catch (err) {
     removeTyping();
     appendError('Could not reach the server -- please try again.');
-    row.dataset.waiting = '1';
     Array.from(row.querySelectorAll('.next-step-btn')).forEach(function(b) { b.disabled = false; b.style.cursor = ''; b.style.opacity = ''; });
   }
   isWaiting = false;
-  if (!sessionEnded && !document.querySelector('#initiativeChoiceRow[data-waiting]')) {
-    document.getElementById('chatInput').disabled = false;
-    document.getElementById('sendBtn').disabled = false;
-  }
+  unlockChatInput();
 }
 
 // A session reopened from the Parking Lot while the two buttons were waiting: the initiative app says whether they still are.
@@ -4918,8 +4942,7 @@ function renderNextStepButtons(suppressScroll) {
 
   // Free text isn't a valid reply at this point -- same as the driver
   // diagnosis form's own input-lock while its card is live.
-  document.getElementById('chatInput').disabled = true;
-  document.getElementById('sendBtn').disabled = true;
+  setChatInputEnabled(false);
   return wrap;
 }
 
@@ -4953,10 +4976,7 @@ async function submitNextStepChoice(choice, row) {
   }
 
   isWaiting = false;
-  if (!sessionEnded) {
-    document.getElementById('chatInput').disabled = false;
-    document.getElementById('sendBtn').disabled = false;
-  }
+  unlockChatInput();
 }
 
 async function submitDriverDiagnosisForm(answers) {
@@ -4979,8 +4999,7 @@ async function submitDriverDiagnosisForm(answers) {
   pendingForm = null;
 
   isWaiting = true;
-  document.getElementById('chatInput').disabled = true;
-  document.getElementById('sendBtn').disabled = true;
+  setChatInputEnabled(false);
 
   showTyping(currentPhase);
   try {
@@ -5008,10 +5027,7 @@ async function submitDriverDiagnosisForm(answers) {
   }
 
   isWaiting = false;
-  if (!sessionEnded) {
-    document.getElementById('chatInput').disabled = false;
-    document.getElementById('sendBtn').disabled = false;
-  }
+  unlockChatInput();
 }
 
 // ─── LEARNING NUDGE NOTIFICATIONS (the bell) ────────────────────────────────
@@ -5880,10 +5896,7 @@ async function sendMessage() {
   isWaiting = true;
   input.value = '';
   autoResize(input);
-  input.disabled = true;
-  document.getElementById('sendBtn').disabled = true;
-  const micBtn0 = document.getElementById('micBtn');
-  if (micBtn0) micBtn0.disabled = true;
+  setChatInputEnabled(false);
 
   appendMessage('user', text);
 
@@ -5925,13 +5938,8 @@ async function sendMessage() {
   }
 
   isWaiting = false;
-  if (!sessionEnded && !document.querySelector('#initiativeChoiceRow[data-waiting]')) {   // the two choice buttons keep the typing box locked until one is clicked
-    input.disabled = false;
-    document.getElementById('sendBtn').disabled = false;
-    const micBtn1 = document.getElementById('micBtn');
-    if (micBtn1) micBtn1.disabled = false;
-    input.focus();
-  }
+  unlockChatInput();
+  if (!input.disabled) input.focus();
 }
 
 function sleep(ms) {

@@ -66,6 +66,7 @@
     coverEyebrow: 'Your learning atom · about 6 minutes', coverHi: 'Hi,', coverAsk: 'You came here to sort out',
     ovTag: 'Learning Initiative', ovWelcome: 'Welcome to your learning initiative', ovStarts: 'Starts', ovEnds: 'Ends', ovSkills: 'Skills',
     ovObjective: 'Objective', ovNeed: 'Business need', ovSkillsTitle: 'Skills you will learn in this initiative',
+    ovHear: 'Click to hear audio', ovStop: 'Stop audio', ovMore: 'Read more \u25be', ovLess: 'Show less \u25b4',
     ovFootBold: 'Click any skill to begin learning.', ovFootRest: 'You can come back here and pick another one any time.',
     liYour: 'Your learning initiative', liInit: 'Learning initiative', liSkill: 'Skill', liToday: 'Today\'s skill:', liMinutes: 'Learning atom · about 8 to 10 minutes',
     coverSkill: 'Skill you will unlock', coverBoarding: 'Learning atom · boarding now', coverMinutes: 'minutes',
@@ -637,9 +638,24 @@
 
   // ---------------------------------------------------------------------------------------------------------------------------------
   // SEGMENT 4 -- RECAP (the Master's last slide).   on_screen_text: { segments: [ { heading, lines [] } ] }, one or two segments.
-  // The slide title, the headings and the lines are all the Master's words; this design adds none. The "Horizon" look is the one approved.
+  // The slide title, the headings and the lines are all the Master's words; the designs add none, only pictures and symbols (and, in "numbers",
+  // the digits the page counts). Seven designs; the page picks one from the session like the other slides' looks, so a resumed session shows the
+  // same one. Every line has to make sense alone: a design may show it as a numbered point, a tag, a note or a leaf.
   // ---------------------------------------------------------------------------------------------------------------------------------
-  SLIDES.recap = function (slide) {
+  // ---------------------------------------------------------------------------------------------------------------------------------
+  var RECAP_LOOKS = ['split', 'stack', 'spotlight', 'notes', 'plant', 'numbers', 'backpack'];
+  var RC_CONFETTI = ['#3ab54a', '#E4CA0A', '#ffffff', '#2d9640', '#b8c0cc', '#E4CA0A', '#3ab54a', '#ffffff', '#2d9640', '#E4CA0A'];
+  function rcConfetti() {
+    return '<div class="confetti">' + RC_CONFETTI.map(function (c, i) { return '<i style="--x:' + (6 + i * 9.5) + '%; --dl:' + (i * 0.33) + 's; --c:' + c + '"></i>'; }).join('') + '</div>';
+  }
+  var RC_MEDAL = '<svg viewBox="0 0 150 178"><path d="M48 96 L28 168 L62 152 L75 176 L88 152 L122 168 L102 96 Z" fill="#2d9640"/><path d="M62 100 L52 150 L75 138 Z" fill="#3ab54a"/><g class="pop"><circle cx="75" cy="70" r="58" fill="#E4CA0A"/><circle cx="75" cy="70" r="49" fill="#fff6b8"/><circle cx="75" cy="70" r="49" fill="none" stroke="#AB9808" stroke-width="3" stroke-dasharray="3 6"/><path d="M50 72 L68 91 L102 50" fill="none" stroke="#2d9640" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/></g></svg>';
+  var RC_IC_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+  var RC_IC_ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="#041A40" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  var RC_SCRIBBLE = '<svg class="rsn-line" viewBox="0 0 220 12" preserveAspectRatio="none"><path d="M3 8 C 40 2, 80 11, 120 5 S 195 3, 217 7" fill="none" stroke="#E4CA0A" stroke-width="5" stroke-linecap="round"/></svg>';
+  var RC_SPROUT = '<svg viewBox="0 0 46 46"><path d="M23 44 V22" stroke="#2d9640" stroke-width="4" stroke-linecap="round"/><path d="M23 24 C 10 24, 5 14, 6 6 C 16 6, 23 12, 23 24 Z" fill="#3ab54a"/><path d="M23 20 C 23 10, 30 4, 41 4 C 42 13, 35 20, 23 20 Z" fill="#6fd07c"/></svg>';
+  var RC_PACK = '<svg viewBox="0 0 118 138"><path d="M40 22 C 40 6, 78 6, 78 22" fill="none" stroke="#041A40" stroke-width="7" stroke-linecap="round"/><rect x="14" y="18" width="90" height="108" rx="26" fill="#041A40"/><rect x="30" y="76" width="58" height="42" rx="12" fill="#2d9640"/><path d="M34 84 H84" stroke="#E4CA0A" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="1 7"/><path d="M36 40 C 48 33, 70 33, 82 40" fill="none" stroke="#3a5c9a" stroke-width="4" stroke-linecap="round"/><circle cx="59" cy="96" r="6" fill="#E4CA0A"/><rect x="6" y="52" width="10" height="34" rx="5" fill="#2d9640"/><rect x="102" y="52" width="10" height="34" rx="5" fill="#2d9640"/></svg>';
+
+  SLIDES.recap = function (slide, ctx) {
     var t = obj(slide.on_screen_text);
     var raw = arr(t.segments).length ? arr(t.segments) : (arr(t.groups).length ? arr(t.groups) : arr(t.parts));
     var segs = raw.map(function (g) {
@@ -647,13 +663,34 @@
       var lines = arr(g.lines).length ? arr(g.lines) : (arr(g.items).length ? arr(g.items) : (str(g.text) ? [g.text] : []));
       return { k: str(g.heading || g.title || g.k), items: lines.map(str).filter(Boolean) };
     }).filter(function (g) { return g.items.length; });
+    if (!segs.length) return null;   // nothing to lay out: the frame shows the title and whatever text there is, plainly
+    var title = str(slide.slide_title);
     var lis = function (g) { return '<ul>' + g.items.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>'; };
-    var hills = '<svg class="rhz-hills" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 40 V20 C 50 -2, 110 30, 190 14 S 330 -8, 400 18 V40 Z" fill="#3ab54a"/></svg>';
-    return {
-      noTitle: true, bodyClass: 'atm-pad',
-      body: '<div class="rcw rhz"><div class="rhz-sky"><i class="rhz-cloud c1"></i><i class="rhz-cloud c2"></i><i class="rhz-sun"></i><div class="rhz-title">' + esc(str(slide.slide_title)) + '</div>' + hills + '</div>'
-        + '<div class="rhz-ground"><div class="rhz-cols">' + segs.map(function (g) { return '<div class="rhz-seg">' + (g.k ? '<div class="rhz-gk">' + esc(g.k) + '</div>' : '') + lis(g) + '</div>'; }).join('') + '</div></div></div>'
-    };
+    var gk = function (cls, g) { return g.k ? '<div class="' + cls + '">' + esc(g.k) + '</div>' : ''; };
+    var look = seedPick(ctx, RECAP_LOOKS, 'recap'), body;
+    if (look === 'stack') {
+      body = '<div class="rcw rst">' + (title ? '<div class="rst-title"><span>' + esc(title) + '</span></div>' : '')
+        + segs.map(function (g, i) { return '<div class="rst-band"><div class="rst-ic i' + (i % 2) + '">' + (i % 2 === 0 ? RC_IC_CHECK : RC_IC_ARROW) + '</div><div class="rst-tx">' + gk('rst-gk', g) + lis(g) + '</div></div>'; }).join('') + '</div>';
+    } else if (look === 'spotlight') {
+      body = '<div class="rcw rsl">' + rcConfetti() + (title ? '<div class="rsl-title">' + esc(title) + '</div>' : '')
+        + '<div class="rsl-cols">' + segs.map(function (g) { return '<div class="rsl-seg">' + gk('rsl-gk', g) + lis(g) + '</div>'; }).join('') + '</div></div>';
+    } else if (look === 'notes') {
+      body = '<div class="rcw rsn">' + (title ? '<div class="rsn-title">' + esc(title) + RC_SCRIBBLE + '</div>' : '')
+        + '<div class="rsn-cols">' + segs.map(function (g, i) { return '<div class="rsn-note n' + (i % 2) + '">' + gk('rsn-gk', g) + lis(g) + '</div>'; }).join('') + '</div></div>';
+    } else if (look === 'plant') {
+      body = '<div class="rcw rg">' + (title ? '<div class="rg-title">' + RC_SPROUT + '<span>' + esc(title) + '</span></div>' : '')
+        + '<div class="rg-cols">' + segs.map(function (g) { return '<div class="rg-seg">' + gk('rg-gk', g) + lis(g) + '</div>'; }).join('') + '</div><div class="rg-soil"></div></div>';
+    } else if (look === 'numbers') {
+      body = '<div class="rcw rn">' + (title ? '<div class="rn-title">' + esc(title) + '</div>' : '')
+        + '<div class="rn-cols">' + segs.map(function (g) { return '<div class="rn-seg">' + gk('rn-gk', g) + lis(g) + '</div>'; }).join('') + '</div></div>';
+    } else if (look === 'backpack') {
+      body = '<div class="rcw rbk"><div class="rbk-l">' + RC_PACK + (title ? '<div class="rbk-title">' + esc(title) + '</div>' : '') + '</div>'
+        + '<div class="rbk-r">' + segs.map(function (g) { return '<div class="rbk-seg">' + gk('rbk-gk', g) + lis(g) + '</div>'; }).join('') + '</div></div>';
+    } else {   // split
+      body = '<div class="rcw rsp"><div class="rsp-l">' + rcConfetti() + '<div class="rb-medal">' + RC_MEDAL + '</div>' + (title ? '<div class="hi">' + esc(title) + '</div>' : '') + '</div>'
+        + '<div class="rsp-r">' + segs.map(function (g) { return '<div class="rsp-seg">' + gk('rsp-gk', g) + lis(g) + '</div>'; }).join('') + '</div></div>';
+    }
+    return { noTitle: true, bodyClass: 'atm-pad', body: body };
   };
 
   // ---------------------------------------------------------------------------------------------------------------------------------
@@ -926,25 +963,54 @@
     var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
     try { return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return str(iso); }
   }
+  var OV_SPEAKER = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
   function renderInitiativeOverview(overview, ctx) {
     overview = obj(overview); ctx = ctx || {};
     prepareLanguage(overview, ctx);
     var skills = arr(overview.skills).map(str).filter(Boolean);
     var chip = function (label, value) { return '<span class="iw-chip"><small>' + esc(label) + '</small> ' + esc(value) + '</span>'; };
-    var box = function (label, text) { return str(text).trim() ? '<div class="iw-box"><h3>' + esc(label) + '</h3><p>' + esc(str(text)) + '</p></div>' : ''; };
+    // a long text (more than about 50 words) shows its first lines and opens in place with Read more
+    var box = function (label, text) {
+      text = str(text).trim();
+      if (!text) return '';
+      var long = text.split(/\s+/).length > 50;
+      return '<div class="iw-box"><h3 data-say>' + esc(label) + '</h3><p' + (long ? ' class="iw-clamp"' : '') + ' data-say>' + esc(text) + '</p>'
+        + (long ? '<button type="button" class="iw-more">' + esc(WORDS.ovMore) + '</button>' : '') + '</div>';
+    };
     var about = box(WORDS.ovObjective, overview.objective) + box(WORDS.ovNeed, overview.business_need);
-    var html = '<div class="atom-root"><div class="slide"><div class="slide-tag">' + esc(WORDS.ovTag) + '</div><div class="slide-body atm-pad">'
-      + '<div class="cv-hero fun-hero"><div class="eyebrow">' + esc(WORDS.ovWelcome) + '</div><h1>' + esc(str(overview.initiative_name)) + '</h1>'
-      + '<div class="iw-dates">' + chip(WORDS.ovStarts, overviewDate(overview.start_date)) + chip(WORDS.ovEnds, overviewDate(overview.end_date)) + chip(WORDS.ovSkills, String(skills.length)) + '</div></div>'
+    var html = '<div class="atom-root"><div class="slide"><div class="slide-body atm-pad iw-scope">'
+      + '<div class="cv-hero fun-hero"><div class="eyebrow" data-say>' + esc(WORDS.ovWelcome) + '</div><h1 data-say>' + esc(str(overview.initiative_name)) + '</h1>'
+      + '<div class="iw-top"><div class="iw-dates">' + chip(WORDS.ovStarts, overviewDate(overview.start_date)) + chip(WORDS.ovEnds, overviewDate(overview.end_date)) + chip(WORDS.ovSkills, String(skills.length)) + '</div>'
+      + '<button type="button" class="iw-say">' + OV_SPEAKER + '<span class="lab">' + esc(WORDS.ovHear) + '</span></button></div></div>'
       + (about ? '<div class="iw-about">' + about + '</div>' : '')
-      + (skills.length ? '<div class="iw-skills"><h3>' + esc(WORDS.ovSkillsTitle) + '</h3><div class="iw-grid">'
-        + skills.map(function (s, i) { return '<button type="button" class="iw-skill" data-skill="' + esc(s) + '"><span class="n">' + (i + 1) + '</span>' + esc(s) + '<span class="go">&rsaquo;</span></button>'; }).join('')
+      + (skills.length ? '<div class="iw-skills"><h3 data-say>' + esc(WORDS.ovSkillsTitle) + '</h3><div class="iw-grid">'
+        + skills.map(function (s, i) { return '<button type="button" class="iw-skill" data-skill="' + esc(s) + '"><span class="n">' + (i + 1) + '</span><span data-say>' + esc(s) + '</span><span class="go">&rsaquo;</span></button>'; }).join('')
         + '</div><p class="iw-foot"><b>' + esc(WORDS.ovFootBold) + '</b> ' + esc(WORDS.ovFootRest) + '</p></div>' : '')
       + '</div></div></div>';
     var el = node(html);
     Array.prototype.forEach.call(el.querySelectorAll('.iw-skill'), function (b) {
-      b.onclick = function () { if (typeof ctx.onPickSkill === 'function') ctx.onPickSkill(b.getAttribute('data-skill')); };
+      b.onclick = function () { Voice.stop(); if (typeof ctx.onPickSkill === 'function') ctx.onPickSkill(b.getAttribute('data-skill')); };
     });
+    Array.prototype.forEach.call(el.querySelectorAll('.iw-more'), function (b) {
+      b.onclick = function () { var p = b.previousSibling, open = p.classList.toggle('open'); b.textContent = open ? WORDS.ovLess : WORDS.ovMore; };
+    });
+    // "Click to hear audio": never automatic. It reads, in order, the welcome line, the name, Objective and its text, Business need and its text, the skills
+    // heading and each skill's name (the whole texts, not the clipped lines), through the Azure voice of the app named in ctx.apiBase. A second click stops it.
+    var say = $q(el, '.iw-say'), lab = $q(el, '.iw-say .lab');
+    var rest = function () { say.classList.remove('playing'); lab.textContent = WORDS.ovHear; };
+    say.onclick = function () {
+      if (say.classList.contains('playing')) { Voice.stop(); rest(); return; }
+      var parts = Array.prototype.map.call(el.querySelectorAll('[data-say]'), function (e) { return e.textContent.trim().replace(/\s+/g, ' '); }).filter(Boolean)
+        .map(function (t) { return /[.!?\u3002\u0964]$/.test(t) ? t : t + '.'; });
+      var saved = Voice.source;
+      if (!saved || ctx.apiBase == null) { lab.textContent = WORDS.ovHear; return; }
+      Voice.source = { base: function () { return str(ctx.apiBase); }, token: saved.token };   // speak() reads these at once; the page's own setting is put straight back
+      var started = false;
+      try {
+        started = Voice.speak(parts.join(' '), true, { onend: rest, onerror: rest });
+      } finally { Voice.source = saved; }
+      if (started) { say.classList.add('playing'); lab.textContent = WORDS.ovStop; }
+    };
     return { el: el };
   }
 

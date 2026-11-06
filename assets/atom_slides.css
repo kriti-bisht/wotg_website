@@ -120,28 +120,94 @@
 .atom-root .rcw { border-radius:12px; position:relative; overflow:hidden; }
 .atom-root .slide:has(> .slide-body > .rcw) { max-height:610px; overflow-y:auto; }
 @keyframes atm-pop { from{ transform:scale(0.3) rotate(-18deg); opacity:0; } to{ transform:none; opacity:1; } }
-.atom-root .rhz { border-radius:12px; overflow:hidden; background:#3ab54a; text-align:left; display:flex; flex-direction:column; min-height:290px; }
-.atom-root .rhz-sky { position:relative; overflow:hidden; background:linear-gradient(180deg,#a9d8ff 0%, #fff0b8 62%, #ffd98a 100%); padding:1.6rem 1.5rem 4.4rem; text-align:center; }
-.atom-root .rhz-sun { position:absolute; left:50%; bottom:-46px; width:150px; height:150px; margin-left:-75px; border-radius:50%; background:radial-gradient(circle, #fff6b8 0%, #E4CA0A 58%, rgba(228,202,10,0) 72%); animation:atm-rhzrise 1.4s ease-out both; }
-@keyframes atm-rhzrise { from { transform:translateY(60px); opacity:0; } to { transform:none; opacity:1; } }
-.atom-root .rhz-cloud { position:absolute; display:block; height:22px; border-radius:20px; background:rgba(255,255,255,0.85); }
-.atom-root .rhz-cloud::before { content:''; position:absolute; left:18%; top:-11px; width:42%; height:22px; border-radius:50%; background:inherit; }
-.atom-root .rhz-cloud.c1 { left:6%; top:18px; width:84px; }
-.atom-root .rhz-cloud.c2 { right:8%; top:46px; width:64px; }
-.atom-root .rhz-title { position:relative; z-index:1; font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-weight:700; font-size:2.1rem; line-height:1.2; color:var(--night); }
-.atom-root .rhz-hills { position:absolute; left:0; bottom:-1px; width:100%; height:44px; display:block; z-index:2; }
-.atom-root .rhz-ground { background:linear-gradient(180deg,#3ab54a 0%, #2d9640 100%); color:#fff; padding:0.6rem 1.6rem 1.8rem; flex:1 1 auto; }
-.atom-root .rhz-cols { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:1.6rem 2.4rem; }
-.atom-root .rhz-seg + .rhz-seg { border-left:3px dotted rgba(255,255,255,0.55); padding-left:2.4rem; }
-.atom-root .rhz-gk { font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-size:1.2rem; font-weight:600; color:var(--gold); margin-bottom:0.55rem; }
-.atom-root .rhz-seg ul { list-style:none; display:flex; flex-direction:column; gap:0.65rem; }
-.atom-root .rhz-seg li { display:flex; gap:0.65rem; font-size:1.1rem; line-height:1.5; color:#fff; }
-.atom-root .rhz-seg li::before { content:'\2726'; color:var(--gold); flex-shrink:0; }
-@container (max-width:640px) {
-  .atom-root .rhz-seg + .rhz-seg { border-left:none; padding-left:0; border-top:3px dotted rgba(255,255,255,0.55); padding-top:1.4rem; }
-}
+/* ---- the recap: seven designs, the page picks one for the session (all the words are the Master's) ---- */
+.atom-root .confetti i { position:absolute; top:-12px; width:8px; height:12px; border-radius:2px; opacity:0.9; animation:atm-fall 3.2s linear infinite; animation-delay:var(--dl); left:var(--x); background:var(--c); }
 @media (prefers-reduced-motion: reduce) {
-  .atom-root .rhz-sun { animation:none; }
+  .atom-root .confetti i { animation:none; opacity:0; }
+}
+.atom-root .rb-medal { position:relative; width:150px; height:178px; margin:0 auto 0.9rem; z-index:1; }
+.atom-root .rb-medal svg { width:100%; height:100%; display:block; overflow:visible; }
+.atom-root .rb-medal .pop { transform-origin:75px 70px; animation:atm-pop .7s cubic-bezier(.2,1.5,.4,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .atom-root .rb-medal .pop { animation:none; }
+}
+.atom-root .rsp { display:grid; grid-template-columns:minmax(230px,0.85fr) 1.6fr; border-radius:12px; overflow:hidden; background:#fffdf2; border:1px solid rgba(228,202,10,0.5); min-height:340px; text-align:left; }
+.atom-root .rsp-l { position:relative; overflow:hidden; background:linear-gradient(160deg,var(--night) 0%, #0b2a5e 100%); color:#fff; padding:1.6rem 1.4rem; display:flex; flex-direction:column; justify-content:center; gap:1rem; }
+.atom-root .rsp-l .rb-medal { width:104px; height:124px; margin:0; position:relative; z-index:1; }
+.atom-root .rsp-l .hi { font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-weight:700; font-size:1.9rem; line-height:1.15; color:#fff; position:relative; z-index:1; }
+.atom-root .rsp-r { padding:1.4rem 1.7rem; display:flex; flex-direction:column; justify-content:center; gap:1.2rem; }
+.atom-root .rsp-seg + .rsp-seg { border-top:1px solid rgba(4,26,64,0.14); padding-top:1.2rem; }
+.atom-root .rsp-gk { font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-size:1.15rem; font-weight:600; color:var(--green2); margin-bottom:0.5rem; }
+.atom-root .rsp-seg ul { list-style:none; display:flex; flex-direction:column; gap:0.7rem; }
+.atom-root .rsp-seg li { display:flex; gap:0.65rem; font-size:1.08rem; line-height:1.5; color:var(--night); }
+.atom-root .rsp-seg li::before { content:'\2713'; color:var(--green2); font-weight:700; flex-shrink:0; }
+@container (max-width:640px) {
+  .atom-root .rsp { grid-template-columns:1fr; }
+}
+.atom-root .rst { background:#fff; border:1px solid rgba(4,26,64,0.14); border-radius:12px; padding:1.5rem 1.6rem 0.6rem; text-align:left; }
+.atom-root .rst-title { font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-weight:700; font-size:2rem; line-height:1.3; color:var(--night); margin-bottom:0.9rem; }
+.atom-root .rst-title span { background:linear-gradient(transparent 60%, rgba(228,202,10,0.6) 60%); padding:0 0.15em; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+.atom-root .rst-band { display:flex; gap:1rem; align-items:flex-start; padding:1.1rem 0 1.2rem; border-top:1px solid rgba(4,26,64,0.12); }
+.atom-root .rst-ic { flex-shrink:0; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--green); }
+.atom-root .rst-ic.i1 { background:var(--gold); }
+.atom-root .rst-ic svg { width:24px; height:24px; }
+.atom-root .rst-tx { min-width:0; }
+.atom-root .rst-gk { font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-size:1.15rem; font-weight:600; color:var(--green2); margin-bottom:0.45rem; }
+.atom-root .rst-tx ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
+.atom-root .rst-tx li { font-size:1.08rem; line-height:1.5; color:var(--night); }
+.atom-root .rsl { position:relative; overflow:hidden; border-radius:12px; background:radial-gradient(circle at 50% 0%, #1d4590 0%, var(--night) 62%); color:#fff; padding:1.7rem 1.5rem 1.6rem; text-align:center; }
+.atom-root .rsl-title { position:relative; z-index:1; font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-weight:700; font-size:2.1rem; line-height:1.2; color:#fff; margin-bottom:1.3rem; }
+.atom-root .rsl-title::after { content:''; display:block; width:90px; height:5px; border-radius:3px; background:var(--gold); margin:0.7rem auto 0; }
+.atom-root .rsl-cols { position:relative; z-index:1; display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1rem; text-align:left; }
+.atom-root .rsl-seg { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.22); border-radius:16px; padding:1.2rem 1.35rem 1.3rem; box-shadow:0 0 28px rgba(228,202,10,0.12); }
+.atom-root .rsl-gk { font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-size:1.15rem; font-weight:600; color:var(--gold); margin-bottom:0.55rem; }
+.atom-root .rsl-seg ul { list-style:none; display:flex; flex-direction:column; gap:0.65rem; }
+.atom-root .rsl-seg li { display:flex; gap:0.65rem; font-size:1.08rem; line-height:1.5; color:#fff; }
+.atom-root .rsl-seg li::before { content:'\2713'; color:var(--gold); font-weight:700; flex-shrink:0; }
+.atom-root .rsn { border-radius:12px; padding:1.6rem 1.5rem 1.8rem; text-align:left; background-color:#fbf8ee; background-image:radial-gradient(rgba(4,26,64,0.13) 1px, transparent 1px); background-size:18px 18px; border:1px solid rgba(171,152,8,0.35); }
+.atom-root .rsn-title { font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-weight:700; font-size:2rem; line-height:1.2; color:var(--night); margin-bottom:1.5rem; }
+.atom-root .rsn-line { display:block; width:min(260px,70%); height:12px; margin-top:0.35rem; }
+.atom-root .rsn-cols { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:1.6rem; }
+.atom-root .rsn-note { position:relative; border-radius:4px; padding:1.5rem 1.4rem 1.5rem; background:#fff3a8; box-shadow:0 8px 0 rgba(4,26,64,0.09), 0 14px 22px rgba(4,26,64,0.13); transform:rotate(-1.2deg); }
+.atom-root .rsn-note.n1 { background:#c9f0cf; transform:rotate(1deg); }
+.atom-root .rsn-note::before { content:''; position:absolute; top:-11px; left:50%; width:78px; height:22px; margin-left:-39px; background:rgba(255,255,255,0.7); border:1px solid rgba(4,26,64,0.1); transform:rotate(-2deg); }
+.atom-root .rsn-gk { font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-size:1.15rem; font-weight:600; color:var(--night); margin-bottom:0.55rem; }
+.atom-root .rsn-note ul { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
+.atom-root .rsn-note li { display:flex; gap:0.6rem; font-size:1.08rem; line-height:1.5; color:var(--night); }
+.atom-root .rsn-note li::before { content:'\2022'; font-weight:700; flex-shrink:0; }
+.atom-root .rg { background:linear-gradient(180deg,#eef9f0 0%, #fbfbfd 70%); border:1px solid rgba(58,181,74,0.3); border-radius:12px; padding:1.5rem 1.5rem 0; text-align:left; }
+.atom-root .rg-title { display:flex; align-items:center; gap:0.8rem; font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-weight:700; font-size:2rem; line-height:1.2; color:var(--night); }
+.atom-root .rg-title svg { flex-shrink:0; width:46px; height:46px; }
+.atom-root .rg-cols { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:1.4rem 2.2rem; margin-top:1.2rem; padding-bottom:1.6rem; }
+.atom-root .rg-seg { position:relative; padding-left:34px; }
+.atom-root .rg-seg::before { content:''; position:absolute; left:10px; top:4px; bottom:6px; width:5px; border-radius:3px; background:linear-gradient(180deg,var(--green) 0%, var(--green2) 100%); }
+.atom-root .rg-gk { font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-size:1.2rem; font-weight:600; color:var(--green2); margin-bottom:0.65rem; }
+.atom-root .rg-seg ul { list-style:none; display:flex; flex-direction:column; gap:0.8rem; }
+.atom-root .rg-seg li { position:relative; background:#fff; border:1.5px solid rgba(58,181,74,0.5); border-radius:0 22px 0 22px; padding:0.8rem 1.15rem; font-size:1.08rem; line-height:1.5; color:var(--night); box-shadow:0 3px 0 rgba(58,181,74,0.22); }
+.atom-root .rg-seg li::before { content:''; position:absolute; left:-25px; top:50%; width:25px; height:4px; margin-top:-2px; background:var(--green2); border-radius:2px; }
+.atom-root .rg-soil { height:26px; margin:0 -1.5rem; background:radial-gradient(rgba(4,26,64,0.16) 1.5px, transparent 1.5px) 0 0/14px 14px, #e8dcc0; }
+.atom-root .rn { background:#fff; border:1px solid rgba(4,26,64,0.14); border-radius:12px; padding:1.6rem 1.7rem 1.3rem; text-align:left; }
+.atom-root .rn-title { display:inline-block; font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-weight:700; font-size:2rem; line-height:1.25; color:var(--night); border-bottom:5px solid var(--gold); padding-bottom:0.2rem; margin-bottom:1.3rem; }
+.atom-root .rn-cols { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:1.4rem 2.6rem; counter-reset:rn; }
+.atom-root .rn-gk { font-size:0.74rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--green2); border-top:2px solid var(--night); padding-top:0.5rem; margin-bottom:0.3rem; }
+.atom-root .rn-seg ul { list-style:none; }
+.atom-root .rn-seg li { counter-increment:rn; display:grid; grid-template-columns:3.1rem 1fr; gap:0.7rem; align-items:start; padding:0.8rem 0; border-bottom:1px solid rgba(4,26,64,0.12); font-size:1.08rem; line-height:1.5; color:var(--night); }
+.atom-root .rn-seg li::before { content:counter(rn); font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-weight:700; font-size:2.7rem; line-height:0.95; color:#fff; -webkit-text-stroke:2px var(--night); text-align:center; }
+.atom-root .rn-seg li:last-child { border-bottom:none; }
+.atom-root .rbk { display:grid; grid-template-columns:minmax(170px,0.7fr) 1.9fr; gap:1.5rem; align-items:center; background:linear-gradient(160deg,#fff9e0 0%, #fdfbf2 70%); border:1px solid rgba(171,152,8,0.4); border-radius:12px; padding:1.6rem 1.6rem 1.5rem; text-align:left; }
+.atom-root .rbk-l { text-align:center; }
+.atom-root .rbk-l svg { width:118px; height:138px; display:block; margin:0 auto 0.7rem; }
+.atom-root .rbk-title { font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-weight:700; font-size:1.7rem; line-height:1.2; color:var(--night); }
+.atom-root .rbk-r { display:flex; flex-direction:column; gap:1.2rem; }
+.atom-root .rbk-gk { font-family:var(--atm-script,) 'Fredoka','Poppins',sans-serif; font-size:1.15rem; font-weight:600; color:var(--green2); margin-bottom:0.55rem; }
+.atom-root .rbk-seg ul { list-style:none; display:flex; flex-direction:column; gap:0.7rem; }
+.atom-root .rbk-seg li { position:relative; background:#fff; border:2px solid var(--night); border-radius:8px 16px 16px 8px; padding:0.8rem 1rem 0.8rem 2.7rem; font-size:1.07rem; line-height:1.5; color:var(--night); box-shadow:3px 4px 0 rgba(4,26,64,0.18); }
+.atom-root .rbk-seg li::before { content:''; position:absolute; left:0.85rem; top:50%; width:14px; height:14px; margin-top:-7px; border-radius:50%; background:#fdfbf2; border:2.5px solid var(--night); }
+.atom-root .rbk-seg li::after { content:''; position:absolute; left:-2px; top:0; bottom:0; width:9px; border-radius:8px 0 0 8px; background:var(--gold); opacity:0.9; }
+@container (max-width:640px) {
+  .atom-root .rbk { grid-template-columns:1fr; }
+  .atom-root .rbk-l { display:flex; align-items:center; gap:1rem; text-align:left; }
+  .atom-root .rbk-l svg { margin:0; width:76px; height:90px; flex-shrink:0; }
 }
 .atom-root .cm-chatwrap { background:linear-gradient(135deg,#d9ecff 0%, #e6f7ec 100%); padding:1.3rem 1rem; }
 .atom-root .cm-chat { max-width:580px; margin:0 auto; background:#fff; border-radius:22px; overflow:hidden; border:1px solid rgba(4,26,64,0.12); box-shadow:0 14px 30px rgba(4,26,64,0.18); }
@@ -1007,3 +1073,15 @@
 .atom-root .iw-foot { margin-top:0.9rem; text-align:center; font-size:0.84rem; color:var(--night3); }
 .atom-root .iw-foot b { color:var(--green2); }
 @container (max-width:640px) { .atom-root .iw-about { grid-template-columns:1fr; } }
+
+/* overview slide: the audio button (gold on the navy banner), and long texts that open in place */
+.atom-root .iw-top { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.7rem; margin-top:0.2rem; }
+.atom-root .iw-top .iw-dates { margin:0; }
+.atom-root .iw-say { display:inline-flex; align-items:center; gap:0.45rem; cursor:pointer; border-radius:999px; padding:0.4rem 0.95rem; font-family:inherit; font-size:0.78rem; font-weight:700; border:1.5px solid var(--gold); background:var(--gold); color:var(--night); transition:transform .12s, box-shadow .12s; }
+.atom-root .iw-say:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(228,202,10,0.45); }
+.atom-root .iw-say svg { width:1rem; height:1rem; flex:none; }
+.atom-root .iw-say.playing { box-shadow:0 0 0 3px rgba(58,181,74,0.35); }
+.atom-root .iw-clamp { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:5; overflow:hidden; }
+.atom-root .iw-clamp.open { display:block; -webkit-line-clamp:unset; overflow:visible; }
+.atom-root .iw-more { margin-top:0.35rem; background:none; border:none; padding:0; cursor:pointer; font-family:inherit; font-size:0.76rem; font-weight:700; color:var(--green2); }
+.atom-root .iw-more:hover { text-decoration:underline; }
