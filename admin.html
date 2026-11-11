@@ -733,6 +733,9 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .kc-err ul { margin:0.4rem 0 0.2rem 1.1rem; padding:0; }
 .kc-err .kc-hint { margin-top:0.4rem; font-size:0.78rem; color:var(--grey3); }
 .dd-sel-links { font-size:0.74rem; color:var(--night2); }
+.dd-top { display:flex; flex-direction:column; gap:0.25rem; padding:0.1rem 0.2rem 0.9rem; font-size:0.72rem; color:var(--grey3); line-height:1.45; }
+.dd-top a { font-weight:700; color:var(--teal); font-size:0.78rem; align-self:flex-start; }
+.dd-top a:hover { text-decoration:underline; }
 .dd-sel-links a { color:#0d8f81; font-weight:600; text-decoration:none; }
 .dd-sel-links a:hover { text-decoration:underline; }
 .dd-pick-msg { background:rgba(179,38,30,0.09); color:#8c1d18; border-radius:10px; padding:0.6rem 0.8rem; font-size:0.82rem; margin-bottom:0.8rem; }
@@ -899,6 +902,103 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .footprint-share { color:var(--green2); font-weight:700; font-size:0.76rem; }
 .combo-severity-bar { display:flex; height:38px; border-radius:8px; overflow:hidden; margin-bottom:1.1rem; }
 .combo-severity-seg { display:flex; align-items:center; justify-content:center; font-size:0.74rem; font-weight:700; color:#fff; }
+/* the line that says how many sessions a block is built from */
+.fr-sessions { font-size:0.8rem; color:var(--grey3); margin:0.2rem 0.25rem 0.9rem; }
+.fr-sessions b { color:var(--night2); font-weight:700; }
+/* How Friction Compounds: click a bar (or its row) to open the combinations it was made of */
+button.combo-click { border:0; font-family:inherit; cursor:pointer; width:100%; text-align:left; }
+.combo-severity-seg.combo-click { width:auto; text-align:center; transition:background .12s, color .12s, opacity .15s; }
+.footprint-row.combo-click { transition:background .12s, box-shadow .12s; }
+.combo-severity-seg.combo-click:hover, .combo-severity-seg.combo-click:focus-visible, .combo-severity-seg.combo-click.hot { background:var(--teal) !important; color:#fff !important; outline:none; opacity:1 !important; }   /* hover = bright teal, so it is clear it is active */
+.footprint-row.combo-click:hover, .footprint-row.combo-click:focus-visible, .footprint-row.combo-click.hot { background:var(--teal); outline:none; }
+.footprint-row.combo-click:hover .footprint-name, .footprint-row.combo-click.hot .footprint-name,
+.footprint-row.combo-click:hover .footprint-share, .footprint-row.combo-click.hot .footprint-share,
+.footprint-row.combo-click:hover .combo-chev, .footprint-row.combo-click.hot .combo-chev { color:#fff !important; }
+.combo-chev { display:inline-block; margin-left:0.6rem; color:var(--grey3); font-size:0.7rem; transition:transform .2s; }
+.footprint-row.on .combo-chev { transform:rotate(180deg); }
+.combo-severity-bar.has-open .combo-severity-seg:not(.on) { opacity:0.45; }
+.footprint-row.on { box-shadow:inset 0 0 0 2px var(--cmb); background:#fff; }
+.combo-detail { margin-top:0.9rem; padding:1.1rem 1.2rem 0.9rem; border:1px solid rgba(4,26,64,0.10); border-radius:12px; background:#fff; animation:cmbIn .18s ease-out; }
+@keyframes cmbIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+.combo-detail-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:1rem; font-size:0.86rem; color:var(--night2); }
+.combo-detail-head b, .combo-detail-head span { font-weight:700; color:var(--night); }
+.ac { display:flex; }
+.ac-ytitle { writing-mode:vertical-rl; transform:rotate(180deg); font-size:0.68rem; color:var(--grey3); text-align:center; margin-right:0.3rem; }
+.ac-main { flex:1; min-width:0; }
+.ac-plotwrap { position:relative; margin-left:34px; }
+.ac-grid { position:absolute; left:0; right:0; top:0; height:var(--H); pointer-events:none; border-bottom:1px solid rgba(4,26,64,0.28); border-left:1px solid rgba(4,26,64,0.28); }
+.ac-gl { position:absolute; left:0; right:0; border-top:1px solid rgba(4,26,64,0.07); }
+.ac-yt { position:absolute; left:-34px; width:28px; text-align:right; font-size:0.64rem; color:var(--grey3); transform:translateY(50%); }
+.ac-cols { position:relative; display:flex; gap:10px; padding:0 14px; }
+.ac-col { flex:1; min-width:0; }
+.ac-bar { height:var(--H); position:relative; }
+.ac-cluster { position:absolute; bottom:0; left:50%; transform:translateX(-50%); display:flex; align-items:stretch; gap:3px; }
+.ac-line { width:15px; border-radius:4px 4px 0 0; min-height:3px; transition:filter .12s; }
+.ac-cluster:hover .ac-line { filter:brightness(1.12); }
+.ac-val { position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:3px; font-size:0.74rem; font-weight:700; color:var(--night); white-space:nowrap; }
+.ac-lab { font-size:0.66rem; color:var(--night2); text-align:center; margin-top:0.5rem; line-height:1.3; }
+.ac-xtitle { text-align:center; font-size:0.68rem; color:var(--grey3); margin:0.5rem 0 0.2rem; }
+
+/* ---- Capability Landscape ---- */
+.cap-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.1rem; }
+.cap-card { background:var(--white); border-radius:12px; padding:1.2rem 1.3rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:1px solid rgba(4,26,64,0.05); cursor:pointer; transition:transform 0.2s ease, box-shadow 0.2s ease; text-align:left; font-family:inherit; width:100%; }
+.cap-card:hover, .cap-card:focus-visible { transform:translateY(-5px); box-shadow:0 16px 30px rgba(4,26,64,0.16); outline:none; }
+.cap-card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:0.9rem; }
+.cap-ring-wrap { position:relative; flex-shrink:0; }
+.cap-ring { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.cap-ring-inner { width:47px; height:47px; border-radius:50%; background:var(--white); display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:700; color:var(--night); }
+.cap-badge { position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; border-radius:50%; border:2px solid var(--white); box-shadow:0 2px 4px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; }
+.cap-badge svg { width:11px; height:11px; }
+.cap-icon { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 8px rgba(0,0,0,0.12); flex-shrink:0; }
+.cap-icon svg { width:18px; height:18px; }
+.cap-card h3 { font-size:0.92rem; color:var(--night); margin-bottom:0.4rem; }
+.cap-card p { font-size:0.76rem; color:var(--grey3); line-height:1.5; }
+.cap-card .cap-foot { margin-top:0.7rem; font-size:0.7rem; color:var(--grey3); }
+.cap-hint { font-size:0.8rem; color:var(--grey3); margin:-0.3rem 0 0.9rem; }
+.cap-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1.1rem; margin-bottom:1.6rem; }
+.cap-kpi { background:var(--white); border-radius:12px; padding:1.1rem 1.1rem 1rem; border:1px solid rgba(4,26,64,0.05); border-left:6px solid var(--capc); box-shadow:0 6px 20px rgba(4,26,64,0.08); cursor:pointer; text-align:left; font-family:inherit; min-width:0; transition:transform 0.2s ease, box-shadow 0.2s ease; }
+.cap-kpi:hover, .cap-kpi:focus-visible { transform:translateY(-5px); box-shadow:0 16px 30px rgba(4,26,64,0.16); outline:none; }
+.cap-kpi.on { box-shadow:0 0 0 3px var(--teal), 0 10px 24px rgba(4,26,64,0.12); }
+.cap-kpi-head { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; margin-bottom:0.8rem; }
+.cap-kpi-head-left { display:flex; align-items:center; gap:0.5rem; min-width:0; }
+.cap-kpi-icon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:var(--capc); box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+.cap-kpi-icon svg { width:15px; height:15px; }
+.cap-kpi h3 { font-size:0.78rem; color:var(--night); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cap-pill-row { margin:-0.3rem 0 0.2rem; }
+.cap-pill { font-size:0.64rem; font-weight:700; padding:0.22rem 0.5rem; border-radius:12px; white-space:nowrap; flex-shrink:0; background:var(--grey1); color:var(--night2); }
+.cap-mini { position:relative; padding-top:1.3rem; }
+.cap-mini-bars { display:flex; align-items:flex-end; gap:4px; height:84px; border-bottom:1.5px solid rgba(4,26,64,0.16); position:relative; }
+.cap-mini-wrap { flex:1; height:100%; display:flex; align-items:flex-end; justify-content:center; }
+.cap-mini-bar { width:62%; border-radius:3px 3px 0 0; min-height:2px; background:var(--capc); position:relative; }
+.cap-mini-bar span { position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:2px; font-size:0.58rem; font-weight:700; color:var(--night); white-space:nowrap; }
+.cap-mini-line { position:absolute; top:1.3rem; left:0; width:100%; height:84px; pointer-events:none; }
+.cap-mini-axis { display:flex; gap:4px; margin-top:0.35rem; }
+.cap-mini-axis div { flex:1; text-align:center; font-size:0.56rem; color:var(--grey3); }
+.cap-panel { background:var(--white); border-radius:14px; padding:1.4rem 1.5rem 1.4rem; box-shadow:0 6px 20px rgba(4,26,64,0.08); border:2px solid transparent; margin-bottom:1.6rem; }
+.cap-panel-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; margin-bottom:1.3rem; }
+.cap-identity { display:flex; align-items:center; gap:0.6rem; }
+.cap-identity-icon { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:var(--capc); box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+.cap-identity-icon svg { width:16px; height:16px; }
+.cap-identity-title { font-size:0.95rem; font-weight:700; color:var(--night); }
+.cap-chart { display:flex; gap:0.4rem; }
+.cap-ytitle { writing-mode:vertical-rl; transform:rotate(180deg); font-size:0.68rem; color:var(--grey3); text-align:center; }
+.cap-main { flex:1; min-width:0; }
+.cap-plotwrap { position:relative; margin-left:36px; padding-top:1.6rem; }
+.cap-grid-lines { position:absolute; left:0; right:0; top:1.6rem; height:var(--H); pointer-events:none; border-bottom:1px solid rgba(4,26,64,0.28); border-left:1px solid rgba(4,26,64,0.28); }
+.cap-gl { position:absolute; left:0; right:0; border-top:1px solid rgba(4,26,64,0.07); }
+.cap-yt { position:absolute; left:-36px; width:30px; text-align:right; font-size:0.62rem; color:var(--grey3); transform:translateY(50%); }
+.cap-cols { position:relative; display:flex; gap:6px; padding:0 8px; }
+.cap-col { flex:1; min-width:0; max-width:64px; margin:0 auto; }
+.cap-bar-area { height:var(--H); position:relative; display:flex; align-items:flex-end; justify-content:center; }
+.cap-bar { width:70%; border-radius:4px 4px 0 0; background:var(--capc); min-height:2px; position:relative; transition:filter .12s; }
+.cap-bar:hover { filter:brightness(1.12); }
+.cap-bar-val { position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:2px; text-align:center; font-size:0.66rem; font-weight:700; color:var(--night); white-space:nowrap; line-height:1.2; }
+.cap-bar-val small { display:block; font-size:0.58rem; font-weight:600; color:var(--grey3); }
+.cap-lab { font-size:0.6rem; color:var(--night2); text-align:center; margin-top:0.4rem; line-height:1.25; white-space:nowrap; }
+.cap-xtitle { text-align:center; font-size:0.68rem; color:var(--grey3); margin:0.5rem 0 0.2rem; }
+.cap-empty { text-align:center; color:var(--grey3); font-size:0.84rem; padding:2.5rem 0; }
+@media (max-width:1180px) { .cap-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .cap-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:640px) { .cap-kpis, .cap-grid { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -3666,34 +3766,27 @@ function facetModel(opts) {
 }
 function narrowDrawerLevels(body, levelOf) {
   if (!body._facet) return narrowByPlaces(body, levelOf);
-  const model = body._facet, items = {};
-  body.querySelectorAll('.ri-dd-item').forEach(it => { items[levelOf(it)] = it; });
-  const levels = Object.keys(items).filter(l => l in model.col);
-  const all = {}, visible = {};
-  levels.forEach(l => { all[l] = Array.from(items[l].querySelectorAll('label')).map(lab => ({ lab, box: lab.querySelector('input') })); visible[l] = new Set(all[l].map(x => x.box.value)); });
-  let shownNow = visible;
-  for (let pass = 0; pass < 6; pass++) {
-    const limit = {};
-    levels.forEach(l => {
-      const shown = all[l].filter(x => shownNow[l].has(x.box.value)), on = shown.filter(x => x.box.checked);
-      if (on.length && on.length < shown.length) limit[l] = new Set(on.map(x => model.pos[l].get(x.box.value)));
-    });
-    const next = {}; levels.forEach(l => { next[l] = new Set(); });
-    const limited = Object.keys(limit);
+  // A WATERFALL, top-down only (Kriti, 2026-11-10): each section is narrowed by what is ticked in the sections ABOVE it in the drawer and never by
+  // itself or by anything below it, so every list can always be widened again and a lower pick (one person) needs nothing above it.
+  // A section narrows the ones below it only while some, but not all, of its visible boxes are ticked: nothing ticked narrows nothing.
+  const model = body._facet, items = {}, order = [];
+  body.querySelectorAll('.ri-dd-item').forEach(it => { const l = levelOf(it); items[l] = it; order.push(l); });
+  const levels = order.filter(l => l in model.col), limit = {};
+  levels.forEach(l => {
+    const above = Object.keys(limit), seen = new Set();
     model.rows.forEach(row => {
-      let failing = null;
-      for (const l of limited) {
-        if (limit[l].has(row[model.col[l]])) continue;
-        if (failing) return;   // two narrowed sections rule this row out: it counts for no list
-        failing = l;
-      }
-      levels.forEach(l => { if (!failing || failing === l) { const i = row[model.col[l]]; if (i >= 0) next[l].add(model.keys[l][i]); } });
+      for (const u of above) if (!limit[u].has(row[model.col[u]])) return;
+      const i = row[model.col[l]]; if (i >= 0) seen.add(model.keys[l][i]);
     });
-    const same = levels.every(l => next[l].size === shownNow[l].size && Array.from(next[l]).every(k => shownNow[l].has(k)));
-    shownNow = next;
-    if (same) break;
-  }
-  levels.forEach(l => all[l].forEach(x => { x.lab.style.display = shownNow[l].has(x.box.value) ? '' : 'none'; }));
+    const boxes = [];
+    items[l].querySelectorAll('label').forEach(lab => {
+      const box = lab.querySelector('input'), show = seen.has(box.value);
+      lab.style.display = show ? '' : 'none';
+      if (show) boxes.push(box);
+    });
+    const on = boxes.filter(x => x.checked);
+    if (on.length && on.length < boxes.length) limit[l] = new Set(on.map(x => model.pos[l].get(x.value)));
+  });
 }
 function narrowByPlaces(body, levelOf) {
   const items = {};
@@ -3724,19 +3817,29 @@ function narrowByPlaces(body, levelOf) {
   };
   ['assigner', 'initiative', 'manager', 'user'].forEach(l => narrow(l, inTicked));
 }
+// Two different people can share a name. When a label repeats within a level, the drawer adds where that person sits, in brackets, so they are never mistaken for one
+// person (and nothing is added to a name that is on its own). Returns {option key: the label to show}.
+function drawerLabels(opts, level) {
+  const list = (opts && opts[level]) || [], count = {};
+  list.forEach(o => { count[o.label] = (count[o.label] || 0) + 1; });
+  const find = (lvl, key) => (((opts[lvl] || []).find(x => x.key === key)) || {}).label;
+  const place = o => { const p = (o.in || [])[0]; return p ? (find('department', p[2]) || find('bu', p[1]) || find('company', p[0]) || '') : ''; };
+  const out = {};
+  list.forEach(o => { out[o.key] = count[o.label] > 1 && place(o) ? `${o.label} (${place(o)})` : o.label; });
+  return out;
+}
 // The checkbox attribute that carries a person's places (see narrowDrawerLevels); nothing for company / BU / department options.
 function placesAttr(o) { return o.in ? ` data-in="${esc(JSON.stringify(o.in))}"` : ''; }
 // Every filter drawer opens with everything ticked, because the report is showing everything the person may see. A level
-// with every visible box ticked means "no narrowing at that level"; a level with none ticked is refused ("Pick at least one").
-// drawerPicks reads the drawer: picks = {level: [keys]} for the narrowed levels only, empty = names of the levels with nothing ticked.
+// with every visible box ticked means "no narrowing at that level", and so does a level with none ticked (Kriti, 2026-11-10: clear everything, then tick
+// just one person). drawerPicks reads the drawer: picks = {level: [keys]} for the narrowed levels only; `empty` is kept so callers keep working and is always [].
 function drawerPicks(body, levelOf) {
   const picks = {}, empty = [];
   body.querySelectorAll('.ri-dd-item').forEach(it => {
     const boxes = Array.from(it.querySelectorAll('label')).filter(lab => lab.style.display !== 'none').map(lab => lab.querySelector('input'));
     if (!boxes.length) return;
     const on = boxes.filter(b => b.checked);
-    if (!on.length) empty.push(((it.querySelector('.ri-dd-toggle') || {}).dataset || {}).label || levelOf(it));
-    else if (on.length < boxes.length) picks[levelOf(it)] = on.map(b => b.value);
+    if (on.length && on.length < boxes.length) picks[levelOf(it)] = on.map(b => b.value);
   });
   return { picks, empty };
 }
@@ -3747,14 +3850,18 @@ function drawerSay(body, text) {
   const old = body.querySelector('.dd-pick-msg'); if (old) old.remove();
   if (text) { body.insertAdjacentHTML('afterbegin', `<div class="dd-pick-msg" role="alert">${esc(text)}</div>`); body.scrollTop = 0; }
 }
+const DD_TOP = '<div class="dd-top"><a href="#" data-sel="clearall">Clear all</a><span>Tick what you want to narrow to. A section with nothing ticked does not narrow anything.</span></div>';
 const DD_LINKS = '<div class="dd-sel-links"><a href="#" data-sel="all">Select all</a> &middot; <a href="#" data-sel="none">Clear</a></div>';
 // Handles a click on a section's "Select all" / "Clear" link; returns true when the click was one of them.
 function drawerLinkClick(e, body, levelOf) {
   const a = e.target.closest('[data-sel]');
   if (!a) return false;
   e.preventDefault();
-  const on = a.dataset.sel === 'all';
-  a.closest('.ri-dd-item').querySelectorAll('label').forEach(lab => { if (lab.style.display !== 'none') lab.querySelector('input').checked = on; });
+  if (a.dataset.sel === 'clearall') body.querySelectorAll('.ri-dd-item input[type=checkbox]').forEach(box => { box.checked = false; });   // every box of every level, hidden ones too
+  else {
+    const on = a.dataset.sel === 'all';
+    a.closest('.ri-dd-item').querySelectorAll('label').forEach(lab => { if (lab.style.display !== 'none') lab.querySelector('input').checked = on; });
+  }
   narrowDrawerLevels(body, levelOf);
   drawerSay(body, '');
   return true;
@@ -3795,10 +3902,11 @@ function openAdoptFilterDrawer() {
   const startsOpen = (l, i) => i === 0 || narrowed(l).length > 0;
   const toggleText = (l, open) => `${open ? '− ' : '+ '}${LEVEL_NAMES[l]}${picked[l].size ? ` (${picked[l].size})` : ''}`;
   const body = $('#adoptDdBody');
-  body.innerHTML = levels.map((l, i) => `
+  const shown = {}; levels.forEach(l => { shown[l] = drawerLabels(opts, l); });
+  body.innerHTML = DD_TOP + levels.map((l, i) => `
     <div class="ri-dd-item${startsOpen(l, i) ? ' open' : ''}" data-item="${l}">
       <button type="button" class="ri-dd-toggle" data-toggle="${l}" data-label="${LEVEL_NAMES[l]}">${toggleText(l, startsOpen(l, i))}</button>
-      <div class="ri-dd-panel">${DD_LINKS}${(opts[l] || []).map(o => `<label><input type="checkbox" data-level="${l}" value="${esc(o.key)}"${placesAttr(o)}${picked[l].has(o.key) ? ' checked' : ''}>${esc(o.label)}</label>`).join('')}</div>
+      <div class="ri-dd-panel">${DD_LINKS}${(opts[l] || []).map(o => `<label><input type="checkbox" data-level="${l}" value="${esc(o.key)}"${placesAttr(o)}${picked[l].has(o.key) ? ' checked' : ''}>${esc(shown[l][o.key])}</label>`).join('')}</div>
     </div>`).join('');
   body._facet = facetModel(opts);
   const syncPicked = () => levels.forEach(l => {
@@ -4076,8 +4184,10 @@ const LF = (() => {
   const st = { period: 'month',   // ONE toggle for the whole Learning Friction section: the cards, the chart and Compounds move together (Kriti, 2026-10-09)
                 focus: { company: [], bu: [], department: [], manager: [], user: [], assigner: [], initiative: [] },
                wc: { company: [], bu: [], department: [], initiative: [] }, reflectors: [], options: null, data: null, error: null, loading: true, ddMode: 'page',
-               wcPeriod: 'month', wcReflectors: [], wcData: null, wcError: null, wcLoading: true, rfMode: 'page' };
-  let seq = 0, wcSeq = 0;
+               wcPeriod: 'month', wcReflectors: [], wcData: null, wcError: null, wcLoading: true, rfMode: 'page', openCombo: null, mode: 'friction',
+               capFocus: { company: [], bu: [], department: [], manager: [], user: [], assigner: [], initiative: [] }, capLand: null, capLandError: null, capName: null, capDetail: null, capDetailError: null, capPeriod: 'month', capMetric: 'users',
+               trPeriod: 'month', trFocus: { company: [], bu: [], department: [], manager: [], user: [], assigner: [], initiative: [] }, trReflectors: [], trData: null, trError: null, trLoading: true };   // Friction Share Over Time: its own toggle, drill-down, reflector filter and request
+  let seq = 0, wcSeq = 0, trSeq = 0, capLandSeq = 0, capDetailSeq = 0;
 
   // the backend's raw codes are never shown to a person
   function friendly(msg) { return /login_required|invalid_token|expired|401/i.test(String(msg)) ? 'Your session has ended. Please sign in again.' : String(msg); }
@@ -4105,6 +4215,19 @@ const LF = (() => {
     st.wcReflectors.forEach(r => p.append('reflector', r));
     return p.toString();
   }
+  function trParams() {
+    const p = new URLSearchParams({ cards_period: st.trPeriod, trend_period: st.trPeriod });   // the same route as the top half, asked again with the chart's own period, drill-down and reflectors; only its "trend" part is used
+    LEVELS.forEach(([l]) => st.trFocus[l].forEach(k => p.append('focus_' + l, k)));
+    st.trReflectors.forEach(r => p.append('reflector', r));
+    return p.toString();
+  }
+  async function loadTr() {
+    const mine = ++trSeq;
+    st.trLoading = true; paintTr();
+    try { const data = await reportsApi('/api/reports/driver-report?' + trParams()); if (mine !== trSeq) return; st.trData = data; st.trError = null; }
+    catch (e) { if (mine !== trSeq) return; st.trError = e.message; }
+    st.trLoading = false; paintTr();
+  }
   async function loadWc() {
     const mine = ++wcSeq;
     st.wcLoading = true; paintWc();
@@ -4127,7 +4250,7 @@ const LF = (() => {
     return out;
   }
   function periodToggle(which) {
-    const cur = which === 'wc' ? st.wcPeriod : st.period;
+    const cur = which === 'wc' ? st.wcPeriod : which === 'tr' ? st.trPeriod : which === 'cap' ? st.capPeriod : st.period;
     return `<div class="period-toggle fr-period-toggle"><div class="period-toggle-thumb"></div>${PERIODS.map(([k, label]) => `<span class="${k === cur ? 'active' : ''}" onclick="LF.setPeriod('${which}','${k}')">${label}</span>`).join('')}</div>`;
   }
   function areaCards(cards, areas, d) {
@@ -4138,14 +4261,14 @@ const LF = (() => {
         <div class="friction-area-ring-wrap"><div class="friction-area-ring ${none ? 'nodata' : ''}" style="background:conic-gradient(${color} 0% ${pct || 0}%, var(--grey1) ${pct || 0}% 100%)"><div class="friction-area-ring-inner" style="color:${color}">${none ? '—' : pct + '%'}</div></div></div>
         <div class="friction-area-text"><h3>${esc(a.label)}</h3><p>${esc(a.description)}</p><span class="friction-area-tag" style="background:${color}22; color:${color}">${none ? 'No data yet' : cardsNote(d)}</span></div>
       </div></div>`;
-    }).join('')}</div>${none || !cards.sessions ? '' : `<div class="fr-footnote" style="margin:0.6rem 0.25rem 0;font-size:0.8rem;color:var(--grey3)">Total sessions considered: ${cards.sessions} &middot; ${cardsNote(d).replace('Share of friction, ', '')}</div>`}`;
+    }).join('')}</div>`;
   }
   function legend(areas) { return `<div class="chart-legend nowrap">${areas.map(a => `<div class="legend-item"><span class="legend-dot" style="background:${COLORS[a.key]}"></span>${esc(a.label)}</div>`).join('')}</div>`; }
   function trendChart(data) {
     const areas = data.areas;
     // a period with nothing in it is not shown; newest period on top
     const shown = data.trend.buckets.map((b, i) => ({ b, i })).filter(x => x.b.identifications > 0).reverse();
-    if (!shown.length) return `<div class="fr-chart-empty">No friction identified in this period${st.reflectors.length ? ' for the chosen reflectors' : ''}.</div>${legend(areas)}`;
+    if (!shown.length) return `<div class="fr-chart-empty">No friction identified in this period${st.trReflectors.length ? ' for the chosen reflectors' : ''}.</div>${legend(areas)}`;
     const labelW = data.trend_period === 'quarter' ? 150 : 70;
     const rows = shown.map(x => `<div class="fr-hrow fr-hit" data-i="${x.i}"><div class="fr-hlabel" style="width:${labelW}px">${esc(bucketLabel(x.b.bucket, data.trend_period, data.fiscal_start_month))}</div>
       <div class="friction-stack fr-hstack">${areas.map(a => { const pct = x.b.areas[a.key].percent; return pct ? `<div class="friction-seg" style="width:${pct}%; background:${COLORS[a.key]}">${pct >= 4 ? `<span class="friction-seg-num">${pct}%</span>` : ''}</div>` : ''; }).join('')}</div></div>`).join('');
@@ -4168,15 +4291,55 @@ const LF = (() => {
       : '<b>Representative situations</b>';
     return `<div class="wc-panel-head">${head}</div><ol class="wc-panel-list">${slots.join('')}</ol>`;
   }
+  const SHORT = { confidence: 'Confidence', mindset: 'Mindset', knowledge: 'Knowledge', situation: 'Situation' };
+  function niceMax(maxPct) { const step = maxPct <= 12 ? 2 : maxPct <= 25 ? 5 : maxPct <= 50 ? 10 : 20; return { step, max: Math.max(step, Math.ceil((maxPct * 1.18) / step) * step) }; }   // a little headroom so the top label never touches the title
+  // the opened chart: one set of thin bars per combination, in each area's own color; every combination of a group adds up to that group's percent
+  function comboChart(b, areas) {
+    const H = 230, label = k => (areas.find(a => a.key === k) || {}).label || k;
+    const { step, max } = niceMax(Math.max(...b.combos.map(m => m.percent), 1));
+    const ticks = []; for (let t = 0; t <= max; t += step) ticks.push(t);
+    const tip = m => `<b>${esc(m.areas.map(k => SHORT[k] || k).join(' + '))}</b><div style="margin-top:0.25rem">${m.areas.map(k => `<div><i style="background:${COLORS[k]}"></i>${esc(label(k))}</div>`).join('')}</div><div class="muted" style="margin-top:0.3rem">${m.percent}% of all cases (${m.count} case${m.count === 1 ? '' : 's'})</div>`;
+    return `<div class="ac" style="--H:${H}px"><div class="ac-ytitle">Share of all cases (%)</div><div class="ac-main"><div class="ac-plotwrap">
+        <div class="ac-grid">${ticks.map(t => `<div class="ac-gl" style="bottom:${t / max * 100}%"></div><div class="ac-yt" style="bottom:${t / max * 100}%">${t}%</div>`).join('')}</div>
+        <div class="ac-cols">${b.combos.map(m => `<div class="ac-col"><div class="ac-bar"><div class="ac-cluster" data-tip="${esc(tip(m))}" style="height:${m.percent / max * 100}%"><span class="ac-val">${m.percent}%</span>${m.areas.map(k => `<div class="ac-line" style="background:${COLORS[k]}"></div>`).join('')}</div></div><div class="ac-lab">${esc(m.areas.map(k => SHORT[k] || k).join(' + '))}</div></div>`).join('')}</div></div>
+        <div class="ac-xtitle">${b.key === 'one' ? 'The area on its own' : 'Which areas were together'}</div></div></div>
+      ${legend(areas)}
+      <p class="footprint-note" style="margin-top:0.6rem;">${b.key === 'one' ? '' : 'One set of bars is one combination: the bars are the same height because those areas happened together. '}All the combinations together add up to ${b.percent}%, the share of cases in this group. Hover one to see the names.</p>`;
+  }
   function compoundsBlock(d) {
     const c = d.compounds, none = c.cases === 0;
-    return `<div class="rh-graph-card" style="margin-top:1.8rem;">
+    const can = b => !!(b.percent && b.combos && b.combos.length);   // an older server sends no combinations: the bars then simply do not open
+    const open = c.buckets.find(b => b.key === st.openCombo && can(b));
+    const fg = b => b.key === 'three_plus' ? '#fff' : 'var(--night)';
+    return `<div class="rh-graph-card" id="cmpCard" style="margin-top:1.8rem;">
       <div class="rh-graph-controls"><h3 class="rh-section-title" style="margin-bottom:0;">How Friction Compounds</h3></div>
-      <p class="rh-subnote">For every case where an employee is blocked, how many of the 4 friction areas are involved at the same time.</p>
+      <p class="rh-subnote">For every case where an employee is blocked, how many of the 4 friction areas are involved at the same time.${c.buckets.some(can) ? ' Click a bar to see which combinations of friction areas it was made of.' : ''}</p>
       ${none ? '<div class="fr-chart-empty">No friction identified for this selection.</div>' : `
-      <div class="combo-severity-bar">${c.buckets.filter(b => b.percent).map(b => `<div class="combo-severity-seg" style="width:${b.percent}%; background:${COMBO_COLORS[b.key]}; color:${b.key === 'three_plus' ? '#fff' : 'var(--night)'}">${b.percent}%</div>`).join('')}</div>
-      <div class="footprint-list">${c.buckets.map(b => `<div class="footprint-row"><span class="footprint-name"><span class="legend-dot" style="background:${COMBO_COLORS[b.key]};display:inline-block;margin-right:0.5rem;"></span>${esc(b.label)}</span><span class="footprint-share" style="color:var(--night)">${b.percent}%</span></div>`).join('')}</div>`}
+      <div class="combo-severity-bar${open ? ' has-open' : ''}">${c.buckets.filter(b => b.percent).map(b => can(b)
+        ? `<button type="button" class="combo-severity-seg combo-click${open && open.key === b.key ? ' on' : ''}" data-cmb="${b.key}" style="width:${b.percent}%; background:${COMBO_COLORS[b.key]}; color:${fg(b)}">${b.percent}%</button>`
+        : `<div class="combo-severity-seg" style="width:${b.percent}%; background:${COMBO_COLORS[b.key]}; color:${fg(b)}">${b.percent}%</div>`).join('')}</div>
+      <div class="footprint-list">${c.buckets.map(b => can(b)
+        ? `<button type="button" class="footprint-row combo-click${open && open.key === b.key ? ' on' : ''}" data-cmb="${b.key}" style="--cmb:${COMBO_COLORS[b.key]}"><span class="footprint-name"><span class="legend-dot" style="background:${COMBO_COLORS[b.key]};display:inline-block;margin-right:0.5rem;"></span>${esc(b.label)}</span><span class="footprint-share" style="color:var(--night)">${b.percent}%<span class="combo-chev">&#9662;</span></span></button>`
+        : `<div class="footprint-row"><span class="footprint-name"><span class="legend-dot" style="background:${COMBO_COLORS[b.key]};display:inline-block;margin-right:0.5rem;"></span>${esc(b.label)}</span><span class="footprint-share" style="color:var(--night)">${b.percent}%</span></div>`).join('')}</div>
+      ${open ? `<div class="combo-detail"><div class="combo-detail-head"><b>${esc(open.label)}: what it was made of</b><span>${open.percent}% of all cases</span></div>${comboChart(open, d.areas)}</div>` : ''}`}
     </div>`;
+  }
+  function paintCmp() {
+    const slot = $('#lfCmp'); if (!slot || !st.data) return;
+    slot.innerHTML = compoundsBlock(st.data);
+    bindCompounds();
+  }
+  function bindCompounds() {
+    const tip = $('#lfTip');
+    document.querySelectorAll('#lfCmp [data-cmb]').forEach(el => {
+      const both = on => document.querySelectorAll(`#lfCmp [data-cmb="${el.dataset.cmb}"]`).forEach(x => x.classList.toggle('hot', on));   // the bar and its row light up together
+      el.addEventListener('mouseenter', () => both(true)); el.addEventListener('mouseleave', () => both(false));
+      el.addEventListener('click', () => { st.openCombo = st.openCombo === el.dataset.cmb ? null : el.dataset.cmb; paintCmp(); });
+    });
+    document.querySelectorAll('#lfCmp .ac-cluster').forEach(g => {
+      g.addEventListener('mousemove', e => { tip.innerHTML = g.dataset.tip; tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; tip.classList.add('show'); });
+      g.addEventListener('mouseleave', () => tip.classList.remove('show'));
+    });
   }
   function wcControls() {
     const wcOpts = WC_LEVELS.filter(([l]) => st.options && (st.options[l] || []).length >= 2);
@@ -4189,8 +4352,9 @@ const LF = (() => {
     const wcTag = WC_LEVELS.flatMap(([l]) => st.wc[l].map(k => { const o = ((st.options && st.options[l]) || []).find(x => x.key === k); return o ? o.label : k; }));
     const head = `<div class="rh-graph-controls" style="align-items:center;"><h3 class="rh-section-title" style="margin-bottom:0;">Friction &times; Workplace Challenge</h3>${wcControls()}</div>
       ${wcTag.length ? `<div class="fr-filter-tag" id="wcTag">Filtered by: ${wcTag.map(esc).join(', ')} <button onclick="LF.clearWc()">&times;</button></div>`
-        : (focusSummary().length ? `<div class="fr-filter-tag" id="wcScopeNote">The Drill Down above does not apply to this block. It shows everything you can see, unless you use its own Drill Down.</div>` : '')}
+        : ''}
       ${st.wcReflectors.length ? `<div class="fr-filter-tag" id="wcRefTag">Reflectors: ${st.wcReflectors.length <= 3 ? st.wcReflectors.map(esc).join(', ') : st.wcReflectors.length + ' chosen'} <button onclick="LF.clearWcReflectors()">&times;</button></div>` : ''}
+      ${w ? `<div class="fr-sessions" style="margin:0.2rem 0 0.8rem;">Total sessions considered: <b>${w.arenas.reduce((n, x) => n + x.sessions, 0)}</b></div>` : ''}
       <p class="rh-subnote">Which friction area shows up most within which workplace challenge. Hover a bubble to see the situations behind it.</p>`;
     if (!w) return `<div class="rh-graph-card" id="wcCard" style="margin-top:1.8rem;">${head}<div class="fr-chart-empty">${st.wcError ? esc(friendly(st.wcError)) : 'Loading…'}</div></div>`;
     if (!w.arenas.length) return `<div class="rh-graph-card" id="wcCard" style="margin-top:1.8rem;">${head}<div class="fr-chart-empty">No classified workplace situations in this selection yet.</div></div>`;
@@ -4204,6 +4368,31 @@ const LF = (() => {
       </table></div>
       <p class="footprint-note">Bubble size = that area's share of the friction within one workplace challenge. Reading down a column shows the friction mix behind one challenge; reading across a row shows where one friction area shows up most.</p>
       <div class="wc-panel" id="wcPanel">${panelHtml(null, null)}</div></div>`;
+  }
+  function trControls() {
+    const opts = LEVELS.filter(([l]) => st.options && (st.options[l] || []).length >= 2);
+    return `<div class="fr-controls-right">${periodToggle('tr')}
+      <button class="rf-inline-trigger" onclick="LF.toggleReflector('tr')">${RF_ICON}Filter by Reflector${st.trReflectors.length ? `<span class="rf-count">${st.trReflectors.length}</span>` : ''}</button>
+      ${opts.length ? `<button class="ri-dd-trigger" onclick="LF.toggleDrill('tr')">${DD_ICON}Drill Down</button>` : ''}</div>`;
+  }
+  function trendBlock() {
+    const t = st.trData;
+    const tag = LEVELS.flatMap(([l]) => st.trFocus[l].map(k => { const o = ((st.options && st.options[l]) || []).find(x => x.key === k); return o ? o.label : k; }));
+    const head = `<div class="rh-graph-controls" style="justify-content:space-between; align-items:center;"><h3 class="rh-section-title" style="margin-bottom:0;">Friction Share Over Time</h3>${trControls()}</div>
+      ${tag.length ? `<div class="fr-filter-tag">Filtered by: ${tag.map(esc).join(', ')} <button onclick="LF.clearTrFocus()">&times;</button></div>` : ''}
+      ${st.trReflectors.length ? `<div class="fr-filter-tag">Reflectors: ${st.trReflectors.length <= 3 ? st.trReflectors.map(esc).join(', ') : st.trReflectors.length + ' chosen'} <button onclick="LF.clearTrReflectors()">&times;</button></div>` : ''}`;
+    if (!t) return `<div class="rh-graph-card" style="margin-top:1.8rem;">${head}<div class="fr-chart-empty">${st.trError ? esc(friendly(st.trError)) : 'Loading…'}</div></div>`;
+    const sessions = t.trend.buckets.reduce((a, b) => a + b.sessions, 0);
+    return `<div class="rh-graph-card" style="margin-top:1.8rem;">${head}
+      <div class="fr-sessions" style="margin:0.2rem 0 0.8rem;">Total sessions considered: <b>${sessions}</b></div>
+      ${trendChart(t)}</div>`;
+  }
+  function paintTr() {
+    const slot = $('#lfTr'); if (!slot) return;
+    slot.innerHTML = trendBlock();
+    slot.classList.toggle('fr-loading', st.trLoading && !!st.trData);
+    requestAnimationFrame(positionThumbs);
+    bindTips();
   }
   function paintWc() {
     const slot = $('#lfWc'); if (!slot) return;
@@ -4224,22 +4413,143 @@ const LF = (() => {
     // The toggles are drawn in EVERY state (loading, error, data) so the page never changes shape under the reader.
     const note = d ? '' : `<div class="fr-state">${esc(st.error ? friendly(st.error) : 'Loading…')}</div>`;
     return `${head}
+      ${d ? `<div class="fr-sessions">Total sessions considered: <b>${d.cards.sessions}</b></div>` : ''}
       ${d ? areaCards(d.cards, d.areas, d) : note}
-      <div class="rh-graph-card" style="margin-top:1.8rem;">
-        <div class="rh-graph-controls" style="justify-content:space-between; align-items:center;"><h3 class="rh-section-title" style="margin-bottom:0;">Friction Share Over Time</h3></div>
-        ${d ? trendChart(d) : '<div class="fr-chart-empty">&nbsp;</div>'}
-      </div>
-      ${d ? `<div style="margin-top:1.4rem;">${insights(d)}</div>
-      ${compoundsBlock(d)}` : ''}
-      <div id="lfWc"></div>
+      <div id="lfCmp">${d ? compoundsBlock(d) : ''}</div>
+      ${d ? `<div style="margin-top:1.4rem;">${insights(d)}</div>` : ''}
+      <div id="lfTr"></div>
       ${d && st.error ? `<div class="fr-state" style="margin-top:1rem;">${esc(friendly(st.error))}</div>` : ''}`;
+  }
+
+  // ════════ CAPABILITY LANDSCAPE (report 03): nine capability cards -> one capability: four small cards (always the last six months) + one big chart (Month / Quarter / Year) ════════
+  const CAP_META = {
+    "Embodied Self-care": { color: "#14B8A6", icon: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M22 12h-4l-3 8-4-16-3 8H2\"/></svg>" },
+    "Social Presence": { color: "#E4CA0A", icon: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 20a8 8 0 0 1 16 0\"/></svg>" },
+    "Interpersonal Responsiveness": { color: "#e8960a", icon: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z\"/></svg>" },
+    "Cultivating Relationships": { color: "#2E8DE0", icon: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg>" },
+    "Social Influence": { color: "#2A3C5D", icon: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 11v4a1 1 0 0 0 1 1h3l5 4V6l-5 4H4a1 1 0 0 0-1 1Z\"/><path d=\"M17 8a5 5 0 0 1 0 8\"/></svg>" },
+    "Emotional Grounding": { color: "#899fec", icon: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"5\" r=\"2\"/><path d=\"M12 7v13\"/><path d=\"M5 12H2a10 10 0 0 0 20 0h-3\"/></svg>" },
+    "Result Orientation": { color: "#E85D8A", icon: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><circle cx=\"12\" cy=\"12\" r=\"5\"/><circle cx=\"12\" cy=\"12\" r=\"1.2\" fill=\"#fff\" stroke=\"none\"/></svg>" },
+    "Upholding Dignity": { color: "#14B8A6", icon: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z\"/><path d=\"m9 12 2 2 4-4\"/></svg>" },
+    "Self-Cultivation": { color: "#E4CA0A", icon: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22V12\"/><path d=\"M12 12C12 7 8 4 3 4c0 5 3 8 9 8Z\"/><path d=\"M12 12c0-4 4-6 9-6 0 4-3 7-9 7Z\"/></svg>" }
+  };
+  const CAP_METRIC_ICONS = {"engaged": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg>", "hours": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 3\"/></svg>", "timeshare": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 3v9l7.5 4.3\"/></svg>", "atoms": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"1\" fill=\"#fff\"/><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"4.2\"/><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"4.2\" transform=\"rotate(60 12 12)\"/><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"4.2\" transform=\"rotate(120 12 12)\"/></svg>"};
+  const CAP_ORDER = ['Embodied Self-care', 'Social Presence', 'Interpersonal Responsiveness', 'Cultivating Relationships', 'Social Influence', 'Emotional Grounding', 'Result Orientation', 'Upholding Dignity', 'Self-Cultivation'];
+  const CAP_METRICS = [   // the four cards, in order; `pick` is the number the bar is drawn from, `text` how a value is written
+    { key: 'users', label: 'Users Engaged', icon: 'engaged', pick: b => b.users_engaged, text: b => b.users_engaged + (b.users_percent === null ? '' : ' (' + Math.round(b.users_percent) + '%)'), unitTitle: 'Users engaged (people)',
+      tip: b => `${b.users_engaged} user${b.users_engaged === 1 ? '' : 's'} engaged` + (b.users_percent === null ? '' : ` = ${b.users_percent}% of the ${b.active_users} active user${b.active_users === 1 ? '' : 's'}`) },
+    { key: 'hours', label: 'Learning Hours', icon: 'hours', pick: b => b.hours, text: b => (Math.round(b.hours * 10) / 10) + 'h', unitTitle: 'Learning hours',
+      tip: b => `${Math.round(b.hours * 10) / 10} learning hours` },
+    { key: 'timeshare', label: 'Time Share', icon: 'timeshare', pick: b => b.time_share_percent, text: b => b.time_share_percent === null ? '–' : Math.round(b.time_share_percent) + '%', unitTitle: 'Share of all learning time (%)',
+      tip: b => b.time_share_percent === null ? 'No learning time in this period' : `${b.time_share_percent}% of all learning time (${Math.round(b.hours * 10) / 10}h of ${Math.round(b.total_hours * 10) / 10}h)` },
+    { key: 'atoms', label: 'Atoms Completed', icon: 'atoms', pick: b => b.atoms_completed, text: b => String(b.atoms_completed), unitTitle: 'Learning Atoms completed',
+      tip: b => `${b.atoms_completed} Learning Atom${b.atoms_completed === 1 ? '' : 's'} completed` },
+  ];
+  function capMeta(name) { return CAP_META[name] || { color: '#4A6FA5', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 20 6-11 4 6 3-4 5 9Z"/></svg>' }; }
+  const CAP_USER_BADGE = '<svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0Z"/></svg>';
+  function capParams(extra) { const p = new URLSearchParams(extra || {}); LEVELS.forEach(([l]) => st.capFocus[l].forEach(k => p.append('focus_' + l, k))); return p.toString(); }
+  async function loadCapLand() {
+    const mine = ++capLandSeq;
+    st.capLoading = true; paintCap();
+    try { const data = await reportsApi('/api/reports/capability-landscape?' + capParams()); if (mine !== capLandSeq) return; st.capLand = data; st.capLandError = null; }
+    catch (e) { if (mine !== capLandSeq) return; st.capLandError = e.message; }
+    st.capLoading = false; paintCap();
+  }
+  async function loadCapDetail() {
+    const mine = ++capDetailSeq;
+    st.capLoading = true; paintCap();
+    try { const data = await reportsApi('/api/reports/capability?' + capParams({ capability_name: st.capName, period: st.capPeriod })); if (mine !== capDetailSeq) return; st.capDetail = data; st.capDetailError = null; }
+    catch (e) { if (mine !== capDetailSeq) return; st.capDetailError = e.message; }
+    st.capLoading = false; paintCap();
+  }
+  function capHead(title, back) {
+    const tag = LEVELS.flatMap(([l]) => st.capFocus[l].map(k => { const o = ((st.options && st.options[l]) || []).find(x => x.key === k); return o ? o.label : k; }));
+    return `<div class="um-page-head"><div>${back || REPORTS_BACK}<h1 class="um-title">${esc(title)}</h1></div>
+      <div class="fr-controls-right"><button class="ri-dd-trigger" onclick="LF.toggleDrill('cap')">${DD_ICON}Drill Down${DD_TOOLTIP}</button></div></div>
+      ${tag.length ? `<div class="fr-filter-tag">Filtered by: ${tag.map(esc).join(', ')} <button onclick="LF.clearCapFocus()">&times;</button></div>` : ''}`;
+  }
+  function capLandscapeHtml() {
+    const L = st.capLand;
+    if (!L) return `<div class="fr-state">${esc(st.capLandError ? friendly(st.capLandError) : 'Loading…')}</div>`;
+    const ordered = L.capabilities.slice().sort((a, b) => { const x = CAP_ORDER.indexOf(a.capability), y = CAP_ORDER.indexOf(b.capability); return (x < 0 ? 99 : x) - (y < 0 ? 99 : y); });
+    return `<div class="cap-grid">${ordered.map(c => {
+      const meta = capMeta(c.capability), pct = c.users_percent;
+      return `<button type="button" class="cap-card" data-cap="${esc(c.capability)}">
+        <div class="cap-card-top"><div class="cap-ring-wrap"><div class="cap-ring" style="background:conic-gradient(${meta.color} 0% ${pct || 0}%, var(--grey1) ${pct || 0}% 100%)"><div class="cap-ring-inner">${pct === null ? '–' : Math.round(pct) + '%'}</div></div><div class="cap-badge" style="background:${meta.color}">${CAP_USER_BADGE}</div></div>
+          <div class="cap-icon" style="background:${meta.color}">${meta.icon}</div></div>
+        <h3>${esc(c.capability)}</h3><p>${c.reflectors.slice(0, 2).map(esc).join('<br>')}</p>
+        <div class="cap-foot">${c.users_engaged} user${c.users_engaged === 1 ? '' : 's'} engaged &middot; last 6 months</div></button>`;
+    }).join('')}</div>
+    <p class="footprint-note" style="margin-top:0.9rem;">The ring is the share of active users, over the last six months, who engaged with this capability. Click a capability to see it in detail.</p>`;
+  }
+  function capMonthLabel(key) { const [, m] = key.split('-').map(Number); return MONTH_ABBR[m - 1]; }
+  function capBucketLabel(key, period) {
+    if (period === 'month') { const d = Number(key.split('-')[2]); return ordinal(d); }
+    return bucketLabel(key, period, st.capDetail && st.capDetail.fiscal_start_month).replace(/ \(.*\)$/, '');
+  }
+  function capKpi(metric, d, meta) {
+    const six = d.last_six_months, vals = six.map(b => metric.pick(b) || 0), top = Math.max(...vals, 0) * 1.25 || 1, H = 84;
+    const latest = six[six.length - 1];
+    const line = vals.map((v, i) => `${((i + 0.5) / vals.length * 100).toFixed(1)},${(H - v / top * H).toFixed(1)}`).join(' ');
+    return `<button type="button" class="cap-kpi${st.capMetric === metric.key ? ' on' : ''}" data-metric="${metric.key}" style="--capc:${meta.color}">
+      <div class="cap-kpi-head"><div class="cap-kpi-head-left"><div class="cap-kpi-icon">${CAP_METRIC_ICONS[metric.icon]}</div><h3>${metric.label}</h3></div></div><div class="cap-pill-row"><span class="cap-pill">This month: ${esc(metric.text(latest))}</span></div>
+      <div class="cap-mini"><div class="cap-mini-bars">${six.map((b, i) => `<div class="cap-mini-wrap"><div class="cap-mini-bar" title="${esc(capMonthLabel(b.bucket) + ': ' + metric.tip(b))}" style="height:${(vals[i] / top * H).toFixed(1)}px"><span>${metric.key === 'users' ? b.users_engaged : metric.key === 'hours' ? Math.round(b.hours * 10) / 10 : metric.key === 'timeshare' ? (b.time_share_percent === null ? '' : Math.round(b.time_share_percent) + '%') : b.atoms_completed}</span></div></div>`).join('')}</div>
+        <svg class="cap-mini-line" viewBox="0 0 100 ${H}" preserveAspectRatio="none"><polyline points="${line}" fill="none" stroke="var(--night)" stroke-width="1.4" stroke-dasharray="3,3" vector-effect="non-scaling-stroke"/></svg>
+        <div class="cap-mini-axis">${six.map(b => `<div>${capMonthLabel(b.bucket)}</div>`).join('')}</div></div></button>`;
+  }
+  function capNiceScale(max) {
+    if (max <= 0) return { step: 1, max: 4 };
+    const raw = max * 1.2 / 4, mag = Math.pow(10, Math.floor(Math.log10(raw))), norm = raw / mag;
+    const step = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10) * mag;
+    return { step, max: Math.max(step, Math.ceil(max * 1.2 / step) * step) };
+  }
+  function capBigChart(metric, d) {
+    const H = 230, pct = metric.key === 'timeshare';
+    const vals = d.buckets.map(b => metric.pick(b) || 0), { step, max } = capNiceScale(Math.max(...vals, 0));
+    const ticks = []; for (let t = 0; t <= max + 1e-9; t += step) ticks.push(Math.round(t * 100) / 100);
+    const axisTitle = st.capPeriod === 'month' ? 'Day of this month' : st.capPeriod === 'quarter' ? 'Quarter' : 'Month';
+    if (!d.buckets.some(b => b.active_users > 0)) return `<div class="cap-empty">No sessions in this period${st.capFocus && LEVELS.some(([l]) => st.capFocus[l].length) ? ' for the chosen drill-down' : ''}.</div>`;
+    return `<div class="cap-chart" style="--H:${H}px"><div class="cap-ytitle">${esc(metric.unitTitle)}</div><div class="cap-main"><div class="cap-plotwrap">
+        <div class="cap-grid-lines">${ticks.map(t => `<div class="cap-gl" style="bottom:${t / max * 100}%"></div><div class="cap-yt" style="bottom:${t / max * 100}%">${t}${pct ? '%' : ''}</div>`).join('')}</div>
+        <div class="cap-cols">${d.buckets.map((b, i) => `<div class="cap-col"><div class="cap-bar-area"><div class="cap-bar" data-tip="${esc('<b>' + capBucketLabel(b.bucket, st.capPeriod) + '</b><div style="margin-top:0.25rem">' + metric.tip(b) + '</div>')}" style="height:${vals[i] / max * 100}%">${vals[i] || b.active_users ? `<div class="cap-bar-val">${metric.key === 'users' ? `${b.users_engaged}${b.users_percent === null ? '' : `<small>${Math.round(b.users_percent)}%</small>`}` : metric.key === 'hours' ? Math.round(b.hours * 10) / 10 : metric.key === 'timeshare' ? (b.time_share_percent === null ? '' : Math.round(b.time_share_percent) + '%') : b.atoms_completed}</div>` : ''}</div></div><div class="cap-lab">${esc(capBucketLabel(b.bucket, st.capPeriod))}</div></div>`).join('')}</div></div>
+        <div class="cap-xtitle">${axisTitle}</div></div></div>`;
+  }
+  function capDetailHtml() {
+    const d = st.capDetail, meta = capMeta(st.capName), metric = CAP_METRICS.find(m => m.key === st.capMetric) || CAP_METRICS[0];
+    const back = `<button class="ri-back-btn" onclick="LF.capBack()" style="margin-bottom:0.7rem;">&larr; Capability Landscape</button>`;
+    if (!d) return capHead(st.capName, back) + `<div class="fr-state">${esc(st.capDetailError ? friendly(st.capDetailError) : 'Loading…')}</div>`;
+    return capHead(d.capability, back) + `
+      <div class="cap-hint">Each card shows the last six months. Click a card to open it in the big chart below.</div>
+      <div class="cap-kpis" style="--capc:${meta.color}">${CAP_METRICS.map(m => capKpi(m, d, meta)).join('')}</div>
+      <div class="cap-panel" style="--capc:${meta.color}"><div class="cap-panel-head"><div class="cap-identity"><div class="cap-identity-icon">${CAP_METRIC_ICONS[metric.icon]}</div><div class="cap-identity-title">${metric.label}</div></div>${periodToggle('cap')}</div>
+        ${capBigChart(metric, d)}</div>`;
+  }
+  function capPage() { return st.capName ? capDetailHtml() : capHead('Capability Landscape') + capLandscapeHtml(); }
+  function paintCap() {
+    const main = $('#lfMain'); if (!main || st.mode !== 'capability') return;
+    main.innerHTML = capPage();
+    main.classList.toggle('fr-loading', st.capLoading && !!(st.capName ? st.capDetail : st.capLand));
+    requestAnimationFrame(positionThumbs);
+    main.querySelectorAll('[data-cap]').forEach(b => b.addEventListener('click', () => LF.openCapability(b.dataset.cap)));
+    main.querySelectorAll('[data-metric]').forEach(b => b.addEventListener('click', () => { st.capMetric = b.dataset.metric; paintCap(); }));
+    const tip = $('#lfTip');
+    main.querySelectorAll('.cap-bar[data-tip]').forEach(g => {
+      g.addEventListener('mousemove', e => { tip.innerHTML = g.dataset.tip; tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; tip.classList.add('show'); });
+      g.addEventListener('mouseleave', () => tip.classList.remove('show'));
+    });
+  }
+  function workplacePage() {
+    return `<div class="um-page-head"><div><button class="ri-back-btn" onclick="location.hash='#reports'" style="margin-bottom:0.7rem;">&larr; Reports &amp; Insights</button><h1 class="um-title">Workplace Challenges</h1></div></div>
+      <div id="lfWc"></div>`;
   }
   function paint() {
     const main = $('#lfMain'); if (!main) return;
+    if (st.mode === 'capability') { paintCap(); return; }
+    if (st.mode === 'workplace') { main.innerHTML = workplacePage(); paintWc(); return; }
     main.innerHTML = page();
     main.classList.toggle('fr-loading', st.loading && !!st.data);
     requestAnimationFrame(positionThumbs);
-    bindTips(); paintWc();
+    bindCompounds(); paintTr();
   }
   function positionThumbs() {
     document.querySelectorAll('.fr-period-toggle').forEach(t => {
@@ -4249,11 +4559,11 @@ const LF = (() => {
   }
   // hover over a bar: the counts behind it, in a tip of our own (never the browser's grey title box)
   function bindTips() {
-    const tip = $('#lfTip'); if (!tip || !st.data) return;
-    document.querySelectorAll('#lfMain .fr-hit').forEach(row => {
+    const tip = $('#lfTip'); if (!tip || !st.trData) return;
+    document.querySelectorAll('#lfTr .fr-hit').forEach(row => {
       row.addEventListener('mousemove', e => {
-        const b = st.data.trend.buckets[Number(row.dataset.i)];
-        tip.innerHTML = `<b>${esc(bucketLabel(b.bucket, st.data.trend_period, st.data.fiscal_start_month))}</b>${st.data.areas.map(a => `<div><i style="background:${COLORS[a.key]}"></i>${b.areas[a.key].percent}% <span class="muted">(${b.areas[a.key].count})</span></div>`).join('')}<div class="muted" style="margin-top:0.3rem">${b.sessions} session${b.sessions === 1 ? '' : 's'} · ${b.identifications} identifications</div>`;
+        const b = st.trData.trend.buckets[Number(row.dataset.i)];
+        tip.innerHTML = `<b>${esc(bucketLabel(b.bucket, st.trData.trend_period, st.trData.fiscal_start_month))}</b>${st.trData.areas.map(a => `<div><i style="background:${COLORS[a.key]}"></i>${b.areas[a.key].percent}% <span class="muted">(${b.areas[a.key].count})</span></div>`).join('')}<div class="muted" style="margin-top:0.3rem">${b.sessions} session${b.sessions === 1 ? '' : 's'} · ${b.identifications} identifications</div>`;
         tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
         tip.classList.add('show');
       });
@@ -4284,13 +4594,14 @@ const LF = (() => {
       <div class="fr-tip" id="lfTip"></div>`);
   }
   function drillBody() {
-    const wc = st.ddMode === 'wc', state = wc ? st.wc : st.focus;
+    const wc = st.ddMode === 'wc', state = wc ? st.wc : st.ddMode === 'tr' ? st.trFocus : st.ddMode === 'cap' ? st.capFocus : st.focus;
     const levels = (wc ? WC_LEVELS : LEVELS).filter(([l]) => st.options && (st.options[l] || []).length >= 2);
     // Everything is ticked unless a narrower selection was applied; the first section is always open.
-    $('#lfDdBody').innerHTML = levels.length ? levels.map(([l, name], i) => {
+    const shown = {}; levels.forEach(([l]) => { shown[l] = drawerLabels(st.options, l); });
+    $('#lfDdBody').innerHTML = levels.length ? DD_TOP + levels.map(([l, name], i) => {
       const open = i === 0 || state[l].length > 0;
       return `<div class="ri-dd-item ${open ? 'open' : ''}" data-level="${l}"><button class="ri-dd-toggle" data-label="${name}" onclick="LF.toggleDD(this)">${open ? '− ' : '+ '}${name}</button>
-        <div class="ri-dd-panel">${DD_LINKS}${st.options[l].map(o => `<label><input type="checkbox" value="${esc(o.key)}"${placesAttr(o)} ${!state[l].length || state[l].includes(o.key) ? 'checked' : ''}>${esc(o.label)}</label>`).join('')}</div></div>`;
+        <div class="ri-dd-panel">${DD_LINKS}${st.options[l].map(o => `<label><input type="checkbox" value="${esc(o.key)}"${placesAttr(o)} ${!state[l].length || state[l].includes(o.key) ? 'checked' : ''}>${esc(shown[l][o.key])}</label>`).join('')}</div></div>`;
     }).join('') : '<div class="ri-dd-hint">There is nothing to drill into yet — this view has only one choice at every level.</div>';
     const drawerBody = $('#lfDdBody'), levelOf = it => it.dataset.level;
     drawerBody._facet = facetModel(st.options);
@@ -4299,7 +4610,7 @@ const LF = (() => {
     narrowDrawerLevels(drawerBody, levelOf);
   }
   function reflectorBody() {
-    const chosen = st.rfMode === 'wc' ? st.wcReflectors : st.reflectors;
+    const chosen = st.rfMode === 'wc' ? st.wcReflectors : st.rfMode === 'tr' ? st.trReflectors : st.reflectors;
     $('#lfRfBody').innerHTML = ((st.options && st.options.reflectors) || []).map(g => {
       const open = g.reflectors.some(r => chosen.includes(r));
       return `<div class="ri-dd-item ${open ? 'open' : ''}"><button class="ri-dd-toggle" data-label="${esc(g.capability)}" onclick="LF.toggleDD(this)">${open ? '− ' : '+ '}${esc(g.capability)}</button>
@@ -4308,25 +4619,26 @@ const LF = (() => {
   }
 
   return {
-    async render() {
+    async render(mode) {
+      st.mode = mode === 'workplace' ? 'workplace' : mode === 'capability' ? 'capability' : 'friction';
       ensureDrawers();
       $('#view').innerHTML = '<div id="lfMain"></div>';
       paint();
       if (!st.options) { try { st.options = await reportsApi('/api/reports/driver-report-options'); } catch (e) { st.error = e.message; } }
       if (st.options && !st.recalled) {   // the last applied drill-down comes back by itself; anything no longer in this person's access is dropped
         st.recalled = true;
-        [['friction', st.focus], ['friction_wc', st.wc]].forEach(([name, target]) => {
+        [['friction', st.focus], ['friction_wc', st.wc], ['friction_tr', st.trFocus], ['capability', st.capFocus]].forEach(([name, target]) => {
           const saved = recallSelection(name);
           Object.keys(target).forEach(l => { target[l] = (saved[l] || []).filter(k => (st.options[l] || []).some(o => o.key === k)); });
         });
       }
-      load(); loadWc();
+      if (st.mode === 'capability') { loadCapLand(); if (st.capName) loadCapDetail(); } else if (st.mode === 'workplace') loadWc(); else { load(); loadTr(); }
     },
-    setPeriod(which, k) { if (which === 'wc') { st.wcPeriod = k; loadWc(); } else { st.period = k; load(); } },
+    setPeriod(which, k) { if (which === 'cap') { st.capPeriod = k; loadCapDetail(); } else if (which === 'wc') { st.wcPeriod = k; loadWc(); } else if (which === 'tr') { st.trPeriod = k; loadTr(); } else { st.period = k; load(); } },
     toggleDD(btn) { const open = btn.parentElement.classList.toggle('open'); btn.textContent = (open ? '− ' : '+ ') + btn.dataset.label; },
     toggleDrill(mode) {
       if (typeof mode === 'string') st.ddMode = mode;
-      $('#lfDdTitle').textContent = st.ddMode === 'wc' ? 'Drill Down: Workplace Challenge' : 'Drill Down';
+      $('#lfDdTitle').textContent = st.ddMode === 'wc' ? 'Drill Down: Workplace Challenge' : st.ddMode === 'tr' ? 'Drill Down: Friction Share Over Time' : 'Drill Down';
       const open = $('#lfDdDrawer').classList.toggle('open');
       $('#lfDdOverlay').classList.toggle('open', open);
       document.body.style.overflow = open ? 'hidden' : '';
@@ -4335,10 +4647,10 @@ const LF = (() => {
     applyDrill() {
       const body = $('#lfDdBody'), { picks, empty } = drawerPicks(body, it => it.dataset.level);
       if (empty.length) return drawerSay(body, pickMsg(empty));
-      const state = st.ddMode === 'wc' ? st.wc : st.focus;
+      const state = st.ddMode === 'wc' ? st.wc : st.ddMode === 'tr' ? st.trFocus : st.ddMode === 'cap' ? st.capFocus : st.focus;
       (st.ddMode === 'wc' ? WC_LEVELS : LEVELS).forEach(([l]) => { state[l] = picks[l] || []; });
-      rememberSelection(st.ddMode === 'wc' ? 'friction_wc' : 'friction', state);
-      LF.toggleDrill(); if (st.ddMode === 'wc') loadWc(); else load();
+      rememberSelection(st.ddMode === 'wc' ? 'friction_wc' : st.ddMode === 'tr' ? 'friction_tr' : st.ddMode === 'cap' ? 'capability' : 'friction', state);
+      LF.toggleDrill(); if (st.ddMode === 'wc') loadWc(); else if (st.ddMode === 'tr') loadTr(); else if (st.ddMode === 'cap') { loadCapLand(); if (st.capName) loadCapDetail(); } else load();
     },
     toggleReflector(mode) {
       if (typeof mode === 'string') st.rfMode = mode;
@@ -4349,13 +4661,18 @@ const LF = (() => {
     },
     applyReflector() {
       const picked = Array.from(document.querySelectorAll('#lfRfBody input:checked')).map(cb => cb.value);
-      if (st.rfMode === 'wc') { st.wcReflectors = picked; LF.toggleReflector(); loadWc(); } else { st.reflectors = picked; LF.toggleReflector(); load(); }
+      if (st.rfMode === 'wc') { st.wcReflectors = picked; LF.toggleReflector(); loadWc(); } else if (st.rfMode === 'tr') { st.trReflectors = picked; LF.toggleReflector(); loadTr(); } else { st.reflectors = picked; LF.toggleReflector(); load(); }
     },
     clearFocus() { LEVELS.forEach(([l]) => st.focus[l] = []); rememberSelection('friction', st.focus); load(); },
     clearWc() { WC_LEVELS.forEach(([l]) => st.wc[l] = []); rememberSelection('friction_wc', st.wc); loadWc(); },
     clearWcReflectors() { st.wcReflectors = []; loadWc(); },
     clearReflectors() { st.reflectors = []; load(); },
-    repaint() { if ($('#lfMain') && st.data) paint(); },
+    openCapability(name) { st.capName = name; st.capDetail = null; st.capDetailError = null; st.capPeriod = 'month'; st.capMetric = 'users'; paintCap(); loadCapDetail(); },
+    capBack() { st.capName = null; st.capDetail = null; paintCap(); },
+    clearCapFocus() { LEVELS.forEach(([l]) => st.capFocus[l] = []); rememberSelection('capability', st.capFocus); loadCapLand(); if (st.capName) loadCapDetail(); },
+    clearTrFocus() { LEVELS.forEach(([l]) => st.trFocus[l] = []); rememberSelection('friction_tr', st.trFocus); loadTr(); },
+    clearTrReflectors() { st.trReflectors = []; loadTr(); },
+    repaint() { if ($('#lfMain') && (st.mode === 'workplace' || st.mode === 'capability' || st.data)) paint(); },
   };
 })();
 let _lfResize; addEventListener('resize', () => { clearTimeout(_lfResize); _lfResize = setTimeout(() => LF.repaint(), 150); });
@@ -4367,10 +4684,10 @@ const REPORTS_BACK = '<button class="ri-back-btn" onclick="location.hash=\'#repo
 const REPORT_ROWS = [
   { label: 'Adoption Overview', desc: 'See who is using Wisdom on the GO!, how often, and where adoption is growing.', hash: '#reports/adoption' },
   { label: 'Competency Dashboard', desc: 'Understand learner engagement, learning investment and proficiency across every organizational competency. Drill down into individual competencies to identify strengths, development priorities and adoption trends.' },
-  { label: 'Capability Landscape', desc: 'Explore the organization’s capability profile to identify where human capabilities are strongest, where they are underdeveloped, and how they are evolving across teams and employee groups.' },
+  { label: 'Capability Landscape', desc: 'Explore the organization’s capability profile to identify where human capabilities are strongest, where they are underdeveloped, and how they are evolving across teams and employee groups.', hash: '#reports/capability' },
   { label: 'Learning Friction', desc: 'Identify the underlying barriers preventing employees from demonstrating critical human skills. Analyze friction across the four learning drivers to understand where development efforts should be focused.', hash: '#reports/friction' },
   { label: 'Reflector Insights', desc: 'Analyze Reflector demand to identify the human skills most frequently diagnosed, recommended and mapped across organizational competencies and learning initiatives. Explore demand, proficiency and growth trends over time.' },
-  { label: 'Workplace Challenges', desc: 'Discover the most common workplace situations employees seek help with, helping identify recurring business challenges, emerging trends and areas requiring organizational attention.' },
+  { label: 'Workplace Challenges', desc: 'Discover the most common workplace situations employees seek help with, helping identify recurring business challenges, emerging trends and areas requiring organizational attention.', hash: '#reports/workplace' },
 ];
 function renderReportsHub() {
   $('#view').innerHTML = `<div class="um-page-head"><div><h1 class="um-title">Reports &amp; Insights</h1></div></div>
@@ -4469,6 +4786,8 @@ async function route() {
     drawNav('reports');
     if (parts[1] === 'adoption') { renderAdoption(); $('#view .um-page-head > div').insertAdjacentHTML('afterbegin', REPORTS_BACK); return; }
     if (parts[1] === 'friction') return LF.render();
+    if (parts[1] === 'capability') return LF.render('capability');   // the Capability Landscape (report 03)
+    if (parts[1] === 'workplace') return LF.render('workplace');   // Friction x Workplace Challenge lives on its own page, report 06 (Kriti, 2026-11-10)
     return renderReportsHub();
   }
   location.hash = '#users';
