@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/atom_slides.css?v=20261106b">
+<link rel="stylesheet" href="assets/roleplay.css?v=20261113a">
+<link rel="stylesheet" href="assets/user_notice.css?v=20261113a">
 <style>
 :root {
   --night:   #041A40;
@@ -1387,6 +1389,7 @@ body.first-run #impactCard .rule, body.first-run #impactCard .foot, body.first-r
 .chat-messages .vo-chip { font-family:'Poppins',sans-serif; font-size:0.85em; line-height:1.4; color:var(--night2); background:var(--white); border:1.5px solid rgba(22,32,46,0.2); border-radius:0.8em; padding:0.45em 1em; cursor:pointer; text-align:left; max-width:100%; white-space:normal; }
 .chat-messages .vo-chip:hover:not(:disabled) { border-color:var(--night2); }
 .chat-messages .vo-chip:disabled { opacity:0.5; cursor:default; }
+body.vo-gated .chat-messages .vo-chip, body.vo-gated .chat-messages .vo-nav-btn { opacity:0.45; cursor:not-allowed; }   /* the slide's voiceover is still playing: its question buttons and Continue wait */
 .chat-messages .vo-nav-btn { font-family:'Poppins',sans-serif; font-size:0.85rem; font-weight:600; color:#fff; background:var(--green); border:none; border-radius:20px; padding:0.65rem 1.4rem; cursor:pointer; }
 .chat-messages .vo-nav-btn:hover:not(:disabled) { background:var(--green2); }
 .chat-messages .vo-nav-btn:disabled { opacity:0.5; cursor:default; }
@@ -1845,6 +1848,8 @@ body.chat-fit #chatPanel.active { height:var(--chat-fit-h); min-height:0; max-he
 
 <script src="assets/html2canvas.min.js"></script>
 <script src="assets/atom_slides.js?v=20261106b"></script>
+<script src="assets/roleplay.js?v=20261113b"></script>
+<script src="assets/user_notice.js?v=20261113a"></script>
 <script>
 // `overflow:hidden` alone locks scroll on desktop (mouse wheel respects
 // it) but iOS Safari ignores it for a touch-drag -- the background page
@@ -1896,15 +1901,18 @@ function toggleAccordion(btn) {
 // page's 6 live areas with fresh copy, not the demo's own wording.
 const TOUR_SECTION = 'Explore WOTG';
 const TOUR_STEPS = [
-  { anchor:'#chatInput', side:false, section:TOUR_SECTION, num:1, title:'Start a Conversation', body:"Describe any real work situation here and hit send. WOTG figures out the human skill that can help and walks you through applying it to your own situation." },
-  { anchor:'#managerRecCard', side:false, section:TOUR_SECTION, num:2, title:'Your Assigned Learning Goals', body:'Skills your manager or trainer has assigned you show up here. Click any one to start a conversation built around why it was assigned to you.' },
-  { anchor:'#notesItem', side:false, section:TOUR_SECTION, num:3, title:'My Notes', body:"A quick recap of everything you've learned. For each topic you get a one-page summary of what it covered." },
-  { anchor:'#notifItem', side:false, section:TOUR_SECTION, num:4, title:'Notifications', body:"You'll get a reminder here when it's time to confirm whether you've applied what you learned in your daily work." },
-  { anchor:'#profileItem', side:false, section:TOUR_SECTION, num:5, title:'Your Profile', body:"Update your ‘About Me’ info, your current growth goal, and your profile photo any time from here. <strong>Choose your language preference right here too.</strong>" },
-  { anchor:'#parkingLotSection', side:true, section:TOUR_SECTION, num:6, title:'Parking Lot', body:'Left a conversation unfinished? Pick it back up exactly where you stopped.' },
-  { anchor:'#convHistorySection', side:true, section:TOUR_SECTION, num:7, title:'Conversation History', body:"Revisit your past conversations and everything you've already learned." },
-  { anchor:'#learningMomentumCard', side:false, section:TOUR_SECTION, num:8, title:'Learning Momentum', body:"A quick pulse on how you're doing overall — your streak, how much you're learning, and how consistently you're keeping it up." },
-  { anchor:'#starStockCard', side:false, section:TOUR_SECTION, num:9, title:'Star Stock', body:"The most reliable way to build a human skill is to apply it. Every time you learn something and put it into practice, you earn a star — half for learning it, half for applying it." },
+  // Updated 2026-11-13 (Kriti): follows the page from the top down, then the side menu; added Learning Initiatives and Impact You Created; names match the page.
+  { anchor:'#chatInput', side:false, section:TOUR_SECTION, num:1, title:'Start a Conversation', body:"Describe any real work situation here and hit send. WOTG figures out the human skill that can help and walks you through applying it to your own situation, with short voiced slides, questions you can ask along the way, and a chance to practice in a role play." },
+  { anchor:'#initiativesCard', side:false, section:TOUR_SECTION, num:2, title:'Learning Initiatives', body:'Learning initiatives set up for you by your organization show up here. Open one and pick a skill to start a conversation built around it.' },
+  { anchor:'#managerRecCard', side:false, section:TOUR_SECTION, num:3, title:'Learning Recommendations', body:'Skills your manager has assigned you show up here. Click any one to start a conversation built around why it was assigned to you.' },
+  { anchor:'#learningMomentumCard', side:false, section:TOUR_SECTION, num:4, title:'Learning Momentum', body:"A quick pulse on how you're doing overall — your streak, how much you're learning, and how consistently you're keeping it up." },
+  { anchor:'#starStockCard', side:false, section:TOUR_SECTION, num:5, title:'Star Stock', body:"The most reliable way to build a human skill is to apply it. You earn half a star when you learn a skill, and the other half when you make a commitment to apply it." },
+  { anchor:'#impactCard', side:false, section:TOUR_SECTION, num:6, title:'Impact You Created', body:"Your learning in action: how many Learning Atoms you've completed, the commitments you made, and how many you applied in real life." },
+  { anchor:'#notesItem', side:false, section:TOUR_SECTION, num:7, title:'My Notes', body:"A quick recap of everything you've learned. For each topic you get a recap of what it covered, plus the commitment you made to apply it." },
+  { anchor:'#notifItem', side:false, section:TOUR_SECTION, num:8, title:'Notifications', body:"You'll get a reminder here when it's time to confirm whether you've applied what you learned in your daily work." },
+  { anchor:'#profileItem', side:false, section:TOUR_SECTION, num:9, title:'My Profile', body:"Update your ‘About Me’ info, your current growth goal, and your profile photo any time from here. <strong>Choose your language preference right here too.</strong>" },
+  { anchor:'#parkingLotSection', side:true, section:TOUR_SECTION, num:10, title:'Parking Lot', body:'Left a conversation unfinished? Pick it back up exactly where you stopped.' },
+  { anchor:'#convHistorySection', side:true, section:TOUR_SECTION, num:11, title:'Conversation History', body:"Revisit your past conversations and everything you've already learned, including any role play you did and the feedback you got." },
 ];
 let tourStepIndex = -1;
 
@@ -2043,6 +2051,8 @@ const LEARNING_INITIATIVE_BASE = LOCAL_TEST ? _localBase(8005) : 'https://wotg-l
 // app answers. activeIsInitiative is true while the open session is an initiative's, and lrBase() is the address of whichever app holds it.
 // LEARNING_INITIATIVE_BASE is the initiative ADMIN app (the learner's initiatives box); the conversations themselves are the initiative LEARNER app.
 const LEARNING_INITIATIVE_SESSION_BASE = LOCAL_TEST ? _localBase(8006) : 'https://wotg-learning-initiative-learner.azurewebsites.net';
+// The role play app (assets/roleplay.js talks to it). Not deployed yet: until it exists the page simply shows no role play, never an error.
+const ROLEPLAY_BASE = LOCAL_TEST ? _localBase(8007) : 'https://wotg-roleplay.azurewebsites.net';
 let activeIsInitiative = false;
 function lrBase() { return activeIsInitiative ? LEARNING_INITIATIVE_SESSION_BASE : LEARNING_RECS_BASE; }
 const INITIATIVE_ENDED_TEXT = 'This session has ended because its learning initiative has ended.';
@@ -2078,7 +2088,7 @@ function setChatInputEnabled(enabled, placeholder) {
   if (sendBtn) sendBtn.disabled = !enabled;
   if (micBtn) micBtn.disabled = !enabled;
   if (placeholder !== undefined) input.placeholder = placeholder;
-  else if (enabled) input.placeholder = CHAT_INPUT_PLACEHOLDER;
+  else if (enabled) input.placeholder = (window.RolePlay && RolePlay.isActive()) ? RolePlay.placeholder : CHAT_INPUT_PLACEHOLDER;
 }
 // True while the learner must NOT type or speak. It is a turn-taking machine: nothing can be sent while an answer is being waited for (a message
 // just sent, an answer to the driver questions, a button click, a slide step, a conversation being made or resumed), and nothing while the conversation
@@ -2696,13 +2706,18 @@ function setPronounsPicker(id, value) {
 // One-time prompt for accounts with no pronouns saved. Never blocks the app
 // if the check itself fails -- only a confirmed "empty" shows it.
 async function checkPronounsGate() {
+  let gateOpen = false;
   try {
     const res = await reportsFetch(`${USER_MGMT_BASE}/api/my-profile?user_id=${encodeURIComponent(userId)}`);
-    if (!res.ok) return;
-    const p = await res.json();
-    if (!(p.pronouns || '').trim()) document.getElementById('pronounsGateOverlay').classList.add('open');
+    if (res.ok) {
+      const p = await res.json();
+      if (!(p.pronouns || '').trim()) { document.getElementById('pronounsGateOverlay').classList.add('open'); gateOpen = true; }
+    }
   } catch (err) { /* non-fatal */ }
+  if (!gateOpen) showUserNotice();   // the notice after login (assets/user_notice.js); when the pronouns prompt is up it waits until the pronouns are saved
 }
+// The notice shown in front of a person right after login: once per login, up to 3 times, with "Don't show me this message again" (user management app).
+function showUserNotice() { if (window.UserNotice) UserNotice.check({ fetch: reportsFetch, base: USER_MGMT_BASE }); }
 
 async function saveGatePronouns() {
   const statusEl = document.getElementById('gatePronounsStatus');
@@ -2726,6 +2741,7 @@ async function saveGatePronouns() {
       throw new Error(data.detail || 'Save failed');
     }
     document.getElementById('pronounsGateOverlay').classList.remove('open');
+    showUserNotice();   // the pronouns are saved: now the notice may show
   } catch (err) {
     statusEl.textContent = err.message || 'Could not save -- please try again.';
     statusEl.className = 'myprofile-save-status error';
@@ -3694,6 +3710,7 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
 
     if (data.slide) {
       // A session parked on a training slide gets its whole thread back; the parked slide's Continue / Finish button is the way on.
+      if (window.RolePlay) { RolePlay.reset(); await RolePlay.load(sessionId); }   // is there a role play on this session? (the role play app answers; Reports is not involved)
       voRestoreThread(data);
     }
 
@@ -3806,6 +3823,7 @@ async function viewClosedConversation(clickedSessionId, path) {
       }
       _renderHistoryMessage(m.sender === 'user' ? 'user' : 'ai', m.text);
     });
+    voHistoryRolePlay = (window.RolePlay && data.atom && Array.isArray(data.atom.slides) && data.atom.slides.length) ? await RolePlay.loadFor(clickedSessionId) : null;
     if (data.atom && Array.isArray(data.atom.slides) && data.atom.slides.length) voRenderHistoryAtom(data.atom, clickedSessionId, path === 'learning_initiative' ? LEARNING_INITIATIVE_SESSION_BASE : (path === 'learning_recommendations' ? LEARNING_RECS_BASE : API_BASE));
   } catch (err) {
     _renderHistoryMessage('ai', 'Something went wrong loading that conversation -- please try again.');
@@ -3895,6 +3913,8 @@ function voReset() {
   chatHeldByCommitment = false;
   voCover = null; voHeld = null; voSlideNumber = 0; voSlideCount = 0; voLastSlide = false; voBusy = false; voAutoMaxDone = false;
   if (window.AtomSlides) window.AtomSlides.Voice.stop();
+  voGateClear();
+  if (window.RolePlay) RolePlay.reset();
 }
 // The server's own words when it sent some (an account stop, an AI step that could not finish); a plain line when the network itself failed.
 function voErrorText(err, fallback) {
@@ -4166,6 +4186,21 @@ function voSyncMute() {
   });
 }
 
+// While a slide's own voiceover is playing for the first time -- spoken, muted or silently counting its length: the green bar is moving -- the learner cannot
+// press the slide's question buttons ("I have a question", "I have a different question", the pop-up questions) or its Continue / Finish. They dim, and open when
+// the voiceover has finished (Kriti, 2026-11-13: otherwise a learner can click through a whole learning item in seconds, or cut the voice off midway).
+// Replaying it, resumed slides and a switched-off voice never lock anything. A safety release (the estimated length x 1.6 + 10 s, at least 20 s) means a voice
+// that stalls can never trap someone on a slide.
+let voGateOwner = null;
+function voGateAcquire(owner) { voGateOwner = owner; document.body.classList.add('vo-gated'); }
+function voGateRelease(owner) { if (voGateOwner === owner) { voGateOwner = null; document.body.classList.remove('vo-gated'); } }
+function voGateClear() { voGateOwner = null; document.body.classList.remove('vo-gated'); }
+document.addEventListener('click', function(e) {
+  if (!document.body.classList.contains('vo-gated')) return;
+  const t = e.target && e.target.closest ? e.target.closest('#chatMessages .vo-chip, #chatMessages .vo-nav-btn') : null;
+  if (t) { e.preventDefault(); e.stopImmediatePropagation(); }
+}, true);
+
 // text: the voiceover (also the script). quiet: nothing starts by itself (a resumed or earlier slide).
 function voPlayer(text, quiet) {
   const AS = window.AtomSlides, W = AS.words, Voice = AS.Voice;
@@ -4203,8 +4238,11 @@ function voPlayer(text, quiet) {
   const q = function(sel) { return bar.querySelector(sel); };
   const fill = q('.vo-fill'), playBtn = q('.vo-play'), volBtn = q('.vo-vol-btn'), moreBtn = q('.vo-vol-more'), volRange = q('.vo-slim');
   let state = 'idle', token = 0, lastChar = 0, timer = null;
+  let gated = false, gateTimer = null;
   const hasText = !!(text && String(text).trim());
-  const api = { reset: function() { token += 1; clearTimer(); setFill(0); setState('idle'); lastChar = 0; } };
+  const api = { reset: function() { token += 1; clearTimer(); setFill(0); setState('idle'); lastChar = 0; gateOff(); } };
+  function gateOn(totalMs) { if (gated) return; gated = true; voGateAcquire(api); gateTimer = setTimeout(gateOff, Math.max(20000, totalMs * 1.6 + 10000)); }
+  function gateOff() { if (!gated) return; gated = false; clearTimeout(gateTimer); gateTimer = null; voGateRelease(api); }
 
   function clearTimer() { if (timer) { clearInterval(timer); timer = null; } }
   function setFill(f) { fill.style.width = Math.max(0, Math.min(1, f)) * 100 + '%'; }
@@ -4217,7 +4255,7 @@ function voPlayer(text, quiet) {
     if (s !== 'playing') clearTimer();
   }
   // from: a character position to start from; force: play even when the voice switch is off (the learner pressed play).
-  function begin(from, force) {
+  function begin(from, force, gate) {
     if (!hasText) return false;
     if (voPlayerCurrent && voPlayerCurrent !== api) voPlayerCurrent.reset();
     token += 1;
@@ -4226,8 +4264,8 @@ function voPlayer(text, quiet) {
     const ok = Voice.speak(text, force, {
       onstart: function() { if (mine === token) setState('playing'); },
       onprogress: function(f, ci) { if (mine !== token) return; gotBoundary = true; lastChar = ci; setFill(f); },
-      onend: function() { if (mine !== token) return; clearTimer(); setFill(1); setState('idle'); lastChar = 0; },
-      onerror: function() { if (mine !== token) return; clearTimer(); setState('idle'); }
+      onend: function() { if (mine !== token) return; clearTimer(); setFill(1); setState('idle'); lastChar = 0; gateOff(); },
+      onerror: function() { if (mine !== token) return; clearTimer(); setState('idle'); gateOff(); }
     }, from);
     if (!ok) { setState('idle'); return false; }
     voPlayerCurrent = api;
@@ -4236,6 +4274,7 @@ function voPlayer(text, quiet) {
     clearTimer();
     const started = Date.now(), total = Math.max(2, String(text).split(/\s+/).length / 2.6) * 1000;
     timer = setInterval(function() { if (!gotBoundary && state === 'playing') setFill(Math.min(0.95, (Date.now() - started) / total)); }, 250);   // a voice that reports no word positions: an estimate
+    if (gate) gateOn(total);   // the first, automatic play of a slide's voiceover: the question buttons and Continue wait for its end
     return true;
   }
 
@@ -4254,7 +4293,7 @@ function voPlayer(text, quiet) {
   setState('idle');
   voSyncView();
   voMuteInit(); voSyncMute();   // a new slide takes on the mute that is already set
-  if (!quiet && Voice.enabled) begin(0, false);
+  if (!quiet && Voice.enabled) begin(0, false, true);
   return api;
 }
 
@@ -4298,6 +4337,7 @@ function voKeepNavLast() {
   if (!voNavWrap || !voNavWrap.isConnected) return;
   const area = document.getElementById('chatMessages');
   if (area.lastElementChild !== voNavWrap) area.appendChild(voNavWrap);
+  if (window.RolePlay) RolePlay.place();   // the role play button stays just above it
 }
 
 // The pop-up questions of the slide on screen, and the button for a question of the learner's own. Each pre-written answer is written by the Master and
@@ -4326,7 +4366,7 @@ function voChips(questions, opts) {
   own.disabled = !!(opts && opts.disabled);
   own.onclick = voAskOwn;
   wrap.appendChild(own);
-  appendVoExtra(wrap, 'vo-chips');
+  return appendVoExtra(wrap, 'vo-chips');
 }
 // "I have a different question": the Trainer invites it (spoken when the voice is on), and the message box takes over.
 function voAskOwn() {
@@ -4380,6 +4420,7 @@ async function voAdvance(wrap, btn) {
     await voProgressChain;   // the server files progress under the slide it is on, so every save must land before it moves on
     const result = await slideMessage(voLastSlide ? 'finish' : 'continue');
     wrap.remove();
+    if (window.RolePlay) RolePlay.leaveSlide();   // this slide's role play button goes; the next slide draws its own if it is still on offer
     Array.prototype.forEach.call(document.querySelectorAll('#chatMessages .vo-chip'), function(c) { c.disabled = true; });
     voBusy = false;
     await handleBackendResult(result);
@@ -4403,7 +4444,7 @@ function voShowMaster(result, restored) {
   const card = window.AtomSlides.renderSlide(slide, { seed: sessionId, number: voSlideNumber });
   const slideRow = appendAtomRow(card.el);
   voPlayer(card.voice, !!restored);
-  voChips(slide.user_questions_or_objections, { tapped: restored && restored.tapped });
+  const chipsRow = voChips(slide.user_questions_or_objections, { tapped: restored && restored.tapped });
   if (restored) voShowChat(restored.chat);
   const act = slide.activity;
   if (act && typeof act === 'object' && act.activity_type) {
@@ -4412,6 +4453,8 @@ function voShowMaster(result, restored) {
   } else {
     voNavButton();
   }
+  // the role play check (on the technique slide) and its button (from the technique slide on, under the slide or under its activity)
+  if (window.RolePlay) RolePlay.onSlide(voSlideNumber, !(act && typeof act === 'object' && act.activity_type) ? null : (restored && restored.progress && restored.progress.done ? 'done' : 'open'));
   if (!restored) voPinSlideTop(slideRow);
 }
 // What the learner does in an activity is saved as they go, one save after another in order, so the server always has the latest step.
@@ -4430,9 +4473,12 @@ function voShowActivity(act, saved, quiet) {
   const activityRow = appendAtomRow(a.el);
   voPlayer(a.voice, quiet);
   if (!quiet) voPinSlideTop(activityRow);
+  if (window.RolePlay) RolePlay.activityDrawn();   // the role play button moves below the activity
+  const activityNumber = voSlideNumber;
   a.onDone(function() {
     if (a.response) { const reply = voTrainerSay(a.response, { quiet: quiet, suppressScroll: true }); voRevealBelow(reply && reply.closest('.msg')); }
     voNavButton();
+    if (window.RolePlay) RolePlay.activityDone(activityNumber);   // the activity is done: the role play button opens
   });
 }
 // Messages of the chat with the Trainer, as they were held ({ sender, text } each).
@@ -4451,11 +4497,13 @@ function voShowEarlierSlide(slide, number, chat, saved) {
   voChips(slide.user_questions_or_objections, { disabled: true });
   voShowChat(chat);
   const act = slide.activity;
-  if (!act || typeof act !== 'object' || !act.activity_type) return;
+  if (!act || typeof act !== 'object' || !act.activity_type) { if (window.RolePlay) RolePlay.placeResumed(number, false); return; }
   const a = window.AtomSlides.renderActivity(act, { seed: sessionId + ':' + number, progress: saved && saved.progress });
   appendAtomRow(a.el);
   voPlayer(a.voice, true);
   if (a.isFinished() && a.response) voTrainerSay(a.response, { quiet: true, suppressScroll: true });
+  if (window.RolePlay && a.isFinished()) RolePlay.activityDone(number);   // an activity finished earlier counts for the role play button too
+  if (window.RolePlay) RolePlay.placeResumed(number, false);   // the role play was started on this slide: it comes back right after it
 }
 
 // A session parked on a training slide gets its whole thread back, as it looked live: the cover (its button used), every slide before the parked
@@ -4486,6 +4534,7 @@ function voRestoreThread(data) {
   });
   const asked = new Set((chatOn[number] || []).filter(function(m) { return m.sender === 'user'; }).map(function(m) { return m.text; }));
   voShowMaster(data, { tapped: asked, chat: chatOn[number], progress: progress[String(number)] });
+  if (window.RolePlay) RolePlay.placeResumed(number, true);       // the parked slide's own role play (an unfinished one is live again)
   voShowChat(strays);
 }
 
@@ -4625,8 +4674,10 @@ async function handleVoResult(result) {
 // Conversation History of a slide atom: the chat before the slides, then the cover as a picture, each slide read-only with its voiceover as text
 // (no audio), the Trainer chat held on it and its finished activity, then the commitment slide -- greyed out with the saved words, or still open
 // when none was saved yet (that is where the bell's "Commitment submission awaited" item brings the learner).
+let voHistoryRolePlay = null;   // the role play of the session whose history is open (read before the history is drawn)
 function voRenderHistoryAtom(atom, sid, base) {
   const scroll = document.getElementById('historyOverlayScroll');
+  const rpTarget = { appendAtomRow: function(el) { const row = buildAtomRow(el); scroll.appendChild(row); return row; }, message: _renderHistoryMessage, append: function(n) { scroll.appendChild(n); }, width: function() { return scroll.clientWidth; } };
   const progress = atom.activity_progress || {};
   const chatOn = {}, strays = [];
   (atom.training_chat || []).forEach(function(m) {
@@ -4651,6 +4702,7 @@ function voRenderHistoryAtom(atom, sid, base) {
       if (a.voice && a.voice.trim()) _renderHistoryMessage('ai', a.voice);
       if (a.response) _renderHistoryMessage('ai', a.response);
     }
+    if (window.RolePlay && voHistoryRolePlay) RolePlay.drawHistory(voHistoryRolePlay, number, rpTarget);   // the role play started on this slide, read-only, right after it
   });
   showChat(strays);
   if (!atom.completed) return;
@@ -5977,6 +6029,7 @@ async function sendMessage() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text) return;
+  if (window.RolePlay && RolePlay.isActive()) { input.value = ''; autoResize(input); RolePlay.send(text); return; }   // a role play is going on: the answer goes to the other person, not the Trainer
 
   isWaiting = true;
   input.value = '';
@@ -6036,6 +6089,70 @@ window.addEventListener('beforeunload', function(e) {
     e.preventDefault();
     e.returnValue = '';
   }
+});
+
+// ─── The role play (assets/roleplay.js) ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// Everything the role play needs from this page, handed over once. The role play app is separate from the three tracks: the page asks it about a
+// session; the tracks are never told.
+if (window.RolePlay) RolePlay.configure({
+  base: function() { return ROLEPLAY_BASE; },
+  fetch: reportsFetch,
+  sessionId: function() { return sessionId; },
+  chat: function() { return document.getElementById('chatMessages'); },
+  appendAtomRow: appendAtomRow,
+  appendExtra: appendVoExtra,
+  appendError: appendError,
+  showTyping: function() { showTyping('role_play'); },
+  removeTyping: removeTyping,
+  busyBegin: chatWaitBegin,
+  busyEnd: chatWaitEnd,
+  setInput: function(enabled, placeholder) { setChatInputEnabled(enabled, placeholder); },
+  restoreInputText: function(text) { const i = document.getElementById('chatInput'); i.value = text; autoResize(i); },
+  hideNav: function() { if (voNavWrap && voNavWrap.isConnected) voNavWrap.style.display = 'none'; },
+  showNav: function(suffix) {   // the slide's own Continue / Finish; while feedback is on offer beside it, it reads "... without feedback"
+    if (!voNavWrap || !voNavWrap.isConnected) return;
+    voNavWrap.style.display = '';
+    const b = voNavWrap.querySelector('button');
+    if (b) {
+      if (b.dataset.orig === undefined) b.dataset.orig = b.textContent;
+      b.textContent = b.dataset.orig + (suffix || '');
+      if (!b.dataset.rpHook) { b.dataset.rpHook = '1'; b.addEventListener('click', function() { if (window.RolePlay) RolePlay.onAdvance(); }); }   // pressing it (whatever it starts next) closes an open offer of feedback
+    }
+  },
+  keepNavLast: voKeepNavLast,
+  navWrap: function() { return voNavWrap; },
+  scrollToEnd: scrollMessagesToBottom,
+  say: voSpeakQueued,
+  speakerButton: function(bubble) {   // the same small speaker every Trainer answer carries: one mute for the whole page
+    const W = window.AtomSlides.words, btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'vo-pbtn vo-vol-btn'; btn.title = W.muteLabel; btn.setAttribute('aria-label', W.muteLabel);
+    btn.innerHTML = VO_ICON.volumeOn + VO_ICON.volumeOff; btn.onclick = voToggleMute;
+    bubble.classList.add('vo-trb'); bubble.insertBefore(btn, bubble.firstChild);
+    voMuteInit(); voSyncMute();
+  },
+  voice: function() { return window.AtomSlides.Voice; },
+  words: function() { return window.AtomSlides.words; },
+  icons: function() { return VO_ICON; },
+  takeAudio: function(api) { if (voPlayerCurrent && voPlayerCurrent !== api) voPlayerCurrent.reset(); voPlayerCurrent = api; },
+  toggleMute: voToggleMute,
+  setVolume: voSetVolume,
+  syncMute: voSyncMute,
+  syncView: voSyncView,
+  toggleCc: function(btn) { voCcUser = !(voCcUser === null ? !voVoiceHeard() : voCcUser); voHoldView(voSyncViewNow, btn); },
+  formatTime: formatTime,
+  userAvatar: _renderUserAvatar,
+  chips: (function() {   // the slide's pop-up questions are locked while a role play is going on, and come back as they were when it ends
+    let locked = [];
+    return function(disable) {
+      if (disable) {
+        locked = Array.prototype.filter.call(document.querySelectorAll('#chatMessages .vo-chips .vo-chip'), function(b) { return !b.disabled && !b.classList.contains('vo-chip-rp'); });
+        locked.forEach(function(b) { b.disabled = true; });
+      } else {
+        locked.forEach(function(b) { if (b.isConnected) b.disabled = false; });
+        locked = [];
+      }
+    };
+  })(),
 });
 
 initSession();

@@ -1,0 +1,152 @@
+/* roleplay.css -- the role play on the learner's page (the "Do a role play" button, the conversation block, its warnings, and the four feedback slide designs).
+   Written 2026-11-12 from the approved previews. Only this file styles the role play; the slide frame itself and the player under it come from atom_slides.css and
+   chat.html, so the feedback slide looks and scales like every training slide. Class names of the feedback slide start with rf / rpf so they cannot collide with the page's. */
+
+/* the new chip: the same chip, but yellow (the question buttons are green), so it is easy to find. The selector is long on purpose: the page's own chip style is loaded after this file. */
+.chat-messages .vo-extra .vo-chip.vo-chip-rp { border-color:var(--gold2); color:#6b5f04; font-weight:600; display:inline-flex; align-items:center; gap:0.45em; background:rgba(228,202,10,0.2); margin-left:0.5em; }   /* yellow, so it stands apart from the green question buttons */
+.chat-messages .vo-extra.vo-rpoffer .vo-chip.vo-chip-rp { margin-left:0; }   /* in its own row (under the slide or its activity), so it starts at the row's edge */
+.chat-messages .vo-extra .vo-chip.vo-chip-rp.rp-locked { border-color:#c9ccd1; color:#8a8f98; background:#eceef1; cursor:not-allowed; opacity:1; }   /* grey until the activity is done */
+.chat-messages .vo-extra .vo-chip.vo-chip-rp.rp-locked::after { background:#9aa0a8; }
+.chat-messages .vo-extra .vo-chip.vo-chip-rp:hover:not(:disabled) { background:rgba(228,202,10,0.38); border-color:#8f7f06; }
+.chat-messages .vo-extra .vo-chip.vo-chip-rp svg { width:1.1em; height:1.1em; }
+.chat-messages .vo-extra .vo-chip.rp-new-flag::after { content:"NEW"; font-size:0.62em; letter-spacing:0.08em; background:var(--night); color:#fff; border-radius:0.6em; padding:0.1em 0.5em; margin-left:0.3em; }
+
+/* the role play block */
+.rp-block { margin:0.4rem 0 0.9rem 42px; max-width:1000px; border-left:3px solid #d9b84a; background:rgba(228,202,10,0.06); border-radius:0 12px 12px 0; padding:0.7rem 0.9rem 0.4rem; box-sizing:border-box; }
+.rp-head { display:flex; align-items:baseline; gap:0.6rem; flex-wrap:wrap; font-family:'Poppins',sans-serif; margin-bottom:0.5rem; }
+.rp-head b { font-size:0.8rem; letter-spacing:0.08em; text-transform:uppercase; color:#7d6f05; }
+.rp-head span { font-size:0.78rem; color:var(--night3); }
+.rp-instr { background:#fff; border:1px solid rgba(22,32,46,0.1); border-radius:10px; padding:0.55rem 0.9rem; font-family:'Poppins',sans-serif; font-size:0.85rem; color:var(--night2); margin-bottom:0.7rem; }
+.rp-instr ul { margin:0.2rem 0 0; padding-left:1.1rem; } .rp-instr li { margin-bottom:0.15rem; }
+.rp-block .msg { margin-left:0; }
+.chat-messages .bubble-rp { background:#fffbe6; border:1px solid rgba(217,184,74,0.55); color:var(--night2); }
+.rp-who { font-family:'Poppins',sans-serif; font-size:0.74rem; font-weight:700; color:#7d6f05; margin-bottom:0.15rem; }
+.rp-spk { float:inline-end; margin-inline-start:0.6rem; border:none; background:none; color:var(--night2); cursor:pointer; width:1.9em; height:1.9em; border-radius:50%; padding:0; display:flex; align-items:center; justify-content:center; }
+.rp-spk:hover { background:rgba(22,32,46,0.07); } .rp-spk svg { width:1.05em; height:1.05em; }
+.rp-sys { font-family:'Poppins',sans-serif; font-size:0.8rem; color:var(--night3); text-align:center; background:#fff; border:1px dashed rgba(22,32,46,0.25); border-radius:10px; padding:0.45rem 0.8rem; margin:0.5rem 0 0.6rem; }
+.rp-actions { display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.4rem 0 0.5rem; align-items:center; }
+.btn-end { font-family:'Poppins',sans-serif; font-size:0.85rem; font-weight:600; color:var(--night); background:#fff; border:1.5px solid var(--night2); border-radius:20px; padding:0.55rem 1.3rem; cursor:pointer; }
+.btn-end:hover { background:var(--night); color:#fff; }
+.btn-soft { font-family:'Poppins',sans-serif; font-size:0.85rem; font-weight:600; color:var(--night2); background:#fff; border:1.5px solid rgba(22,32,46,0.25); border-radius:20px; padding:0.55rem 1.3rem; cursor:pointer; }
+.btn-soft:hover { border-color:var(--night2); }
+.rp-block .rp-wait { font-family:'Poppins',sans-serif; font-size:0.8rem; color:var(--night3); margin:0.3rem 0 0.5rem; }
+.rp-feedback-note { margin:0.5rem 0 0.2rem 42px; font-family:'Poppins',sans-serif; font-size:0.74rem; color:var(--night3); }
+.rp-hist-title { margin:0.6rem 0 0.2rem 42px; font-family:'Poppins',sans-serif; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; font-weight:700; color:#7d6f05; }
+
+/* ================= what is new: the inside of the feedback slide =================
+   Rules every design follows: every point STAYS on the slide once it has appeared; room for all points is kept from the start (nothing jumps);
+   the point being spoken is lit; any point can be clicked to hear it again; "what went well" (green, thumbs up) and "what could be even better"
+   (gold, light bulb) are told apart quietly but clearly. Each design has its own background colour. */
+.atom-root .rpf-body { padding:0; height:490px; position:relative; overflow:hidden; --fs:1.2rem; --pad:0.62rem; }
+.atom-root .rpf-body.d5, .atom-root .rpf-body.d6 { --fs:1.06rem; --pad:0.5rem; }
+.atom-root .rpf-body.d7, .atom-root .rpf-body.d8 { --fs:0.95rem; --pad:0.4rem; }
+.atom-root .rpf-body.d9, .atom-root .rpf-body.d10 { --fs:0.86rem; --pad:0.3rem; }
+.atom-root .still *, .atom-root.still * { animation-duration:0s !important; animation-delay:0s !important; transition-duration:0s !important; transition-delay:0s !important; }
+.atom-root .noanim .wave, .atom-root .noanim .rfcol.right { transition:none !important; }
+.atom-root .ico { display:inline-flex; width:1.15em; height:1.15em; flex:0 0 auto; } .atom-root .ico svg { width:100%; height:100%; }
+.atom-root .rflab { display:flex; align-items:center; gap:0.5rem; font-size:0.74rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; }
+.atom-root .rflab.good { color:var(--green2); } .atom-root .rflab.dev { color:#7d6f05; }
+.atom-root .rflab .cnt { font-weight:600; letter-spacing:0; opacity:0.75; text-transform:none; }
+.atom-root .rfghost { opacity:0.3; transition:opacity 0.7s ease; }
+.atom-root .hh.rfhid { visibility:hidden; }
+.atom-root .rfnum { flex:0 0 1.6em; height:1.6em; border-radius:50%; font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.atom-root .k-good .rfnum { background:var(--green); color:#fff; } .atom-root .k-dev .rfnum { background:var(--gold); color:var(--night); }
+.atom-root .rfeq { display:none; gap:3px; align-items:flex-end; height:1.1em; flex:0 0 auto; }
+.atom-root .rfeq i { width:3px; height:30%; border-radius:2px; background:var(--green2); } .atom-root .k-dev .rfeq i { background:var(--gold2); }
+.atom-root .speaking .cur .rfeq { display:flex; } .atom-root .speaking .cur .rfeq i { animation:rpEq 0.9s ease-in-out infinite; }
+.atom-root .rfeq i:nth-child(2) { animation-delay:0.2s !important; } .atom-root .rfeq i:nth-child(3) { animation-delay:0.4s !important; }
+@keyframes rpEq { 0%,100% { height:25%; } 50% { height:100%; } }
+@keyframes rpUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+@keyframes rpPop { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:none; } }
+@keyframes rpFade { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+@keyframes rpLeft { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:none; } }
+.atom-root .rpf-body [data-i] { cursor:pointer; }
+
+/* ---- Option A · Index + focus (kept). Background: a soft blue. The index on the left keeps every point; the point being spoken is large on the right. ---- */
+.atom-root .A { position:absolute; inset:0; display:grid; grid-template-columns:318px 1fr; background:linear-gradient(155deg,#eaf1fc,#d8e4f6); }
+.atom-root .A .side { background:#fff; border-right:1px solid var(--line); padding:1rem 0.95rem; display:flex; flex-direction:column; gap:0.75rem; overflow:hidden; }
+.atom-root .A .sec { display:flex; flex-direction:column; gap:0.4rem; border-radius:12px; padding:0.6rem 0.55rem 0.55rem; }
+.atom-root .A .sec.good { background:rgba(58,181,74,0.11); } .atom-root .A .sec.dev { background:rgba(228,202,10,0.16); }
+.atom-root .A .sec .rflab { padding:0 0.25rem 0.1rem; }
+.atom-root .A .rfix { border-radius:9px; padding:var(--pad) 0.6rem; font-size:calc(var(--fs) * 0.68); line-height:1.35; display:flex; gap:0.55rem; align-items:center; background:#fff; border:1px solid var(--line); color:var(--night2); }
+.atom-root .A .rfix .rfnum { font-size:0.9em; }
+.atom-root .A .rfix .tx { flex:1; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.atom-root .A .rfix.next { background:transparent; border:1.5px dashed var(--grey2); color:var(--night3); } .atom-root .A .rfix.next .rfnum { background:transparent; border:1.5px solid rgba(4,26,64,0.25); color:var(--night3); }
+.atom-root .A .rfix.cur { background:var(--night); border-color:var(--night); color:#fff; font-weight:600; } .atom-root .A .rfix.cur .rfnum { background:#fff; color:var(--night); } .atom-root .A .rfix.cur .rfeq i { background:#fff; }
+.atom-root .A .rfix.done.in { animation:rpFade 0.6s ease both; }
+.atom-root .A .main { padding:2rem 2.6rem; display:flex; flex-direction:column; justify-content:center; }
+.atom-root .A .focus { display:flex; flex-direction:column; gap:1.2rem; }
+.atom-root .A .focus.pop { animation:rpPop 0.6s cubic-bezier(.2,.9,.3,1.2) both; }
+.atom-root .A .rfbig { width:70px; height:70px; border-radius:21px; background:var(--green); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 18px rgba(58,181,74,0.3); }
+.atom-root .A .k-dev .rfbig { background:var(--gold); color:var(--night); box-shadow:0 8px 18px rgba(228,202,10,0.35); }
+.atom-root .A .rfbig .ico { width:36px; height:36px; }
+.atom-root .A .ost { font-size:2rem; line-height:1.28; font-weight:700; color:var(--night); }
+.atom-root .A .hint { font-size:1.05rem; color:var(--night3); line-height:1.5; max-width:30ch; }
+.atom-root .A .hint .rfbig { background:rgba(4,26,64,0.08); color:var(--night3); box-shadow:none; margin-bottom:1rem; }
+
+/* ---- Option B · Two fields. No boxes: the whole slide is a green field; when the better-next-time points begin, a gold field sweeps in from the right
+        behind a wavy edge. The points are plain text on the colour. ---- */
+.atom-root .B { position:absolute; inset:0; background:linear-gradient(150deg,#dcf3df,#bfe7c7); overflow:hidden; }
+.atom-root .B .wave { position:absolute; inset:0; width:100%; height:100%; transform:translateX(102%); transition:transform 1.2s cubic-bezier(.3,.7,.2,1); }
+.atom-root .B.gold .wave { transform:none; }
+.atom-root .B .rfcol { position:absolute; top:0; bottom:0; padding:1.3rem 0 1rem; display:flex; flex-direction:column; justify-content:center; gap:0.35rem; }
+.atom-root .B .mark { position:absolute; width:210px; height:210px; opacity:0.11; color:var(--night); pointer-events:none; } .atom-root .B .mark svg { width:100%; height:100%; }
+.atom-root .B .mark.right { transition:opacity 0.8s ease 0.5s; opacity:0; } .atom-root .B.gold .mark.right { opacity:0.13; }
+.atom-root .noanim .mark.right { transition:none !important; }
+.atom-root .B .rfcol.right { transition:opacity 0.8s ease 0.5s; opacity:0; } .atom-root .B.gold .rfcol.right { opacity:1; }
+.atom-root .B .rfcol .rflab { margin-bottom:0.45rem; font-size:0.78rem; }
+.atom-root .B .rfitem { display:flex; align-items:center; gap:0.5rem; padding:var(--pad) 0.6rem var(--pad) 0; border-bottom:1px solid rgba(4,26,64,0.12); font-size:var(--fs); line-height:1.3; font-weight:600; color:var(--night); border-left:4px solid transparent; padding-left:0.55rem; transition:background 0.4s ease, border-color 0.4s ease; }
+.atom-root .B .rfitem .bn { flex:0 0 2.1rem; font-size:1.7em; font-weight:700; color:rgba(4,26,64,0.2); line-height:1; }
+.atom-root .B .rfitem .txt { flex:1; }
+.atom-root .B .rfitem.in { animation:rpUp 0.65s cubic-bezier(.2,.8,.2,1) both; }
+.atom-root .B .rfitem.cur { background:linear-gradient(90deg, rgba(255,255,255,0.62), rgba(255,255,255,0)); } .atom-root .B .rfitem.cur.k-good { border-left-color:var(--green2); } .atom-root .B .rfitem.cur.k-dev { border-left-color:#b79d00; }
+.atom-root .B .rfitem.cur .bn { color:var(--night); }
+
+/* ---- Option C · Timeline. White. A path runs left to right; every point is a stop on it. The path is green, then turns gold where the better-next-time points begin. ---- */
+.atom-root .T { position:absolute; inset:0; background:#fff; }
+.atom-root .T .axis { position:absolute; left:50px; width:900px; top:241px; height:8px; border-radius:4px; background:var(--grey1); }
+.atom-root .T .rfprog { position:absolute; top:241px; height:8px; border-radius:4px; width:0; transition:width 0.9s ease; }
+.atom-root .T .rfprog.good { background:var(--green); } .atom-root .T .rfprog.dev { background:var(--gold); }
+.atom-root .T .bound { position:absolute; top:228px; height:34px; width:2px; background:rgba(22,32,46,0.18); border-radius:1px; }
+.atom-root .T .seclab { position:absolute; top:14px; }
+.atom-root .T .tn { position:absolute; top:245px; width:30px; height:30px; margin:-15px 0 0 -15px; border-radius:50%; background:#fff; border:2px solid var(--grey2); color:var(--grey3); font-size:0.78rem; font-weight:700; display:flex; align-items:center; justify-content:center; transition:all 0.4s ease; }
+.atom-root .T .tn.reached.k-good { background:var(--green); border-color:var(--green); color:#fff; } .atom-root .T .tn.reached.k-dev { background:var(--gold); border-color:var(--gold); color:var(--night); }
+.atom-root .T .tn.cur { box-shadow:0 0 0 6px rgba(4,26,64,0.14); }
+.atom-root .T .stem { position:absolute; width:2px; height:21px; margin-left:-1px; background:var(--grey2); }
+.atom-root .T .rfpt { position:absolute; padding:var(--pad) 0.75rem; border-radius:12px; background:#fff; border:1px solid var(--line); font-size:calc(var(--fs) * 0.9); line-height:1.32; font-weight:600; color:var(--night); display:flex; gap:0.5rem; align-items:flex-start; box-shadow:0 2px 8px rgba(22,32,46,0.06); }
+.atom-root .T .rfpt.k-good { border-top:4px solid var(--green); } .atom-root .T .rfpt.k-dev { border-top:4px solid var(--gold); }
+.atom-root .T .rfpt .txt { flex:1; } .atom-root .T .rfpt .rfnum { flex-basis:1.5em; height:1.5em; }
+.atom-root .T .rfpt.in { animation:rpPop 0.6s cubic-bezier(.2,.9,.3,1.2) both; } .atom-root .T .stem.in { animation:rpFade 0.4s ease both; }
+.atom-root .T .rfpt.cur.k-good { box-shadow:0 0 0 3px rgba(58,181,74,0.22); } .atom-root .T .rfpt.cur.k-dev { box-shadow:0 0 0 3px rgba(228,202,10,0.3); }
+
+/* ---- Option D · Coach thread. Dark navy. Each point arrives as a message from the coach, like the chat; a small divider says when the better-next-time points begin. ---- */
+.atom-root .H { position:absolute; inset:0; padding:0.9rem 2.2rem; display:flex; flex-direction:column; gap:0.45rem; background:radial-gradient(circle at 8% 0%, rgba(58,181,74,0.25), transparent 42%), radial-gradient(circle at 96% 100%, rgba(228,202,10,0.2), transparent 40%), var(--night); }
+.atom-root .H .dv { display:flex; align-items:center; gap:0.8rem; margin:0.2rem 0 0.05rem; }
+.atom-root .H .dv .line { flex:1; height:1px; background:rgba(255,255,255,0.16); }
+.atom-root .H .dv .rflab { padding:0.28rem 0.8rem; border-radius:999px; }
+.atom-root .H .dv .rflab.good { background:rgba(58,181,74,0.22); color:#8be898; } .atom-root .H .dv .rflab.dev { background:rgba(228,202,10,0.2); color:var(--gold); }
+.atom-root .H .rfmsg { display:flex; align-items:flex-end; max-width:92%; }
+.atom-root .H .av { flex:0 0 34px; height:34px; border-radius:50%; background:var(--green); color:var(--night); font-weight:700; font-size:1rem; display:flex; align-items:center; justify-content:center; }
+.atom-root .H .rfbub { display:flex; align-items:center; gap:0.65rem; padding:var(--pad) 1rem; border-radius:18px 18px 18px 5px; font-size:var(--fs); line-height:1.32; font-weight:600; transition:box-shadow 0.3s ease; }
+.atom-root .H .k-good .rfbub { background:rgba(58,181,74,0.2); border:1px solid rgba(58,181,74,0.55); color:#effcf1; } .atom-root .H .k-dev .rfbub { background:rgba(228,202,10,0.17); border:1px solid rgba(228,202,10,0.55); color:#fff8d2; }
+.atom-root .H .k-good .rfnum { background:#8be898; color:var(--night); } .atom-root .H .k-dev .rfnum { background:var(--gold); color:var(--night); }
+.atom-root .H .k-good .rfeq i { background:#8be898; } .atom-root .H .k-dev .rfeq i { background:var(--gold); }
+.atom-root .H .rfmsg.in { animation:rpUp 0.6s cubic-bezier(.2,.8,.2,1) both; }
+.atom-root .H .rfmsg.cur .rfbub { box-shadow:0 0 0 3px rgba(255,255,255,0.28); }
+
+/* the largest case (9 or 10 points): everything tightens so all of it still fits */
+.atom-root .rpf-body.d9 .A, .atom-root .rpf-body.d10 .A { grid-template-columns:345px 1fr; }
+.atom-root .rpf-body.d9 .A .side, .atom-root .rpf-body.d10 .A .side { padding:0.65rem 0.7rem; gap:0.45rem; }
+.atom-root .rpf-body.d9 .A .sec, .atom-root .rpf-body.d10 .A .sec { padding:0.4rem 0.45rem 0.4rem; gap:0.25rem; }
+.atom-root .rpf-body.d9 .A .rfix, .atom-root .rpf-body.d10 .A .rfix { padding:0.14rem 0.5rem; font-size:0.66rem; line-height:1.28; -webkit-line-clamp:2; }
+.atom-root .rpf-body.tight .A .rfix { -webkit-line-clamp:1 !important; padding:0.12rem 0.5rem; }
+.atom-root .rpf-body.tight .A .side { padding:0.5rem 0.6rem; gap:0.3rem; } .atom-root .rpf-body.tight .A .sec { padding:0.3rem 0.4rem; gap:0.18rem; }   /* last resort if a long list still does not fit: one line each (the full text is on the right when a point is chosen) */
+.atom-root .rpf-body.d9 .B .rfitem, .atom-root .rpf-body.d10 .B .rfitem { padding-top:0.2rem; padding-bottom:0.2rem; } .atom-root .rpf-body.d9 .B .rfcol .rflab, .atom-root .rpf-body.d10 .B .rfcol .rflab { margin-bottom:0.2rem; }
+.atom-root .rpf-body.d9 .H, .atom-root .rpf-body.d10 .H { padding:0.55rem 2.2rem; gap:0.26rem; }
+.atom-root .rpf-body.d9 .H .dv, .atom-root .rpf-body.d10 .H .dv { margin:0.05rem 0; }
+.atom-root .rpf-body.d9 .H .rfbub, .atom-root .rpf-body.d10 .H .rfbub { padding:0.2rem 0.9rem; }
+/* a phone: slides are not scaled there, so the feedback slide becomes a plain flowing list (the Coach thread) */
+.atom-root .rpf-body.rpf-narrow { height:auto; min-height:0; }
+.atom-root .rpf-body.rpf-narrow .H { position:relative; inset:auto; padding:0.9rem 0.9rem 1rem; }
+.atom-root .rpf-body.rpf-narrow .H .rfmsg { max-width:100%; }
+

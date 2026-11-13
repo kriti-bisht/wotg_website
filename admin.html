@@ -290,6 +290,36 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .glossary-def { font-size:0.8rem; color:var(--grey3); margin-bottom:0.6rem; max-width:90ch; }
 .init-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; }
 
+/* ---- Guided tour (Kriti, 2026-11-13): the same look and behavior as the user side's tour in chat.html ---- */
+.tour-start-btn {
+  display:flex; align-items:center; gap:0.4rem; font-family:'Poppins',sans-serif; font-size:0.78rem; font-weight:600;
+  color:var(--gold); background:rgba(228,202,10,0.12); border:1.5px solid rgba(228,202,10,0.5); border-radius:20px;
+  padding:0.5rem 1rem; cursor:pointer; transition:background 0.15s, transform 0.15s; margin-right:1rem; white-space:nowrap;
+}
+.tour-start-btn:hover { background:rgba(228,202,10,0.2); transform:translateY(-1px); }
+.tour-start-btn svg { width:14px; height:14px; }
+.tour-popup {
+  position:fixed; z-index:600; width:280px; background:rgba(255,250,222,0.94); backdrop-filter:blur(10px) saturate(160%);
+  -webkit-backdrop-filter:blur(10px) saturate(160%);
+  border:1.5px solid var(--gold); border-radius:14px; padding:1rem 1.1rem 1.05rem;
+  box-shadow:0 14px 34px rgba(0,0,0,0.35); display:none; transition:top 0.2s ease, left 0.2s ease; --arrow-left:32px;
+}
+.tour-popup.visible { display:block; }
+.tour-popup::before {
+  content:''; position:absolute; top:-7px; left:var(--arrow-left); width:12px; height:12px;
+  background:rgba(255,250,222,0.94); border-left:1.5px solid var(--gold); border-top:1.5px solid var(--gold);
+  transform:rotate(45deg);
+}
+.tour-popup.arrow-down::before { top:auto; bottom:-7px; border-left:none; border-top:none; border-right:1.5px solid var(--gold); border-bottom:1.5px solid var(--gold); }
+.tour-popup-step { font-size:0.66rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--gold2); margin-bottom:0.35rem; }
+.tour-popup-title { font-size:0.92rem; font-weight:700; color:var(--night); margin-bottom:0.4rem; }
+.tour-popup-body { font-size:0.78rem; line-height:1.55; color:var(--night2); margin-bottom:0.9rem; }
+.tour-popup-actions { display:flex; align-items:center; justify-content:space-between; gap:0.6rem; }
+.tour-btn-got-it { font-family:'Poppins',sans-serif; font-size:0.76rem; font-weight:700; color:var(--night); background:var(--gold); border:none; border-radius:16px; padding:0.45rem 1rem; cursor:pointer; transition:background 0.15s; }
+.tour-btn-got-it:hover { background:#f0d838; }
+.tour-btn-dismiss { font-family:'Poppins',sans-serif; font-size:0.72rem; font-weight:600; color:var(--night2); background:none; border:none; cursor:pointer; text-decoration:underline; padding:0.45rem 0.2rem; transition:color 0.15s; }
+.tour-btn-dismiss:hover { color:var(--night); }
+
 @media (max-width: 960px) {
   .stat-grid { grid-template-columns:repeat(2,1fr); }
   .form-grid { grid-template-columns:1fr; }
@@ -437,6 +467,22 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .adopt-bar-single:hover { outline:2px solid var(--night2); outline-offset:1px; }
 .adopt-hover-num { position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:4px; font-size:0.64rem; font-weight:700; color:var(--night2); white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.12s; font-variant-numeric:tabular-nums; z-index:5; }
 .adopt-hover-num.teal { color:var(--teal); }
+/* Applied Learning's three-colour bars (Kriti, 2026-11-13). Deep green and the striped green are the exact ones on the Business Impact page's Skill Utilization chart. */
+.imp-stack { background:none; display:flex; flex-direction:column-reverse; overflow:hidden; }
+.imp-seg { width:100%; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:700; }
+.imp-seg.great { background:#1f7a30; color:#fff; }
+.imp-seg.some { background-color:#cfe8d3; background-image:repeating-linear-gradient(135deg, rgba(31,122,48,0.28) 0 6px, transparent 6px 12px); color:#1f7a30; }
+.imp-seg.land { background:#eba9a5; color:#8c2f2f; }
+.imp-tip { position:absolute; top:50%; transform:translateY(-50%); background:var(--night); color:#fff; font-size:0.7rem; line-height:1.5; border-radius:8px; padding:7px 10px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.12s; z-index:8; }
+.imp-tip.right { left:calc(50% + 30px); }
+.imp-tip.left { right:calc(50% + 30px); }
+.imp-tip-note { color:#cdd6e4; font-size:0.64rem; }
+.adopt-bar-col:hover { z-index:9; }   /* the hovered column comes to the front, so its card is never under the next bar */
+.adopt-bar-col:hover .imp-tip { opacity:1; }
+.adopt-legend i.imp-great { background:#1f7a30; }
+.adopt-legend i.imp-some { background-color:#cfe8d3; background-image:repeating-linear-gradient(135deg, rgba(31,122,48,0.28) 0 2px, transparent 2px 4px); }
+.adopt-legend i.imp-land { background:#eba9a5; }
+.adopt-legend i.imp-line { width:16px; height:3px; border-radius:2px; background:var(--night); }
 /* the line's own hover label sits BELOW its dot, not above (Kriti, 2026-10-06: "the label should show
    below the line") -- the dot usually sits near the top of the chart (close to 100%), so a label floating
    above it has nowhere safe to render; .adopt-chart-main's overflow-x:auto implicitly makes its OTHER
@@ -447,6 +493,8 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .adopt-bar-single:hover .adopt-hover-num { opacity:1; }
 .adopt-line-dot { position:absolute; left:50%; width:10px; height:10px; margin-left:-5px; margin-bottom:-5px; border-radius:50%; background:var(--teal); border:2px solid #fff; box-shadow:0 0 0 1px rgba(4,26,64,0.12); cursor:pointer; z-index:4; }
 .adopt-line-dot { cursor:default; }
+.adopt-line-dot.imp { background:var(--night); }
+.adopt-line-dot.imp .adopt-line-label { color:var(--night); }
 /* Success Rate labels are ALWAYS visible (Kriti, 2026-10-07: "don't give them hover... show that value and make
    sure it doesn't get cut by the line itself"). A solid white pill sits ABOVE the line in stacking order, so the
    line can never run through the digits; which side of the dot it sits on is chosen per point in JS. */
@@ -893,6 +941,7 @@ header.topbar { background:var(--night); position:sticky; top:0; z-index:110; }
 .report-row.clickable:hover { transform:translateY(-4px); box-shadow:0 16px 30px rgba(4,26,64,0.16); }
 .report-row-text { min-width:0; }
 .report-row-text h3 { font-size:1.22rem; font-weight:700; letter-spacing:-0.01em; color:var(--night); margin-bottom:0.4rem; }
+.report-row-text h3 .soon { display:inline-block; vertical-align:middle; margin-left:0.6rem; font-size:0.62rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--night); background:var(--gold); border-radius:6px; padding:0.15rem 0.5rem; }
 .report-row-text p { font-size:0.83rem; color:#7e8a9c; line-height:1.65; }
 .report-row-index { width:92px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:3.8rem; font-weight:700; color:#e2e7ed; }
 .report-row.clickable .report-row-index { color:var(--green); }   /* the live reports: a green number (Kriti, 2026-10-09) */
@@ -955,7 +1004,7 @@ button.combo-click { border:0; font-family:inherit; cursor:pointer; width:100%; 
 .cap-card p { font-size:0.76rem; color:var(--grey3); line-height:1.5; }
 .cap-card .cap-foot { margin-top:0.7rem; font-size:0.7rem; color:var(--grey3); }
 .cap-hint { font-size:0.8rem; color:var(--grey3); margin:-0.3rem 0 0.9rem; }
-.cap-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1.1rem; margin-bottom:1.6rem; }
+.cap-kpis { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.1rem; margin-bottom:1.6rem; }
 .cap-kpi { background:var(--white); border-radius:12px; padding:1.1rem 1.1rem 1rem; border:1px solid rgba(4,26,64,0.05); border-left:6px solid var(--capc); box-shadow:0 6px 20px rgba(4,26,64,0.08); cursor:pointer; text-align:left; font-family:inherit; min-width:0; transition:transform 0.2s ease, box-shadow 0.2s ease; }
 .cap-kpi:hover, .cap-kpi:focus-visible { transform:translateY(-5px); box-shadow:0 16px 30px rgba(4,26,64,0.16); outline:none; }
 .cap-kpi.on { box-shadow:0 0 0 3px var(--teal), 0 10px 24px rgba(4,26,64,0.12); }
@@ -996,6 +1045,32 @@ button.combo-click { border:0; font-family:inherit; cursor:pointer; width:100%; 
 .cap-bar-val small { display:block; font-size:0.58rem; font-weight:600; color:var(--grey3); }
 .cap-lab { font-size:0.6rem; color:var(--night2); text-align:center; margin-top:0.4rem; line-height:1.25; white-space:nowrap; }
 .cap-xtitle { text-align:center; font-size:0.68rem; color:var(--grey3); margin:0.5rem 0 0.2rem; }
+/* Success Rate's big chart (Kriti, 2026-11-13): bars split great / some / did not land (the .imp-seg colors), a navy line for the success rate on a right-hand 0-100% axis */
+.cap-bar.cap-imp-stack { background:none; display:flex; flex-direction:column-reverse; overflow:hidden; }
+.cap-imp-dot { position:absolute; left:50%; width:10px; height:10px; margin:0 0 -5px -5px; border-radius:50%; background:var(--night); border:2px solid #fff; box-shadow:0 0 0 1px rgba(4,26,64,0.15); z-index:3; pointer-events:none; }
+.cap-imp-dot span { position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:4px; background:#fff; color:var(--night); font-size:0.62rem; font-weight:700; padding:0 5px; border-radius:8px; box-shadow:0 1px 5px rgba(4,26,64,0.18); white-space:nowrap; }
+.cap-yt-r { position:absolute; right:-40px; width:34px; text-align:left; font-size:0.62rem; color:var(--grey3); transform:translateY(50%); }
+/* Reflector Insights (Kriti, 2026-11-13): the product demo's ranking page and Reflector Dashboard */
+.rh-top { display:flex; gap:1.4rem; align-items:stretch; margin-bottom:1.8rem; }
+.rh-control { display:flex; align-items:center; gap:0.6rem; }
+.rh-control-label { font-size:0.78rem; color:var(--grey3); font-weight:600; }
+.rh-select { min-width:150px; }
+.rh-rank-list { display:flex; flex-direction:column; gap:0.6rem; }
+.rank-row { display:flex; align-items:center; gap:0.8rem; cursor:pointer; }
+.rank-row:hover .rank-label { color:var(--night); font-weight:600; }
+.rank-position { width:18px; text-align:right; font-weight:700; color:var(--grey3); font-size:0.78rem; flex-shrink:0; }
+.rank-label { width:190px; flex-shrink:0; font-size:0.82rem; color:var(--night2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rank-bar-track { flex:1; height:24px; background:var(--grey1); border-radius:6px; overflow:hidden; }
+.rank-bar-fill { height:100%; border-radius:6px; display:flex; align-items:center; justify-content:flex-end; min-width:2.2rem; transition:width 0.3s ease; background:var(--teal); }
+.rank-value { font-size:0.72rem; font-weight:700; color:#fff; padding:0 0.55rem; white-space:nowrap; text-shadow:0 0 3px rgba(0,0,0,0.25); }
+.rh-count-tag { font-size:0.68rem; font-weight:700; color:var(--grey3); background:var(--grey1); padding:0.22rem 0.6rem; border-radius:10px; }
+.reflector-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:0.65rem; }
+.reflector-chip { background:var(--white); border-radius:10px; padding:0.75rem 0.9rem; border:1px solid rgba(4,26,64,0.05); border-left:4px solid transparent; box-shadow:0 3px 10px rgba(4,26,64,0.05); position:relative; transition:transform 0.2s ease, box-shadow 0.2s ease; cursor:pointer; }
+.reflector-chip:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(4,26,64,0.14); }
+.reflector-chip-label { font-size:0.8rem; font-weight:600; color:var(--night); line-height:1.3; margin-bottom:0.2rem; }
+.reflector-chip-cap { font-size:0.68rem; color:var(--grey3); }
+.key-obs-card.ref-obs { position:static; margin-bottom:1.6rem; }
+@media (max-width:900px) { .rh-top { flex-direction:column; } .rank-label { width:120px; } }
 .cap-empty { text-align:center; color:var(--grey3); font-size:0.84rem; padding:2.5rem 0; }
 @media (max-width:1180px) { .cap-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .cap-grid { grid-template-columns:repeat(2,1fr); } }
 @media (max-width:640px) { .cap-kpis, .cap-grid { grid-template-columns:1fr; } }
@@ -1016,6 +1091,10 @@ button.combo-click { border:0; font-family:inherit; cursor:pointer; width:100%; 
       <div class="sub" id="helloSub">Manage users, business units and learning for your organization</div>
     </div>
     <div class="header-spacer"></div>
+    <button class="tour-start-btn" onclick="startTour()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2 1.5-2 3.5"/><path d="M12 17h.01"/></svg>
+      Start Tour
+    </button>
     <div class="admin-profile">
       <div class="admin-profile-text" style="text-align:right">
         <div class="name" id="profName"></div>
@@ -3276,6 +3355,10 @@ function formatPeriodLabel(period, apiPeriod, fiscalStartMonth) {
   }
   return period;
 }
+// The first column's label is centered under a bar that sits near the chart's left edge, so a wide label (a quarter's "Q3 '26 (Jul–Sep)") sticks out to
+// the left of the chart and the chart's own scroll box cuts it off. labelRoom() is the room the first column needs on its left so that label shows in full
+// (Kriti, 2026-11-13: "the first quarter's label is not showing"). Same width rule the charts already use to space their columns (6.5px per character).
+function labelRoom(maxLabelChars, colW) { return Math.max(0, Math.ceil(maxLabelChars * 6.5 / 2 - colW / 2 - 4.8)); }
 function niceCeil(n) {
   if (n <= 0) return 1;
   const mag = Math.pow(10, Math.floor(Math.log10(n)));
@@ -3325,7 +3408,7 @@ function seriesFromRows(rows, apiPeriod, fiscalStartMonth) {
   rows.forEach(r => { (byPeriod[r.period] = byPeriod[r.period] || []).push(r); });
   return Object.keys(byPeriod).sort((a, b) => periodSortKey(a) - periodSortKey(b)).map(period => {
     const grp = byPeriod[period];
-    const s = { period, label: formatPeriodLabel(period, apiPeriod, fiscalStartMonth), usageAll: 0, usageNew: 0, usageExisting: 0, compCount: 0, notCompCount: 0, applied: 0, topBox: 0, scored: 0, compDurHours: 0, compDurCount: 0, notCompDurHours: 0, notCompDurCount: 0, npsPromoters: 0, npsPassives: 0, npsDetractors: 0, npsScored: 0 };
+    const s = { period, label: formatPeriodLabel(period, apiPeriod, fiscalStartMonth), usageAll: 0, usageNew: 0, usageExisting: 0, compCount: 0, notCompCount: 0, applied: 0, topBox: 0, mid: 0, low: 0, hasSplit: true, scored: 0, compDurHours: 0, compDurCount: 0, notCompDurHours: 0, notCompDurCount: 0, npsPromoters: 0, npsPassives: 0, npsDetractors: 0, npsScored: 0 };
     grp.forEach(r => {
       s.usageAll += r.all.usage_hours || 0; s.usageNew += r.new.usage_hours || 0; s.usageExisting += r.existing.usage_hours || 0;
       s.compCount += r.all.completed_count; s.notCompCount += r.all.not_completed_count; s.applied += r.all.applied_count;
@@ -3333,6 +3416,8 @@ function seriesFromRows(rows, apiPeriod, fiscalStartMonth) {
       // divided (below), never averaging two already-computed percentages (the same roll-up rule as
       // every other ratio metric on this page).
       s.topBox += r.all.top2box_percent.top_box; s.scored += r.all.top2box_percent.scored;
+      // the 3-rated and 1-2-rated counts (Reports sends them since 2026-11-13); an older Reports without them leaves hasSplit false, and the Applied chart falls back to its old look
+      if (r.all.top2box_percent.mid === undefined) s.hasSplit = false; else { s.mid += r.all.top2box_percent.mid; s.low += r.all.top2box_percent.low; }
       // completed/not_completed_duration_avg -- same roll-up rule: sum each group's own total_hours and
       // count, divide once at the end (below), never average two already-computed averages.
       s.compDurHours += r.all.completed_duration_avg.total_hours || 0; s.compDurCount += r.all.completed_duration_avg.count || 0;
@@ -3340,7 +3425,10 @@ function seriesFromRows(rows, apiPeriod, fiscalStartMonth) {
       // NPS raw components -- same rule: summed here, the score is only ever worked out from the totals.
       s.npsPromoters += r.all.nps.promoters || 0; s.npsPassives += r.all.nps.passives || 0; s.npsDetractors += r.all.nps.detractors || 0; s.npsScored += r.all.nps.scored || 0;
     });
-    s.successRate = s.scored ? (s.topBox / s.scored) * 100 : null;
+    // Success rate = great + some impact (rated 3-5) out of all rated (Kriti, 2026-11-13) -- the chart's line, the hero line, the summary card and By user all use it. Until Reports
+    // sends the split (hasSplit false) it stays the old share of 4-5.
+    s.successRate = s.scored ? (((s.hasSplit ? s.topBox + s.mid : s.topBox) / s.scored) * 100) : null;
+    s.impactRate = s.successRate;
     s.compAvgMin = s.compDurCount ? (s.compDurHours / s.compDurCount) * 60 : null;
     s.notCompAvgMin = s.notCompDurCount ? (s.notCompDurHours / s.notCompDurCount) * 60 : null;
     return s;
@@ -3402,7 +3490,7 @@ function renderBarChart(cols) {
       <div class="adopt-chart-yaxis" style="height:${H}px">${ticks.map(t => `<div>${t.toLocaleString()}</div>`).join('')}</div>
       <div class="adopt-chart-main">
         <div class="adopt-chart-gridlines" style="height:${H}px">${ticks.map(() => `<div class="adopt-chart-gridline"></div>`).join('')}</div>
-        <div class="adopt-chart-cols" style="height:${H}px; gap:${GAP}px">
+        <div class="adopt-chart-cols" style="height:${H}px; gap:${GAP}px; margin-left:${labelRoom(maxLabelChars, COLW)}px">
           ${trendLine}
           ${cols.map((c, i) => {
             const stackPx = (totals[i] / yMax) * H;
@@ -3452,7 +3540,7 @@ function renderGroupedBarChart(cols) {
       <div class="adopt-chart-yaxis" style="height:${H}px">${ticks.map(t => `<div>${t.toLocaleString()}</div>`).join('')}</div>
       <div class="adopt-chart-main">
         <div class="adopt-chart-gridlines" style="height:${H}px">${ticks.map(() => `<div class="adopt-chart-gridline"></div>`).join('')}</div>
-        <div class="adopt-chart-cols" style="height:${H}px; gap:${GAP}px">
+        <div class="adopt-chart-cols" style="height:${H}px; gap:${GAP}px; margin-left:${labelRoom(maxLabelChars, COLW)}px">
           ${cols.map(c => {
             const plainTip = c.bars.map(b => Math.round(b.value).toLocaleString()).join(' · ');
             const coloredTip = c.bars.map(b => `<span style="color:${b.color}">${Math.round(b.value).toLocaleString()}</span>`).join(' <span class="adopt-tip-dot">·</span> ');
@@ -3480,6 +3568,16 @@ function renderGroupedBarChart(cols) {
 // Fable's own fixed rightTicks). Kriti, 2026-10-07 (replacing the 2026-10-06 "hover each" rule): the Success
 // Rate labels are ALWAYS visible (white pill, never cut by the line); only Atoms Applied hovers, and its value
 // shows inside the bar in white -- so the two can never overlap. cols: [{period, label, bar:number, line:number|null}].
+// One bar of the three-colour Applied Learning chart: great impact (deep green) at the bottom, some impact (striped green), did not land (soft red) on top; a number
+// no numbers inside the bar (the success-rate dot and label sit near its top); the full counts are on a card beside the bar when the column is hovered. c.bar is the rated total (the three parts add up to it).
+function impactStackHtml(c, bpx, toLeft) {
+  const parts = [['great', c.segs.great], ['some', c.segs.some], ['land', c.segs.land]];
+  const total = parts.reduce((a, [, v]) => a + v, 0) || 1;
+  const tip = `<div class="imp-tip ${toLeft ? 'left' : 'right'}"><strong>${esc(c.label || c.period)}</strong><br>Great impact: ${c.segs.great}<br>Some impact: ${c.segs.some}<br>Did not land: ${c.segs.land}`
+    + (c.line == null ? '' : `<br>Success rate: ${Math.round(c.line)}% (${c.segs.great + c.segs.some} of ${total})`)
+    + (c.applied > total ? `<br><span class="imp-tip-note">${c.applied} applied, ${c.applied - total} without a 1–5 rating</span>` : '') + `</div>`;
+  return `<div class="adopt-bar-single imp-stack" style="height:${bpx.toFixed(1)}px">${parts.map(([k, v]) => { const px = v / total * bpx; return v ? `<div class="imp-seg ${k}" style="height:${px.toFixed(1)}px"></div>` : ''; }).join('')}</div>${tip}`;
+}
 function renderDualAxisChart(cols) {
   if (!cols.length) return '<div class="banner info">No sessions match this view yet.</div>';
   const MAX_TICKS = 5;
@@ -3526,20 +3624,21 @@ function renderDualAxisChart(cols) {
     }
     return above ? 'above' : 'below';
   };
+  const hasSegs = cols.some(c => c.segs);
   const polyline = linePoints.length > 1 ? linePoints.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') : '';
   return `<div class="adopt-chart-row">
       <div class="adopt-axis-title-v">Number of Atoms Applied</div>
       <div class="adopt-chart-yaxis" style="height:${H}px">${leftTicks.map(t => `<div>${t.toLocaleString()}</div>`).join('')}</div>
       <div class="adopt-chart-main">
         <div class="adopt-chart-gridlines" style="height:${H}px">${leftTicks.map(() => `<div class="adopt-chart-gridline"></div>`).join('')}</div>
-        <div class="adopt-chart-cols" style="height:${H}px; gap:${GAP}px">
-          ${polyline ? `<svg class="adopt-trend-line" width="${svgWidth}" height="${H}" viewBox="0 0 ${svgWidth} ${H}"><polyline points="${polyline}" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>` : ''}
+        <div class="adopt-chart-cols" style="height:${H}px; gap:${GAP}px; margin-left:${labelRoom(maxLabelChars, COLW)}px">
+          ${polyline ? `<svg class="adopt-trend-line" width="${svgWidth}" height="${H}" viewBox="0 0 ${svgWidth} ${H}"><polyline points="${polyline}" fill="none" stroke="${hasSegs ? 'var(--night)' : 'var(--teal)'}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>` : ''}
           ${cols.map((c, i) => {
             const bpx = Math.max(2, (c.bar / yMax) * H);
             const lpx = points[i].y == null ? null : H - points[i].y;
             return `<div class="adopt-bar-col" style="width:${COLW}px; height:${H}px">
-              <div class="adopt-bar-single" style="height:${bpx.toFixed(1)}px"><span class="adopt-hover-num${bpx >= 20 ? ' in-bar' : ''}">${Math.round(c.bar).toLocaleString()}</span></div>
-              ${lpx == null ? '' : `<div class="adopt-line-dot" style="bottom:${lpx.toFixed(1)}px"><span class="adopt-line-label ${labelSide(i, bpx)}">${Math.round(c.line)}%</span></div>`}
+              ${c.segs ? impactStackHtml(c, bpx, i >= cols.length / 2) : `<div class="adopt-bar-single" style="height:${bpx.toFixed(1)}px"><span class="adopt-hover-num${bpx >= 20 ? ' in-bar' : ''}">${Math.round(c.bar).toLocaleString()}</span></div>`}
+              ${lpx == null ? '' : `<div class="adopt-line-dot${hasSegs ? ' imp' : ''}" style="bottom:${lpx.toFixed(1)}px"><span class="adopt-line-label ${labelSide(i, bpx)}">${Math.round(c.line)}%</span></div>`}
               <div class="adopt-bar-label">${esc(c.label || c.period)}</div>
             </div>`;
           }).join('')}
@@ -3596,7 +3695,8 @@ function successRateHero(series, period) {
     const last = series[series.length - 1];
     return { value: last.successRate == null ? 0 : Math.round(last.successRate), suffix: `${unitLabel} this quarter` };
   }
-  const topBox = series.reduce((s, x) => s + x.topBox, 0);
+  const split = series.every(x => x.hasSplit);
+  const topBox = series.reduce((s, x) => s + x.topBox + (split ? x.mid : 0), 0);   // great (+ some, once Reports sends the split)
   const scored = series.reduce((s, x) => s + x.scored, 0);
   const value = scored ? Math.round((topBox / scored) * 100) : 0;
   if (period === 'month') {
@@ -3665,8 +3765,13 @@ function renderAppliedTab(series) {
   const { value, suffix, deltaText } = computeHero(series, S.adopt.period, ADOPT_METRICS.applied.metric, ADOPT_METRICS.applied.unit);
   return heroBlock(Math.round(value).toLocaleString(), suffix, deltaText,
       hi ? `Highest success rate: <strong>${esc(hi.label)} at ${Math.round(hi.successRate)}%</strong> · Lowest: <strong>${esc(lo.label)} at ${Math.round(lo.successRate)}%</strong>` : '')
-    + renderDualAxisChart(series.map(s => ({ period: s.period, label: s.label, bar: s.applied, line: s.successRate })))
-    + `<div class="adopt-legend" style="margin-top:0.8rem"><span><i style="background:var(--night2)"></i>Atoms Applied</span><span><i style="background:var(--teal)"></i>Success Rate</span></div>`;
+    + (series.every(s => s.hasSplit)
+      // Kriti, 2026-11-13: each bar is split by how much impact the applied atoms made (great = rated 4-5, some = 3, did not land = 1-2) and the line is the success
+      // rate = great + some, out of all rated. The bar is the RATED count: an application answered on the earliest wording (no 1-5 number) is left out, as everywhere.
+      ? renderDualAxisChart(series.map(s => ({ period: s.period, label: s.label, bar: s.scored, line: s.impactRate, applied: s.applied, segs: { great: s.topBox, some: s.mid, land: s.low } })))
+        + `<div class="adopt-legend" style="margin-top:0.8rem"><span><i class="imp-great"></i>Great impact (rated 4–5)</span><span><i class="imp-some"></i>Some impact (rated 3)</span><span><i class="imp-land"></i>Did not land (rated 1–2)</span><span><i class="imp-line"></i>Success Rate (great + some)</span></div>`
+      : renderDualAxisChart(series.map(s => ({ period: s.period, label: s.label, bar: s.applied, line: s.successRate })))
+        + `<div class="adopt-legend" style="margin-top:0.8rem"><span><i style="background:var(--night2)"></i>Atoms Applied</span><span><i style="background:var(--teal)"></i>Success Rate</span></div>`);
 }
 // Average Duration only -- Fable's own "column" list (productdemo/admin_intro.html's .trend-row), not
 // the gridline bar charts every other tab uses: one row per period, a thin rounded track, the value
@@ -3962,8 +4067,9 @@ async function renderAdoption() {
   $('#view').innerHTML = `<div class="um-page-head"><div><h1 class="um-title">Adoption Overview</h1></div><div class="fr-controls-right" id="adoptHeadControls"></div></div>
     <div id="adoptHeadChip"></div>
     <div id="adoptCards" class="adopt-cards"></div>
-    <div id="adoptPanel" class="panel adopt-droptarget"></div>
-    <div id="adoptFeedbackPanel" class="panel"></div>`;
+    <div id="adoptPanel" class="panel adopt-droptarget"></div>`;
+  // The User Feedback panel is taken off this page for now (Kriti, 2026-11-13: nobody gives feedback, the 10-question form is too long, feedback will be redone). Its code below
+  // (drawAdoptFeedback and friends) is left in place, unused: with no #adoptFeedbackPanel on the page it does nothing.
   // Real HTML5 drag-and-drop onto the panel (Kriti's explicit call, 2026-10-05: a click alone was not
   // what she asked for) -- these two listeners live on the STABLE panel element itself, set once here,
   // not inside drawAdoptPanel() (which only replaces the panel's innerHTML on every redraw).
@@ -4121,16 +4227,27 @@ function adoptByUserHtml(rows) {
   rows.forEach(r => {
     const k = (r.level_key || [])[0];
     if (!k) return;
-    const a = by[k] = by[k] || { hours: 0, completed: 0, notCompleted: 0, applied: 0, top: 0, scored: 0 };
+    const a = by[k] = by[k] || { hours: 0, completed: 0, notCompleted: 0, applied: 0, top: 0, mid: 0, split: true, scored: 0 };
     a.hours += r.all.usage_hours || 0; a.completed += r.all.completed_count || 0; a.notCompleted += r.all.not_completed_count || 0; a.applied += r.all.applied_count || 0;
     a.top += r.all.top2box_percent.top_box || 0; a.scored += r.all.top2box_percent.scored || 0;
+    if (r.all.top2box_percent.mid === undefined) a.split = false; else a.mid += r.all.top2box_percent.mid;   // success rate = great + some, out of all rated
   });
   const people = Object.keys(by).map(k => ({ name: names[k] || k, ...by[k] })).sort((x, y) => y.hours - x.hours || x.name.localeCompare(y.name));
   if (!people.length) return '<div class="banner info">No one has used this track in the period shown.</div>';
   const num = n => (n || 0).toLocaleString();
-  return `<div class="um-table-card"><div class="um-table-scroll"><table class="um-table" style="min-width:0"><thead><tr><th>User</th><th>Usage hours</th><th>Completed</th><th>Not completed</th><th>Applied</th><th>Success rate</th></tr></thead><tbody>
-    ${people.map(u => `<tr><td>${esc(u.name)}</td><td>${fmtHrs(u.hours)}</td><td>${num(u.completed)}</td><td>${num(u.notCompleted)}</td><td>${num(u.applied)}</td><td>${u.scored ? Math.round((u.top / u.scored) * 100) + '%' : '—'}</td></tr>`).join('')}
+  S.adopt.byUserPeople = people;   // what the Download button writes out
+  return `<div style="display:flex;justify-content:flex-end;margin-bottom:0.7rem"><button class="btn-outline" id="adoptDownload">${icon('down')} Download</button></div><div class="um-table-card"><div class="um-table-scroll"><table class="um-table" style="min-width:0"><thead><tr><th>User</th><th>Usage hours</th><th>Learning atoms completed</th><th>Learning atoms not completed</th><th>Learning atoms applied</th><th>Success rate</th></tr></thead><tbody>
+    ${people.map(u => `<tr><td>${esc(u.name)}</td><td>${fmtHrs(u.hours)}</td><td>${num(u.completed)}</td><td>${num(u.notCompleted)}</td><td>${num(u.applied)}</td><td>${u.scored ? Math.round(((u.split ? u.top + u.mid : u.top) / u.scored) * 100) + '%' : '—'}</td></tr>`).join('')}
     </tbody></table></div></div>`;
+}
+// Download of the By user table (Kriti, 2026-11-13): the same rows and the same numbers as on screen, as a CSV that opens in Excel. The success rate is the
+// number only (great + some, out of all rated), blank for someone with no rated application.
+function downloadAdoptByUser() {
+  const people = S.adopt.byUserPeople || [], t = ADOPT_TRACKS[S.adopt.active] || {};
+  const rows = [['User', 'Usage hours', 'Learning atoms completed', 'Learning atoms not completed', 'Learning atoms applied', 'Success rate (%)']].concat(
+    people.map(u => [u.name, Math.round((u.hours || 0) * 100) / 100, u.completed || 0, u.notCompleted || 0, u.applied || 0,
+      u.scored ? Math.round(((u.split ? u.top + u.mid : u.top) / u.scored) * 100) : '']));
+  downloadText(`wotg-adoption-by-user-${t.track || 'overall'}-${S.adopt.period}.csv`, '\ufeff' + toCsv(rows));
 }
 async function drawAdoptPanel() {
   const key = S.adopt.active, t = ADOPT_TRACKS[key];
@@ -4145,7 +4262,7 @@ async function drawAdoptPanel() {
     <div id="adoptBody" class="loading-block"><div class="spinner"></div></div>`;
   if (key !== 'overall') $('#adoptBackBtn').onclick = () => { S.adopt.active = 'overall'; drawAdoptCards(); drawAdoptPanel(); };
   if (S.adopt.view !== 'user') $$('[data-tab]', $('#adoptTabsRow')).forEach(b => b.onclick = () => { S.adopt.tab = b.dataset.tab; drawAdoptPanel(); drawAdoptCards(); });
-  drawAdoptFeedback();   // its own card + its own toggle; a no-op unless the track / drill-down changed
+  // drawAdoptFeedback();   // switched off with the User Feedback panel (see renderAdoption)
   try {
     const fiscalStartMonth = await ensureFiscalStartMonth();   // same cached fact the cards now also wait on
     const byUser = S.adopt.view === 'user';
@@ -4156,6 +4273,7 @@ async function drawAdoptPanel() {
     // hero number. Real content gets this div's padding back to normal.
     $('#adoptBody').classList.remove('loading-block');
     $('#adoptBody').innerHTML = byUser ? adoptByUserHtml(rows) : ADOPT_TAB_RENDER[S.adopt.tab](seriesFromRows(rows, S.adopt.period, fiscalStartMonth));
+    if (byUser && $('#adoptDownload')) $('#adoptDownload').onclick = downloadAdoptByUser;
   } catch (e) {
     $('#adoptBody').innerHTML = `<div class="banner">${esc(e.message)}</div>`;
   }
@@ -4186,13 +4304,30 @@ const LF = (() => {
                wc: { company: [], bu: [], department: [], initiative: [] }, reflectors: [], options: null, data: null, error: null, loading: true, ddMode: 'page',
                wcPeriod: 'month', wcReflectors: [], wcData: null, wcError: null, wcLoading: true, rfMode: 'page', openCombo: null, mode: 'friction',
                capFocus: { company: [], bu: [], department: [], manager: [], user: [], assigner: [], initiative: [] }, capLand: null, capLandError: null, capName: null, capDetail: null, capDetailError: null, capPeriod: 'month', capMetric: 'users',
-               trPeriod: 'month', trFocus: { company: [], bu: [], department: [], manager: [], user: [], assigner: [], initiative: [] }, trReflectors: [], trData: null, trError: null, trLoading: true };   // Friction Share Over Time: its own toggle, drill-down, reflector filter and request
-  let seq = 0, wcSeq = 0, trSeq = 0, capLandSeq = 0, capDetailSeq = 0;
+               trPeriod: 'month', trFocus: { company: [], bu: [], department: [], manager: [], user: [], assigner: [], initiative: [] }, trReflectors: [], trData: null, trError: null, trLoading: true,
+               refFocus: { company: [], bu: [], department: [], manager: [], user: [], assigner: [], initiative: [] }, refData: null, refError: null, refLoading: true, refRank: 'hours', refShow: 'top10', refWindow: 'month',
+               refName: null, refDetail: null, refDetailError: null, refPeriod: 'month', refMetric: 'users' };   // Friction Share Over Time: its own toggle, drill-down, reflector filter and request
+  let seq = 0, wcSeq = 0, trSeq = 0, capLandSeq = 0, capDetailSeq = 0, refSeq = 0, refDetailSeq = 0;
 
   // the backend's raw codes are never shown to a person
   function friendly(msg) { return /login_required|invalid_token|expired|401/i.test(String(msg)) ? 'Your session has ended. Please sign in again.' : String(msg); }
   function ordinal(n) { const v = n % 100; return n + (['th', 'st', 'nd', 'rd'][(v - 20) % 10] || ['th', 'st', 'nd', 'rd'][v] || 'th'); }
   function quarterMonthRange(qNum, fsm) { const m0 = (fsm - 1 + (qNum - 1) * 3) % 12, m2 = (m0 + 2) % 12; return `${MONTH_ABBR[m0]}–${MONTH_ABBR[m2]}`; }
+  // The product went live in July 2026 (Kriti, 2026-11-13): a quarter graph never starts before Q3 2026, and a year graph never starts before July 2026 -- earlier quarters are always zero. A quarter that ENDS before 1 July 2026
+  // is dropped (so a company whose quarters do not line up with the calendar still keeps the quarter that contains July). Later this should follow each company's own start date.
+  const LAUNCH_MONTH_INDEX = 2026 * 12 + 7;
+  function quarterBeforeLaunch(key, fsm) {
+    const [fy, q] = String(key).split('-Q').map(Number); if (!fy || !q) return false;
+    const startIdx = (fy * 12 + ((fsm || 1) - 1)) + (q - 1) * 3;   // months since year 0, counting the quarter's first month
+    return startIdx + 2 + 1 < LAUNCH_MONTH_INDEX;                    // last month of the quarter is before July 2026
+  }
+  // The Year view is a bucket per month ("2026-01"); a month before July 2026 is dropped the same way.
+  function monthBeforeLaunch(key) { const [y, m] = String(key).split('-').map(Number); return !!y && !!m && y * 12 + m < LAUNCH_MONTH_INDEX; }
+  function dropBeforeLaunch(buckets, keyName, period, fsm) {
+    if (period === 'quarter') return buckets.filter(b => !quarterBeforeLaunch(b[keyName], fsm));
+    if (period === 'year') return buckets.filter(b => !monthBeforeLaunch(b[keyName]));
+    return buckets;
+  }
   function bucketLabel(key, period, fsm) {
     if (period === 'month') { const [, m, d] = key.split('-').map(Number); return `${ordinal(d)} ${MONTH_ABBR[m - 1]}`; }
     if (period === 'year') { const [y, m] = key.split('-').map(Number); return `${MONTH_ABBR[m - 1]} '${String(y).slice(2)}`; }
@@ -4224,7 +4359,7 @@ const LF = (() => {
   async function loadTr() {
     const mine = ++trSeq;
     st.trLoading = true; paintTr();
-    try { const data = await reportsApi('/api/reports/driver-report?' + trParams()); if (mine !== trSeq) return; st.trData = data; st.trError = null; }
+    try { const data = await reportsApi('/api/reports/driver-report?' + trParams()); if (mine !== trSeq) return; if (data && data.trend && data.trend.buckets) data.trend.buckets = dropBeforeLaunch(data.trend.buckets, 'bucket', data.trend_period, data.fiscal_start_month); st.trData = data; st.trError = null; }
     catch (e) { if (mine !== trSeq) return; st.trError = e.message; }
     st.trLoading = false; paintTr();
   }
@@ -4250,8 +4385,9 @@ const LF = (() => {
     return out;
   }
   function periodToggle(which) {
-    const cur = which === 'wc' ? st.wcPeriod : which === 'tr' ? st.trPeriod : which === 'cap' ? st.capPeriod : st.period;
-    return `<div class="period-toggle fr-period-toggle"><div class="period-toggle-thumb"></div>${PERIODS.map(([k, label]) => `<span class="${k === cur ? 'active' : ''}" onclick="LF.setPeriod('${which}','${k}')">${label}</span>`).join('')}</div>`;
+    const cur = which === 'wc' ? st.wcPeriod : which === 'tr' ? st.trPeriod : which === 'cap' ? st.capPeriod : which === 'ref' ? st.refPeriod : st.period;
+    const lead = which === 'page' ? 'This ' : '';   // the top toggle means "this month / quarter / year so far"; the others are the bars of a chart (Kriti, 2026-11-13)
+    return `<div class="period-toggle fr-period-toggle"><div class="period-toggle-thumb"></div>${PERIODS.map(([k, label]) => `<span class="${k === cur ? 'active' : ''}" onclick="LF.setPeriod('${which}','${k}')">${lead}${label}</span>`).join('')}</div>`;
   }
   function areaCards(cards, areas, d) {
     const none = cards.identifications === 0;
@@ -4433,9 +4569,9 @@ const LF = (() => {
     "Upholding Dignity": { color: "#14B8A6", icon: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z\"/><path d=\"m9 12 2 2 4-4\"/></svg>" },
     "Self-Cultivation": { color: "#E4CA0A", icon: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22V12\"/><path d=\"M12 12C12 7 8 4 3 4c0 5 3 8 9 8Z\"/><path d=\"M12 12c0-4 4-6 9-6 0 4-3 7-9 7Z\"/></svg>" }
   };
-  const CAP_METRIC_ICONS = {"engaged": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg>", "hours": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 3\"/></svg>", "timeshare": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 3v9l7.5 4.3\"/></svg>", "atoms": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"1\" fill=\"#fff\"/><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"4.2\"/><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"4.2\" transform=\"rotate(60 12 12)\"/><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"4.2\" transform=\"rotate(120 12 12)\"/></svg>"};
+  const CAP_METRIC_ICONS = {"engaged": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg>", "hours": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 3\"/></svg>", "timeshare": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 3v9l7.5 4.3\"/></svg>", "applied": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"m8 12 3 3 5-6\"/></svg>", "success": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 17l6-6 4 4 8-8\"/><path d=\"M14 7h7v7\"/></svg>", "atoms": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"1\" fill=\"#fff\"/><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"4.2\"/><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"4.2\" transform=\"rotate(60 12 12)\"/><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"4.2\" transform=\"rotate(120 12 12)\"/></svg>"};
   const CAP_ORDER = ['Embodied Self-care', 'Social Presence', 'Interpersonal Responsiveness', 'Cultivating Relationships', 'Social Influence', 'Emotional Grounding', 'Result Orientation', 'Upholding Dignity', 'Self-Cultivation'];
-  const CAP_METRICS = [   // the four cards, in order; `pick` is the number the bar is drawn from, `text` how a value is written
+  const CAP_METRICS = [   // the six cards, in order; `pick` is the number the bar is drawn from, `text` how a value is written
     { key: 'users', label: 'Users Engaged', icon: 'engaged', pick: b => b.users_engaged, text: b => b.users_engaged + (b.users_percent === null ? '' : ' (' + Math.round(b.users_percent) + '%)'), unitTitle: 'Users engaged (people)',
       tip: b => `${b.users_engaged} user${b.users_engaged === 1 ? '' : 's'} engaged` + (b.users_percent === null ? '' : ` = ${b.users_percent}% of the ${b.active_users} active user${b.active_users === 1 ? '' : 's'}`) },
     { key: 'hours', label: 'Learning Hours', icon: 'hours', pick: b => b.hours, text: b => (Math.round(b.hours * 10) / 10) + 'h', unitTitle: 'Learning hours',
@@ -4444,7 +4580,11 @@ const LF = (() => {
       tip: b => b.time_share_percent === null ? 'No learning time in this period' : `${b.time_share_percent}% of all learning time (${Math.round(b.hours * 10) / 10}h of ${Math.round(b.total_hours * 10) / 10}h)` },
     { key: 'atoms', label: 'Atoms Completed', icon: 'atoms', pick: b => b.atoms_completed, text: b => String(b.atoms_completed), unitTitle: 'Learning Atoms completed',
       tip: b => `${b.atoms_completed} Learning Atom${b.atoms_completed === 1 ? '' : 's'} completed` },
-  ];
+    { key: 'applied', needs: 'applied_count', label: 'Atoms Applied', icon: 'applied', pick: b => b.applied_count, text: b => String(b.applied_count), unitTitle: 'Learning Atoms applied',
+      tip: b => `${b.applied_count} Learning Atom${b.applied_count === 1 ? '' : 's'} applied` },
+    { key: 'success', needs: 'applied_count', label: 'Success Rate', icon: 'success', pick: b => b.success_percent, text: b => b.success_percent === null ? '–' : Math.round(b.success_percent) + '%', unitTitle: 'Success rate (%)',
+      tip: b => b.success_percent === null ? 'Nothing was rated in this period' : `${b.success_percent}% success: ${b.top_box + b.mid} of ${b.scored} rated made a great or some impact` },
+  ];   // six cards, three on each row
   function capMeta(name) { return CAP_META[name] || { color: '#4A6FA5', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 20 6-11 4 6 3-4 5 9Z"/></svg>' }; }
   const CAP_USER_BADGE = '<svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0Z"/></svg>';
   function capParams(extra) { const p = new URLSearchParams(extra || {}); LEVELS.forEach(([l]) => st.capFocus[l].forEach(k => p.append('focus_' + l, k))); return p.toString(); }
@@ -4458,7 +4598,7 @@ const LF = (() => {
   async function loadCapDetail() {
     const mine = ++capDetailSeq;
     st.capLoading = true; paintCap();
-    try { const data = await reportsApi('/api/reports/capability?' + capParams({ capability_name: st.capName, period: st.capPeriod })); if (mine !== capDetailSeq) return; st.capDetail = data; st.capDetailError = null; }
+    try { const data = await reportsApi('/api/reports/capability?' + capParams({ capability_name: st.capName, period: st.capPeriod })); if (mine !== capDetailSeq) return; if (data && data.buckets) data.buckets = dropBeforeLaunch(data.buckets, 'bucket', st.capPeriod, data.fiscal_start_month); st.capDetail = data; st.capDetailError = null; }
     catch (e) { if (mine !== capDetailSeq) return; st.capDetailError = e.message; }
     st.capLoading = false; paintCap();
   }
@@ -4493,7 +4633,7 @@ const LF = (() => {
     const line = vals.map((v, i) => `${((i + 0.5) / vals.length * 100).toFixed(1)},${(H - v / top * H).toFixed(1)}`).join(' ');
     return `<button type="button" class="cap-kpi${st.capMetric === metric.key ? ' on' : ''}" data-metric="${metric.key}" style="--capc:${meta.color}">
       <div class="cap-kpi-head"><div class="cap-kpi-head-left"><div class="cap-kpi-icon">${CAP_METRIC_ICONS[metric.icon]}</div><h3>${metric.label}</h3></div></div><div class="cap-pill-row"><span class="cap-pill">This month: ${esc(metric.text(latest))}</span></div>
-      <div class="cap-mini"><div class="cap-mini-bars">${six.map((b, i) => `<div class="cap-mini-wrap"><div class="cap-mini-bar" title="${esc(capMonthLabel(b.bucket) + ': ' + metric.tip(b))}" style="height:${(vals[i] / top * H).toFixed(1)}px"><span>${metric.key === 'users' ? b.users_engaged : metric.key === 'hours' ? Math.round(b.hours * 10) / 10 : metric.key === 'timeshare' ? (b.time_share_percent === null ? '' : Math.round(b.time_share_percent) + '%') : b.atoms_completed}</span></div></div>`).join('')}</div>
+      <div class="cap-mini"><div class="cap-mini-bars">${six.map((b, i) => `<div class="cap-mini-wrap"><div class="cap-mini-bar" title="${esc(capMonthLabel(b.bucket) + ': ' + metric.tip(b))}" style="height:${(vals[i] / top * H).toFixed(1)}px"><span>${metric.key === 'users' ? b.users_engaged : metric.key === 'hours' ? Math.round(b.hours * 10) / 10 : metric.key === 'timeshare' ? (b.time_share_percent === null ? '' : Math.round(b.time_share_percent) + '%') : metric.key === 'applied' ? b.applied_count : metric.key === 'success' ? (b.success_percent === null ? '' : Math.round(b.success_percent) + '%') : b.atoms_completed}</span></div></div>`).join('')}</div>
         <svg class="cap-mini-line" viewBox="0 0 100 ${H}" preserveAspectRatio="none"><polyline points="${line}" fill="none" stroke="var(--night)" stroke-width="1.4" stroke-dasharray="3,3" vector-effect="non-scaling-stroke"/></svg>
         <div class="cap-mini-axis">${six.map(b => `<div>${capMonthLabel(b.bucket)}</div>`).join('')}</div></div></button>`;
   }
@@ -4511,27 +4651,146 @@ const LF = (() => {
     if (!d.buckets.some(b => b.active_users > 0)) return `<div class="cap-empty">No sessions in this period${st.capFocus && LEVELS.some(([l]) => st.capFocus[l].length) ? ' for the chosen drill-down' : ''}.</div>`;
     return `<div class="cap-chart" style="--H:${H}px"><div class="cap-ytitle">${esc(metric.unitTitle)}</div><div class="cap-main"><div class="cap-plotwrap">
         <div class="cap-grid-lines">${ticks.map(t => `<div class="cap-gl" style="bottom:${t / max * 100}%"></div><div class="cap-yt" style="bottom:${t / max * 100}%">${t}${pct ? '%' : ''}</div>`).join('')}</div>
-        <div class="cap-cols">${d.buckets.map((b, i) => `<div class="cap-col"><div class="cap-bar-area"><div class="cap-bar" data-tip="${esc('<b>' + capBucketLabel(b.bucket, st.capPeriod) + '</b><div style="margin-top:0.25rem">' + metric.tip(b) + '</div>')}" style="height:${vals[i] / max * 100}%">${vals[i] || b.active_users ? `<div class="cap-bar-val">${metric.key === 'users' ? `${b.users_engaged}${b.users_percent === null ? '' : `<small>${Math.round(b.users_percent)}%</small>`}` : metric.key === 'hours' ? Math.round(b.hours * 10) / 10 : metric.key === 'timeshare' ? (b.time_share_percent === null ? '' : Math.round(b.time_share_percent) + '%') : b.atoms_completed}</div>` : ''}</div></div><div class="cap-lab">${esc(capBucketLabel(b.bucket, st.capPeriod))}</div></div>`).join('')}</div></div>
+        <div class="cap-cols">${d.buckets.map((b, i) => `<div class="cap-col"><div class="cap-bar-area"><div class="cap-bar" data-tip="${esc('<b>' + capBucketLabel(b.bucket, st.capPeriod) + '</b><div style="margin-top:0.25rem">' + metric.tip(b) + '</div>')}" style="height:${vals[i] / max * 100}%">${vals[i] || b.active_users ? `<div class="cap-bar-val">${metric.key === 'users' ? `${b.users_engaged}${b.users_percent === null ? '' : `<small>${Math.round(b.users_percent)}%</small>`}` : metric.key === 'hours' ? Math.round(b.hours * 10) / 10 : metric.key === 'timeshare' ? (b.time_share_percent === null ? '' : Math.round(b.time_share_percent) + '%') : metric.key === 'applied' ? b.applied_count : b.atoms_completed}</div>` : ''}</div></div><div class="cap-lab">${esc(capBucketLabel(b.bucket, st.capPeriod))}</div></div>`).join('')}</div></div>
         <div class="cap-xtitle">${axisTitle}</div></div></div>`;
   }
+  // Success Rate's big chart: each bar is the rated atoms of the period split into great impact (rated 4-5), some impact (3) and did not land (1-2); the line is the
+  // success rate = great + some, out of all rated, on the right-hand 0-100% axis. The line is drawn after the page is painted (drawCapImpactLine) from the dots.
+  function capImpactChart(d) {
+    const H = 230, b0 = d.buckets;
+    if (!b0.some(b => b.active_users > 0)) return `<div class="cap-empty">No sessions in this period${st.capFocus && LEVELS.some(([l]) => st.capFocus[l].length) ? ' for the chosen drill-down' : ''}.</div>`;
+    if (!b0.some(b => (b.scored || 0) > 0)) return `<div class="cap-empty">No applications have been rated in this period yet.</div>`;
+    const { step, max } = capNiceScale(Math.max(...b0.map(b => b.scored || 0), 0));
+    const ticks = []; for (let t = 0; t <= max + 1e-9; t += step) ticks.push(Math.round(t * 100) / 100);
+    const axisTitle = st.capPeriod === 'month' ? 'Day of this month' : st.capPeriod === 'quarter' ? 'Quarter' : 'Month';
+    const showLab = b0.length <= 12;
+    return `<div class="cap-chart" style="--H:${H}px"><div class="cap-ytitle">Atoms applied and rated</div><div class="cap-main"><div class="cap-plotwrap" style="margin-right:40px">
+        <div class="cap-grid-lines">${ticks.map(t => `<div class="cap-gl" style="bottom:${t / max * 100}%"></div><div class="cap-yt" style="bottom:${t / max * 100}%">${t}</div>`).join('')}${[0, 25, 50, 75, 100].map(t => `<div class="cap-yt-r" style="bottom:${t}%">${t}%</div>`).join('')}</div>
+        <div class="cap-cols" id="capImpactCols">${b0.map(b => {
+          const sc = b.scored || 0, tip = '<b>' + esc(capBucketLabel(b.bucket, st.capPeriod)) + '</b><div style="margin-top:0.25rem">Great impact: ' + b.top_box + '<br>Some impact: ' + b.mid + '<br>Did not land: ' + b.low + '<br>' + (b.success_percent === null ? 'Success rate: nothing rated' : 'Success rate: ' + Math.round(b.success_percent) + '% (' + (b.top_box + b.mid) + ' of ' + sc + ')') + (b.applied_count > sc ? '<br>' + b.applied_count + ' applied, ' + (b.applied_count - sc) + ' without a 1&ndash;5 rating' : '') + '</div>';
+          const seg = (k, v) => v ? `<div class="imp-seg ${k}" style="height:${v / sc * 100}%"></div>` : '';
+          return `<div class="cap-col"><div class="cap-bar-area"><div class="cap-bar cap-imp-stack" data-tip="${esc(tip)}" style="height:${sc / max * 100}%">${seg('great', b.top_box)}${seg('some', b.mid)}${seg('land', b.low)}</div>${b.success_percent === null ? '' : `<div class="cap-imp-dot" style="bottom:${b.success_percent}%">${showLab ? `<span>${Math.round(b.success_percent)}%</span>` : ''}</div>`}</div><div class="cap-lab">${esc(capBucketLabel(b.bucket, st.capPeriod))}</div></div>`;
+        }).join('')}</div></div>
+        <div class="cap-xtitle">${axisTitle}</div>
+        <div class="adopt-legend" style="margin-top:0.4rem;justify-content:center"><span><i class="imp-great"></i>Great impact (rated 4&ndash;5)</span><span><i class="imp-some"></i>Some impact (rated 3)</span><span><i class="imp-land"></i>Did not land (rated 1&ndash;2)</span><span><i class="imp-line"></i>Success rate (great + some)</span></div></div></div>`;
+  }
+  function drawCapImpactLine() {
+    const cols = document.getElementById('capImpactCols'); if (!cols) return;
+    const old = cols.querySelector('svg.cap-imp-line'); if (old) old.remove();
+    const box = cols.getBoundingClientRect(), dots = [...cols.querySelectorAll('.cap-imp-dot')];
+    if (dots.length < 2) return;
+    const pts = dots.map(el => { const r = el.getBoundingClientRect(); return (r.left + r.width / 2 - box.left).toFixed(1) + ',' + (r.top + r.height / 2 - box.top).toFixed(1); }).join(' ');
+    cols.insertAdjacentHTML('beforeend', `<svg class="cap-imp-line" width="${box.width}" height="${box.height}" style="position:absolute;left:0;top:0;pointer-events:none;z-index:2;overflow:visible"><polyline points="${pts}" fill="none" stroke="var(--night)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>`);
+  }
+  // The two newer cards need numbers Reports sends since 2026-11-13; with an older Reports they are simply not shown (the first four cards work as before).
+  function capCards(d) { const f = d && d.last_six_months && d.last_six_months[0]; return CAP_METRICS.filter(m => !m.needs || (f && f[m.needs] !== undefined)); }
   function capDetailHtml() {
-    const d = st.capDetail, meta = capMeta(st.capName), metric = CAP_METRICS.find(m => m.key === st.capMetric) || CAP_METRICS[0];
+    const d = st.capDetail, meta = capMeta(st.capName), cards = capCards(d), metric = cards.find(m => m.key === st.capMetric) || cards[0];
     const back = `<button class="ri-back-btn" onclick="LF.capBack()" style="margin-bottom:0.7rem;">&larr; Capability Landscape</button>`;
     if (!d) return capHead(st.capName, back) + `<div class="fr-state">${esc(st.capDetailError ? friendly(st.capDetailError) : 'Loading…')}</div>`;
     return capHead(d.capability, back) + `
       <div class="cap-hint">Each card shows the last six months. Click a card to open it in the big chart below.</div>
-      <div class="cap-kpis" style="--capc:${meta.color}">${CAP_METRICS.map(m => capKpi(m, d, meta)).join('')}</div>
+      <div class="cap-kpis" style="--capc:${meta.color}">${cards.map(m => capKpi(m, d, meta)).join('')}</div>
       <div class="cap-panel" style="--capc:${meta.color}"><div class="cap-panel-head"><div class="cap-identity"><div class="cap-identity-icon">${CAP_METRIC_ICONS[metric.icon]}</div><div class="cap-identity-title">${metric.label}</div></div>${periodToggle('cap')}</div>
-        ${capBigChart(metric, d)}</div>`;
+        ${metric.key === 'success' ? capImpactChart(d) : capBigChart(metric, d)}</div>`;
   }
   function capPage() { return st.capName ? capDetailHtml() : capHead('Capability Landscape') + capLandscapeHtml(); }
   function paintCap() {
     const main = $('#lfMain'); if (!main || st.mode !== 'capability') return;
     main.innerHTML = capPage();
     main.classList.toggle('fr-loading', st.capLoading && !!(st.capName ? st.capDetail : st.capLand));
-    requestAnimationFrame(positionThumbs);
+    requestAnimationFrame(positionThumbs); requestAnimationFrame(drawCapImpactLine);
     main.querySelectorAll('[data-cap]').forEach(b => b.addEventListener('click', () => LF.openCapability(b.dataset.cap)));
     main.querySelectorAll('[data-metric]').forEach(b => b.addEventListener('click', () => { st.capMetric = b.dataset.metric; paintCap(); }));
+    const tip = $('#lfTip');
+    main.querySelectorAll('.cap-bar[data-tip]').forEach(g => {
+      g.addEventListener('mousemove', e => { tip.innerHTML = g.dataset.tip; tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; tip.classList.add('show'); });
+      g.addEventListener('mouseleave', () => tip.classList.remove('show'));
+    });
+  }
+
+  // ───────── Reflector Insights (Kriti, 2026-11-13): row 05 of Reports & Insights. The ranking page, the Reflector Dashboard (all 54) and one reflector's page. ─────────
+  const REF_RANKS = [['hours', 'Learning Hours'], ['users', 'Users Engaged'], ['timeshare', 'Time Share'], ['atoms', 'Atoms Completed'], ['applied', 'Atoms Applied'], ['success', 'Success Rate']];
+  const REF_SHOWS = [['top10', 'Top 10'], ['top10pct', 'Top 10%'], ['top20pct', 'Top 20%']];
+  const REF_WINDOWS = [['month', 'This Month'], ['quarter', 'This Quarter'], ['year', 'This Year']];
+  const REF_COLORS = { hours: '#E4CA0A', users: '#14B8A6', timeshare: '#e8960a', atoms: '#3ab54a', applied: '#2E8DE0', success: '#1f7a30' };
+  function refParams(extra) { const p = new URLSearchParams(extra || {}); LEVELS.forEach(([l]) => st.refFocus[l].forEach(k => p.append('focus_' + l, k))); return p.toString(); }
+  async function loadRef() {
+    const mine = ++refSeq;
+    st.refLoading = true; paintRef();
+    try { const data = await reportsApi('/api/reports/reflector-insights?' + refParams({ period: st.refWindow, rank_by: st.refRank, show: st.refShow })); if (mine !== refSeq) return; st.refData = data; st.refError = null; }
+    catch (e) { if (mine !== refSeq) return; st.refError = e.message; }
+    st.refLoading = false; paintRef();
+  }
+  async function loadRefDetail() {
+    const mine = ++refDetailSeq;
+    st.refLoading = true; paintRef();
+    try { const data = await reportsApi('/api/reports/reflector?' + refParams({ reflector_name: st.refName, period: st.refPeriod })); if (mine !== refDetailSeq) return; if (data && data.buckets) data.buckets = dropBeforeLaunch(data.buckets, 'bucket', st.refPeriod, data.fiscal_start_month); st.refDetail = data; st.refDetailError = null; }
+    catch (e) { if (mine !== refDetailSeq) return; st.refDetailError = e.message; }
+    st.refLoading = false; paintRef();
+  }
+  function refHead(title, back) {
+    const tag = LEVELS.flatMap(([l]) => st.refFocus[l].map(k => { const o = ((st.options && st.options[l]) || []).find(x => x.key === k); return o ? o.label : k; }));
+    return `<div class="um-page-head"><div>${back || REPORTS_BACK}<h1 class="um-title">${esc(title)}</h1></div>
+      <div class="fr-controls-right"><button class="ri-dd-trigger" onclick="LF.toggleDrill('ref')">${DD_ICON}Drill Down${DD_TOOLTIP}</button></div></div>
+      ${tag.length ? `<div class="fr-filter-tag">Filtered by: ${tag.map(esc).join(', ')} <button onclick="LF.clearRefFocus()">&times;</button></div>` : ''}`;
+  }
+  function refValueText(metric, t) {
+    const n = t.numbers;
+    if (metric === 'hours') return (Math.round(n.hours * 10) / 10) + 'h';
+    if (metric === 'users') return n.users_engaged + (n.users_percent === null ? '' : ' (' + Math.round(n.users_percent) + '%)');
+    if (metric === 'timeshare') return Math.round(n.time_share_percent) + '%';
+    if (metric === 'atoms') return String(n.atoms_completed);
+    if (metric === 'applied') return String(n.applied_count);
+    return Math.round(n.success_percent) + '% (' + (n.top_box + n.mid) + ' of ' + n.scored + ')';
+  }
+  function refOverviewHtml() {
+    const d = st.refData, head = refHead('Reflector Insights', REPORTS_BACK);
+    const sel = (opts, cur, fn) => `<div class="filter-select-wrap"><select class="filter-select rh-select" onchange="${fn}(this.value)">${opts.map(([k, l]) => `<option value="${k}"${k === cur ? ' selected' : ''}>${l}</option>`).join('')}</select></div>`;
+    const controls = `<div class="rh-graph-controls">
+        <div class="rh-control"><span class="rh-control-label">Rank by</span>${sel(REF_RANKS, st.refRank, 'LF.setRefRank')}</div>
+        <div class="rh-control"><span class="rh-control-label">Show</span>${sel(REF_SHOWS, st.refShow, 'LF.setRefShow')}</div>
+        <div class="rh-control"><span class="rh-control-label">Period</span><div class="period-toggle fr-period-toggle"><div class="period-toggle-thumb"></div>${REF_WINDOWS.map(([k, l]) => `<span class="${k === st.refWindow ? 'active' : ''}" onclick="LF.setRefWindow('${k}')">${l}</span>`).join('')}</div></div>
+      </div>`;
+    if (!d) return head + `<div class="rh-top"><div class="rh-graph-card">${controls}<div class="fr-state" style="box-shadow:none">${esc(st.refError ? friendly(st.refError) : 'Loading…')}</div></div></div>`;
+    const max = Math.max(...d.top.map(t => t.value || 0), 1), color = REF_COLORS[st.refRank];
+    const rows = d.top.length ? d.top.map(t => `<div class="rank-row" data-ref="${esc(t.reflector)}"><div class="rank-position">${t.rank}</div><div class="rank-label" title="${esc(t.reflector)}">${esc(t.reflector)}</div>
+        <div class="rank-bar-track"><div class="rank-bar-fill" style="width:${((t.value || 0) / max * 100).toFixed(1)}%;background:${color}"><span class="rank-value">${esc(refValueText(st.refRank, t))}</span></div></div></div>`).join('')
+      : `<p class="rh-subnote">Nothing to rank ${esc(REF_WINDOWS.find(w => w[0] === st.refWindow)[1].toLowerCase())}${st.refRank === 'success' ? ': no reflector has a rated application yet' : ''}.</p>`;
+    const insights = d.insights.length ? d.insights.map(o => `<div class="key-obs-item">${esc(o)}</div>`).join('') : '<div class="key-obs-item">Not enough activity yet to say anything useful.</div>';
+    return head + `<div class="rh-top">
+      <div class="rh-graph-card">${controls}<div class="rh-rank-list">${rows}</div></div>
+      <div class="key-obs-card rh-insights-card"><div class="key-obs-head"><div class="key-obs-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2 13.8 8.2 20 10 13.8 11.8 12 18 10.2 11.8 4 10 10.2 8.2Z"/></svg></div><div class="key-obs-title">Key Insights</div></div><div class="key-obs-list">${insights}</div></div></div>
+      <h3 class="rh-section-title">Reflector Dashboard <span class="rh-count-tag">${d.reflectors.length} reflectors</span></h3>
+      <div class="reflector-grid">${d.reflectors.map(r => `<div class="reflector-chip" data-ref="${esc(r.reflector)}" style="border-left-color:${capMeta(r.capability).color}"><div class="reflector-chip-label">${esc(r.reflector)}</div><div class="reflector-chip-cap">${esc(r.capability)}</div></div>`).join('')}</div>`;
+  }
+  // The reflector page draws the Capability page's own cards and graphs, which read the period, card and drill-down from st.cap*; those three are swapped for the moment they are drawn.
+  function asCap(fn) {
+    const keep = [st.capPeriod, st.capMetric, st.capFocus]; st.capPeriod = st.refPeriod; st.capMetric = st.refMetric; st.capFocus = st.refFocus;
+    try { return fn(); } finally { [st.capPeriod, st.capMetric, st.capFocus] = keep; }
+  }
+  function refDetailHtml() {
+    const d = st.refDetail, back = `<button class="ri-back-btn" onclick="LF.refBack()" style="margin-bottom:0.7rem;">&larr; Reflector Insights</button>`;
+    if (!d) return refHead(st.refName, back) + `<div class="fr-state">${esc(st.refDetailError ? friendly(st.refDetailError) : 'Loading…')}</div>`;
+    const meta = capMeta(d.capability);
+    return asCap(() => {
+      const cards = capCards(d), metric = cards.find(m => m.key === st.capMetric) || cards[0];
+      const obs = (d.observations || []).length ? d.observations.map(o => `<div class="key-obs-item">${esc(o)}</div>`).join('') : '<div class="key-obs-item">Not enough activity yet to say anything useful.</div>';
+      return refHead(d.reflector, back) + `
+      <div class="cap-hint">${esc(d.capability)}. Each card shows the last six months. Click a card to open it in the big chart below.</div>
+      <div class="cap-kpis" style="--capc:${meta.color}">${cards.map(m => capKpi(m, d, meta)).join('')}</div>
+      <div class="cap-panel" style="--capc:${meta.color}"><div class="cap-panel-head"><div class="cap-identity"><div class="cap-identity-icon">${CAP_METRIC_ICONS[metric.icon]}</div><div class="cap-identity-title">${metric.label}</div></div>${periodToggle('ref')}</div>
+        ${metric.key === 'success' ? capImpactChart(d) : capBigChart(metric, d)}</div>
+      <div class="key-obs-card ref-obs"><div class="key-obs-head"><div class="key-obs-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2 13.8 8.2 20 10 13.8 11.8 12 18 10.2 11.8 4 10 10.2 8.2Z"/></svg></div><div class="key-obs-title">Key Observations</div></div><div class="key-obs-list">${obs}</div></div>`;
+    });
+  }
+  function paintRef() {
+    const main = $('#lfMain'); if (!main || st.mode !== 'reflector') return;
+    main.innerHTML = st.refName ? refDetailHtml() : refOverviewHtml();
+    main.classList.toggle('fr-loading', st.refLoading && !!(st.refName ? st.refDetail : st.refData));
+    requestAnimationFrame(positionThumbs); requestAnimationFrame(drawCapImpactLine);
+    main.querySelectorAll('[data-ref]').forEach(b => b.addEventListener('click', () => LF.openReflector(b.dataset.ref)));
+    main.querySelectorAll('[data-metric]').forEach(b => b.addEventListener('click', () => { st.refMetric = b.dataset.metric; paintRef(); }));
     const tip = $('#lfTip');
     main.querySelectorAll('.cap-bar[data-tip]').forEach(g => {
       g.addEventListener('mousemove', e => { tip.innerHTML = g.dataset.tip; tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; tip.classList.add('show'); });
@@ -4545,6 +4804,7 @@ const LF = (() => {
   function paint() {
     const main = $('#lfMain'); if (!main) return;
     if (st.mode === 'capability') { paintCap(); return; }
+    if (st.mode === 'reflector') { paintRef(); return; }
     if (st.mode === 'workplace') { main.innerHTML = workplacePage(); paintWc(); return; }
     main.innerHTML = page();
     main.classList.toggle('fr-loading', st.loading && !!st.data);
@@ -4594,7 +4854,7 @@ const LF = (() => {
       <div class="fr-tip" id="lfTip"></div>`);
   }
   function drillBody() {
-    const wc = st.ddMode === 'wc', state = wc ? st.wc : st.ddMode === 'tr' ? st.trFocus : st.ddMode === 'cap' ? st.capFocus : st.focus;
+    const wc = st.ddMode === 'wc', state = wc ? st.wc : st.ddMode === 'tr' ? st.trFocus : st.ddMode === 'cap' ? st.capFocus : st.ddMode === 'ref' ? st.refFocus : st.focus;
     const levels = (wc ? WC_LEVELS : LEVELS).filter(([l]) => st.options && (st.options[l] || []).length >= 2);
     // Everything is ticked unless a narrower selection was applied; the first section is always open.
     const shown = {}; levels.forEach(([l]) => { shown[l] = drawerLabels(st.options, l); });
@@ -4620,21 +4880,21 @@ const LF = (() => {
 
   return {
     async render(mode) {
-      st.mode = mode === 'workplace' ? 'workplace' : mode === 'capability' ? 'capability' : 'friction';
+      st.mode = mode === 'workplace' ? 'workplace' : mode === 'capability' ? 'capability' : mode === 'reflector' ? 'reflector' : 'friction';
       ensureDrawers();
       $('#view').innerHTML = '<div id="lfMain"></div>';
       paint();
       if (!st.options) { try { st.options = await reportsApi('/api/reports/driver-report-options'); } catch (e) { st.error = e.message; } }
       if (st.options && !st.recalled) {   // the last applied drill-down comes back by itself; anything no longer in this person's access is dropped
         st.recalled = true;
-        [['friction', st.focus], ['friction_wc', st.wc], ['friction_tr', st.trFocus], ['capability', st.capFocus]].forEach(([name, target]) => {
+        [['friction', st.focus], ['friction_wc', st.wc], ['friction_tr', st.trFocus], ['capability', st.capFocus], ['reflector', st.refFocus]].forEach(([name, target]) => {
           const saved = recallSelection(name);
           Object.keys(target).forEach(l => { target[l] = (saved[l] || []).filter(k => (st.options[l] || []).some(o => o.key === k)); });
         });
       }
-      if (st.mode === 'capability') { loadCapLand(); if (st.capName) loadCapDetail(); } else if (st.mode === 'workplace') loadWc(); else { load(); loadTr(); }
+      if (st.mode === 'capability') { loadCapLand(); if (st.capName) loadCapDetail(); } else if (st.mode === 'reflector') { loadRef(); if (st.refName) loadRefDetail(); } else if (st.mode === 'workplace') loadWc(); else { load(); loadTr(); }
     },
-    setPeriod(which, k) { if (which === 'cap') { st.capPeriod = k; loadCapDetail(); } else if (which === 'wc') { st.wcPeriod = k; loadWc(); } else if (which === 'tr') { st.trPeriod = k; loadTr(); } else { st.period = k; load(); } },
+    setPeriod(which, k) { if (which === 'ref') { st.refPeriod = k; loadRefDetail(); } else if (which === 'cap') { st.capPeriod = k; loadCapDetail(); } else if (which === 'wc') { st.wcPeriod = k; loadWc(); } else if (which === 'tr') { st.trPeriod = k; loadTr(); } else { st.period = k; load(); } },
     toggleDD(btn) { const open = btn.parentElement.classList.toggle('open'); btn.textContent = (open ? '− ' : '+ ') + btn.dataset.label; },
     toggleDrill(mode) {
       if (typeof mode === 'string') st.ddMode = mode;
@@ -4647,10 +4907,10 @@ const LF = (() => {
     applyDrill() {
       const body = $('#lfDdBody'), { picks, empty } = drawerPicks(body, it => it.dataset.level);
       if (empty.length) return drawerSay(body, pickMsg(empty));
-      const state = st.ddMode === 'wc' ? st.wc : st.ddMode === 'tr' ? st.trFocus : st.ddMode === 'cap' ? st.capFocus : st.focus;
+      const state = st.ddMode === 'wc' ? st.wc : st.ddMode === 'tr' ? st.trFocus : st.ddMode === 'cap' ? st.capFocus : st.ddMode === 'ref' ? st.refFocus : st.focus;
       (st.ddMode === 'wc' ? WC_LEVELS : LEVELS).forEach(([l]) => { state[l] = picks[l] || []; });
-      rememberSelection(st.ddMode === 'wc' ? 'friction_wc' : st.ddMode === 'tr' ? 'friction_tr' : st.ddMode === 'cap' ? 'capability' : 'friction', state);
-      LF.toggleDrill(); if (st.ddMode === 'wc') loadWc(); else if (st.ddMode === 'tr') loadTr(); else if (st.ddMode === 'cap') { loadCapLand(); if (st.capName) loadCapDetail(); } else load();
+      rememberSelection(st.ddMode === 'wc' ? 'friction_wc' : st.ddMode === 'tr' ? 'friction_tr' : st.ddMode === 'cap' ? 'capability' : st.ddMode === 'ref' ? 'reflector' : 'friction', state);
+      LF.toggleDrill(); if (st.ddMode === 'wc') loadWc(); else if (st.ddMode === 'tr') loadTr(); else if (st.ddMode === 'cap') { loadCapLand(); if (st.capName) loadCapDetail(); } else if (st.ddMode === 'ref') { loadRef(); if (st.refName) loadRefDetail(); } else load();
     },
     toggleReflector(mode) {
       if (typeof mode === 'string') st.rfMode = mode;
@@ -4670,9 +4930,15 @@ const LF = (() => {
     openCapability(name) { st.capName = name; st.capDetail = null; st.capDetailError = null; st.capPeriod = 'month'; st.capMetric = 'users'; paintCap(); loadCapDetail(); },
     capBack() { st.capName = null; st.capDetail = null; paintCap(); },
     clearCapFocus() { LEVELS.forEach(([l]) => st.capFocus[l] = []); rememberSelection('capability', st.capFocus); loadCapLand(); if (st.capName) loadCapDetail(); },
+    setRefRank(v) { st.refRank = v; loadRef(); },
+    setRefShow(v) { st.refShow = v; loadRef(); },
+    setRefWindow(k) { st.refWindow = k; loadRef(); },
+    openReflector(name) { st.refName = name; st.refDetail = null; st.refDetailError = null; st.refPeriod = 'month'; st.refMetric = 'users'; paintRef(); loadRefDetail(); window.scrollTo(0, 0); },
+    refBack() { st.refName = null; st.refDetail = null; paintRef(); window.scrollTo(0, 0); },
+    clearRefFocus() { LEVELS.forEach(([l]) => st.refFocus[l] = []); rememberSelection('reflector', st.refFocus); loadRef(); if (st.refName) loadRefDetail(); },
     clearTrFocus() { LEVELS.forEach(([l]) => st.trFocus[l] = []); rememberSelection('friction_tr', st.trFocus); loadTr(); },
     clearTrReflectors() { st.trReflectors = []; loadTr(); },
-    repaint() { if ($('#lfMain') && (st.mode === 'workplace' || st.mode === 'capability' || st.data)) paint(); },
+    repaint() { if ($('#lfMain') && (st.mode === 'workplace' || st.mode === 'capability' || st.mode === 'reflector' || st.data)) paint(); },
   };
 })();
 let _lfResize; addEventListener('resize', () => { clearTimeout(_lfResize); _lfResize = setTimeout(() => LF.repaint(), 150); });
@@ -4683,10 +4949,10 @@ let _lfResize; addEventListener('resize', () => { clearTimeout(_lfResize); _lfRe
 const REPORTS_BACK = '<button class="ri-back-btn" onclick="location.hash=\'#reports\'" style="margin-bottom:0.7rem;">&larr; Reports &amp; Insights</button>';
 const REPORT_ROWS = [
   { label: 'Adoption Overview', desc: 'See who is using Wisdom on the GO!, how often, and where adoption is growing.', hash: '#reports/adoption' },
-  { label: 'Competency Dashboard', desc: 'Understand learner engagement, learning investment and proficiency across every organizational competency. Drill down into individual competencies to identify strengths, development priorities and adoption trends.' },
+  { label: 'Competency Dashboard', desc: 'Understand learner engagement, learning investment and proficiency across every organizational competency. Drill down into individual competencies to identify strengths, development priorities and adoption trends.', soon: true },
   { label: 'Capability Landscape', desc: 'Explore the organization’s capability profile to identify where human capabilities are strongest, where they are underdeveloped, and how they are evolving across teams and employee groups.', hash: '#reports/capability' },
   { label: 'Learning Friction', desc: 'Identify the underlying barriers preventing employees from demonstrating critical human skills. Analyze friction across the four learning drivers to understand where development efforts should be focused.', hash: '#reports/friction' },
-  { label: 'Reflector Insights', desc: 'Analyze Reflector demand to identify the human skills most frequently diagnosed, recommended and mapped across organizational competencies and learning initiatives. Explore demand, proficiency and growth trends over time.' },
+  { label: 'Reflector Insights', desc: 'Analyze Reflector demand to identify the human skills most frequently diagnosed, recommended and mapped across organizational competencies and learning initiatives. Explore demand, proficiency and growth trends over time.', hash: '#reports/reflector' },
   { label: 'Workplace Challenges', desc: 'Discover the most common workplace situations employees seek help with, helping identify recurring business challenges, emerging trends and areas requiring organizational attention.', hash: '#reports/workplace' },
 ];
 function renderReportsHub() {
@@ -4694,15 +4960,15 @@ function renderReportsHub() {
     <div class="report-list">${REPORT_ROWS.map((r, i) => `
       <div class="report-row clickable" style="border-left-color:${i % 2 === 0 ? 'var(--green)' : 'var(--night)'}" ${r.hash ? `onclick="location.hash='${r.hash}'" role="link" tabindex="0"` : ''}>
         <div class="report-row-index">${String(i + 1).padStart(2, '0')}</div>
-        <div class="report-row-text"><h3>${esc(r.label)}</h3><p>${esc(r.desc)}</p></div>
+        <div class="report-row-text"><h3>${esc(r.label)}${r.soon ? '<span class="soon">Coming soon</span>' : ''}</h3><p>${esc(r.desc)}</p></div>
       </div>`).join('')}</div>`;
 }
 
 // ════════════ NAVIGATION, ROUTER, START-UP ════════════
-const NAV = [
+const NAV = [   // Reports & Insights first (Kriti, 2026-11-13: "it was very counterintuitive")
+  { key: 'reports', label: 'Reports & Insights', icon: 'chart', hash: '#reports' },
   { key: 'users', label: 'User Management', icon: 'users', hash: '#users' },
   { key: 'learning', label: 'Learning Management', icon: 'book', hash: '#learning/assign' },
-  { key: 'reports', label: 'Reports & Insights', icon: 'chart', hash: '#reports' },
   { key: 'impact', label: 'Business Impact', icon: 'trend', hash: '#impact', soon: true },   // a made-up demo view, so it keeps its Soon badge (Kriti, 2026-11-02)
 ];
 function drawNav(activeKey) {
@@ -4765,7 +5031,7 @@ function renderBusinessImpact() {
 }
 async function route() {
   $$('.menu').forEach(x => x.remove());
-  const raw = (location.hash || '#users').slice(1), qi = raw.indexOf('?');
+  const raw = (location.hash || '#reports').slice(1), qi = raw.indexOf('?');
   const path = qi === -1 ? raw : raw.slice(0, qi), params = new URLSearchParams(qi === -1 ? '' : raw.slice(qi + 1));
   const parts = path.split('/');
   S.route = parts[0];
@@ -4786,11 +5052,12 @@ async function route() {
     drawNav('reports');
     if (parts[1] === 'adoption') { renderAdoption(); $('#view .um-page-head > div').insertAdjacentHTML('afterbegin', REPORTS_BACK); return; }
     if (parts[1] === 'friction') return LF.render();
+    if (parts[1] === 'reflector') return LF.render('reflector');   // Reflector Insights (report 05, Kriti 2026-11-13)
     if (parts[1] === 'capability') return LF.render('capability');   // the Capability Landscape (report 03)
     if (parts[1] === 'workplace') return LF.render('workplace');   // Friction x Workplace Challenge lives on its own page, report 06 (Kriti, 2026-11-10)
     return renderReportsHub();
   }
-  location.hash = '#users';
+  location.hash = '#reports';
 }
 // ── Profile photo + its drop-down (Kriti, 2026-10-03): same behaviour as the user page -- click your photo, the
 // menu opens ("Back to chat"); click anywhere else or press Esc and it closes. ──
@@ -4811,6 +5078,63 @@ async function loadProfilePhoto() {
   } catch (err) { /* leave the empty circle */ }
 }
 loadProfilePhoto();
+
+// ════════════ GUIDED TOUR (Kriti, 2026-11-13) ════════════
+// The admin side's version of the user side's tour (chat.html): a Start Tour button in the top bar and click-through Got it / Dismiss popups
+// in the same gold-glass look, one step per area of the side menu, then the profile menu. Words are Kriti's approved script.
+const TOUR_SECTION = 'Explore the Admin Area';
+const TOUR_STEPS = [
+  { anchor:'#adminNav [data-hash="#reports"]', num:1, title:'Reports & Insights', body:'Your reports in one place: adoption, learning friction, capability landscape and workplace challenges. The Competency Dashboard is coming soon.' },
+  { anchor:'#adminNav [data-hash="#users"]', num:2, title:'User Management', body:'Add and manage the people in your organization. Create users one by one or in bulk, organize them by business unit, and manage other admins.' },
+  { anchor:'#adminNav [data-hash="#learning/assign"]', num:3, title:'Learning Management', body:"Assign skills to people, build learning initiatives for your organization, edit them later, and keep the glossary that WOTG's diagnosis uses." },
+  { anchor:'#adminNav [data-hash="#impact"]', num:4, title:'Business Impact', body:"Coming soon. This is where you'll see the business difference learning is making. What you see now is a preview with illustrative numbers." },
+  { anchor:'#profAvatar', num:5, title:'Your profile menu', body:"Go back to the learner chat, set your company's fiscal year start month in Company Settings, or log out." },
+];
+let tourStepIndex = -1, _tourScrollY = 0, _tourSidebar = null;
+function _tourLock() {
+  _tourScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  Object.assign(document.body.style, { position:'fixed', top:`-${_tourScrollY}px`, left:'0', right:'0', overflow:'hidden' });
+}
+function _tourUnlock() {
+  Object.assign(document.body.style, { position:'', top:'', left:'', right:'', overflow:'' });
+  window.scrollTo(0, _tourScrollY);
+}
+function _tourSidebarShow() {   // the menu steps need the side menu on screen; remember how it was so it goes back the same way
+  const sb = $('#adminSidebar'), main = $('#adminMain'), small = window.innerWidth <= 960;
+  if (_tourSidebar === null) _tourSidebar = { small, hidden: small ? !sb.classList.contains('open') : sb.classList.contains('collapsed') };
+  if (small) sb.classList.add('open'); else { sb.classList.remove('collapsed'); main.classList.remove('expanded'); }
+}
+function _tourSidebarRestore() {
+  if (_tourSidebar === null) return;
+  const sb = $('#adminSidebar'), main = $('#adminMain');
+  if (_tourSidebar.hidden) { if (_tourSidebar.small) sb.classList.remove('open'); else { sb.classList.add('collapsed'); main.classList.add('expanded'); } }
+  _tourSidebar = null;
+}
+function startTour() { tourStepIndex = -1; _tourSidebarShow(); advanceTour(); }
+function advanceTour() {
+  tourStepIndex++;
+  if (tourStepIndex >= TOUR_STEPS.length) { finishTour(); return; }
+  setTimeout(() => showTourStep(tourStepIndex), 0);
+}
+function showTourStep(i) {
+  const step = TOUR_STEPS[i], anchor = document.querySelector(step.anchor), popup = $('#tourPopup');
+  if (!anchor || !anchor.offsetParent) { advanceTour(); return; }   // an area this person does not have: skip it
+  $('#tourPopupStep').textContent = TOUR_SECTION;
+  $('#tourPopupTitle').textContent = `${step.num}. ${step.title}`;
+  $('#tourPopupBody').textContent = step.body;
+  popup.classList.add('visible');
+  if (document.body.style.position !== 'fixed') _tourLock();   // the popup is placed once, so the page must not scroll under it
+  const margin = 14, vw = window.innerWidth, vh = window.innerHeight, rect = anchor.getBoundingClientRect();
+  const popupW = popup.offsetWidth, popupH = popup.offsetHeight;
+  let left = Math.max(Math.min(rect.left, vw - popupW - margin), margin), top, arrowDown;
+  if (vh - rect.bottom >= popupH + margin || vh - rect.bottom >= rect.top) { top = Math.max(Math.min(rect.bottom + margin, vh - popupH - margin), margin); arrowDown = false; }
+  else { top = Math.max(rect.top - popupH - margin, margin); arrowDown = true; }
+  popup.style.left = left + 'px'; popup.style.top = top + 'px'; popup.classList.toggle('arrow-down', arrowDown);
+  popup.style.setProperty('--arrow-left', Math.max(16, Math.min(rect.left + rect.width / 2 - left - 6, popupW - 28)) + 'px');
+}
+function tourGotIt() { $('#tourPopup').classList.remove('visible'); advanceTour(); }
+function finishTour() { $('#tourPopup').classList.remove('visible'); _tourSidebarRestore(); if (document.body.style.position === 'fixed') _tourUnlock(); }
+function dismissTour() { tourStepIndex = TOUR_STEPS.length; finishTour(); }
 
 (async function init() {
   $('#burger').onclick = () => {
@@ -4838,5 +5162,14 @@ loadProfilePhoto();
 })();
 
 </script>
+<div class="tour-popup" id="tourPopup">
+  <div class="tour-popup-step" id="tourPopupStep"></div>
+  <div class="tour-popup-title" id="tourPopupTitle"></div>
+  <div class="tour-popup-body" id="tourPopupBody"></div>
+  <div class="tour-popup-actions">
+    <button class="tour-btn-dismiss" onclick="dismissTour()">Dismiss tour</button>
+    <button class="tour-btn-got-it" onclick="tourGotIt()">Got it</button>
+  </div>
+</div>
 </body>
 </html>
