@@ -224,7 +224,7 @@
     return block;
   }
   function renderActions(v) {
-    var a = S.actions; a.innerHTML = ''; a.style.display = '';
+    var a = S.actions; a.innerHTML = ''; a.style.display = ''; a.style.visibility = ''; a.style.pointerEvents = '';
     if (v.status === 'in_progress') { a.appendChild(button(WORDS.endBtn, 'btn-end', function () { onEnd(false); })); return; }
     if (v.status === 'ended' && v.feedback_offered) a.appendChild(button(WORDS.feedbackBtn, 'vo-nav-btn', giveFeedback));
   }
@@ -320,7 +320,8 @@
   }
 
   // The learner pressed the slide's Continue / Finish: an offer of feedback that was still open goes away (it is one or the other).
-  RP.onAdvance = function () { if (S.actions) S.actions.style.display = 'none'; };
+  // It is hidden, not removed: taking its height away made the page jog by about 48 px for a split second before the next slide scrolled in (Kriti, 2026-11-14).
+  RP.onAdvance = function () { if (S.actions) { S.actions.style.visibility = 'hidden'; S.actions.style.pointerEvents = 'none'; } };
 
   // ---------------------------------------------------------------------------------------------------------------- the feedback
   function giveFeedback(btn) {
