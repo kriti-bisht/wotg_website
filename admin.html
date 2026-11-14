@@ -1074,6 +1074,45 @@ button.combo-click { border:0; font-family:inherit; cursor:pointer; width:100%; 
 .cap-empty { text-align:center; color:var(--grey3); font-size:0.84rem; padding:2.5rem 0; }
 @media (max-width:1180px) { .cap-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .cap-grid { grid-template-columns:repeat(2,1fr); } }
 @media (max-width:640px) { .cap-kpis, .cap-grid { grid-template-columns:1fr; } }
+
+/* ═══ Learning Friction by capability (2026-11-14): clickable cards, the capability list, Key Observations beside it, the chart's capability chips ═══ */
+.friction-area-card.cb-pick { cursor:pointer; transition:box-shadow .15s; }
+.friction-area-card.cb-pick:hover { box-shadow:0 6px 18px rgba(4,26,64,.12); }
+.friction-area-card.cb-on { box-shadow:0 0 0 2px var(--night), 0 8px 22px rgba(4,26,64,.14); }
+.cb-layout { display:grid; grid-template-columns:minmax(0,1.9fr) minmax(260px,1fr); gap:1.2rem; align-items:start; margin-top:1.2rem; }
+.cb-obs { position:sticky; top:96px; }
+.cb-obs-ctx { font-size:.76rem; font-weight:600; color:var(--grey3); margin:-.1rem 0 .7rem 2px; }
+.cb-card { padding-bottom:1.1rem; }
+.cb-head { display:flex; justify-content:space-between; align-items:baseline; gap:1rem; flex-wrap:wrap; }
+.cb-title-dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; }
+.cb-overall { font-size:.78rem; color:var(--grey3); }
+.cb-overall b { color:var(--night); }
+.cb-legend { display:flex; gap:22px; flex-wrap:wrap; font-size:.74rem; color:var(--grey3); margin:0 0 .5rem; }
+.cb-legend span { display:flex; align-items:center; gap:7px; }
+.cb-lg-bar { display:inline-block; width:26px; height:10px; border-radius:5px; }
+.cb-rows { display:flex; flex-direction:column; }
+.cb-row { border-top:1px solid rgba(4,26,64,.08); }
+.cb-row:first-child { border-top:0; }
+.cb-main { display:grid; grid-template-columns:14px minmax(120px,222px) 1fr 138px 14px; align-items:center; gap:12px; width:100%; background:none; border:0; font:inherit; text-align:left; padding:.62rem .2rem; cursor:pointer; color:var(--night); }
+.cb-main:hover { background:rgba(4,26,64,.03); }
+.cb-dot { width:10px; height:10px; border-radius:50%; }
+.cb-name { font-size:.86rem; font-weight:500; }
+.cb-track { position:relative; height:16px; background:var(--grey1,#eef0f4); border-radius:8px; }
+.cb-fill { position:absolute; left:0; top:0; bottom:0; border-radius:8px; }
+.cb-num { font-size:.8rem; display:flex; gap:8px; align-items:baseline; justify-content:flex-end; }
+.cb-num b { font-size:.95rem; } .cb-num span { color:var(--grey3); font-size:.74rem; }
+.cb-chev { color:var(--grey3); font-size:.8rem; }
+.cb-refs { margin:.1rem 0 .8rem 26px; padding:.7rem .9rem; background:rgba(4,26,64,.035); border-radius:10px; }
+.cb-ref { display:grid; grid-template-columns:minmax(0,1fr) 90px 190px; gap:12px; align-items:center; padding:.28rem 0; font-size:.82rem; }
+.cb-ref-track { height:10px; background:#fff; border-radius:5px; position:relative; overflow:hidden; }
+.cb-ref-track span { position:absolute; left:0; top:0; bottom:0; border-radius:5px; }
+.cb-ref-num { text-align:right; color:var(--grey3); font-size:.76rem; } .cb-ref-num b { color:var(--night); }
+.fr-chips { display:flex; flex-wrap:wrap; gap:6px; margin:.55rem 0 .9rem; }
+.fr-chip { border:1px solid rgba(4,26,64,.16); background:#fff; color:var(--night); font:inherit; font-size:.74rem; padding:5px 12px; border-radius:999px; cursor:pointer; }
+.fr-chip:hover { background:rgba(4,26,64,.05); }
+.fr-chip.on { background:var(--night); color:#fff; border-color:var(--night); }
+@media (max-width:1100px){ .cb-layout { grid-template-columns:1fr; } .cb-obs { position:static; } }
+@media (max-width:900px){ .cb-main { grid-template-columns:14px 1fr 90px; } .cb-track, .cb-chev { display:none; } .cb-ref { grid-template-columns:1fr; } .cb-ref-track { display:none; } .cb-ref-num { text-align:left; } }
 </style>
 </head>
 <body>
@@ -4299,7 +4338,7 @@ const LF = (() => {
   const DD_TOOLTIP = '<div class="dd-tooltip"><strong>Reveal Insights from Every Angle</strong><span>Analyze learning insights across different organizational dimensions. Slice data vertically and horizontally to uncover trends, compare groups, and identify where capability gaps and strengths exist.</span></div>';
   const RF_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
   const BUBBLE_MIN = 22, BUBBLE_MAX = 60, PCT_MIN = 12, PCT_MAX = 44;
-  const st = { period: 'month',   // ONE toggle for the whole Learning Friction section: the cards, the chart and Compounds move together (Kriti, 2026-10-09)
+  const st = { capArea: 'confidence', capOpen: null, trCap: '', period: 'month',   // ONE toggle for the whole Learning Friction section: the cards, the chart and Compounds move together (Kriti, 2026-10-09)
                 focus: { company: [], bu: [], department: [], manager: [], user: [], assigner: [], initiative: [] },
                wc: { company: [], bu: [], department: [], initiative: [] }, reflectors: [], options: null, data: null, error: null, loading: true, ddMode: 'page',
                wcPeriod: 'month', wcReflectors: [], wcData: null, wcError: null, wcLoading: true, rfMode: 'page', openCombo: null, mode: 'friction',
@@ -4351,7 +4390,7 @@ const LF = (() => {
     return p.toString();
   }
   function trParams() {
-    const p = new URLSearchParams({ cards_period: st.trPeriod, trend_period: st.trPeriod });   // the same route as the top half, asked again with the chart's own period, drill-down and reflectors; only its "trend" part is used
+    const p = new URLSearchParams({ cards_period: st.trPeriod, trend_period: st.trPeriod }); if (st.trCap) p.append('capability', st.trCap);   // the same route as the top half, asked again with the chart's own period, drill-down and reflectors; only its "trend" part is used
     LEVELS.forEach(([l]) => st.trFocus[l].forEach(k => p.append('focus_' + l, k)));
     st.trReflectors.forEach(r => p.append('reflector', r));
     return p.toString();
@@ -4393,7 +4432,7 @@ const LF = (() => {
     const none = cards.identifications === 0;
     return `<div class="friction-area-grid">${areas.map(a => {
       const pct = cards.areas[a.key].percent, color = COLORS[a.key];
-      return `<div class="friction-area-card" style="border-left-color:${color}"><div class="friction-area-top">
+      return `<div class="friction-area-card cb-pick${st.capArea === a.key ? ' cb-on' : ''}" data-area="${a.key}" onclick="LF.pickArea('${a.key}')" style="border-left-color:${color}"><div class="friction-area-top">
         <div class="friction-area-ring-wrap"><div class="friction-area-ring ${none ? 'nodata' : ''}" style="background:conic-gradient(${color} 0% ${pct || 0}%, var(--grey1) ${pct || 0}% 100%)"><div class="friction-area-ring-inner" style="color:${color}">${none ? '—' : pct + '%'}</div></div></div>
         <div class="friction-area-text"><h3>${esc(a.label)}</h3><p>${esc(a.description)}</p><span class="friction-area-tag" style="background:${color}22; color:${color}">${none ? 'No data yet' : cardsNote(d)}</span></div>
       </div></div>`;
@@ -4416,6 +4455,62 @@ const LF = (() => {
     return `<div class="key-obs-card rh-insights-card"><div class="key-obs-head">
       <div class="key-obs-icon" style="background:linear-gradient(135deg, var(--rose), #b23763)"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2 13.8 8.2 20 10 13.8 11.8 12 18 10.2 11.8 4 10 10.2 8.2Z"/></svg></div><div class="key-obs-title">Key Insights</div></div>
       <div class="key-obs-list">${data.insights.length ? data.insights.map(t => `<div class="key-obs-item">${bold(t)}</div>`).join('') : '<div class="key-obs-item" style="color:var(--grey3)">Not enough data yet to draw insights for this selection.</div>'}</div></div>`;
+  }
+  // ═══ LEARNING FRICTION BY CAPABILITY (Kriti, 2026-11-14) ═══
+  // Each friction card opens into the capabilities (and, inside one capability, its reflectors) with a Key Observations panel beside it, and the chart gets
+  // capability chips. EVERY number and EVERY sentence comes from the back end (driver_report.py: "by_capability"); this code only draws them. The back end
+  // marks the words to show in bold with **double stars**.
+  function md(text) { return esc(text).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'); }
+  function capChips() { const o = n => { const i = CAP_ORDER.indexOf(n); return i < 0 ? 99 : i; }; return ((st.options && st.options.reflectors) || []).map(c => c.capability).sort((x, y) => o(x) - o(y)); }
+  function chipsHtml() {
+    const caps = capChips(); if (!caps.length) return '';
+    return `<div class="fr-chips"><button class="fr-chip${st.trCap ? '' : ' on'}" onclick="LF.setTrCap('')">All capabilities</button>${caps.map(c => `<button class="fr-chip${st.trCap === c ? ' on' : ''}" onclick="LF.setTrCap(${esc(JSON.stringify(c))})">${esc(c)}</button>`).join('')}</div>`;
+  }
+  function cbRows(B) {   // the capabilities that had sessions, highest own share first
+    const rows = B.capabilities.filter(c => c.sessions > 0).map(c => Object.assign({ pct: c.total ? c.count * 100 / c.total : 0 }, c));
+    rows.sort((x, y) => (y.pct - x.pct) || (y.total - x.total));
+    return rows;
+  }
+  function refList(c, a) {   // the reflectors of one capability and their bars (every bar runs 0-100% of that reflector's own friction)
+    const refl = c.reflectors.filter(r => r.sessions > 0);
+    if (!refl.length) return '';
+    return `<div class="cb-refs">${refl.map(r => {
+      if (!r.total) return `<div class="cb-ref"><span class="cb-ref-name">${esc(r.name)}</span><span class="cb-ref-track"></span><span class="cb-ref-num"><b>0</b> friction cases in ${r.sessions} session${r.sessions === 1 ? '' : 's'}</span></div>`;
+      const pct = Math.round(r.count * 100 / r.total);
+      return `<div class="cb-ref"><span class="cb-ref-name">${esc(r.name)}</span>
+        <span class="cb-ref-track">${r.count ? `<span style="width:${pct}%;background:${COLORS[a.key]}"></span>` : ''}</span>
+        <span class="cb-ref-num"><b>${r.count}</b> of ${r.total} case${r.total === 1 ? '' : 's'} (${pct}%)</span></div>`;
+    }).join('')}</div>`;
+  }
+  function obsPanel(B, c) {   // c = the open capability's row, or null for the overall observations
+    const items = c ? ((B.observations.by_capability || {})[c.capability] || []) : (B.observations.overall || []);
+    const star = '<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2 13.8 8.2 20 10 13.8 11.8 12 18 10.2 11.8 4 10 10.2 8.2Z"/></svg>';
+    return `<div class="key-obs-card cb-obs"><div class="key-obs-head"><div class="key-obs-icon" style="background:linear-gradient(135deg, var(--rose), #b23763)">${star}</div><div class="key-obs-title">Key Observations</div></div>
+      <div class="cb-obs-ctx">${c ? esc(c.capability) : 'All capabilities'}</div>
+      <div class="key-obs-list">${items.length ? items.map(t => `<div class="key-obs-item">${md(t)}</div>`).join('') : '<div class="key-obs-item" style="color:var(--grey3)">Not enough data yet to draw observations for this selection.</div>'}</div></div>`;
+  }
+  function capPanel(d) {
+    if (d.by_capability_error) return `<div class="fr-state" style="margin-top:1rem;">${esc(d.by_capability_error)}</div>`;
+    if (!d.by_capability) return '';
+    const a = d.areas.find(x => x.key === st.capArea) || d.areas[0], B = d.by_capability.areas[a.key], color = COLORS[a.key];
+    if (!B || !B.overall_total) return '';
+    const rows = cbRows(B), open = rows.find(r => r.capability === st.capOpen) || null;
+    const none = B.capabilities.filter(c => c.sessions === 0).map(c => c.capability);
+    return `<div class="cb-layout"><div class="cb-left"><div class="rh-graph-card cb-card" style="border-top:4px solid ${color};">
+      <div class="cb-head"><h3 class="rh-section-title" style="margin:0"><span class="cb-title-dot" style="background:${color}"></span>${esc(a.label)}, by capability</h3>
+        <div class="cb-overall">Average: <b>${d.cards.areas[a.key].percent}%</b> (${B.overall_count} of ${B.overall_total} cases)</div></div>
+      <p class="rh-subnote" style="margin:.35rem 0 .9rem">Each bar is that capability's own mix: how much of <i>its</i> friction is ${esc(a.label)}. Click a capability to see its reflectors.</p>
+      <div class="cb-legend"><span><i class="cb-lg-bar" style="background:${color}"></i>This capability's share</span></div>
+      <div class="cb-rows">${rows.map(r => {
+        const meta = capMeta(r.capability), isOpen = open && open.capability === r.capability;
+        return `<div class="cb-row${isOpen ? ' open' : ''}"><button type="button" class="cb-main" onclick="LF.openCap(${esc(JSON.stringify(r.capability))})">
+          <span class="cb-dot" style="background:${meta.color}"></span><span class="cb-name">${esc(r.capability)}</span>
+          <span class="cb-track">${r.count ? `<span class="cb-fill" style="width:${r.pct}%;background:${color}"></span>` : ''}</span>
+          <span class="cb-num">${r.total ? `<b>${Math.round(r.pct)}%</b><span>${r.count} of ${r.total} case${r.total === 1 ? '' : 's'}</span>` : `<b>0%</b><span>no friction in ${r.sessions} session${r.sessions === 1 ? '' : 's'}</span>`}</span>
+          <span class="cb-chev">${isOpen ? '&#9662;' : '&#9656;'}</span></button>${isOpen ? refList(r, a) : ''}</div>`;
+      }).join('')}</div>
+      ${none.length ? `<p class="footprint-note" style="margin-top:.8rem">No sessions yet in this period: ${none.map(esc).join(', ')}.</p>` : ''}
+    </div></div><div class="cb-right">${obsPanel(B, open)}</div></div>`;
   }
   function bubbleSize(pct) { return Math.round(BUBBLE_MIN + (Math.max(PCT_MIN, Math.min(PCT_MAX, pct)) - PCT_MIN) / (PCT_MAX - PCT_MIN) * (BUBBLE_MAX - BUBBLE_MIN)); }
   function panelHtml(arena, area) {
@@ -4508,7 +4603,7 @@ const LF = (() => {
   function trControls() {
     const opts = LEVELS.filter(([l]) => st.options && (st.options[l] || []).length >= 2);
     return `<div class="fr-controls-right">${periodToggle('tr')}
-      <button class="rf-inline-trigger" onclick="LF.toggleReflector('tr')">${RF_ICON}Filter by Reflector${st.trReflectors.length ? `<span class="rf-count">${st.trReflectors.length}</span>` : ''}</button>
+      
       ${opts.length ? `<button class="ri-dd-trigger" onclick="LF.toggleDrill('tr')">${DD_ICON}Drill Down</button>` : ''}</div>`;
   }
   function trendBlock() {
@@ -4516,7 +4611,7 @@ const LF = (() => {
     const tag = LEVELS.flatMap(([l]) => st.trFocus[l].map(k => { const o = ((st.options && st.options[l]) || []).find(x => x.key === k); return o ? o.label : k; }));
     const head = `<div class="rh-graph-controls" style="justify-content:space-between; align-items:center;"><h3 class="rh-section-title" style="margin-bottom:0;">Friction Share Over Time</h3>${trControls()}</div>
       ${tag.length ? `<div class="fr-filter-tag">Filtered by: ${tag.map(esc).join(', ')} <button onclick="LF.clearTrFocus()">&times;</button></div>` : ''}
-      ${st.trReflectors.length ? `<div class="fr-filter-tag">Reflectors: ${st.trReflectors.length <= 3 ? st.trReflectors.map(esc).join(', ') : st.trReflectors.length + ' chosen'} <button onclick="LF.clearTrReflectors()">&times;</button></div>` : ''}`;
+      ${chipsHtml()}`;
     if (!t) return `<div class="rh-graph-card" style="margin-top:1.8rem;">${head}<div class="fr-chart-empty">${st.trError ? esc(friendly(st.trError)) : 'Loading…'}</div></div>`;
     const sessions = t.trend.buckets.reduce((a, b) => a + b.sessions, 0);
     return `<div class="rh-graph-card" style="margin-top:1.8rem;">${head}
@@ -4541,16 +4636,17 @@ const LF = (() => {
     const d = st.data, summary = focusSummary();
     const head = `<div class="um-page-head"><div><button class="ri-back-btn" onclick="location.hash='#reports'" style="margin-bottom:0.7rem;">&larr; Reports &amp; Insights</button><h1 class="um-title">Learning Friction</h1></div>
       <div class="fr-controls-right">${periodToggle('page')}
-        <button class="rf-inline-trigger" onclick="LF.toggleReflector('page')">${RF_ICON}Filter by Reflector${st.reflectors.length ? `<span class="rf-count">${st.reflectors.length}</span>` : ''}</button>
+        
         <button class="ri-dd-trigger" onclick="LF.toggleDrill('page')">${DD_ICON}Drill Down${DD_TOOLTIP}</button>
       </div></div>
       ${summary.length ? `<div class="fr-filter-tag">Filtered by: ${summary.map(esc).join(', ')} <button onclick="LF.clearFocus()">&times;</button></div>` : ''}
-      ${st.reflectors.length ? `<div class="fr-filter-tag">Reflectors: ${st.reflectors.length <= 3 ? st.reflectors.map(esc).join(', ') : st.reflectors.length + ' chosen'} <button onclick="LF.clearReflectors()">&times;</button></div>` : ''}`;
+      `;
     // The toggles are drawn in EVERY state (loading, error, data) so the page never changes shape under the reader.
     const note = d ? '' : `<div class="fr-state">${esc(st.error ? friendly(st.error) : 'Loading…')}</div>`;
     return `${head}
       ${d ? `<div class="fr-sessions">Total sessions considered: <b>${d.cards.sessions}</b></div>` : ''}
       ${d ? areaCards(d.cards, d.areas, d) : note}
+      <div id="lfCapSlot">${d ? capPanel(d) : ''}</div>
       <div id="lfCmp">${d ? compoundsBlock(d) : ''}</div>
       ${d ? `<div style="margin-top:1.4rem;">${insights(d)}</div>` : ''}
       <div id="lfTr"></div>
@@ -4894,6 +4990,9 @@ const LF = (() => {
       }
       if (st.mode === 'capability') { loadCapLand(); if (st.capName) loadCapDetail(); } else if (st.mode === 'reflector') { loadRef(); if (st.refName) loadRefDetail(); } else if (st.mode === 'workplace') loadWc(); else { load(); loadTr(); }
     },
+    pickArea(k) { st.capArea = k; paint(); },
+    openCap(name) { st.capOpen = st.capOpen === name ? null : name; paint(); },
+    setTrCap(name) { st.trCap = name; loadTr(); },
     setPeriod(which, k) { if (which === 'ref') { st.refPeriod = k; loadRefDetail(); } else if (which === 'cap') { st.capPeriod = k; loadCapDetail(); } else if (which === 'wc') { st.wcPeriod = k; loadWc(); } else if (which === 'tr') { st.trPeriod = k; loadTr(); } else { st.period = k; load(); } },
     toggleDD(btn) { const open = btn.parentElement.classList.toggle('open'); btn.textContent = (open ? '− ' : '+ ') + btn.dataset.label; },
     toggleDrill(mode) {

@@ -1,9 +1,10 @@
-/* roleplay.js -- the role play on the learner's page.  Written 2026-11-12 from the approved previews.  NOT DEPLOYED.
+/* roleplay.js -- the role play on the learner's page.  Written 2026-11-12 from the approved previews; live since 2026-11-13.  Changed 2026-11-14 (recap-only button, the Role play guide slide, feedback-or-finish) -- those changes are NOT DEPLOYED yet.
 
    What it does (all talking to the role play app, never to the three tracks):
      - one slide before the technique slide it asks the role play app to check whether a role play would help (the app saves the answer);
-     - from the technique slide to the end of the atom it shows the "Do a role play" button when the answer was yes and the role play is unused;
-     - the role play itself: instructions, the other person speaking first (read aloud), the learner answering in the page's message box or microphone, an
+     - on the RECAP slide only (the last slide; Kriti, 2026-11-14) it shows the "Do a role play" button, above the slide's "Finish my learning atom", when the answer was yes and the role play is unused;
+     - "Do a role play" first shows a "Role play guide" slide (three tips) with "Got it, let's begin"; only that button asks the app for the role play and starts it (Kriti, 2026-11-14);
+     - the role play itself: the other person speaking first (read aloud), the learner answering in the page's message box or microphone, an
        "End role play" button after every turn, and the warnings and endings the app decides (a slide-too-short warning, irrelevant-message warnings and
        ending, the Scope Checker's ending, the turn ceiling);
      - "Give me feedback": the feedback slide, drawn in one of four designs the app chose (index_focus, two_fields, timeline, coach_thread), each point's
@@ -25,19 +26,29 @@
     hintDone: 'That is all of your feedback. Click any point on the left to hear it again.',
     hintHistory: 'Click a point on the left to read it here.',
     preparing: 'Preparing your feedback...', ended: 'Role play ended.', endBtn: 'End role play', keep: 'Keep going', endNoFb: 'End without feedback',
-    feedbackBtn: 'Give me feedback', withoutFeedback: ' without feedback', chip: 'Do a role play', before: 'Before you start', head: 'Role play', sub: 'You practice with an AI who plays the other person.'
+    feedbackBtn: 'Give me feedback', withoutFeedback: ' without feedback', chip: 'Do a role play', head: 'Role play', sub: 'You practice with an AI who plays the other person.',
+    guideTag: 'Role play guide', guideEyebrow: 'Before you begin', guideTitle: 'Make the most of your ', guideTitleEm: 'role play',
+    guideLead: 'Excellent choice, ', guideLeadEm: 'practice does make perfect!', guideLeadRest: ' Before you start, here are some quick tips to make this practice session useful.',
+    gotIt: 'Got it, let\u2019s begin',
+    tips: [
+      { h: 'End whenever you like', p: 'You can end this role play at any time by clicking the <b>\u201cEnd role play\u201d</b> button.' },
+      { h: 'Feedback, once you have practiced', p: 'If you have practiced enough for us to give you meaningful feedback, we will offer it when you end the role play.' },
+      { h: 'Say it out loud', p: 'For the best experience, we suggest turning on your microphone and speaking your responses aloud, as you would in a real conversation.' }
+    ]
   };
   var ICON = {
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
     speaker: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+    stop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+    mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
     good: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11v9H4v-9z"/><path d="M7 11l4-8a2.2 2.2 0 0 1 2.2 2.4L12.7 9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7"/></svg>',
     dev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg>'
   };
   var DESIGN_OF = { index_focus: 'A', two_fields: 'B', timeline: 'C', coach_thread: 'D' };
 
   function fresh() {
-    return { sid: '', view: null, loading: null, offer: null, offerBtn: null, slideNumber: 0, activity: null, doneAt: 0, assessing: false, began: false, block: null, list: null, actions: null,
-             renderedN: 0, pending: null, warnRow: null, endedLine: false, feedbackUi: null };
+    return { sid: '', view: null, loading: null, offer: null, offerBtn: null, slideNumber: 0, isLast: false, activity: null, doneAt: 0, assessing: false, began: false, block: null, list: null, actions: null,
+             renderedN: 0, pending: null, warnRow: null, endedLine: false, feedbackUi: null, guideGo: null };
   }
   var S = fresh();
 
@@ -84,12 +95,12 @@
 
   // ---------------------------------------------------------------------------------------------------------------- the button
   // Called by the page each time a slide is drawn live (or the parked slide on a resume), after the slide's own buttons are in place.
-  // `activity` says what the slide has: null (no activity), 'open' (an activity not yet finished) or 'done' (finished).
+  // `activity` says what the slide has: null (no activity), 'open' (an activity not yet finished) or 'done' (finished). `isLast` is true on the recap, the Master's last slide: the only slide that ever offers the role play.
   // The button has a row of its own: under the slide, or under its activity (grey until the activity is done), just above the slide's Continue.
-  RP.onSlide = function (number, activity) {
+  RP.onSlide = function (number, activity, isLast) {
     var sid = H.sessionId();
     if (S.sid !== sid) { S = fresh(); S.sid = sid; }
-    S.slideNumber = number; S.activity = activity || null;
+    S.slideNumber = number; S.isLast = !!isLast; S.activity = activity || null;
     if (activity === 'done') S.doneAt = Math.max(S.doneAt, number);
     clearOffer();
     var ready = S.view ? Promise.resolve(S.view) : RP.load(sid);
@@ -149,13 +160,14 @@
     b.disabled = locked; b.classList.toggle('rp-locked', locked);
     b.title = locked ? 'Finish the activity to unlock' : '';
   }
-  // Shown on the technique slide and every slide after it, until the learner starts a role play (the app then says it is no longer available: never again).
+  // Shown on the recap slide only (Kriti, 2026-11-14: a role play in the middle of the training is disorienting, and the Trainer knows nothing of it), until the learner starts a role
+  // play (the app then says it is no longer available: never again). The check itself still runs from the technique slide on, so the answer is ready by the recap.
   function refreshOffer() {
     clearOffer();
     var v = S.view;
     if (!v || !v.available || S.began) return;
-    if (!v.technique_slide || S.slideNumber < v.technique_slide) return;
-    var b = el('button', 'vo-chip vo-chip-rp rp-new-flag', ICON.play + esc(WORDS.chip));
+    if (!S.isLast) return;
+    var b = el('button', 'vo-chip vo-chip-rp', ICON.play + esc(WORDS.chip));
     b.type = 'button';
     b.onclick = function () { if (!b.disabled) startRolePlay(b); };
     S.offerBtn = b; S.offer = H.appendExtra(b, 'vo-chips vo-rpoffer');
@@ -203,12 +215,9 @@
     });
     return toSpeak;
   }
-  function makeBlock(instructions) {
+  function makeBlock() {
     var block = el('div', 'rp-block');
     block.appendChild(el('div', 'rp-head', '<b>' + esc(WORDS.head) + '</b><span>' + esc(WORDS.sub) + '</span>'));
-    if (instructions && instructions.length) {
-      block.appendChild(el('div', 'rp-instr', '<b>' + esc(WORDS.before) + '</b><ul>' + instructions.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>'));
-    }
     S.list = el('div', 'rp-list'); S.actions = el('div', 'rp-actions');
     block.appendChild(S.list); block.appendChild(S.actions);
     S.block = block; S.renderedN = 0; S.endedLine = false; S.pending = null; S.warnRow = null;
@@ -228,23 +237,51 @@
     H.keepNavLast(); H.scrollToEnd();
   }
 
+  // "Do a role play" was pressed. NOTHING is asked of the app yet (so the role play's clock has not started): the guide slide appears at once, with its own
+  // button. Only "Got it, let's begin" asks for the role play and the other person's first line (Kriti, 2026-11-14). Nothing on the page is redrawn or re-animated:
+  // the guide is added after the slide, and later the role play block is added after the guide, so nothing already on screen moves.
   function startRolePlay(btn) {
     if (S.began) return;
-    btn.disabled = true; S.began = true; H.busyBegin();
+    btn.disabled = true; S.began = true; H.busyBegin();             // the message box stays shut while the guide is up
+    clearOffer(); H.chips(true); H.hideNav();
+    H.appendAtomRow(guideSlide());                                    // the page puts a new slide at the top of the window, as it does for every slide
+    S.guideGo = H.appendExtra(button(WORDS.gotIt, 'rp-go-btn', onGotIt), 'vo-nav rp-gowrap');
+  }
+  function guideSlide() {
+    var root = el('div', 'atom-root');
+    var tips = WORDS.tips.map(function (t, i) {
+      var ico = i === 0 ? ICON.stop : i === 1 ? ICON.dev : ICON.mic;
+      return '<div class="rpg-tip"><div class="rpg-num">' + (i + 1) + '</div><div class="rpg-ico' + (i === 2 ? ' pulse' : '') + '">' + ico + '</div><h3>' + esc(t.h) + '</h3><p>' + t.p + '</p></div>';
+    }).join('');
+    var art = '<svg class="rpg-art" viewBox="0 0 340 210" aria-hidden="true">' +
+      '<g class="fl1"><rect x="14" y="22" width="196" height="74" rx="22" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.35)"/><path d="M52 96 L40 118 L78 96Z" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.35)"/>' +
+      '<circle class="dot" cx="70" cy="59" r="6" fill="#fff"/><circle class="dot" cx="112" cy="59" r="6" fill="#fff"/><circle class="dot" cx="154" cy="59" r="6" fill="#fff"/></g>' +
+      '<g class="fl2"><rect x="118" y="112" width="208" height="80" rx="22" fill="#E4CA0A"/><path d="M290 192 L304 212 L262 192Z" fill="#E4CA0A"/>' +
+      '<rect x="142" y="134" width="150" height="10" rx="5" fill="#041A40" opacity=".55"/><rect x="142" y="154" width="112" height="10" rx="5" fill="#041A40" opacity=".35"/></g>' +
+      '<circle cx="292" cy="40" r="22" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.4)"/><path d="M292 28 L295 37 L304 40 L295 43 L292 52 L289 43 L280 40 L289 37Z" fill="#E4CA0A"/>' +
+      '<circle cx="24" cy="150" r="16" fill="#3ab54a"/><path d="M24 143a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm-8 17a8 8 0 0 1 16 0z" fill="#fff"/></svg>';
+    root.innerHTML = '<div class="slide rpg"><div class="slide-tag">' + esc(WORDS.guideTag) + '</div>' +
+      '<div class="rpg-hero"><div class="rpg-hero-text"><div class="rpg-eyebrow"><i></i>' + esc(WORDS.guideEyebrow) + '</div><h2>' + esc(WORDS.guideTitle) + '<span>' + esc(WORDS.guideTitleEm) + '</span></h2><p>' + esc(WORDS.sub) + '</p></div>' + art + '</div>' +
+      '<div class="rpg-body"><p class="rpg-lead"><b>' + esc(WORDS.guideLead) + '<em>' + esc(WORDS.guideLeadEm) + '</em></b>' + esc(WORDS.guideLeadRest) + '</p><div class="rpg-tips">' + tips + '</div></div></div>';
+    return root;
+  }
+  function onGotIt(btn) {
+    btn.disabled = true; H.showTyping();                              // a short wait for the other person's first line, with the usual typing dots
+    var started = false;
     post('start', { session_id: S.sid }).then(function (v) {
-      S.view = v;
-      clearOffer();
-      H.chips(true); H.hideNav();
-      var block = makeBlock(v.instructions || []);
+      started = true; H.removeTyping(); S.view = v;
+      if (S.guideGo) { S.guideGo.remove(); S.guideGo = null; }
+      var block = makeBlock(); block.classList.add('rp-fade');        // it only fades in
       H.chat().appendChild(block);
       drawNewTurns(v, false);
       renderActions(v);
-      H.keepNavLast(); H.scrollToEnd();
+      H.keepNavLast();
+      block.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); // one gentle scroll, only if the block is out of view
       var first = (v.turns || []).filter(function (t) { return t.speaker === 'role_player'; })[0];
-      if (first) H.say(first.text);
+      if (first) H.say(first.text);                                   // the voice starts together with the panel
     }).catch(function (e) {
-      btn.disabled = false; S.began = false; H.appendError(plain(e));
-    }).then(function () { H.busyEnd(); if (S.began) H.setInput(true, RP.placeholder); });
+      H.removeTyping(); btn.disabled = false; H.appendError(plain(e)); // the guide stays; "Got it" can be pressed again
+    }).then(function () { if (started) { H.busyEnd(); if (S.began) H.setInput(true, RP.placeholder); } });
   }
 
   // The learner answered (the page's message box or microphone): the answer goes to the role play instead of the Trainer.
@@ -282,12 +319,13 @@
     a.appendChild(button(WORDS.endNoFb, 'btn-end', function () { warn.remove(); S.warnRow = null; onEnd(true); }));
   }
 
-  // The learner pressed the slide's Continue: an offer of feedback that was still open is closed.
-  RP.onAdvance = function () { if (S.actions) S.actions.querySelectorAll('button').forEach(function (b) { b.disabled = true; }); };
+  // The learner pressed the slide's Continue / Finish: an offer of feedback that was still open goes away (it is one or the other).
+  RP.onAdvance = function () { if (S.actions) S.actions.style.display = 'none'; };
 
   // ---------------------------------------------------------------------------------------------------------------- the feedback
   function giveFeedback(btn) {
     btn.disabled = true; H.busyBegin();
+    H.hideNav();                                              // one or the other (Kriti, 2026-11-14): choosing feedback takes "Finish ... without feedback" away at once
     var note = el('div', 'rp-wait', esc(WORDS.preparing)); S.actions.style.display = 'none'; S.block.appendChild(note); H.showTyping(); H.scrollToEnd();
     post('feedback', { session_id: S.sid }).then(function (v) {
       H.removeTyping(); note.remove(); S.view = v;
@@ -298,6 +336,7 @@
       H.keepNavLast();
     }).catch(function (e) {
       H.removeTyping(); note.remove(); S.actions.style.display = ''; btn.disabled = false; H.appendError(plain(e));
+      H.showNav(WORDS.withoutFeedback);                      // the feedback could not be made: both choices are back
     }).then(function () { H.busyEnd(); H.setInput(true); H.scrollToEnd(); });
   }
 
@@ -525,7 +564,7 @@
     if (!v || S.sid !== H.sessionId() || v.slide_number !== number) return;
     if (['in_progress', 'ended', 'feedback_given'].indexOf(v.status) < 0) return;
     S.began = v.status === 'in_progress';
-    var block = makeBlock(null);
+    var block = makeBlock();
     H.chat().appendChild(block);
     drawNewTurns(v, true);
     if (v.status === 'in_progress') {
@@ -536,7 +575,7 @@
       renderActions(v);
       if (v.status === 'ended' && v.feedback_offered) {
         if (isParkedSlide) H.showNav(WORDS.withoutFeedback);                                        // the learner is still on this slide: Continue reads "without feedback"
-        else S.actions.querySelectorAll('button').forEach(function (b) { b.disabled = true; });   // they moved on: the offer is closed
+        else S.actions.style.display = 'none';                                                    // they moved on: the offer is gone
       }
       if (v.status === 'feedback_given') S.feedbackUi = buildFeedback(v, 'resume', null);
     }

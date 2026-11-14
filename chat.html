@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/atom_slides.css?v=20261106b">
-<link rel="stylesheet" href="assets/roleplay.css?v=20261113a">
+<link rel="stylesheet" href="assets/roleplay.css?v=20261114a">
 <link rel="stylesheet" href="assets/user_notice.css?v=20261113a">
 <style>
 :root {
@@ -1848,7 +1848,7 @@ body.chat-fit #chatPanel.active { height:var(--chat-fit-h); min-height:0; max-he
 
 <script src="assets/html2canvas.min.js"></script>
 <script src="assets/atom_slides.js?v=20261106b"></script>
-<script src="assets/roleplay.js?v=20261113b"></script>
+<script src="assets/roleplay.js?v=20261114a"></script>
 <script src="assets/user_notice.js?v=20261113a"></script>
 <script>
 // `overflow:hidden` alone locks scroll on desktop (mouse wheel respects
@@ -4453,8 +4453,8 @@ function voShowMaster(result, restored) {
   } else {
     voNavButton();
   }
-  // the role play check (on the technique slide) and its button (from the technique slide on, under the slide or under its activity)
-  if (window.RolePlay) RolePlay.onSlide(voSlideNumber, !(act && typeof act === 'object' && act.activity_type) ? null : (restored && restored.progress && restored.progress.done ? 'done' : 'open'));
+  // the role play check (from the technique slide on) and its button (on the recap, the last slide, only -- Kriti, 2026-11-14)
+  if (window.RolePlay) RolePlay.onSlide(voSlideNumber, !(act && typeof act === 'object' && act.activity_type) ? null : (restored && restored.progress && restored.progress.done ? 'done' : 'open'), voLastSlide);
   if (!restored) voPinSlideTop(slideRow);
 }
 // What the learner does in an activity is saved as they go, one save after another in order, so the server always has the latest step.
