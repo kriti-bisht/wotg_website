@@ -1451,6 +1451,22 @@ body.chat-maximized .chat-bar { position:fixed; left:1rem; right:1rem; bottom:0.
 /* The normal (not maximized) view: the message box keeps its bottom edge and grows upward as the person types; the chat window above it takes the height that is left on the
    screen (chatFit() in the page script sets --chat-fit-h; on a phone the screen is what is left above the keyboard). */
 body.chat-fit #chatPanel.active { height:var(--chat-fit-h); min-height:0; max-height:none; }
+/* PHONES (Kriti, 2026-11-15): the chat always opens as the big window, by itself (the expand arrows are not needed, so they are hidden), and NOTHING of the home page shows
+   behind it: a solid backdrop under the window and the message box, and the page behind cannot be scrolled. The window and the message box follow what the phone really shows
+   (--vv-top / --vv-bottom, set from the visual viewport, so the message box rides above the keyboard). The message box text is 16px because an iPhone zooms the whole page in
+   whenever a box with smaller text is tapped (that zoom is what pushed the Send button off the right edge). The "Better view" hint is about the desktop's expand arrows and
+   full-screen shortcuts, so it is not shown. */
+@media (max-width: 768px) {
+  .chat-bar textarea, .chat-bar input { font-size:16px; }
+  .chat-bar textarea::placeholder, .chat-bar input::placeholder { font-size:14px; }   /* the hint is smaller than what is typed, so the longest one (the role play's) stays on one line */
+  button.chat-panel-expand { display:none; }
+  .cv-tip { display:none; }
+  body.chat-maximized::before { content:''; position:fixed; left:0; right:0; top:0; bottom:0; background:#fff; z-index:899; }
+  body.chat-maximized .chat-panel.active { top:var(--vv-top, 0px); bottom:calc(var(--vv-bottom, 0px) + var(--vo-bar-h, 100px)); width:100%; max-width:100vw; }
+  body.chat-maximized .chat-bar { left:0.6rem; right:0.6rem; bottom:calc(var(--vv-bottom, 0px) + 0.9rem); max-width:calc(100vw - 1.2rem); }
+  body.chat-maximized .chat-messages { overscroll-behavior:contain; }
+}
+body.chat-page-locked { position:fixed; left:0; right:0; width:100%; overflow:hidden; }
 .chat-head-right { display:flex; align-items:center; gap:0.3rem; }
 .chat-panel-expand { background:none; border:none; color:#fff; cursor:pointer; width:36px; height:36px; border-radius:6px; display:flex; align-items:center; justify-content:center; padding:0; }
 .chat-panel-expand svg { width:19px; height:19px; }
@@ -2080,6 +2096,8 @@ let typingWordInterval = null;
 // Every spot that used to switch them one by one calls this instead.
 const CHAT_INPUT_PLACEHOLDER = 'Describe your situation...';
 function setChatInputEnabled(enabled, placeholder) {
+  // While the trainer speaks the box stays shut whoever asks to open it (the role play, a finished reply ...); it opens by itself when the voice ends (voInputWaitsForVoice).
+  if (enabled && (voSpeaking || document.body.classList.contains('vo-gated'))) { enabled = false; voVoiceLocksInput = true; }
   const input = document.getElementById('chatInput');
   const sendBtn = document.getElementById('sendBtn');
   const micBtn = document.getElementById('micBtn');
@@ -2100,6 +2118,7 @@ function chatWaitBegin() { chatWaits++; setChatInputEnabled(false); }
 function chatWaitEnd() { chatWaits = Math.max(0, chatWaits - 1); unlockChatInput(); }
 function chatInputHeldLocked() {
   if (sessionEnded || pendingForm || isWaiting || voBusy || chatWaits > 0 || chatHeldByCommitment) return true;
+  if (voSpeaking || document.body.classList.contains('vo-gated')) return true;   // the trainer is speaking (a slide's voiceover, a reply, the role play's other person): nothing is typed or spoken over it (Kriti, 2026-11-15)
   const row = document.getElementById('nextStepButtonsRow');
   return !!(row && row.querySelector('.next-step-btn:not([disabled])'));
 }
@@ -4053,8 +4072,26 @@ function voMeasureBar() {
   if (bar) document.documentElement.style.setProperty('--vo-bar-h', (bar.offsetHeight + 28) + 'px');
 }
 // The whole chat window (not only the slides) grows to fill the screen, starting from the dark bar with the X; the message box stays below it.
+function voIsPhone() { return !!(window.matchMedia && window.matchMedia('(max-width: 768px)').matches); }
+// On a phone the big window must not let the home page behind it scroll (an iPhone passes the swipe on to the page once the chat reaches its end): the page is pinned while the
+// window is open and put back where it was when the window closes.
+let voLockY = null;
+function voLockPage(on) {
+  const b = document.body;
+  if (on && voLockY === null) { voLockY = window.scrollY || 0; b.style.top = (-voLockY) + 'px'; b.classList.add('chat-page-locked'); }
+  else if (!on && voLockY !== null) { b.classList.remove('chat-page-locked'); b.style.top = ''; window.scrollTo(0, voLockY); voLockY = null; }
+}
+// The window and the message box follow the part of the screen the phone really shows (above the keyboard when it is open).
+function voSyncViewport() {
+  const vv = window.visualViewport, root = document.documentElement;
+  if (!vv || !voIsPhone() || !document.body.classList.contains('chat-maximized')) { root.style.removeProperty('--vv-top'); root.style.removeProperty('--vv-bottom'); return; }
+  root.style.setProperty('--vv-top', Math.max(0, Math.round(vv.offsetTop)) + 'px');
+  root.style.setProperty('--vv-bottom', Math.max(0, Math.round(window.innerHeight - (vv.offsetTop + vv.height))) + 'px');
+}
 function voSetMaximized(on) {
   document.body.classList.toggle('chat-maximized', !!on);
+  voLockPage(!!on && voIsPhone());
+  voSyncViewport();
   voMeasureBar();
   const btn = document.getElementById('chatExpandBtn');
   if (btn) { btn.innerHTML = on ? VO_ICON.shrink : VO_ICON.expand; btn.title = on ? 'Shrink the window' : 'Expand the window'; btn.setAttribute('aria-label', btn.title); }
@@ -4115,11 +4152,16 @@ function voFitSlidesNow() {
   if (voPin && Date.now() < voPin.until) voPinPlace();
 }
 (function() {
-  window.addEventListener('resize', function() { voMeasureBar(); voScheduleFit(); });
+  window.addEventListener('resize', function() { voMeasureBar(); voSyncViewport(); voScheduleFit(); });
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && document.body.classList.contains('chat-maximized')) voSetMaximized(false); });
   document.addEventListener('DOMContentLoaded', function() {
     const panel = document.getElementById('chatPanel'), bar = document.querySelector('.chat-bar');
-    if (panel) new MutationObserver(function() { if (!panel.classList.contains('active') && document.body.classList.contains('chat-maximized')) voSetMaximized(false); }).observe(panel, { attributes: true, attributeFilter: ['class'] });
+    if (panel) new MutationObserver(function() {
+      const maximized = document.body.classList.contains('chat-maximized');
+      if (!panel.classList.contains('active')) { if (maximized) voSetMaximized(false); }
+      else if (voIsPhone() && !maximized) voSetMaximized(true);   // on a phone the chat opens as the big window by itself
+    }).observe(panel, { attributes: true, attributeFilter: ['class'] });
+    if (window.visualViewport) { window.visualViewport.addEventListener('resize', voSyncViewport); window.visualViewport.addEventListener('scroll', voSyncViewport); }
     if (bar && window.ResizeObserver) new ResizeObserver(voMeasureBar).observe(bar);
     voMeasureBar();
     const expandBtn = document.getElementById('chatExpandBtn');
@@ -4192,9 +4234,21 @@ function voSyncMute() {
 // Replaying it, resumed slides and a switched-off voice never lock anything. A safety release (the estimated length x 1.6 + 10 s, at least 20 s) means a voice
 // that stalls can never trap someone on a slide.
 let voGateOwner = null;
-function voGateAcquire(owner) { voGateOwner = owner; document.body.classList.add('vo-gated'); }
-function voGateRelease(owner) { if (voGateOwner === owner) { voGateOwner = null; document.body.classList.remove('vo-gated'); } }
-function voGateClear() { voGateOwner = null; document.body.classList.remove('vo-gated'); }
+// The message box (typing, Send and the microphone) gets the same treatment as those buttons: shut while the trainer speaks, open when it has finished (Kriti, 2026-11-15:
+// on a phone the microphone stopped working for good when the learner started talking over the end of the trainer's voice). It only ever opens again if THIS lock shut it.
+var voSpeaking = false, voSpeakTimer = null, voVoiceLocksInput = false;   // var, not let: chatInputHeldLocked() (further up the page) reads voSpeaking
+function voInputWaitsForVoice(on) {
+  if (on) { if (!voVoiceLocksInput) { voVoiceLocksInput = true; setChatInputEnabled(false); } }
+  else if (voVoiceLocksInput && !voSpeaking && !voGateOwner) { voVoiceLocksInput = false; unlockChatInput(); }
+}
+function voSpeakingSet(on, text) {
+  clearTimeout(voSpeakTimer); voSpeakTimer = null; voSpeaking = !!on;
+  if (on) { voSpeakTimer = setTimeout(function() { voSpeakingSet(false); }, Math.max(20000, (String(text || '').trim().split(/\s+/).length / 2.6) * 1600 + 10000)); voInputWaitsForVoice(true); }   // a safety release, like the buttons'
+  else voInputWaitsForVoice(false);
+}
+function voGateAcquire(owner) { voGateOwner = owner; document.body.classList.add('vo-gated'); voInputWaitsForVoice(true); }
+function voGateRelease(owner) { if (voGateOwner === owner) { voGateOwner = null; document.body.classList.remove('vo-gated'); voInputWaitsForVoice(false); } }
+function voGateClear() { voGateOwner = null; document.body.classList.remove('vo-gated'); voSpeakingSet(false); }
 document.addEventListener('click', function(e) {
   if (!document.body.classList.contains('vo-gated')) return;
   const t = e.target && e.target.closest ? e.target.closest('#chatMessages .vo-chip, #chatMessages .vo-nav-btn') : null;
@@ -4305,13 +4359,14 @@ let voSayRun = -1;   // Voice.run right after the queue last started a line; any
 function voSayNext() {
   const Voice = window.AtomSlides.Voice;
   const text = voSayQueue.shift();
-  if (text === undefined) { voSayRun = -1; return; }
+  if (text === undefined) { voSayRun = -1; voSpeakingSet(false); return; }
   if (!Voice.speak(text, false, { onend: voSayNext, onerror: voSayNext })) { voSayNext(); return; }
-  voSayRun = Voice.run;
+  voSayRun = Voice.run; voSpeakingSet(true, text);
 }
 function voSpeakQueued(text) {
   const Voice = window.AtomSlides.Voice;
   if (voSayRun === -1 || voSayRun !== Voice.run) {   // nothing of ours is playing
+    voSpeakingSet(false);
     voSayQueue = [text];
     if (voPlayerCurrent) { voPlayerCurrent.reset(); voPlayerCurrent = null; }
     voSayNext();
