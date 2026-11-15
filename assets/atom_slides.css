@@ -1490,6 +1490,32 @@
 .atom-root .mock-head { background:var(--night); color:#fff; padding:0.7rem 1.3rem; font-size:0.85rem; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
 .atom-root .mock-head .live-label { display:flex; align-items:center; gap:0.5rem; }
 @container (max-width:700px) { .atom-root .iwc-wrap { grid-template-columns:1fr; } .atom-root .iwb-path { grid-template-columns:1fr 1fr; row-gap:1.8rem; } .atom-root .iwb-path::before { display:none; } }
+/* PHONES (Kriti, 2026-11-15): the Learning Initiative welcome card, in all three of its looks, must never be wider than its box. It was clipped on the right on a real iPhone (larger text than a
+   desktop browser's, and the card had almost no spare width). Every column may now shrink below its content (minmax(0,1fr) and min-width:0), long words may wrap, the dates and the
+   "Click to hear audio" button may wrap, and the card's own padding is smaller. Nothing here applies to a computer screen. */
+@media (max-width: 768px) {
+  .atom-root .slide-body.iw-scope.atm-pad { padding:0.5rem; }
+  .atom-root .iw-scope .iwc-wrap { grid-template-columns:minmax(0,1fr); }
+  .atom-root .iw-scope .iwc-left, .atom-root .iw-scope .iwc-right { min-width:0; padding:1rem; }
+  .atom-root .iw-scope .iwc-eyebrow, .atom-root .iw-scope .iwc-title, .atom-root .iw-scope .iwc-left p, .atom-root .iw-scope .iwc-left h4, .atom-root .iw-scope .iwc-right h3,
+  .atom-root .iw-scope .iwc-right .sub, .atom-root .iw-scope .iwc-foot, .atom-root .iw-scope .iwb-eyebrow, .atom-root .iw-scope .iwb-title, .atom-root .iw-scope .iwb-why dd,
+  .atom-root .iw-scope .iwb-foot, .atom-root .iw-scope .iw-box p, .atom-root .iw-scope .iw-foot, .atom-root .iw-scope .cv-hero h1, .atom-root .iw-scope .cv-hero .eyebrow { overflow-wrap:anywhere; }
+  .atom-root .iw-scope .iwc-title { font-size:1.3rem; }
+  .atom-root .iw-scope .iwc-dates { flex-wrap:wrap; }
+  .atom-root .iw-scope .iwc-tile { flex:1 1 6.5rem; min-width:0; }
+  .atom-root .iw-scope .iwc-row { min-width:0; }
+  .atom-root .iw-scope .iwc-row > span[data-say] { min-width:0; overflow-wrap:anywhere; }
+  .atom-root .iw-scope .iw-say { max-width:100%; white-space:normal; text-align:left; }
+  .atom-root .iw-scope .iwb-wrap, .atom-root .iw-scope .iwb-top, .atom-root .iw-scope .iwb-top > div, .atom-root .iw-scope .iwb-why { min-width:0; }
+  .atom-root .iw-scope .iwb-title { font-size:1.35rem; }
+  .atom-root .iw-scope .iwb-path { grid-template-columns:minmax(0,1fr) minmax(0,1fr); row-gap:1.8rem; }
+  .atom-root .iw-scope .iwb-path::before { display:none; }
+  .atom-root .iw-scope .iwb-stone { min-width:0; overflow-wrap:anywhere; }
+  .atom-root .iw-scope .iw-about, .atom-root .iw-scope .iw-grid { grid-template-columns:minmax(0,1fr); }
+  .atom-root .iw-scope .iw-skill, .atom-root .iw-scope .iw-box { min-width:0; }
+  .atom-root .iw-scope .iw-skill > span[data-say] { min-width:0; overflow-wrap:anywhere; }
+  .atom-root .iw-scope .iw-top, .atom-root .iw-scope .iw-dates { min-width:0; }
+}
 /* ===== end of overview options ===== */
 
 /* ===== pick: a conversation (lifted from do-not-push-live/learning_atom_activities_preview.html, "New 5") ===== */

@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fredoka:wght@500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/atom_slides.css?v=20261106b">
+<link rel="stylesheet" href="assets/atom_slides.css?v=20261115a">
 <link rel="stylesheet" href="assets/roleplay.css?v=20261114a">
 <link rel="stylesheet" href="assets/user_notice.css?v=20261113a">
 <style>
@@ -1237,6 +1237,9 @@ body.first-run #impactCard .rule, body.first-run #impactCard .foot, body.first-r
 .chat-icon-btn.listening svg.icon-mic { display:none; }
 .chat-icon-btn.listening svg.icon-stop { display:block; }
 .chat-icon-btn.listening { background:#e0303a; animation:micPulse 1.1s ease-in-out infinite; }
+/* the phone has been asked to listen but has not started yet (an iPhone needs a few seconds after the speaker has played): a softer, ringing green until it is really listening, then red */
+.chat-icon-btn.preparing { opacity:0.7; animation:micPrep 0.9s ease-in-out infinite; }
+@keyframes micPrep { 0%,100%{ box-shadow:0 0 0 0 rgba(58,181,74,0.55); } 50%{ box-shadow:0 0 0 9px rgba(58,181,74,0); } }
 @keyframes micPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
 .chat-icon-btn:disabled { opacity:0.35; cursor:not-allowed; }
 
@@ -1461,6 +1464,7 @@ body.chat-fit #chatPanel.active { height:var(--chat-fit-h); min-height:0; max-he
   .chat-bar textarea::placeholder, .chat-bar input::placeholder { font-size:14px; }   /* the hint is smaller than what is typed, so the longest one (the role play's) stays on one line */
   button.chat-panel-expand { display:none; }
   .cv-tip { display:none; }
+  .chat-messages .msg-overview .msg-avatar { display:none; }
   body.chat-maximized::before { content:''; position:fixed; left:0; right:0; top:0; bottom:0; background:#fff; z-index:899; }
   body.chat-maximized .chat-panel.active { top:var(--vv-top, 0px); bottom:calc(var(--vv-bottom, 0px) + var(--vo-bar-h, 100px)); width:100%; max-width:100vw; }
   body.chat-maximized .chat-bar { left:0.6rem; right:0.6rem; bottom:calc(var(--vv-bottom, 0px) + 0.9rem); max-width:calc(100vw - 1.2rem); }
@@ -3512,7 +3516,8 @@ async function openInitiativeOverview(initiativeId, initiativeName) {
       apiBase: LEARNING_INITIATIVE_SESSION_BASE,
       onPickSkill: function(skillName) { startInitiativeSkillSession(initiativeId, skillName); },
     });
-    appendAtomRow(card.el);
+    const overviewRow = appendAtomRow(card.el);
+    if (overviewRow) overviewRow.classList.add('msg-overview');   // on a phone the welcome card gets the whole width (no avatar column beside it)
   } catch (err) {
     removeTyping();
     appendError(voErrorText(err, 'Could not reach the server to open this learning initiative.'));
@@ -6240,6 +6245,13 @@ initSession();
   let baseText = '';
   let heardAnything = false;
   let nothingHeardTimer = null;
+  // The button turns red only when the browser says it is really capturing sound (onaudiostart). Until then it shows the "getting ready" look. If the browser gives no sign within
+  // MIC_PREPARE_MS the listening is restarted once; after that the button carries on as before, so it can never be stuck waiting (Kriti, 2026-11-15: an iPhone needs a few seconds
+  // after the speaker has played, and the red button made her speak before it was ready).
+  const MIC_PREPARE_MS = 2500;
+  let micReady = false;
+  let prepTimer = null;
+  let prepRestarts = 0;
 
   function micLanguage() {
     const voice = window.AtomSlides && window.AtomSlides.Voice;
@@ -6253,13 +6265,52 @@ initSession();
     return 'The microphone stopped unexpectedly. Please tap the mic and try again.';
   }
 
+  function nothingHeard() {
+    if (listening && !heardAnything) {
+      stopListening();
+      appendError('I could not hear anything. Check that the microphone is allowed for this page, then tap the mic to try again.');
+    }
+  }
+
+  // The browser is now really listening: red button, and the "nothing heard" clock starts here (not while the phone was still getting ready).
+  function micIsReady() {
+    if (micReady || !listening) return;
+    micReady = true;
+    clearTimeout(prepTimer);
+    micBtn.classList.remove('preparing');
+    micBtn.classList.add('listening');
+    micBtn.title = 'Tap to stop';
+    clearTimeout(nothingHeardTimer);
+    nothingHeardTimer = setTimeout(nothingHeard, MIC_NOTHING_HEARD_MS);
+  }
+
+  function prepStuck() {
+    if (!listening || micReady) return;
+    if (prepRestarts < 1) {
+      prepRestarts++;
+      const old = recognition;
+      recognition = createRecognition();   // from here the old one is ignored (its handlers check they are still the current one)
+      try { if (old && old.abort) old.abort(); else if (old) old.stop(); } catch(e) {}
+      baseText = document.getElementById('chatInput').value;
+      try { recognition.start(); } catch(e) { stopListening(); appendError(micMessage('')); return; }
+      prepTimer = setTimeout(prepStuck, MIC_PREPARE_MS);
+    } else {
+      micIsReady();   // no sign from the browser: carry on as before
+    }
+  }
+
   function createRecognition() {
     const r = new SpeechRecognitionAPI();
     r.continuous = !onPhone;
     r.interimResults = true;
     r.lang = micLanguage();
+    const current = function() { return r === recognition; };   // a listening that has been replaced must not write, report or restart anything
+
+    if ('onaudiostart' in r) r.onaudiostart = function() { if (current()) micIsReady(); };
 
     r.onresult = function(event) {
+      if (!current()) return;
+      micIsReady();
       heardAnything = true;
       clearTimeout(nothingHeardTimer);
       let transcript = '';
@@ -6273,6 +6324,7 @@ initSession();
     };
 
     r.onerror = function(event) {
+      if (!current()) return;
       const code = event && event.error;
       if (code === 'aborted' || code === 'no-speech') return;   // the browser ending a listening by itself: onend starts the next one
       stopListening();
@@ -6280,7 +6332,7 @@ initSession();
     };
 
     r.onend = function() {
-      if (!listening) return;
+      if (!listening || !current()) return;
       baseText = document.getElementById('chatInput').value;   // what has been said so far stays; the new listening adds to it
       recognition = createRecognition();
       try { recognition.start(); } catch(e) { stopListening(); appendError(micMessage('')); }
@@ -6293,23 +6345,24 @@ initSession();
     if (listening || micBtn.disabled) return;
     listening = true;
     heardAnything = false;
+    micReady = false;
+    prepRestarts = 0;
     baseText = document.getElementById('chatInput').value;
-    micBtn.classList.add('listening');
+    micBtn.classList.add('preparing');
     micBtn.title = 'Tap to stop';
     recognition = createRecognition();
     try { recognition.start(); } catch(e) { stopListening(); appendError(micMessage('')); return; }
-    nothingHeardTimer = setTimeout(function() {
-      if (listening && !heardAnything) {
-        stopListening();
-        appendError('I could not hear anything. Check that the microphone is allowed for this page, then tap the mic to try again.');
-      }
-    }, MIC_NOTHING_HEARD_MS);
+    if ('onaudiostart' in recognition) prepTimer = setTimeout(prepStuck, MIC_PREPARE_MS);
+    else micIsReady();   // a browser that never reports the start: red at once, as before
   }
 
   function stopListening() {
     clearTimeout(nothingHeardTimer);
+    clearTimeout(prepTimer);
     if (!listening) return;
     listening = false;
+    micReady = false;
+    micBtn.classList.remove('preparing');
     micBtn.classList.remove('listening');
     micBtn.title = 'Tap to talk';
     if (recognition) recognition.onresult = null;
