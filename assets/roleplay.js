@@ -581,6 +581,8 @@
       if (v.status === 'feedback_given') S.feedbackUi = buildFeedback(v, 'resume', null);
     }
     H.keepNavLast();
+    // A resumed session lands on its latest message, and now that is the role play (drawn after the slide): scroll down to it.
+    if (isParkedSlide) { H.scrollToEnd(); requestAnimationFrame(function () { H.scrollToEnd(); }); }
   };
 
   // ---------------------------------------------------------------------------------------------------------------- Conversation History (read-only)
