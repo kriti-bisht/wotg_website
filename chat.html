@@ -1238,8 +1238,8 @@ body.first-run #impactCard .rule, body.first-run #impactCard .foot, body.first-r
 .chat-icon-btn.listening svg.icon-stop { display:block; }
 .chat-icon-btn.listening { background:#e0303a; animation:micPulse 1.1s ease-in-out infinite; }
 /* the phone has been asked to listen but has not started yet (an iPhone needs a few seconds after the speaker has played): a softer, ringing green until it is really listening, then red */
-.chat-icon-btn.preparing { opacity:0.7; animation:micPrep 0.9s ease-in-out infinite; }
-@keyframes micPrep { 0%,100%{ box-shadow:0 0 0 0 rgba(58,181,74,0.55); } 50%{ box-shadow:0 0 0 9px rgba(58,181,74,0); } }
+.chat-icon-btn.preparing { background:#9fd8a8; animation:micPrep 0.9s ease-in-out infinite; }
+@keyframes micPrep { 0%,100%{ box-shadow:0 0 0 0 rgba(58,181,74,0.75); } 50%{ box-shadow:0 0 0 11px rgba(58,181,74,0); } }
 @keyframes micPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
 .chat-icon-btn:disabled { opacity:0.35; cursor:not-allowed; }
 
@@ -6252,6 +6252,16 @@ initSession();
   let micReady = false;
   let prepTimer = null;
   let prepRestarts = 0;
+  // An iPhone: after the trainer's voice has played, its first listening can sit dead for a few seconds (it reports "started" at once but hears nothing; the next one works).
+  // So on an iPhone, after the trainer has spoken, the first listening is only a warm-up: it is replaced once, after MIC_IOS_WARM_MS, and the button stays in the "getting ready" look until then.
+  const onIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/i.test(navigator.platform));
+  const MIC_IOS_WARM_MS = 1300;
+  const MIC_IOS_READY_MS = 1500;
+  let spokeSinceMic = false;
+  let warmTimer = null;
+  let warming = false;
+  let savedPlaceholder = null;
+  const chatBox = document.getElementById('chatInput');
 
   function micLanguage() {
     const voice = window.AtomSlides && window.AtomSlides.Voice;
@@ -6274,14 +6284,38 @@ initSession();
 
   // The browser is now really listening: red button, and the "nothing heard" clock starts here (not while the phone was still getting ready).
   function micIsReady() {
-    if (micReady || !listening) return;
+    if (micReady || !listening || warming) return;
     micReady = true;
     clearTimeout(prepTimer);
-    micBtn.classList.remove('preparing');
+    showPrepared(false);
     micBtn.classList.add('listening');
     micBtn.title = 'Tap to stop';
     clearTimeout(nothingHeardTimer);
     nothingHeardTimer = setTimeout(nothingHeard, MIC_NOTHING_HEARD_MS);
+  }
+
+  // While getting ready the box says so in words too, because the button alone is easy to miss.
+  function showPrepared(on) {
+    if (on) {
+      micBtn.classList.add('preparing');
+      if (chatBox && savedPlaceholder === null) { savedPlaceholder = chatBox.placeholder; chatBox.placeholder = 'Getting the microphone ready... speak when the button turns red'; }
+    } else {
+      micBtn.classList.remove('preparing');
+      if (chatBox && savedPlaceholder !== null) { chatBox.placeholder = savedPlaceholder; savedPlaceholder = null; }
+    }
+  }
+
+  // iPhone warm-up: replace the first (possibly dead) listening with a fresh one, then show red once the fresh one reports it started (or after MIC_IOS_READY_MS).
+  function warmRestart() {
+    if (!listening || !warming) return;
+    warming = false;
+    if (heardAnything) { micIsReady(); return; }   // the first one is already hearing: nothing to replace
+    const old = recognition;
+    recognition = createRecognition();
+    try { if (old && old.abort) old.abort(); else if (old) old.stop(); } catch(e) {}
+    baseText = document.getElementById('chatInput').value;
+    try { recognition.start(); } catch(e) { stopListening(); appendError(micMessage('')); return; }
+    prepTimer = setTimeout(micIsReady, MIC_IOS_READY_MS);   // the second listening's own "started" may come sooner and make it red earlier
   }
 
   function prepStuck() {
@@ -6306,7 +6340,8 @@ initSession();
     r.lang = micLanguage();
     const current = function() { return r === recognition; };   // a listening that has been replaced must not write, report or restart anything
 
-    if ('onaudiostart' in r) r.onaudiostart = function() { if (current()) micIsReady(); };
+    // Assigned on every browser: a handler that is never called does no harm, and an iPhone may not list the property although it calls it.
+    r.onaudiostart = function() { if (current()) micIsReady(); };
 
     r.onresult = function(event) {
       if (!current()) return;
@@ -6348,21 +6383,27 @@ initSession();
     micReady = false;
     prepRestarts = 0;
     baseText = document.getElementById('chatInput').value;
-    micBtn.classList.add('preparing');
+    showPrepared(true);
     micBtn.title = 'Tap to stop';
     recognition = createRecognition();
     try { recognition.start(); } catch(e) { stopListening(); appendError(micMessage('')); return; }
-    if ('onaudiostart' in recognition) prepTimer = setTimeout(prepStuck, MIC_PREPARE_MS);
-    else micIsReady();   // a browser that never reports the start: red at once, as before
+    if (onIOS && spokeSinceMic) {
+      spokeSinceMic = false; warming = true;
+      warmTimer = setTimeout(warmRestart, MIC_IOS_WARM_MS);
+    } else {
+      prepTimer = setTimeout(prepStuck, MIC_PREPARE_MS);   // if the browser never reports the start: one restart, then red anyway (never stuck)
+    }
   }
 
   function stopListening() {
     clearTimeout(nothingHeardTimer);
     clearTimeout(prepTimer);
+    clearTimeout(warmTimer);
+    warming = false;
     if (!listening) return;
     listening = false;
     micReady = false;
-    micBtn.classList.remove('preparing');
+    showPrepared(false);
     micBtn.classList.remove('listening');
     micBtn.title = 'Tap to talk';
     if (recognition) recognition.onresult = null;
@@ -6375,7 +6416,7 @@ initSession();
   const voice = window.AtomSlides && window.AtomSlides.Voice;
   if (voice) {
     const speak = voice.speak;
-    voice.speak = function() { stopListening(); return speak.apply(voice, arguments); };
+    voice.speak = function() { stopListening(); spokeSinceMic = true; return speak.apply(voice, arguments); };
   }
 
   micBtn.addEventListener('click', function(e){
