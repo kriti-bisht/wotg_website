@@ -1162,6 +1162,7 @@ button.combo-click { border:0; font-family:inherit; cursor:pointer; width:100%; 
 <div id="modalRoot"></div>
 <div class="toast-root" id="toastRoot"></div>
 
+<script src="assets/monthly_feedback.js?v=20261116a"></script>
 <script>
 // ════════════════════════════════════════════════════════════════════════
 // Wisdom on the GO! -- Admin (new look, 2026-10-01). Single page, no framework.
@@ -5259,6 +5260,8 @@ function dismissTour() { tourStepIndex = TOUR_STEPS.length; finishTour(); }
   window.addEventListener('hashchange', route);
   route();
 })();
+// The once-a-month Good / Fine / Bad question (assets/monthly_feedback.js): 7 minutes on the system, then a calm moment; the back end decides who is asked.
+if (window.MonthlyFeedback) MonthlyFeedback.start({ base: API_BASE });
 
 </script>
 <div class="tour-popup" id="tourPopup">

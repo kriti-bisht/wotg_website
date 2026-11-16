@@ -1868,8 +1868,10 @@ body.chat-page-locked { position:fixed; left:0; right:0; width:100%; overflow:hi
 
 <script src="assets/html2canvas.min.js"></script>
 <script src="assets/atom_slides.js?v=20261106b"></script>
-<script src="assets/roleplay.js?v=20261115b"></script>
+<script src="assets/roleplay.js?v=20261116a"></script>
+<script src="assets/roleplay_rating.js?v=20261116a"></script>
 <script src="assets/user_notice.js?v=20261113a"></script>
+<script src="assets/monthly_feedback.js?v=20261116a"></script>
 <script>
 // `overflow:hidden` alone locks scroll on desktop (mouse wheel respects
 // it) but iOS Safari ignores it for a touch-drag -- the background page
@@ -2742,6 +2744,8 @@ async function checkPronounsGate() {
 }
 // The notice shown in front of a person right after login: once per login, up to 3 times, with "Don't show me this message again" (user management app).
 function showUserNotice() { if (window.UserNotice) UserNotice.check({ fetch: reportsFetch, base: USER_MGMT_BASE }); }
+// The once-a-month Good / Fine / Bad question (assets/monthly_feedback.js): 7 minutes on the system, then a calm moment; the back end decides who is asked.
+if (window.MonthlyFeedback) MonthlyFeedback.start({ base: USER_MGMT_BASE });
 
 async function saveGatePronouns() {
   const statusEl = document.getElementById('gatePronounsStatus');
@@ -6214,6 +6218,19 @@ if (window.RolePlay) RolePlay.configure({
       }
     };
   })(),
+});
+
+// The one-question rating after the role play feedback (assets/roleplay_rating.js; Kriti, 2026-11-16): a normal trainer message above the slide's own Finish button.
+// Until it is answered the message box, the mic and that button are locked; any failure of the rating call unlocks everything.
+if (window.RolePlayRating) RolePlayRating.configure({
+  message: function(text) { return appendMessage('ai', text); },
+  fetch: reportsFetch,
+  base: function() { return ROLEPLAY_BASE; },
+  navWrap: function() { return voNavWrap; },
+  busyBegin: chatWaitBegin,
+  busyEnd: chatWaitEnd,
+  keepNavLast: voKeepNavLast,
+  scrollToEnd: scrollMessagesToBottom
 });
 
 initSession();

@@ -77,7 +77,7 @@
       });
   }
   RP.configure = function (host) { H = host; };
-  RP.reset = function () { stopFeedback(S.feedbackUi); S = fresh(); };
+  RP.reset = function () { stopFeedback(S.feedbackUi); S = fresh(); if (window.RolePlayRating) RolePlayRating.reset(); };
 
   // (Re)reads the role play of the open session. Never fails: if the app cannot be reached the answer is null and the learner sees no role play.
   RP.load = function (sid) {
@@ -487,7 +487,7 @@
   }
   function finishFeedback(F) {
     F.done = true; F.cur = -1; F.playing = false; sync(F, -1);
-    if (F.mode === 'live') { H.showNav(''); H.keepNavLast(); H.scrollToEnd(); }
+    if (F.mode === 'live') { H.showNav(''); H.keepNavLast(); H.scrollToEnd(); if (window.RolePlayRating) RolePlayRating.ask(H.sessionId()); }   // the one-question rating (roleplay_rating.js)
   }
 
   function buildPlayer(F) {
