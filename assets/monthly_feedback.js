@@ -80,9 +80,12 @@
   // hangs from the bottom edge of the header, at the right (the full width on a phone: the CSS above)
   function place() {
     if (!banner) return;
-    var h = document.querySelector('header.topbar'), top = 0;
-    if (h) { var r = h.getBoundingClientRect(); if (r.height > 0) top = Math.max(0, r.bottom); }
-    banner.style.top = top + 'px'; banner.style.right = '14px';
+    // the lowest bar at the top of the screen: the page header and, when the chat fills the screen (header hidden), the conversation's own title bar
+    var top = 0;
+    function lowest(sel) { var e = document.querySelector(sel); if (!e) return; var r = e.getBoundingClientRect(); if (r.height > 0 && r.top < 120) top = Math.max(top, r.bottom); }
+    lowest('header.topbar');
+    if (document.body.classList.contains('chat-maximized')) lowest('.chat-panel.active .chat-panel-head');
+    banner.style.top = Math.max(0, top) + 'px'; banner.style.right = '14px';
   }
   function close(done) {
     var b = banner; banner = null;
@@ -158,6 +161,7 @@
       if (!H) return;
       var k = stamp(); if (!k) return;
       var c = readClock(k);
+      if (banner) place();      // the chat may have been made full-screen (or back) since the banner appeared
       if (c.done) return;
       if (!document.hidden) { c.s += TICK_MS / 1000; writeClock(c); }
       if (c.s < needed || asking || !calm()) return;
