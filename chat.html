@@ -3743,8 +3743,8 @@ async function resumeParkedSession(clickedSessionId, path, skillName) {
       voRestoreThread(data);
     }
 
-    if (isLI && data.choice_pending) {
-      await resumeInitiativeChoice();   // the two buttons were showing when the learner left: the initiative app says so and gives their words again
+    if (isLR && data.choice_pending) {
+      await resumeInitiativeChoice();   // the two buttons were showing when the learner left: the app holding the session (Learning Recommendations or the initiative) says so and gives their words again
     } else if (data.auto_continue && !isLR) {
       await voAutoContinue();
     } else if (data.auto_continue) {
@@ -5006,8 +5006,8 @@ function renderDriverDiagnosisForm(form, opts) {
   return wrap;
 }
 
-// ─── LEARNING INITIATIVES: THE TWO CHOICE BUTTONS ──────────────────────────────────────────────────────────────
-// Once the Communicator has offered the choice, every reply of the initiative app carries choice_offered and the two buttons' words (already in the
+// ─── LEARNING RECOMMENDATIONS AND LEARNING INITIATIVES: THE TWO CHOICE BUTTONS ─────────────────────────────────
+// Once the Communicator has offered the choice, every reply of the app holding the session (lrBase()) carries choice_offered and the two buttons' words (already in the
 // learner's language): "user_situation" (tell about a real situation) and "scenario_required" (build a scenario together). They sit under the reply,
 // the buttons of the reply before are replaced, and typing stays open: a typed message is answered and the buttons come again, until one is clicked.
 function renderInitiativeChoiceButtons(choices, suppressScroll) {
@@ -5052,7 +5052,7 @@ async function submitInitiativeChoice(choice, label, row) {
   setChatInputEnabled(false);
   showTyping(currentPhase);
   try {
-    const res = await reportsFetch(`${LEARNING_INITIATIVE_SESSION_BASE}/api/skill-introduction/choice`, {
+    const res = await reportsFetch(`${lrBase()}/api/skill-introduction/choice`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_id: sessionId, skill_name: activeSkillName, choice: choice }),
@@ -5077,10 +5077,10 @@ async function submitInitiativeChoice(choice, label, row) {
   unlockChatInput();
 }
 
-// A session reopened from the Parking Lot while the two buttons were waiting: the initiative app says whether they still are.
+// A session reopened from the Parking Lot while the two buttons were waiting: the app holding the session (lrBase()) says whether they still are.
 async function resumeInitiativeChoice() {
   try {
-    const res = await reportsFetch(`${LEARNING_INITIATIVE_SESSION_BASE}/api/skill-introduction/choice-pending?session_id=${encodeURIComponent(sessionId)}`);
+    const res = await reportsFetch(`${lrBase()}/api/skill-introduction/choice-pending?session_id=${encodeURIComponent(sessionId)}`);
     const data = await res.json().catch(function(){ return {}; });
     if (res.status === 410) { appendError(data.detail || INITIATIVE_ENDED_TEXT); lockConversationEnded(); return; }
     if (res.ok && data.pending && Array.isArray(data.choices)) renderInitiativeChoiceButtons(data.choices);
