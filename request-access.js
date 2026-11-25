@@ -1,5 +1,5 @@
-/* Request Early Access: one form, shared by all four pages.
-   Every "Request Early Access" link opens it. To connect it, set ENDPOINT below to the
+/* Request a demo: one form, shared by all four pages.
+   Every "Request a demo" link opens it. To connect it, set ENDPOINT below to the
    address that receives the form (it gets a JSON POST). While ENDPOINT is empty the form
    works but says plainly that nothing was sent. */
 (function () {
@@ -22,6 +22,14 @@
 .ra label{font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#2A3C5D;}\
 .ra input,.ra select,.ra textarea{width:100%;font:inherit;font-size:.98rem;color:#041A40;background:rgba(255,255,255,.85);border:1.5px solid rgba(4,26,64,.14);border-radius:14px;padding:.8rem 1rem;outline:none;transition:border-color .2s,box-shadow .2s;}\
 .ra textarea{min-height:92px;resize:vertical;}\
+.ra .pills{display:flex;gap:12px;flex-wrap:wrap;}\
+.ra .pill{position:relative;display:inline-flex;margin:0;text-transform:none;letter-spacing:0;font-size:.98rem;font-weight:500;color:#041A40;cursor:pointer;}\
+.ra .pill input{position:absolute;opacity:0;width:1px;height:1px;}\
+.ra .pill span{display:inline-block;min-width:92px;text-align:center;padding:.72rem 1.6rem;border-radius:999px;background:rgba(255,255,255,.85);border:1.5px solid rgba(4,26,64,.14);transition:border-color .2s,background .2s,box-shadow .2s;}\
+.ra .pill:hover span{border-color:#2d9640;}\
+.ra .pill input:checked+span{background:rgba(58,181,74,.16);border-color:#2d9640;font-weight:600;}\
+.ra .pill input:focus-visible+span{box-shadow:0 0 0 4px rgba(58,181,74,.18);border-color:#2d9640;}\
+.ra .f.bad .pill span{border-color:#b3261e;}\
 .ra input:focus,.ra select:focus,.ra textarea:focus{border-color:#2d9640;box-shadow:0 0 0 4px rgba(58,181,74,.18);}\
 .ra .bad{border-color:#b3261e;} .ra .err{display:none;font-size:.8rem;color:#b3261e;} .ra .f.bad .err{display:block;} .ra .f.bad input,.ra .f.bad select{border-color:#b3261e;}\
 .ra .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;}\
@@ -40,14 +48,15 @@
   var html = '\
 <div class="ra" role="dialog" aria-modal="true" aria-labelledby="ra-t">\
 <button type="button" class="ra-x" aria-label="Close">&times;</button>\
-<h2 id="ra-t">Request early access</h2>\
+<h2 id="ra-t">Request a demo</h2>\
 <p class="ra-sub">Tell us a little about your organization. We read every request and reply personally.</p>\
 <form novalidate>\
 <div class="f"><label for="ra-name">Your name</label><input id="ra-name" name="name" autocomplete="name" required><span class="err">Please add your name.</span></div>\
 <div class="f"><label for="ra-email">Work email</label><input id="ra-email" name="email" type="email" autocomplete="email" required><span class="err" id="ra-eerr">Please use your work email.</span></div>\
 <div class="f"><label for="ra-co">Company</label><input id="ra-co" name="company" autocomplete="organization" required><span class="err">Please add your company.</span></div>\
 <div class="f"><label for="ra-hc">Approx. headcount</label><select id="ra-hc" name="headcount" required><option value="">Select</option><option>1&ndash;50</option><option>51&ndash;200</option><option>201&ndash;1,000</option><option>1,001&ndash;5,000</option><option>5,000+</option></select><span class="err">Please choose a range.</span></div>\
-<div class="f w"><label for="ra-msg">A short message <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label><textarea id="ra-msg" name="message" maxlength="1000" placeholder="What would you like human skills development to change in your organization?"></textarea></div>\
+<div class="f w" id="ra-bud"><label id="ra-bud-l">Does your organization have a dedicated human skills development budget?</label><div class="pills" role="radiogroup" aria-labelledby="ra-bud-l"><label class="pill"><input type="radio" name="budget" value="Yes"><span>Yes</span></label><label class="pill"><input type="radio" name="budget" value="No"><span>No</span></label></div><span class="err">Please choose Yes or No.</span></div>\
+<div class="f w"><label for="ra-msg">A short message <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label><textarea id="ra-msg" name="message" maxlength="900" placeholder="What would you like human skills development to change in your organization?"></textarea></div>\
 <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">\
 <div class="ra-msg" role="alert"></div>\
 <div class="ra-go"><button class="ra-send" type="submit">Send request</button><span class="ra-note">We use your details only to reply to this request.</span></div>\
@@ -74,7 +83,7 @@
     }
   });
 
-  [].forEach.call(document.querySelectorAll('a[href^="mailto:' + FALLBACK_EMAIL + '?subject=WOTG%20Early%20Access"]'), function (a) {
+  [].forEach.call(document.querySelectorAll('a[href^="mailto:' + FALLBACK_EMAIL + '?subject=WOTG%20Demo%20Request"]'), function (a) {
     a.addEventListener('click', function (e) { e.preventDefault(); var nav = document.getElementById('nav'); if (nav) nav.classList.remove('open'); open(a); });
   });
 
@@ -84,10 +93,10 @@
     var v = function (n) { return (form.elements[n].value || '').trim(); };
     var email = v('email'), badMail = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || FREE.test(email);
     document.getElementById('ra-eerr').textContent = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'Please use your work email.' : 'Please enter a valid email.';
-    var bad = [flag(form.elements.name, !v('name')), flag(form.elements.email, badMail), flag(form.elements.company, !v('company')), flag(form.elements.headcount, !v('headcount'))].some(Boolean);
-    if (bad) { var first = form.querySelector('.f.bad input,.f.bad select'); if (first) first.focus(); return; }
+    var bad = [flag(form.elements.name, !v('name')), flag(form.elements.email, badMail), flag(form.elements.company, !v('company')), flag(form.elements.headcount, !v('headcount')), flag(form.querySelector('.pills'), !form.elements.budget.value)].some(Boolean);
+    if (bad) { var first = form.querySelector('.f.bad input:not([type=radio]),.f.bad select') || form.querySelector('.f.bad input[type=radio]'); if (first) first.focus(); return; }
     if (v('website')) { box.classList.add('done'); return; }
-    var data = { name: v('name'), email: email, company: v('company'), headcount: v('headcount'), message: v('message'), page: location.pathname, sentAt: new Date().toISOString() };
+    var data = { name: v('name'), email: email, company: v('company'), headcount: v('headcount'), message: 'Dedicated human skills development budget: ' + form.elements.budget.value + (v('message') ? '\n\n' + v('message') : ''), page: location.pathname, sentAt: new Date().toISOString() };
     if (!ENDPOINT) {
       okh.textContent = 'Preview only.'; okp.innerHTML = 'The form is not connected yet, so nothing was sent.<br><span class="prev">Not sent</span>';
       box.classList.add('done'); form.reset(); return;
