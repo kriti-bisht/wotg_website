@@ -5462,6 +5462,7 @@ function renderNotificationForm(notification) {
   q1Block.style.marginBottom = '0.4rem';
   const q1Text = document.createElement('div');
   q1Text.style.marginBottom = '0.5rem';
+  q1Text.style.whiteSpace = 'pre-line';      // question 1 is two lines (the second reminds the learner of their conversation): keep the line break
   appendWithBold(q1Text, q1.text);
   q1Block.appendChild(q1Text);
 
