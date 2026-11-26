@@ -1,2 +1,2 @@
 User-agent: *
-Disallow: /atoms/
+Disallow: /atoms/atoms.json
